@@ -10,8 +10,19 @@ const __dirname = dirname(__filename);
 const app = express();
 const port = process.env.PORT || 10000;
 
+// Configuration CORS
+app.use(cors({
+  origin: [
+    'https://budget-mobile-app-pa2n.onrender.com',
+    'https://budget-mobile-app.onrender.com',
+    'http://localhost:5173'
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
 // Middleware
-app.use(cors());
 app.use(express.json());
 
 // Configuration MongoDB
