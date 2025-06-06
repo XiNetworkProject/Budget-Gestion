@@ -60,11 +60,11 @@ app.get('/health', (req, res) => {
 });
 
 // Routes API
-app.post('/api/budget/:userId', async (req, res) => {
+app.post('/api/budget', async (req, res) => {
   try {
-    const { userId } = req.params;
-    const data = req.body;
-    console.log('Tentative de sauvegarde pour userId:', userId);
+    const { userId, ...data } = req.body;
+    console.log('=== Sauvegarde du budget ===');
+    console.log('userId:', userId);
     console.log('Données reçues:', JSON.stringify(data, null, 2));
 
     const result = await db.collection('budgets').updateOne(
@@ -73,7 +73,17 @@ app.post('/api/budget/:userId', async (req, res) => {
       { upsert: true }
     );
 
-    console.log('Résultat de la sauvegarde:', result);
+    console.log('Résultat de la sauvegarde:', {
+      matchedCount: result.matchedCount,
+      modifiedCount: result.modifiedCount,
+      upsertedCount: result.upsertedCount,
+      upsertedId: result.upsertedId
+    });
+
+    // Vérification après sauvegarde
+    const savedData = await db.collection('budgets').findOne({ userId });
+    console.log('Données sauvegardées:', savedData ? 'Oui' : 'Non');
+
     res.json({ success: true });
   } catch (error) {
     console.error('Erreur lors de la sauvegarde:', error);
@@ -84,10 +94,14 @@ app.post('/api/budget/:userId', async (req, res) => {
 app.get('/api/budget/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    console.log('Tentative de récupération pour userId:', userId);
+    console.log('=== Récupération du budget ===');
+    console.log('userId:', userId);
     
     const data = await db.collection('budgets').findOne({ userId });
     console.log('Données trouvées:', data ? 'Oui' : 'Non');
+    if (data) {
+      console.log('Structure des données:', Object.keys(data));
+    }
     
     res.json(data || {});
   } catch (error) {
