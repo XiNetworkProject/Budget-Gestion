@@ -15,5 +15,5 @@ services:
         sync: false
       - key: VITE_API_URL
         value: https://budget-mobile-app.onrender.com
-    healthCheckPath: /
+    healthCheckPath: /health
     autoDeploy: true 

@@ -1,6 +1,11 @@
 import express from 'express';
 import { MongoClient } from 'mongodb';
 import cors from 'cors';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 10000;
@@ -25,11 +30,11 @@ async function connectToDatabase() {
 }
 
 // Health check endpoint
-app.get('/', (req, res) => {
+app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-// Routes
+// Routes API
 app.post('/api/budget/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -75,7 +80,15 @@ app.delete('/api/budget/:userId', async (req, res) => {
   }
 });
 
+// Servir les fichiers statiques du dossier dist
+app.use(express.static(join(__dirname, 'dist')));
+
+// Route pour toutes les autres requêtes
+app.get('*', (req, res) => {
+  res.sendFile(join(__dirname, 'dist', 'index.html'));
+});
+
 // Démarrer le serveur
 app.listen(port, '0.0.0.0', () => {
-  console.log(`API server running on port ${port}`);
+  console.log(`Serveur démarré sur le port ${port}`);
 }); 
