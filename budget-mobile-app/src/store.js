@@ -1,8 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { budgetService } from './services/budgetService';
-import { v4 as uuidv4 } from 'uuid';
-import { saveToMongoDB, loadFromMongoDB } from './services/api';
 
 const defaultMonths = [
   'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
@@ -33,6 +31,8 @@ defaultPersons.forEach((p) => { defaultSaved[p.name] = 0; });
 
 const defaultSideByMonth = defaultMonths.map(() => 0);
 
+const defaultPlacedSavingsByMonth = defaultMonths.map(() => 0);
+
 const useStore = create(
   persist(
     (set, get) => ({
@@ -50,9 +50,9 @@ const useStore = create(
       persons: defaultPersons,
       saved: defaultSaved,
       sideByMonth: defaultSideByMonth,
+      placedSavingsByMonth: defaultPlacedSavingsByMonth,
       totalPotentialSavings: 0,
       archivedMonths: [],
-      placedSavings: 0,
 
       // Actions
       setUser: async (user) => {
@@ -72,9 +72,9 @@ const useStore = create(
                 persons: data.persons || defaultPersons,
                 saved: data.saved || defaultSaved,
                 sideByMonth: data.sideByMonth || defaultSideByMonth,
+                placedSavingsByMonth: data.placedSavingsByMonth || defaultPlacedSavingsByMonth,
                 totalPotentialSavings: data.totalPotentialSavings || 0,
                 archivedMonths: data.archivedMonths || [],
-                placedSavings: data.placedSavings || 0,
                 isLoading: false
               });
             } else {
@@ -88,9 +88,9 @@ const useStore = create(
                 persons: defaultPersons,
                 saved: defaultSaved,
                 sideByMonth: defaultSideByMonth,
+                placedSavingsByMonth: defaultPlacedSavingsByMonth,
                 totalPotentialSavings: 0,
-                archivedMonths: [],
-                placedSavings: 0
+                archivedMonths: []
               };
               set({ ...defaultBudget, isLoading: false });
               await budgetService.saveBudget(user.id, defaultBudget);
@@ -124,7 +124,8 @@ const useStore = create(
               incomes: state.incomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: state.sideByMonth
+              sideByMonth: state.sideByMonth,
+              placedSavingsByMonth: state.placedSavingsByMonth
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -157,7 +158,8 @@ const useStore = create(
               incomes: state.incomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: state.sideByMonth
+              sideByMonth: state.sideByMonth,
+              placedSavingsByMonth: state.placedSavingsByMonth
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -187,7 +189,8 @@ const useStore = create(
               incomes: state.incomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: state.sideByMonth
+              sideByMonth: state.sideByMonth,
+              placedSavingsByMonth: state.placedSavingsByMonth
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -242,7 +245,8 @@ const useStore = create(
               incomes: newIncomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: newSide
+              sideByMonth: newSide,
+              placedSavingsByMonth: state.placedSavingsByMonth
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -296,6 +300,7 @@ const useStore = create(
               persons: state.persons,
               saved: state.saved,
               sideByMonth: newSideByMonth,
+              placedSavingsByMonth: state.placedSavingsByMonth,
               totalPotentialSavings: state.totalPotentialSavings
             });
           } catch (error) {
@@ -324,7 +329,8 @@ const useStore = create(
               incomes: newIncomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: state.sideByMonth
+              sideByMonth: state.sideByMonth,
+              placedSavingsByMonth: state.placedSavingsByMonth
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -357,7 +363,8 @@ const useStore = create(
               incomes: newIncomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: state.sideByMonth
+              sideByMonth: state.sideByMonth,
+              placedSavingsByMonth: state.placedSavingsByMonth
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -387,7 +394,8 @@ const useStore = create(
               incomes: rest,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: state.sideByMonth
+              sideByMonth: state.sideByMonth,
+              placedSavingsByMonth: state.placedSavingsByMonth
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -418,7 +426,8 @@ const useStore = create(
               incomes: newIncomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: state.sideByMonth
+              sideByMonth: state.sideByMonth,
+              placedSavingsByMonth: state.placedSavingsByMonth
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -445,7 +454,8 @@ const useStore = create(
               incomes: state.incomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: newSide
+              sideByMonth: newSide,
+              placedSavingsByMonth: state.placedSavingsByMonth
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -482,7 +492,8 @@ const useStore = create(
               incomes: state.incomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: state.sideByMonth
+              sideByMonth: state.sideByMonth,
+              placedSavingsByMonth: state.placedSavingsByMonth
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -505,8 +516,7 @@ const useStore = create(
           persons: defaultPersons,
           saved: defaultSaved,
           sideByMonth: defaultSideByMonth,
-          placedSavings: 0,
-          archivedMonths: []
+          placedSavingsByMonth: defaultPlacedSavingsByMonth
         });
       },
 
@@ -516,15 +526,13 @@ const useStore = create(
         if (monthIdx === -1) return;
 
         const archive = {
-          id: uuidv4(),
           month,
           date: new Date().toISOString(),
           data: {},
           revenus: state.revenus[monthIdx],
           incomes: {},
           sideByMonth: state.sideByMonth[monthIdx],
-          placedSavings: state.placedSavings,
-          revenus: Object.values(state.incomes).reduce((sum, amount) => sum + amount, 0)
+          placedSavingsByMonth: state.placedSavingsByMonth[monthIdx]
         };
 
         Object.keys(state.data).forEach(cat => {
@@ -540,14 +548,13 @@ const useStore = create(
 
         if (state.user) {
           try {
-            await saveToMongoDB('archives', archive);
-            set((state) => ({
-              archivedMonths: [...state.archivedMonths, archive]
-            }));
-            return true;
+            await budgetService.saveBudget(state.user.id, {
+              ...state,
+              archivedMonths: newArchivedMonths
+            });
           } catch (error) {
             console.error('Error saving archive:', error);
-            return false;
+            set({ error: error.message });
           }
         }
       },
@@ -565,13 +572,22 @@ const useStore = create(
         }
       },
 
-      setPlacedSavings: (amount) => set({ placedSavings: amount }),
-
-      getRemainingAmount: () => {
-        const { data, incomes, sideByMonth, placedSavings } = get();
-        const totalIncomes = Object.values(incomes).reduce((sum, amount) => sum + amount, 0);
-        const totalExpenses = Object.values(data).reduce((sum, amount) => sum + amount, 0);
-        return totalIncomes - totalExpenses - sideByMonth - placedSavings;
+      setPlacedSavings: async (monthIdx, value) => {
+        const state = get();
+        const newPlaced = [...state.placedSavingsByMonth];
+        newPlaced[monthIdx] = value;
+        set({ placedSavingsByMonth: newPlaced });
+        if (state.user) {
+          try {
+            await budgetService.saveBudget(state.user.id, {
+              ...state,
+              placedSavingsByMonth: newPlaced
+            });
+          } catch (error) {
+            console.error('Error saving placed savings:', error);
+            set({ error: error.message });
+          }
+        }
       },
     }),
     {
@@ -579,11 +595,7 @@ const useStore = create(
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
-        data: state.data,
-        incomes: state.incomes,
-        sideByMonth: state.sideByMonth,
-        placedSavings: state.placedSavings,
-        archivedMonths: state.archivedMonths
+        placedSavingsByMonth: state.placedSavingsByMonth
       })
     }
   )

@@ -183,7 +183,7 @@ function BadgeEco({ value }) {
 }
 
 function TableView() {
-  const { months, categories, data, setValue, addCategory, removeCategory, addMonth, removeMonth, incomeTypes, incomes, setIncome, addIncomeType, removeIncomeType, renameIncomeType, renameCategory, sideByMonth, setSideByMonth } = useStore();
+  const { months, categories, data, setValue, addCategory, removeCategory, addMonth, removeMonth, incomeTypes, incomes, setIncome, addIncomeType, removeIncomeType, renameIncomeType, renameCategory, sideByMonth, setSideByMonth, placedSavingsByMonth } = useStore();
   
   // Optimisation des états avec useMemo
   const [editCell, setEditCell] = useState({ row: null, col: null });
@@ -218,9 +218,10 @@ function TableView() {
   const economies = useMemo(() => 
     months.map((_, i) => {
       const totalDep = categories.reduce((acc, cat) => acc + (data[cat]?.[i] || 0), 0);
-      return totalRevenus[i] - totalDep;
+      const placedSavings = placedSavingsByMonth[i] || 0;
+      return totalRevenus[i] - totalDep - placedSavings;
     }),
-    [months, categories, data, totalRevenus]
+    [months, categories, data, totalRevenus, placedSavingsByMonth]
   );
 
   // Calculs
@@ -228,9 +229,11 @@ function TableView() {
   const idxMois = months.indexOf(moisActuel);
   const ecoMois = economies[idxMois] || 0;
   const side = sideByMonth[idxMois] || 0;
+  const placed = placedSavingsByMonth[idxMois] || 0;
   const reste = Math.max(ecoMois - side, 0);
 
   const potentielMiseDeCoteTotal = sideByMonth.reduce((acc, val) => acc + val, 0);
+  const totalEconomiePlacee = placedSavingsByMonth.reduce((acc, val) => acc + val, 0);
 
   return (
       <div>
@@ -806,6 +809,78 @@ function TableView() {
                 </tr>
               ))}
 
+              {/* Ligne Économie placée */}
+              <tr>
+                <td style={{
+                  background: '#2d3748',
+                  color: '#e2e8f0',
+                  padding: '12px 16px',
+                  borderBottom: '1px solid #4a5568',
+                  position: 'sticky',
+                  left: 0,
+                  zIndex: 5,
+                  borderLeft: '4px solid #9f7aea',
+                  fontWeight: '500'
+                }}>
+                  Économie placée
+                </td>
+                {months.map((_, i) => (
+                  <td key={i} style={{
+                    background: '#1a202c',
+                    color: '#e2e8f0',
+                    padding: '12px',
+                    textAlign: 'center',
+                    borderBottom: '1px solid #4a5568'
+                  }}>
+                    {editCell.row === 'placed' && editCell.col === i ? (
+                      <input
+                        type="number"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onBlur={() => {
+                          const val = parseFloat(inputValue);
+                          if (!isNaN(val)) {
+                            setPlacedSavings(i, val);
+                          }
+                          setEditCell({ row: null, col: null });
+                        }}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            const val = parseFloat(inputValue);
+                            if (!isNaN(val)) {
+                              setPlacedSavings(i, val);
+                            }
+                            setEditCell({ row: null, col: null });
+                          }
+                        }}
+                        style={{
+                          background: '#4a5568',
+                          border: '1px solid #2d3748',
+                          borderRadius: '4px',
+                          padding: '4px 8px',
+                          color: '#e2e8f0',
+                          width: '80px',
+                          textAlign: 'center'
+                        }}
+                      />
+                    ) : (
+                      <span
+                        onClick={() => {
+                          setEditCell({ row: 'placed', col: i });
+                          setInputValue(placedSavingsByMonth[i] || '');
+                        }}
+                        style={{
+                          cursor: 'pointer',
+                          color: '#9f7aea'
+                        }}
+                      >
+                        {placedSavingsByMonth[i]?.toLocaleString() || '0'} €
+                      </span>
+                    )}
+                  </td>
+                ))}
+              </tr>
+
               {/* Titre Section Économies */}
               <tr>
                 <td colSpan={months.length + 1} style={{
@@ -840,7 +915,8 @@ function TableView() {
                 {months.map((_, i) => {
                   const totalRev = incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[i] || 0), 0);
                   const totalDep = categories.reduce((acc, cat) => acc + (data[cat]?.[i] || 0), 0);
-                  const economie = totalRev - totalDep;
+                  const placed = placedSavingsByMonth[i] || 0;
+                  const economie = totalRev - totalDep - placed;
                   return (
                     <td key={i} style={{
                       background: '#1a202c',
@@ -855,6 +931,43 @@ function TableView() {
                         fontWeight: '600'
                       }}>
                         {economie.toLocaleString()} €
+                      </span>
+                    </td>
+                  );
+                })}
+              </tr>
+
+              {/* Ligne Total Économies Placées */}
+              <tr>
+                <td style={{
+                  background: '#2d3748',
+                  color: '#e2e8f0',
+                  padding: '12px 16px',
+                  borderBottom: '1px solid #4a5568',
+                  position: 'sticky',
+                  left: 0,
+                  zIndex: 5,
+                  fontWeight: '500',
+                  borderLeft: '4px solid #9f7aea'
+                }}>
+                  Total Économies Placées
+                </td>
+                {months.map((_, i) => {
+                  const totalPlaced = placedSavingsByMonth.slice(0, i + 1).reduce((acc, val) => acc + val, 0);
+                  return (
+                    <td key={i} style={{
+                      background: '#1a202c',
+                      color: '#e2e8f0',
+                      padding: '12px',
+                      textAlign: 'center',
+                      borderBottom: '1px solid #4a5568',
+                      fontWeight: '500'
+                    }}>
+                      <span style={{
+                        color: '#9f7aea',
+                        fontWeight: '600'
+                      }}>
+                        {totalPlaced.toLocaleString()} €
                       </span>
                     </td>
                   );
@@ -896,7 +1009,7 @@ function TrendIndicator({ value }) {
 }
 
 function Visualisation() {
-  const { months, categories, data, incomeTypes, incomes, sideByMonth } = useStore();
+  const { months, categories, data, incomeTypes, incomes, sideByMonth, placedSavingsByMonth } = useStore();
   
   // Calculs pour le mois actuel et le mois précédent
   const moisActuel = months[new Date().getMonth() % months.length] || months[0];
