@@ -93,13 +93,21 @@ app.delete('/api/budget/:userId', async (req, res) => {
 });
 
 // Servir les fichiers statiques
-app.use(express.static(join(__dirname, 'dist')));
+const distPath = join(__dirname, '..', 'dist');
+app.use(express.static(distPath, {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    }
+  }
+}));
 
 // Route par défaut pour l'application React
 app.get('*', (req, res) => {
-  res.sendFile(join(__dirname, 'dist', 'index.html'));
+  res.sendFile(join(distPath, 'index.html'));
 });
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`Server is running on port ${port}`);
+  console.log(`Dist path: ${distPath}`);
 }); 
