@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { useBudgetStore } from "./store";
+import useStore from "./store";
 import { Pie, Bar } from "react-chartjs-2";
 import { Chart, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from "chart.js";
 import { PlusIcon, CrossIcon, TableIcon, ChartIcon } from "./icons";
@@ -180,7 +180,7 @@ function BadgeEco({ value }) {
 }
 
 function TableView() {
-  const { months, categories, data, setValue, addCategory, removeCategory, addMonth, removeMonth, incomeTypes, incomes, setIncome, addIncomeType, removeIncomeType, renameIncomeType, renameCategory, sideByMonth, setSideByMonth } = useBudgetStore();
+  const { months, categories, data, setValue, addCategory, removeCategory, addMonth, removeMonth, incomeTypes, incomes, setIncome, addIncomeType, removeIncomeType, renameIncomeType, renameCategory, sideByMonth, setSideByMonth } = useStore();
   
   // Optimisation des états avec useMemo
   const [editCell, setEditCell] = useState({ row: null, col: null });
@@ -893,7 +893,7 @@ function TrendIndicator({ value }) {
 }
 
 function Visualisation() {
-  const { months, categories, data, incomeTypes, incomes, sideByMonth } = useBudgetStore();
+  const { months, categories, data, incomeTypes, incomes, sideByMonth } = useStore();
   
   // Calculs pour le mois actuel et le mois précédent
   const moisActuel = months[new Date().getMonth() % months.length] || months[0];
@@ -1091,7 +1091,7 @@ function Visualisation() {
 
 const App = () => {
   const [page, setPage] = useState("tableau");
-  const { isAuthenticated, user, logout } = useBudgetStore();
+  const { isAuthenticated, user, logout } = useStore();
 
   if (!isAuthenticated) {
     return <Login />;
