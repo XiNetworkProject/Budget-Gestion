@@ -26,13 +26,13 @@ async function connectToMongo() {
     console.log('URI MongoDB:', uri);
     console.log('Base de données:', dbName);
     
-    // Encodage de l'URL pour gérer les caractères spéciaux
-    const encodedUri = encodeURI(uri);
-    console.log('URI encodée:', encodedUri);
-    
-    client = new MongoClient(encodedUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
+    client = new MongoClient(uri, {
+      ssl: true,
+      tls: true,
+      tlsAllowInvalidCertificates: false,
+      tlsAllowInvalidHostnames: false,
+      retryWrites: true,
+      w: 'majority'
     });
     
     await client.connect();
