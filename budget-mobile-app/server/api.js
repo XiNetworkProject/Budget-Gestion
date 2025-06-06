@@ -10,11 +10,23 @@ const __dirname = dirname(__filename);
 const app = express();
 const port = process.env.PORT || 10000;
 
-// Configuration CORS temporaire (autorise toutes les origines)
-app.use(cors());
+// Configuration CORS - DOIT être avant tout autre middleware
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 
 // Middleware pour parser le JSON
 app.use(express.json());
+
+// Log des requêtes entrantes
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log('Headers:', req.headers);
+  next();
+});
 
 // Configuration MongoDB
 const uri = process.env.VITE_MONGODB_URI;
