@@ -15,13 +15,16 @@
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.15.13",
     "@mui/material": "^5.15.13",
+    "autoprefixer": "^10.4.21",
     "cors": "^2.8.5",
     "express": "^4.18.3",
     "jwt-decode": "^4.0.0",
     "mongodb": "^6.5.0",
+    "postcss": "^8.5.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.3",
+    "tailwindcss": "^4.1.8",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
