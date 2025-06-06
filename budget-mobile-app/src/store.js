@@ -54,6 +54,7 @@ const useStore = create(
         set({ user, isAuthenticated: !!user });
         if (user) {
           try {
+            set({ isLoading: true });
             const data = await budgetService.getBudget(user.id);
             if (data) {
               set({
@@ -65,7 +66,8 @@ const useStore = create(
                 incomes: data.incomes || defaultIncomes,
                 persons: data.persons || defaultPersons,
                 saved: data.saved || defaultSaved,
-                sideByMonth: data.sideByMonth || defaultSideByMonth
+                sideByMonth: data.sideByMonth || defaultSideByMonth,
+                isLoading: false
               });
             } else {
               const defaultBudget = {
@@ -79,12 +81,12 @@ const useStore = create(
                 saved: defaultSaved,
                 sideByMonth: defaultSideByMonth
               };
-              set(defaultBudget);
+              set({ ...defaultBudget, isLoading: false });
               await budgetService.saveBudget(user.id, defaultBudget);
             }
           } catch (error) {
             console.error('Error loading budget:', error);
-            set({ error: error.message });
+            set({ error: error.message, isLoading: false });
           }
         }
       },
@@ -484,4 +486,10 @@ const useStore = create(
   )
 );
 
-export default useStore; 
+// Charger les données au démarrage si l'utilisateur est authentifié
+const store = useStore.getState();
+if (store.user && store.isAuthenticated) {
+  store.setUser(store.user);
+}
+
+export { useStore }; 
