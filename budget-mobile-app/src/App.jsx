@@ -4,6 +4,9 @@ import { Pie, Bar } from "react-chartjs-2";
 import { Chart, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from "chart.js";
 import { PlusIcon, CrossIcon, TableIcon, ChartIcon } from "./icons";
 import Login from "./components/Login";
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import Budget from './components/Budget';
+import Archives from './components/Archives';
 Chart.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 // Ajouter les styles d'animation et de contraste
@@ -1111,123 +1114,38 @@ function Visualisation() {
 
 const App = () => {
   const [page, setPage] = useState("tableau");
-  const { isAuthenticated, user, logout } = useStore();
+  const { isAuthenticated, user, logout, checkAndArchivePreviousMonth } = useStore();
+
+  // Vérifier l'archivage au chargement de l'application
+  React.useEffect(() => {
+    checkAndArchivePreviousMonth();
+  }, []);
 
   if (!isAuthenticated) {
     return <Login />;
   }
 
   return (
-    <div style={{
-      background: '#1a202c',
-      minHeight: '100vh',
-      color: '#e2e8f0'
-    }}>
-      <header style={{
-        background: '#2d3748',
-        padding: '16px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
-        <h1 style={{
-          margin: 0,
-          fontSize: '24px',
-          color: '#e2e8f0',
-        }}>Budget Manager</h1>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1rem'
-        }}>
-          {user?.picture && (
-            <img 
-              src={user.picture} 
-              alt={user.name}
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%'
-              }}
-            />
-          )}
-          <span style={{ color: '#e2e8f0' }}>{user?.name}</span>
-          <button
-            onClick={logout}
-            style={{
-              background: '#4a5568',
-              color: '#e2e8f0',
-              border: 'none',
-              borderRadius: '4px',
-              padding: '8px 16px',
-              cursor: 'pointer'
-            }}
-          >
-            Déconnexion
-          </button>
-        </div>
-      </header>
+    <Router>
+      <div className="min-h-screen bg-slate-900 text-white">
+        <nav className="bg-slate-800 p-4">
+          <div className="container mx-auto flex justify-between items-center">
+            <Link to="/" className="text-xl font-bold">Budget App</Link>
+            <div className="space-x-4">
+              <Link to="/" className="hover:text-blue-400">Budget</Link>
+              <Link to="/archives" className="hover:text-blue-400">Archives</Link>
+            </div>
+          </div>
+        </nav>
 
-      <main style={{
-        padding: '20px',
-        maxWidth: '1200px',
-        margin: '0 auto'
-      }}>
-        {page === "tableau" ? <TableView /> : <Visualisation />}
-      </main>
-
-      <nav style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        background: '#2d3748',
-        display: 'flex',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        height: '64px',
-        boxShadow: '0 -2px 4px rgba(0,0,0,0.1)',
-        zIndex: 100
-      }}>
-        <button 
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: page === 'tableau' ? '#4299e1' : '#a0aec0',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '4px',
-            padding: '8px',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }} 
-          onClick={() => setPage("tableau")}
-        >
-          <TableIcon />
-          <span style={{fontSize: '12px'}}>Tableau</span>
-        </button>
-        <button 
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: page === 'visu' ? '#4299e1' : '#a0aec0',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '4px',
-            padding: '8px',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }} 
-          onClick={() => setPage("visu")}
-        >
-          <ChartIcon />
-          <span style={{fontSize: '12px'}}>Visualisation</span>
-        </button>
-      </nav>
-    </div>
+        <main className="container mx-auto py-8">
+          <Routes>
+            <Route path="/" element={<Budget />} />
+            <Route path="/archives" element={<Archives />} />
+          </Routes>
+        </main>
+      </div>
+    </Router>
   );
 };
 
