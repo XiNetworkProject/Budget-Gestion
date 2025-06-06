@@ -1,13 +1,13 @@
 import React from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useBudgetStore } from '../store';
-import jwt_decode from 'jwt-decode';
+import { jwtDecode } from 'jwt-decode';
 
 const Login = () => {
   const setUser = useBudgetStore((state) => state.setUser);
 
   const handleSuccess = (credentialResponse) => {
-    const decoded = jwt_decode(credentialResponse.credential);
+    const decoded = jwtDecode(credentialResponse.credential);
     setUser({
       email: decoded.email,
       name: decoded.name,
