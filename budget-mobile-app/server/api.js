@@ -43,7 +43,13 @@ app.post('/api/budget/:userId', async (req, res) => {
     
     await db.collection('budgets').updateOne(
       { userId },
-      { $set: { data, updatedAt: new Date() } },
+      { 
+        $set: { 
+          userId,
+          ...data,
+          updatedAt: new Date() 
+        } 
+      },
       { upsert: true }
     );
     
@@ -60,7 +66,13 @@ app.get('/api/budget/:userId', async (req, res) => {
     const { db } = await connectToDatabase();
     
     const result = await db.collection('budgets').findOne({ userId });
-    res.json(result?.data || null);
+    if (!result) {
+      return res.json(null);
+    }
+    
+    // Supprimer les champs techniques de la réponse
+    const { _id, userId: _, updatedAt, ...data } = result;
+    res.json(data);
   } catch (error) {
     console.error('Error getting budget:', error);
     res.status(500).json({ error: 'Failed to get budget' });
@@ -80,23 +92,14 @@ app.delete('/api/budget/:userId', async (req, res) => {
   }
 });
 
-// Servir les fichiers statiques du dossier dist
-const distPath = join(__dirname, '..', 'dist');
-app.use(express.static(distPath, {
-  setHeaders: (res, path) => {
-    if (path.endsWith('.css')) {
-      res.setHeader('Content-Type', 'text/css');
-    }
-  }
-}));
+// Servir les fichiers statiques
+app.use(express.static(join(__dirname, 'dist')));
 
-// Route pour toutes les autres requêtes
+// Route par défaut pour l'application React
 app.get('*', (req, res) => {
-  res.sendFile(join(distPath, 'index.html'));
+  res.sendFile(join(__dirname, 'dist', 'index.html'));
 });
 
-// Démarrer le serveur
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Serveur démarré sur le port ${port}`);
-  console.log(`Dossier dist: ${distPath}`);
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 }); 
