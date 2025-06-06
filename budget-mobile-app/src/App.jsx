@@ -4,9 +4,7 @@ import { Pie, Bar } from "react-chartjs-2";
 import { Chart, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from "chart.js";
 import { PlusIcon, CrossIcon, TableIcon, ChartIcon } from "./icons";
 import Login from "./components/Login";
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import Budget from './components/Budget';
-import Archives from './components/Archives';
+import Budget from "./components/Budget";
 Chart.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 // Ajouter les styles d'animation et de contraste
@@ -183,7 +181,7 @@ function BadgeEco({ value }) {
 }
 
 function TableView() {
-  const { months, categories, data, setValue, addCategory, removeCategory, addMonth, removeMonth, incomeTypes, incomes, setIncome, addIncomeType, removeIncomeType, renameIncomeType, renameCategory, sideByMonth, setSideByMonth, placedSavingsByMonth } = useStore();
+  const { months, categories, data, setValue, addCategory, removeCategory, addMonth, removeMonth, incomeTypes, incomes, setIncome, addIncomeType, removeIncomeType, renameIncomeType, renameCategory, sideByMonth, setSideByMonth } = useStore();
   
   // Optimisation des états avec useMemo
   const [editCell, setEditCell] = useState({ row: null, col: null });
@@ -218,10 +216,9 @@ function TableView() {
   const economies = useMemo(() => 
     months.map((_, i) => {
       const totalDep = categories.reduce((acc, cat) => acc + (data[cat]?.[i] || 0), 0);
-      const placedSavings = placedSavingsByMonth[i] || 0;
-      return totalRevenus[i] - totalDep - placedSavings;
+      return totalRevenus[i] - totalDep;
     }),
-    [months, categories, data, totalRevenus, placedSavingsByMonth]
+    [months, categories, data, totalRevenus]
   );
 
   // Calculs
@@ -229,11 +226,9 @@ function TableView() {
   const idxMois = months.indexOf(moisActuel);
   const ecoMois = economies[idxMois] || 0;
   const side = sideByMonth[idxMois] || 0;
-  const placed = placedSavingsByMonth[idxMois] || 0;
   const reste = Math.max(ecoMois - side, 0);
 
   const potentielMiseDeCoteTotal = sideByMonth.reduce((acc, val) => acc + val, 0);
-  const totalEconomiePlacee = placedSavingsByMonth.reduce((acc, val) => acc + val, 0);
 
   return (
       <div>
@@ -809,78 +804,6 @@ function TableView() {
                 </tr>
               ))}
 
-              {/* Ligne Économie placée */}
-              <tr>
-                <td style={{
-                  background: '#2d3748',
-                  color: '#e2e8f0',
-                  padding: '12px 16px',
-                  borderBottom: '1px solid #4a5568',
-                  position: 'sticky',
-                  left: 0,
-                  zIndex: 5,
-                  borderLeft: '4px solid #9f7aea',
-                  fontWeight: '500'
-                }}>
-                  Économie placée
-                </td>
-                {months.map((_, i) => (
-                  <td key={i} style={{
-                    background: '#1a202c',
-                    color: '#e2e8f0',
-                    padding: '12px',
-                    textAlign: 'center',
-                    borderBottom: '1px solid #4a5568'
-                  }}>
-                    {editCell.row === 'placed' && editCell.col === i ? (
-                      <input
-                        type="number"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        onBlur={() => {
-                          const val = parseFloat(inputValue);
-                          if (!isNaN(val)) {
-                            setPlacedSavings(i, val);
-                          }
-                          setEditCell({ row: null, col: null });
-                        }}
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter') {
-                            const val = parseFloat(inputValue);
-                            if (!isNaN(val)) {
-                              setPlacedSavings(i, val);
-                            }
-                            setEditCell({ row: null, col: null });
-                          }
-                        }}
-                        style={{
-                          background: '#4a5568',
-                          border: '1px solid #2d3748',
-                          borderRadius: '4px',
-                          padding: '4px 8px',
-                          color: '#e2e8f0',
-                          width: '80px',
-                          textAlign: 'center'
-                        }}
-                      />
-                    ) : (
-                      <span
-                        onClick={() => {
-                          setEditCell({ row: 'placed', col: i });
-                          setInputValue(placedSavingsByMonth[i] || '');
-                        }}
-                        style={{
-                          cursor: 'pointer',
-                          color: '#9f7aea'
-                        }}
-                      >
-                        {placedSavingsByMonth[i]?.toLocaleString() || '0'} €
-                      </span>
-                    )}
-                  </td>
-                ))}
-              </tr>
-
               {/* Titre Section Économies */}
               <tr>
                 <td colSpan={months.length + 1} style={{
@@ -915,8 +838,7 @@ function TableView() {
                 {months.map((_, i) => {
                   const totalRev = incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[i] || 0), 0);
                   const totalDep = categories.reduce((acc, cat) => acc + (data[cat]?.[i] || 0), 0);
-                  const placed = placedSavingsByMonth[i] || 0;
-                  const economie = totalRev - totalDep - placed;
+                  const economie = totalRev - totalDep;
                   return (
                     <td key={i} style={{
                       background: '#1a202c',
@@ -931,43 +853,6 @@ function TableView() {
                         fontWeight: '600'
                       }}>
                         {economie.toLocaleString()} €
-                      </span>
-                    </td>
-                  );
-                })}
-              </tr>
-
-              {/* Ligne Total Économies Placées */}
-              <tr>
-                <td style={{
-                  background: '#2d3748',
-                  color: '#e2e8f0',
-                  padding: '12px 16px',
-                  borderBottom: '1px solid #4a5568',
-                  position: 'sticky',
-                  left: 0,
-                  zIndex: 5,
-                  fontWeight: '500',
-                  borderLeft: '4px solid #9f7aea'
-                }}>
-                  Total Économies Placées
-                </td>
-                {months.map((_, i) => {
-                  const totalPlaced = placedSavingsByMonth.slice(0, i + 1).reduce((acc, val) => acc + val, 0);
-                  return (
-                    <td key={i} style={{
-                      background: '#1a202c',
-                      color: '#e2e8f0',
-                      padding: '12px',
-                      textAlign: 'center',
-                      borderBottom: '1px solid #4a5568',
-                      fontWeight: '500'
-                    }}>
-                      <span style={{
-                        color: '#9f7aea',
-                        fontWeight: '600'
-                      }}>
-                        {totalPlaced.toLocaleString()} €
                       </span>
                     </td>
                   );
@@ -1009,7 +894,7 @@ function TrendIndicator({ value }) {
 }
 
 function Visualisation() {
-  const { months, categories, data, incomeTypes, incomes, sideByMonth, placedSavingsByMonth } = useStore();
+  const { months, categories, data, incomeTypes, incomes, sideByMonth } = useStore();
   
   // Calculs pour le mois actuel et le mois précédent
   const moisActuel = months[new Date().getMonth() % months.length] || months[0];
@@ -1227,38 +1112,123 @@ function Visualisation() {
 
 const App = () => {
   const [page, setPage] = useState("tableau");
-  const { isAuthenticated, user, logout, checkAndArchivePreviousMonth } = useStore();
-
-  // Vérifier l'archivage au chargement de l'application
-  React.useEffect(() => {
-    checkAndArchivePreviousMonth();
-  }, []);
+  const { isAuthenticated, user, logout } = useStore();
 
   if (!isAuthenticated) {
     return <Login />;
   }
 
   return (
-    <Router>
-      <div className="min-h-screen bg-slate-900 text-white">
-        <nav className="bg-slate-800 p-4">
-          <div className="container mx-auto flex justify-between items-center">
-            <Link to="/" className="text-xl font-bold">Budget App</Link>
-            <div className="space-x-4">
-              <Link to="/" className="hover:text-blue-400">Budget</Link>
-              <Link to="/archives" className="hover:text-blue-400">Archives</Link>
-            </div>
-          </div>
-        </nav>
+    <div style={{
+      background: '#1a202c',
+      minHeight: '100vh',
+      color: '#e2e8f0'
+    }}>
+      <header style={{
+        background: '#2d3748',
+        padding: '16px',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <h1 style={{
+          margin: 0,
+          fontSize: '24px',
+          color: '#e2e8f0',
+        }}>Budget Manager</h1>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem'
+        }}>
+          {user?.picture && (
+            <img 
+              src={user.picture} 
+              alt={user.name}
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%'
+              }}
+            />
+          )}
+          <span style={{ color: '#e2e8f0' }}>{user?.name}</span>
+          <button
+            onClick={logout}
+            style={{
+              background: '#4a5568',
+              color: '#e2e8f0',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '8px 16px',
+              cursor: 'pointer'
+            }}
+          >
+            Déconnexion
+          </button>
+        </div>
+      </header>
 
-        <main className="container mx-auto py-8">
-          <Routes>
-            <Route path="/" element={<Budget />} />
-            <Route path="/archives" element={<Archives />} />
-          </Routes>
-        </main>
-      </div>
-    </Router>
+      <main style={{
+        padding: '20px',
+        maxWidth: '1200px',
+        margin: '0 auto'
+      }}>
+        {page === "tableau" ? <TableView /> : <Visualisation />}
+      </main>
+
+      <nav style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        background: '#2d3748',
+        display: 'flex',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        height: '64px',
+        boxShadow: '0 -2px 4px rgba(0,0,0,0.1)',
+        zIndex: 100
+      }}>
+        <button 
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: page === 'tableau' ? '#4299e1' : '#a0aec0',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }} 
+          onClick={() => setPage("tableau")}
+        >
+          <TableIcon />
+          <span style={{fontSize: '12px'}}>Tableau</span>
+        </button>
+        <button 
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: page === 'visu' ? '#4299e1' : '#a0aec0',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '8px',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease'
+          }} 
+          onClick={() => setPage("visu")}
+        >
+          <ChartIcon />
+          <span style={{fontSize: '12px'}}>Visualisation</span>
+        </button>
+      </nav>
+    </div>
   );
 };
 
