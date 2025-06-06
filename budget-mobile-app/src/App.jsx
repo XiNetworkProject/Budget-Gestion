@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import useStore from "./store";
+import { useStore } from "./store";
 import { Pie, Bar } from "react-chartjs-2";
 import { Chart, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from "chart.js";
 import { PlusIcon, CrossIcon, TableIcon, ChartIcon } from "./icons";
