@@ -3,6 +3,7 @@ import { useBudgetStore } from "./store";
 import { Pie, Bar } from "react-chartjs-2";
 import { Chart, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from "chart.js";
 import { PlusIcon, CrossIcon, TableIcon, ChartIcon } from "./icons";
+import Login from "./components/Login";
 Chart.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 // Ajouter les styles d'animation et de contraste
@@ -1090,7 +1091,12 @@ function Visualisation() {
 
 const App = () => {
   const [page, setPage] = useState("tableau");
-  
+  const { isAuthenticated, user, logout } = useBudgetStore();
+
+  if (!isAuthenticated) {
+    return <Login />;
+  }
+
   return (
     <div style={{
       background: '#1a202c',
@@ -1100,14 +1106,47 @@ const App = () => {
       <header style={{
         background: '#2d3748',
         padding: '16px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
       }}>
         <h1 style={{
           margin: 0,
           fontSize: '24px',
           color: '#e2e8f0',
-          textAlign: 'center'
         }}>Budget Manager</h1>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem'
+        }}>
+          {user?.picture && (
+            <img 
+              src={user.picture} 
+              alt={user.name}
+              style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%'
+              }}
+            />
+          )}
+          <span style={{ color: '#e2e8f0' }}>{user?.name}</span>
+          <button
+            onClick={logout}
+            style={{
+              background: '#4a5568',
+              color: '#e2e8f0',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '8px 16px',
+              cursor: 'pointer'
+            }}
+          >
+            Déconnexion
+          </button>
+        </div>
       </header>
 
       <main style={{
