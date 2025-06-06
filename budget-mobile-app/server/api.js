@@ -81,14 +81,22 @@ app.delete('/api/budget/:userId', async (req, res) => {
 });
 
 // Servir les fichiers statiques du dossier dist
-app.use(express.static(join(__dirname, '..', 'dist')));
+const distPath = join(__dirname, '..', 'dist');
+app.use(express.static(distPath, {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    }
+  }
+}));
 
 // Route pour toutes les autres requêtes
 app.get('*', (req, res) => {
-  res.sendFile(join(__dirname, '..', 'dist', 'index.html'));
+  res.sendFile(join(distPath, 'index.html'));
 });
 
 // Démarrer le serveur
 app.listen(port, '0.0.0.0', () => {
   console.log(`Serveur démarré sur le port ${port}`);
+  console.log(`Dossier dist: ${distPath}`);
 }); 
