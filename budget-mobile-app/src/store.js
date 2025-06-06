@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { budgetService } from './services/budgetService';
+import { v4 as uuidv4 } from 'uuid';
+import { saveToMongoDB, loadFromMongoDB } from './services/api';
 
 const defaultMonths = [
   'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
@@ -49,6 +51,8 @@ const useStore = create(
       saved: defaultSaved,
       sideByMonth: defaultSideByMonth,
       totalPotentialSavings: 0,
+      archivedMonths: [],
+      placedSavings: 0,
 
       // Actions
       setUser: async (user) => {
@@ -69,6 +73,8 @@ const useStore = create(
                 saved: data.saved || defaultSaved,
                 sideByMonth: data.sideByMonth || defaultSideByMonth,
                 totalPotentialSavings: data.totalPotentialSavings || 0,
+                archivedMonths: data.archivedMonths || [],
+                placedSavings: data.placedSavings || 0,
                 isLoading: false
               });
             } else {
@@ -82,7 +88,9 @@ const useStore = create(
                 persons: defaultPersons,
                 saved: defaultSaved,
                 sideByMonth: defaultSideByMonth,
-                totalPotentialSavings: 0
+                totalPotentialSavings: 0,
+                archivedMonths: [],
+                placedSavings: 0
               };
               set({ ...defaultBudget, isLoading: false });
               await budgetService.saveBudget(user.id, defaultBudget);
@@ -496,15 +504,86 @@ const useStore = create(
           incomes: defaultIncomes,
           persons: defaultPersons,
           saved: defaultSaved,
-          sideByMonth: defaultSideByMonth
+          sideByMonth: defaultSideByMonth,
+          placedSavings: 0,
+          archivedMonths: []
         });
+      },
+
+      archiveMonth: async (month) => {
+        const state = get();
+        const monthIdx = state.months.indexOf(month);
+        if (monthIdx === -1) return;
+
+        const archive = {
+          id: uuidv4(),
+          month,
+          date: new Date().toISOString(),
+          data: {},
+          revenus: state.revenus[monthIdx],
+          incomes: {},
+          sideByMonth: state.sideByMonth[monthIdx],
+          placedSavings: state.placedSavings,
+          revenus: Object.values(state.incomes).reduce((sum, amount) => sum + amount, 0)
+        };
+
+        Object.keys(state.data).forEach(cat => {
+          archive.data[cat] = state.data[cat][monthIdx];
+        });
+
+        Object.keys(state.incomes).forEach(type => {
+          archive.incomes[type] = state.incomes[type][monthIdx];
+        });
+
+        const newArchivedMonths = [...state.archivedMonths, archive];
+        set({ archivedMonths: newArchivedMonths });
+
+        if (state.user) {
+          try {
+            await saveToMongoDB('archives', archive);
+            set((state) => ({
+              archivedMonths: [...state.archivedMonths, archive]
+            }));
+            return true;
+          } catch (error) {
+            console.error('Error saving archive:', error);
+            return false;
+          }
+        }
+      },
+
+      checkAndArchivePreviousMonth: () => {
+        const state = get();
+        const currentDate = new Date();
+        const currentMonth = currentDate.toLocaleString('fr-FR', { month: 'long' });
+        const previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+          .toLocaleString('fr-FR', { month: 'long' });
+
+        if (state.months.includes(previousMonth) && 
+            !state.archivedMonths.some(archive => archive.month === previousMonth)) {
+          state.archiveMonth(previousMonth);
+        }
+      },
+
+      setPlacedSavings: (amount) => set({ placedSavings: amount }),
+
+      getRemainingAmount: () => {
+        const { data, incomes, sideByMonth, placedSavings } = get();
+        const totalIncomes = Object.values(incomes).reduce((sum, amount) => sum + amount, 0);
+        const totalExpenses = Object.values(data).reduce((sum, amount) => sum + amount, 0);
+        return totalIncomes - totalExpenses - sideByMonth - placedSavings;
       },
     }),
     {
       name: 'budget-storage',
       partialize: (state) => ({
         user: state.user,
-        isAuthenticated: state.isAuthenticated
+        isAuthenticated: state.isAuthenticated,
+        data: state.data,
+        incomes: state.incomes,
+        sideByMonth: state.sideByMonth,
+        placedSavings: state.placedSavings,
+        archivedMonths: state.archivedMonths
       })
     }
   )
