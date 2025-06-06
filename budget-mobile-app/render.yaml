@@ -9,5 +9,9 @@ services:
         value: 18.0.0
       - key: VITE_GOOGLE_CLIENT_ID
         sync: false
+      - key: VITE_MONGODB_URI
+        sync: false
+      - key: VITE_MONGODB_DB
+        value: budget_app
     healthCheckPath: /
     autoDeploy: true 

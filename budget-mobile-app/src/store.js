@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { saveBudgetData, getBudgetData } from './services/budgetService';
 
 const defaultMonths = [
   'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
@@ -38,7 +39,15 @@ export const useBudgetStore = create(
       isAuthenticated: false,
 
       // Actions d'authentification
-      setUser: (user) => set({ user, isAuthenticated: !!user }),
+      setUser: async (user) => {
+        set({ user, isAuthenticated: !!user });
+        if (user) {
+          const savedData = await getBudgetData(user.email);
+          if (savedData) {
+            set(savedData);
+          }
+        }
+      },
       logout: () => set({ user: null, isAuthenticated: false }),
 
       months: defaultMonths,
@@ -57,13 +66,16 @@ export const useBudgetStore = create(
           return { revenus: newRevenus };
         });
       },
-      setValue: (cat, monthIdx, value) => {
-        set((state) => {
-          const newData = { ...state.data };
-          newData[cat] = [...newData[cat]];
-          newData[cat][monthIdx] = value;
-          return { data: newData };
-        });
+      setValue: async (cat, monthIdx, value) => {
+        const state = get();
+        const newData = { ...state.data };
+        newData[cat] = [...newData[cat]];
+        newData[cat][monthIdx] = value;
+        set({ data: newData });
+        
+        if (state.user) {
+          await saveBudgetData(state.user.email, get());
+        }
       },
       addCategory: (cat) => {
         console.log('Adding category:', cat);
