@@ -48,6 +48,7 @@ const useStore = create(
       persons: defaultPersons,
       saved: defaultSaved,
       sideByMonth: defaultSideByMonth,
+      totalPotentialSavings: 0,
 
       // Actions
       setUser: async (user) => {
@@ -67,6 +68,7 @@ const useStore = create(
                 persons: data.persons || defaultPersons,
                 saved: data.saved || defaultSaved,
                 sideByMonth: data.sideByMonth || defaultSideByMonth,
+                totalPotentialSavings: data.totalPotentialSavings || 0,
                 isLoading: false
               });
             } else {
@@ -79,7 +81,8 @@ const useStore = create(
                 incomes: defaultIncomes,
                 persons: defaultPersons,
                 saved: defaultSaved,
-                sideByMonth: defaultSideByMonth
+                sideByMonth: defaultSideByMonth,
+                totalPotentialSavings: 0
               };
               set({ ...defaultBudget, isLoading: false });
               await budgetService.saveBudget(user.id, defaultBudget);
@@ -240,17 +243,37 @@ const useStore = create(
         }
       },
 
-      removeMonth: async (monthIdx) => {
+      removeMonth: async (month) => {
+        const currentMonth = new Date().toLocaleString('fr-FR', { month: 'long' });
+        if (month === currentMonth) {
+          alert("Impossible de supprimer le mois en cours");
+          return;
+        }
+
         const state = get();
-        const newMonths = state.months.filter((_, i) => i !== monthIdx);
+        const monthIdx = state.months.indexOf(month);
+        if (monthIdx === -1) return;
+
         const newData = { ...state.data };
         Object.keys(newData).forEach((cat) => {
-          newData[cat] = newData[cat].filter((_, i) => i !== monthIdx);
+          newData[cat] = newData[cat].filter((_, idx) => idx !== monthIdx);
         });
+
+        const newIncomes = { ...state.incomes };
+        Object.keys(newIncomes).forEach((type) => {
+          newIncomes[type] = newIncomes[type].filter((_, idx) => idx !== monthIdx);
+        });
+
+        const newRevenus = state.revenus.filter((_, idx) => idx !== monthIdx);
+        const newSideByMonth = state.sideByMonth.filter((_, idx) => idx !== monthIdx);
+        const newMonths = state.months.filter((m) => m !== month);
 
         set({
           months: newMonths,
           data: newData,
+          incomes: newIncomes,
+          revenus: newRevenus,
+          sideByMonth: newSideByMonth,
         });
 
         if (state.user) {
@@ -259,12 +282,13 @@ const useStore = create(
               months: newMonths,
               categories: state.categories,
               data: newData,
-              revenus: state.revenus,
+              revenus: newRevenus,
               incomeTypes: state.incomeTypes,
-              incomes: state.incomes,
+              incomes: newIncomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: state.sideByMonth
+              sideByMonth: newSideByMonth,
+              totalPotentialSavings: state.totalPotentialSavings
             });
           } catch (error) {
             console.error('Error saving budget:', error);

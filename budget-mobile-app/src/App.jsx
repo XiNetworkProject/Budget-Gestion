@@ -986,17 +986,37 @@ function Visualisation() {
           borderLeft: '4px solid #9f7aea'
         }}>
           <h3 style={{ color: '#e2e8f0', marginBottom: '8px', fontSize: '14px', textTransform: 'uppercase' }}>Économies</h3>
-          <p style={{ 
-            color: economie >= 0 ? '#48bb78' : '#f56565', 
-            fontSize: '24px', 
-            fontWeight: '600' 
-          }}>
-            {economie.toLocaleString()} €
-            <TrendIndicator value={variationEconomie} />
-          </p>
-          <p style={{ color: '#a0aec0', fontSize: '12px', marginTop: '4px' }}>
-            vs {months[idxMoisPrecedent]}: {economiePrecedent.toLocaleString()} €
-          </p>
+          <div className="savings-section">
+            <div className="savings-input">
+              <label>Montant total potentiel :</label>
+              <input
+                type="number"
+                value={useStore((state) => state.totalPotentialSavings || 0)}
+                onChange={(e) => {
+                  const value = parseFloat(e.target.value) || 0;
+                  useStore.setState({ totalPotentialSavings: value });
+                  if (useStore.getState().user) {
+                    budgetService.saveBudget(useStore.getState().user.id, {
+                      ...useStore.getState(),
+                      totalPotentialSavings: value
+                    });
+                  }
+                }}
+                placeholder="Montant total potentiel"
+              />
+            </div>
+            <p style={{ 
+              color: economie >= 0 ? '#48bb78' : '#f56565', 
+              fontSize: '24px', 
+              fontWeight: '600' 
+            }}>
+              {economie.toLocaleString()} €
+              <TrendIndicator value={variationEconomie} />
+            </p>
+            <p style={{ color: '#a0aec0', fontSize: '12px', marginTop: '4px' }}>
+              vs {months[idxMoisPrecedent]}: {economiePrecedent.toLocaleString()} €
+            </p>
+          </div>
         </div>
 
         <div style={{
