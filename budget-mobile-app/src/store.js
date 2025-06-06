@@ -39,6 +39,15 @@ const useStore = create(
       isAuthenticated: false,
       isLoading: false,
       error: null,
+      months: defaultMonths,
+      categories: defaultCategories,
+      data: defaultData,
+      revenus: defaultRevenus,
+      incomeTypes: defaultIncomeTypes,
+      incomes: defaultIncomes,
+      persons: defaultPersons,
+      saved: defaultSaved,
+      sideByMonth: defaultSideByMonth,
 
       // Actions
       setUser: async (user) => {
@@ -59,8 +68,7 @@ const useStore = create(
                 sideByMonth: data.sideByMonth || defaultSideByMonth
               });
             } else {
-              // Si pas de données, initialiser avec les valeurs par défaut
-              set({
+              const defaultBudget = {
                 months: defaultMonths,
                 categories: defaultCategories,
                 data: defaultData,
@@ -70,19 +78,9 @@ const useStore = create(
                 persons: defaultPersons,
                 saved: defaultSaved,
                 sideByMonth: defaultSideByMonth
-              });
-              // Sauvegarder les valeurs par défaut
-              await budgetService.saveBudget(user.id, {
-                months: defaultMonths,
-                categories: defaultCategories,
-                data: defaultData,
-                revenus: defaultRevenus,
-                incomeTypes: defaultIncomeTypes,
-                incomes: defaultIncomes,
-                persons: defaultPersons,
-                saved: defaultSaved,
-                sideByMonth: defaultSideByMonth
-              });
+              };
+              set(defaultBudget);
+              await budgetService.saveBudget(user.id, defaultBudget);
             }
           } catch (error) {
             console.error('Error loading budget:', error);
