@@ -499,6 +499,39 @@ const useStore = create(
           sideByMonth: defaultSideByMonth
         });
       },
+
+      renameMonth: async (oldMonth, newMonth) => {
+        const state = get();
+        const monthIdx = state.months.indexOf(oldMonth);
+        if (monthIdx === -1) return;
+
+        const newMonths = [...state.months];
+        newMonths[monthIdx] = newMonth;
+
+        set({
+          months: newMonths
+        });
+
+        if (state.user) {
+          try {
+            await budgetService.saveBudget(state.user.id, {
+              months: newMonths,
+              categories: state.categories,
+              data: state.data,
+              revenus: state.revenus,
+              incomeTypes: state.incomeTypes,
+              incomes: state.incomes,
+              persons: state.persons,
+              saved: state.saved,
+              sideByMonth: state.sideByMonth,
+              totalPotentialSavings: state.totalPotentialSavings
+            });
+          } catch (error) {
+            console.error('Error saving budget:', error);
+            set({ error: error.message });
+          }
+        }
+      },
     }),
     {
       name: 'budget-storage',

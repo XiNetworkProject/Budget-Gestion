@@ -181,7 +181,7 @@ function BadgeEco({ value }) {
 }
 
 function TableView() {
-  const { months, categories, data, setValue, addCategory, removeCategory, addMonth, removeMonth, incomeTypes, incomes, setIncome, addIncomeType, removeIncomeType, renameIncomeType, renameCategory, sideByMonth, setSideByMonth } = useStore();
+  const { months, categories, data, setValue, addCategory, removeCategory, addMonth, removeMonth, incomeTypes, incomes, setIncome, addIncomeType, removeIncomeType, renameIncomeType, renameCategory, sideByMonth, setSideByMonth, renameMonth } = useStore();
   
   // Optimisation des états avec useMemo
   const [editCell, setEditCell] = useState({ row: null, col: null });
@@ -500,17 +500,13 @@ function TableView() {
                             onChange={(e) => setCatEditValue(e.target.value)}
                             onBlur={() => {
                               if (catEditValue.trim()) {
-                                const newMonths = [...months];
-                                newMonths[idx] = catEditValue;
-                                setMonths(newMonths);
+                                renameMonth(month, catEditValue.trim());
                               }
                               setEditCatIdx(null);
                             }}
                             onKeyPress={(e) => {
                               if (e.key === 'Enter' && catEditValue.trim()) {
-                                const newMonths = [...months];
-                                newMonths[idx] = catEditValue;
-                                setMonths(newMonths);
+                                renameMonth(month, catEditValue.trim());
                                 setEditCatIdx(null);
                               }
                             }}
