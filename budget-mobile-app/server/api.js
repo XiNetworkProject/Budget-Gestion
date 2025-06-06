@@ -15,19 +15,44 @@ app.use(cors());
 app.use(express.json());
 
 // Configuration MongoDB
-const MONGODB_URI = process.env.VITE_MONGODB_URI;
-const MONGODB_DB = process.env.VITE_MONGODB_DB || 'budget_app';
+const uri = process.env.VITE_MONGODB_URI;
+const dbName = process.env.VITE_MONGODB_DB;
 
 let client;
 let db;
 
-async function connectToDatabase() {
-  if (client) return { client, db };
-  
-  client = await MongoClient.connect(MONGODB_URI);
-  db = client.db(MONGODB_DB);
-  return { client, db };
+async function connectToMongo() {
+  try {
+    console.log('URI MongoDB:', uri);
+    console.log('Base de données:', dbName);
+    
+    // Encodage de l'URL pour gérer les caractères spéciaux
+    const encodedUri = encodeURI(uri);
+    console.log('URI encodée:', encodedUri);
+    
+    client = new MongoClient(encodedUri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+    
+    await client.connect();
+    console.log('Connexion à MongoDB réussie !');
+    
+    db = client.db(dbName);
+    
+    // Vérification de la connexion
+    const collections = await db.listCollections().toArray();
+    console.log('Collections disponibles:', collections.map(c => c.name));
+    
+    return { client, db };
+  } catch (error) {
+    console.error('Erreur détaillée de connexion à MongoDB:', error);
+    throw error;
+  }
 }
+
+// Initialisation de la connexion au démarrage
+connectToMongo().catch(console.error);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -39,50 +64,42 @@ app.post('/api/budget/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
     const data = req.body;
-    const { db } = await connectToDatabase();
-    
-    await db.collection('budgets').updateOne(
+    console.log('Tentative de sauvegarde pour userId:', userId);
+    console.log('Données reçues:', JSON.stringify(data, null, 2));
+
+    const result = await db.collection('budgets').updateOne(
       { userId },
-      { 
-        $set: { 
-          userId,
-          ...data,
-          updatedAt: new Date() 
-        } 
-      },
+      { $set: { userId, ...data, updatedAt: new Date() } },
       { upsert: true }
     );
-    
+
+    console.log('Résultat de la sauvegarde:', result);
     res.json({ success: true });
   } catch (error) {
-    console.error('Error saving budget:', error);
-    res.status(500).json({ error: 'Failed to save budget' });
+    console.error('Erreur lors de la sauvegarde:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
 app.get('/api/budget/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { db } = await connectToDatabase();
+    console.log('Tentative de récupération pour userId:', userId);
     
-    const result = await db.collection('budgets').findOne({ userId });
-    if (!result) {
-      return res.json(null);
-    }
+    const data = await db.collection('budgets').findOne({ userId });
+    console.log('Données trouvées:', data ? 'Oui' : 'Non');
     
-    // Supprimer les champs techniques de la réponse
-    const { _id, userId: _, updatedAt, ...data } = result;
-    res.json(data);
+    res.json(data || {});
   } catch (error) {
-    console.error('Error getting budget:', error);
-    res.status(500).json({ error: 'Failed to get budget' });
+    console.error('Erreur lors de la récupération:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
 app.delete('/api/budget/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { db } = await connectToDatabase();
+    const { db } = await connectToMongo();
     
     await db.collection('budgets').deleteOne({ userId });
     res.json({ success: true });
