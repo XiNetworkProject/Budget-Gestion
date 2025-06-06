@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: budget-mobile-app
+    runtime: node
+    buildCommand: cd budget-mobile-app && npm install && npm run build
+    startCommand: cd budget-mobile-app && npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 18.0.0
+    healthCheckPath: /
+    autoDeploy: true 
