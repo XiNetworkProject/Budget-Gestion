@@ -81,11 +81,11 @@ app.delete('/api/budget/:userId', async (req, res) => {
 });
 
 // Servir les fichiers statiques du dossier dist
-app.use(express.static(join(__dirname, 'dist')));
+app.use(express.static(join(__dirname, '..', 'dist')));
 
 // Route pour toutes les autres requêtes
 app.get('*', (req, res) => {
-  res.sendFile(join(__dirname, 'dist', 'index.html'));
+  res.sendFile(join(__dirname, '..', 'dist', 'index.html'));
 });
 
 // Démarrer le serveur
