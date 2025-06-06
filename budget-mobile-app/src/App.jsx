@@ -199,6 +199,22 @@ function TableView() {
   const [addingMonth, setAddingMonth] = useState(false);
   const [newMonth, setNewMonth] = useState("");
 
+  const resetMonths = () => {
+    const currentDate = new Date();
+    const currentMonth = currentDate.toLocaleString('fr-FR', { month: 'long' });
+    
+    // Ajouter le mois en cours
+    addMonth(currentMonth);
+    
+    // Ajouter les 5 mois précédents
+    for (let i = 1; i <= 5; i++) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const monthName = date.toLocaleString('fr-FR', { month: 'long' });
+      addMonth(monthName);
+    }
+  };
+
   // Remplacer useMemo par une fonction normale
   const getNextMonth = () => {
     const mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
@@ -231,7 +247,18 @@ function TableView() {
   const potentielMiseDeCoteTotal = sideByMonth.reduce((acc, val) => acc + val, 0);
 
   return (
-      <div>
+    <div className="p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Tableau de bord</h2>
+        {months.length === 0 && (
+          <button
+            onClick={resetMonths}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+          >
+            Réinitialiser les mois
+          </button>
+        )}
+      </div>
       <div style={{
         background: '#2d3748',
         borderRadius: '12px',
