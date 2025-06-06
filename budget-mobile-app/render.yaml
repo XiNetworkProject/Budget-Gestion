@@ -12,6 +12,8 @@ services:
       - key: VITE_MONGODB_URI
         sync: false
       - key: VITE_MONGODB_DB
-        value: budget_app
+        sync: false
+      - key: VITE_API_URL
+        value: https://budget-mobile-app.onrender.com
     healthCheckPath: /
     autoDeploy: true 

@@ -1,27 +1,56 @@
-import { connectToDatabase } from '../config/db';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:10000';
 
-export async function saveBudgetData(userId, data) {
-  const { db } = await connectToDatabase();
-  const collection = db.collection('budgets');
+export const budgetService = {
+  async saveBudget(userId, data) {
+    try {
+      const response = await fetch(`${API_URL}/api/budget/${userId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
 
-  await collection.updateOne(
-    { userId },
-    { $set: { data, updatedAt: new Date() } },
-    { upsert: true }
-  );
-}
+      if (!response.ok) {
+        throw new Error('Failed to save budget');
+      }
 
-export async function getBudgetData(userId) {
-  const { db } = await connectToDatabase();
-  const collection = db.collection('budgets');
+      return await response.json();
+    } catch (error) {
+      console.error('Error saving budget:', error);
+      throw error;
+    }
+  },
 
-  const result = await collection.findOne({ userId });
-  return result?.data || null;
-}
+  async getBudget(userId) {
+    try {
+      const response = await fetch(`${API_URL}/api/budget/${userId}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to get budget');
+      }
 
-export async function deleteBudgetData(userId) {
-  const { db } = await connectToDatabase();
-  const collection = db.collection('budgets');
+      return await response.json();
+    } catch (error) {
+      console.error('Error getting budget:', error);
+      throw error;
+    }
+  },
 
-  await collection.deleteOne({ userId });
-} 
+  async deleteBudget(userId) {
+    try {
+      const response = await fetch(`${API_URL}/api/budget/${userId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete budget');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error deleting budget:', error);
+      throw error;
+    }
+  }
+}; 

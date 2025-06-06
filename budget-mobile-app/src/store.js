@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { saveBudgetData, getBudgetData } from './services/budgetService';
+import { budgetService } from './services/budgetService';
 
 const defaultMonths = [
   'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
@@ -31,24 +31,93 @@ defaultPersons.forEach((p) => { defaultSaved[p.name] = 0; });
 
 const defaultSideByMonth = defaultMonths.map(() => 0);
 
-export const useBudgetStore = create(
+const useStore = create(
   persist(
     (set, get) => ({
-      // État d'authentification
+      // État initial
       user: null,
+      budgets: [],
+      currentBudget: null,
       isAuthenticated: false,
+      isLoading: false,
+      error: null,
 
-      // Actions d'authentification
-      setUser: async (user) => {
+      // Actions
+      setUser: (user) => {
         set({ user, isAuthenticated: !!user });
         if (user) {
-          const savedData = await getBudgetData(user.email);
-          if (savedData) {
-            set(savedData);
-          }
+          get().loadBudgets();
         }
       },
-      logout: () => set({ user: null, isAuthenticated: false }),
+
+      setBudgets: (budgets) => set({ budgets }),
+      setCurrentBudget: (budget) => set({ currentBudget: budget }),
+      setLoading: (isLoading) => set({ isLoading }),
+      setError: (error) => set({ error }),
+
+      // Actions asynchrones
+      loadBudgets: async () => {
+        const { user } = get();
+        if (!user) return;
+
+        try {
+          set({ isLoading: true, error: null });
+          const data = await budgetService.getBudget(user.id);
+          if (data) {
+            set({ budgets: data.budgets || [], currentBudget: data.currentBudget });
+          }
+        } catch (error) {
+          set({ error: error.message });
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      saveBudget: async (budget) => {
+        const { user } = get();
+        if (!user) return;
+
+        try {
+          set({ isLoading: true, error: null });
+          await budgetService.saveBudget(user.id, {
+            budgets: get().budgets,
+            currentBudget: budget
+          });
+          set({ currentBudget: budget });
+        } catch (error) {
+          set({ error: error.message });
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      deleteBudget: async (budgetId) => {
+        const { user } = get();
+        if (!user) return;
+
+        try {
+          set({ isLoading: true, error: null });
+          await budgetService.deleteBudget(user.id);
+          set((state) => ({
+            budgets: state.budgets.filter(b => b.id !== budgetId),
+            currentBudget: state.currentBudget?.id === budgetId ? null : state.currentBudget
+          }));
+        } catch (error) {
+          set({ error: error.message });
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      logout: () => {
+        set({
+          user: null,
+          budgets: [],
+          currentBudget: null,
+          isAuthenticated: false,
+          error: null
+        });
+      },
 
       months: defaultMonths,
       categories: defaultCategories,
@@ -74,7 +143,10 @@ export const useBudgetStore = create(
         set({ data: newData });
         
         if (state.user) {
-          await saveBudgetData(state.user.email, get());
+          await budgetService.saveBudget(state.user.id, {
+            budgets: state.budgets,
+            currentBudget: state.currentBudget
+          });
         }
       },
       addCategory: (cat) => {
@@ -254,6 +326,12 @@ export const useBudgetStore = create(
     }),
     {
       name: 'budget-storage',
+      partialize: (state) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated
+      })
     }
   )
-); 
+);
+
+export default useStore; 
