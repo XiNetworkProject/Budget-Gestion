@@ -24,6 +24,11 @@ async function connectToDatabase() {
   return { client, db };
 }
 
+// Health check endpoint
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 // Routes
 app.post('/api/budget/:userId', async (req, res) => {
   try {
