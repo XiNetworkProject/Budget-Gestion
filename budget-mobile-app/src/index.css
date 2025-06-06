@@ -1,0 +1,99 @@
+body {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #fff;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+}
+
+h1, h2, h3 {
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+}
+
+.tableau {
+  background: #222e3a;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px #0004;
+  padding: 1.5rem;
+  margin: 2rem auto;
+  max-width: 95vw;
+  overflow-x: auto;
+}
+
+.tableau table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.tableau th, .tableau td {
+  padding: 0.7em 1em;
+  text-align: center;
+}
+
+.tableau th {
+  background: #334155;
+  color: #fff;
+  font-size: 1.1em;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.tableau tr:nth-child(even) td {
+  background: #263043;
+}
+
+.tableau tr:nth-child(odd) td {
+  background: #222e3a;
+}
+
+.tableau td {
+  border-bottom: 1px solid #334155;
+}
+
+.btn {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  padding: 0.5em 1.2em;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 0 0.2em;
+  transition: background 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px #0002;
+}
+
+.btn:hover {
+  background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+  box-shadow: 0 4px 16px #0003;
+}
+
+input, select {
+  border-radius: 8px;
+  border: 1px solid #334155;
+  padding: 0.4em 0.8em;
+  font-size: 1em;
+  background: #1e293b;
+  color: #fff;
+  margin: 0.2em 0;
+}
+
+input:focus, select:focus {
+  outline: 2px solid #2563eb;
+  border-color: #2563eb;
+}
+
+@media (max-width: 600px) {
+  .tableau {
+    padding: 0.5rem;
+    font-size: 0.95em;
+  }
+  .btn {
+    width: 100%;
+    margin: 0.3em 0;
+  }
+}
