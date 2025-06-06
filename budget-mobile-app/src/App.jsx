@@ -200,6 +200,10 @@ function TableView() {
   const [newMonth, setNewMonth] = useState("");
 
   const resetMonths = () => {
+    if (!window.confirm('Êtes-vous sûr de vouloir réinitialiser les mois ? Cette action supprimera toutes les données existantes.')) {
+      return;
+    }
+
     const currentDate = new Date();
     const currentMonth = currentDate.toLocaleString('fr-FR', { month: 'long' });
     
@@ -253,7 +257,7 @@ function TableView() {
         {months.length === 0 && (
           <button
             onClick={resetMonths}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+            className="text-gray-400 hover:text-gray-300 text-sm transition-colors"
           >
             Réinitialiser les mois
           </button>
@@ -528,14 +532,18 @@ function TableView() {
                         )}
                         {idx === months.length - 1 && (
                           <button
-                            onClick={() => removeMonth(idx)}
+                            onClick={() => removeMonth(month)}
                             style={{
                               background: 'transparent',
                               border: 'none',
                               color: '#f56565',
                               cursor: 'pointer',
-                              padding: '4px'
+                              padding: '4px',
+                              opacity: '0.7',
+                              transition: 'opacity 0.2s'
                             }}
+                            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
                           >
                             <CrossIcon />
                           </button>
@@ -1014,25 +1022,12 @@ function Visualisation() {
           borderLeft: '4px solid #9f7aea'
         }}>
           <h3 style={{ color: '#e2e8f0', marginBottom: '8px', fontSize: '14px', textTransform: 'uppercase' }}>Économies</h3>
-          <div className="savings-section">
-            <div className="savings-input">
-              <label>Montant total potentiel :</label>
-              <input
-                type="number"
-                value={useStore((state) => state.totalPotentialSavings || 0)}
-                onChange={(e) => {
-                  const value = parseFloat(e.target.value) || 0;
-                  useStore.setState({ totalPotentialSavings: value });
-                  if (useStore.getState().user) {
-                    budgetService.saveBudget(useStore.getState().user.id, {
-                      ...useStore.getState(),
-                      totalPotentialSavings: value
-                    });
-                  }
-                }}
-                placeholder="Montant total potentiel"
-              />
-            </div>
+          <div style={{
+            background: '#1a202c',
+            borderRadius: '8px',
+            padding: '16px',
+            borderLeft: '4px solid #48bb78'
+          }}>
             <p style={{ 
               color: economie >= 0 ? '#48bb78' : '#f56565', 
               fontSize: '24px', 
