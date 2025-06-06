@@ -31,8 +31,6 @@ defaultPersons.forEach((p) => { defaultSaved[p.name] = 0; });
 
 const defaultSideByMonth = defaultMonths.map(() => 0);
 
-const defaultPlacedSavingsByMonth = defaultMonths.map(() => 0);
-
 const useStore = create(
   persist(
     (set, get) => ({
@@ -50,9 +48,7 @@ const useStore = create(
       persons: defaultPersons,
       saved: defaultSaved,
       sideByMonth: defaultSideByMonth,
-      placedSavingsByMonth: defaultPlacedSavingsByMonth,
       totalPotentialSavings: 0,
-      archivedMonths: [],
 
       // Actions
       setUser: async (user) => {
@@ -72,9 +68,7 @@ const useStore = create(
                 persons: data.persons || defaultPersons,
                 saved: data.saved || defaultSaved,
                 sideByMonth: data.sideByMonth || defaultSideByMonth,
-                placedSavingsByMonth: data.placedSavingsByMonth || defaultPlacedSavingsByMonth,
                 totalPotentialSavings: data.totalPotentialSavings || 0,
-                archivedMonths: data.archivedMonths || [],
                 isLoading: false
               });
             } else {
@@ -88,9 +82,7 @@ const useStore = create(
                 persons: defaultPersons,
                 saved: defaultSaved,
                 sideByMonth: defaultSideByMonth,
-                placedSavingsByMonth: defaultPlacedSavingsByMonth,
-                totalPotentialSavings: 0,
-                archivedMonths: []
+                totalPotentialSavings: 0
               };
               set({ ...defaultBudget, isLoading: false });
               await budgetService.saveBudget(user.id, defaultBudget);
@@ -124,8 +116,7 @@ const useStore = create(
               incomes: state.incomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: state.sideByMonth,
-              placedSavingsByMonth: state.placedSavingsByMonth
+              sideByMonth: state.sideByMonth
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -158,8 +149,7 @@ const useStore = create(
               incomes: state.incomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: state.sideByMonth,
-              placedSavingsByMonth: state.placedSavingsByMonth
+              sideByMonth: state.sideByMonth
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -189,8 +179,7 @@ const useStore = create(
               incomes: state.incomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: state.sideByMonth,
-              placedSavingsByMonth: state.placedSavingsByMonth
+              sideByMonth: state.sideByMonth
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -245,8 +234,7 @@ const useStore = create(
               incomes: newIncomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: newSide,
-              placedSavingsByMonth: state.placedSavingsByMonth
+              sideByMonth: newSide
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -300,7 +288,6 @@ const useStore = create(
               persons: state.persons,
               saved: state.saved,
               sideByMonth: newSideByMonth,
-              placedSavingsByMonth: state.placedSavingsByMonth,
               totalPotentialSavings: state.totalPotentialSavings
             });
           } catch (error) {
@@ -329,8 +316,7 @@ const useStore = create(
               incomes: newIncomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: state.sideByMonth,
-              placedSavingsByMonth: state.placedSavingsByMonth
+              sideByMonth: state.sideByMonth
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -363,8 +349,7 @@ const useStore = create(
               incomes: newIncomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: state.sideByMonth,
-              placedSavingsByMonth: state.placedSavingsByMonth
+              sideByMonth: state.sideByMonth
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -394,8 +379,7 @@ const useStore = create(
               incomes: rest,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: state.sideByMonth,
-              placedSavingsByMonth: state.placedSavingsByMonth
+              sideByMonth: state.sideByMonth
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -426,8 +410,7 @@ const useStore = create(
               incomes: newIncomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: state.sideByMonth,
-              placedSavingsByMonth: state.placedSavingsByMonth
+              sideByMonth: state.sideByMonth
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -454,8 +437,7 @@ const useStore = create(
               incomes: state.incomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: newSide,
-              placedSavingsByMonth: state.placedSavingsByMonth
+              sideByMonth: newSide
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -492,8 +474,7 @@ const useStore = create(
               incomes: state.incomes,
               persons: state.persons,
               saved: state.saved,
-              sideByMonth: state.sideByMonth,
-              placedSavingsByMonth: state.placedSavingsByMonth
+              sideByMonth: state.sideByMonth
             });
           } catch (error) {
             console.error('Error saving budget:', error);
@@ -515,87 +496,15 @@ const useStore = create(
           incomes: defaultIncomes,
           persons: defaultPersons,
           saved: defaultSaved,
-          sideByMonth: defaultSideByMonth,
-          placedSavingsByMonth: defaultPlacedSavingsByMonth
+          sideByMonth: defaultSideByMonth
         });
-      },
-
-      archiveMonth: async (month) => {
-        const state = get();
-        const monthIdx = state.months.indexOf(month);
-        if (monthIdx === -1) return;
-
-        const archive = {
-          month,
-          date: new Date().toISOString(),
-          data: {},
-          revenus: state.revenus[monthIdx],
-          incomes: {},
-          sideByMonth: state.sideByMonth[monthIdx],
-          placedSavingsByMonth: state.placedSavingsByMonth[monthIdx]
-        };
-
-        Object.keys(state.data).forEach(cat => {
-          archive.data[cat] = state.data[cat][monthIdx];
-        });
-
-        Object.keys(state.incomes).forEach(type => {
-          archive.incomes[type] = state.incomes[type][monthIdx];
-        });
-
-        const newArchivedMonths = [...state.archivedMonths, archive];
-        set({ archivedMonths: newArchivedMonths });
-
-        if (state.user) {
-          try {
-            await budgetService.saveBudget(state.user.id, {
-              ...state,
-              archivedMonths: newArchivedMonths
-            });
-          } catch (error) {
-            console.error('Error saving archive:', error);
-            set({ error: error.message });
-          }
-        }
-      },
-
-      checkAndArchivePreviousMonth: () => {
-        const state = get();
-        const currentDate = new Date();
-        const currentMonth = currentDate.toLocaleString('fr-FR', { month: 'long' });
-        const previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
-          .toLocaleString('fr-FR', { month: 'long' });
-
-        if (state.months.includes(previousMonth) && 
-            !state.archivedMonths.some(archive => archive.month === previousMonth)) {
-          state.archiveMonth(previousMonth);
-        }
-      },
-
-      setPlacedSavings: async (monthIdx, value) => {
-        const state = get();
-        const newPlaced = [...state.placedSavingsByMonth];
-        newPlaced[monthIdx] = value;
-        set({ placedSavingsByMonth: newPlaced });
-        if (state.user) {
-          try {
-            await budgetService.saveBudget(state.user.id, {
-              ...state,
-              placedSavingsByMonth: newPlaced
-            });
-          } catch (error) {
-            console.error('Error saving placed savings:', error);
-            set({ error: error.message });
-          }
-        }
       },
     }),
     {
       name: 'budget-storage',
       partialize: (state) => ({
         user: state.user,
-        isAuthenticated: state.isAuthenticated,
-        placedSavingsByMonth: state.placedSavingsByMonth
+        isAuthenticated: state.isAuthenticated
       })
     }
   )
