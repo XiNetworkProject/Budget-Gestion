@@ -305,18 +305,67 @@ function TableView() {
       {/* Navigation par mois */}
       <div className="flex justify-center items-center mb-4 space-x-2">
         {months.map((month, index) => (
-          <button
-            key={month}
-            onClick={() => setCurrentMonthIndex(index)}
-            className={`px-3 py-1 rounded-lg transition-colors ${
-              currentMonthIndex === index
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
-          >
-            {month}
-          </button>
+          <div key={month} className="flex items-center space-x-1">
+            <button
+              onClick={() => setCurrentMonthIndex(index)}
+              className={`px-3 py-1 rounded-lg transition-colors ${
+                currentMonthIndex === index
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              {month}
+            </button>
+            {months.length > 1 && (
+              <button
+                onClick={() => removeMonth(index)}
+                className="text-red-500 hover:text-red-400 p-1"
+                title="Supprimer ce mois"
+              >
+                ×
+              </button>
+            )}
+          </div>
         ))}
+        {!addingMonth ? (
+          <button
+            onClick={() => setAddingMonth(true)}
+            className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            + Ajouter un mois
+          </button>
+        ) : (
+          <div className="flex items-center space-x-2">
+            <input
+              type="text"
+              value={newMonth}
+              onChange={(e) => setNewMonth(e.target.value)}
+              placeholder="Nouveau mois"
+              className="bg-gray-700 text-white px-3 py-1 rounded-lg"
+            />
+            <button
+              onClick={() => {
+                if (newMonth.trim()) {
+                  addMonth(newMonth.trim());
+                  setNewMonth("");
+                }
+                setAddingMonth(false);
+              }}
+              className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Ajouter
+            </button>
+            <button
+              onClick={() => {
+                setAddingMonth(false);
+                setNewMonth("");
+              }}
+              className="px-3 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              Annuler
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Contenu du tableau */}
