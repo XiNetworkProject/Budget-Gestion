@@ -294,14 +294,12 @@ function TableView() {
     }}>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Tableau de bord</h2>
-        {months.length === 0 && (
-          <button
-            onClick={resetMonths}
-            className="text-gray-400 hover:text-gray-300 text-sm transition-colors"
-          >
-            Réinitialiser les mois
-          </button>
-        )}
+        <button
+          onClick={() => setIsCompact(!isCompact)}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          {isCompact ? 'Mode Normal' : 'Mode Compact'}
+        </button>
       </div>
       <div style={{
         background: '#2d3748',
@@ -981,32 +979,6 @@ function TableView() {
             </tbody>
           </table>
         </div>
-      </div>
-
-      {/* Mode compact optionnel */}
-      <div style={{
-        position: 'fixed',
-        bottom: '72px',
-        right: '16px',
-        zIndex: 100
-      }}>
-        <button
-          onClick={() => setIsCompact(prev => !prev)}
-          style={{
-            background: '#4a5568',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '50%',
-            width: '40px',
-            height: '40px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-          }}
-        >
-          {isCompact ? '↔' : '↕'}
-        </button>
       </div>
     </div>
   );
