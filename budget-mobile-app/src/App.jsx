@@ -200,6 +200,7 @@ function TableView() {
   const [newMonth, setNewMonth] = useState("");
   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
+  const [isCompact, setIsCompact] = useState(false);
 
   // Ajouter un écouteur pour la rotation de l'écran
   useEffect(() => {
@@ -271,7 +272,26 @@ function TableView() {
   const potentielMiseDeCoteTotal = sideByMonth.reduce((acc, val) => acc + val, 0);
 
   return (
-    <div className="p-4">
+    <div className={`tableau ${isCompact ? 'compact' : ''}`} style={{
+      overflowX: 'auto',
+      background: '#1a202c',
+      borderRadius: '8px',
+      boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
+      WebkitOverflowScrolling: 'touch',
+      msOverflowStyle: 'none',
+      scrollbarWidth: 'none',
+      '&::-webkit-scrollbar': {
+        display: 'none'
+      },
+      transform: 'translateZ(0)',
+      backfaceVisibility: 'hidden',
+      perspective: '1000px',
+      willChange: 'transform',
+      width: '100%',
+      margin: '0 auto',
+      padding: '0.5rem',
+      position: 'relative'
+    }}>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Tableau de bord</h2>
         {months.length === 0 && (
@@ -1224,7 +1244,6 @@ function Visualisation() {
 const App = () => {
   const [page, setPage] = useState("tableau");
   const { isAuthenticated, user, logout } = useStore();
-  const [isCompact, setIsCompact] = useState(false);
 
   if (!isAuthenticated) {
     return <Login />;
