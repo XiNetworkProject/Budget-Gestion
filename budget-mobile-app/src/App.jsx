@@ -280,7 +280,7 @@ function TableView() {
       WebkitOverflowScrolling: 'touch',
       msOverflowStyle: 'none',
       scrollbarWidth: 'none',
-      '&::-webkit-scrollbar': {
+      WebkitScrollbar: {
         display: 'none'
       },
       transform: 'translateZ(0)',
