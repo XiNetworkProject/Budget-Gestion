@@ -200,7 +200,6 @@ function TableView() {
   const [newMonth, setNewMonth] = useState("");
   const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
-  const [isCompact, setIsCompact] = useState(false);
 
   // Ajouter un écouteur pour la rotation de l'écran
   useEffect(() => {
@@ -272,31 +271,17 @@ function TableView() {
   const potentielMiseDeCoteTotal = sideByMonth.reduce((acc, val) => acc + val, 0);
 
   return (
-    <div className={`tableau ${isCompact ? 'compact' : ''}`} style={{
-      overflowX: 'auto',
-      background: '#1a202c',
-      borderRadius: '8px',
-      boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
-      WebkitOverflowScrolling: 'touch',
-      msOverflowStyle: 'none',
-      scrollbarWidth: 'none',
-      transform: 'translateZ(0)',
-      backfaceVisibility: 'hidden',
-      perspective: '1000px',
-      willChange: 'transform',
-      width: '100%',
-      margin: '0 auto',
-      padding: '0.5rem',
-      position: 'relative'
-    }}>
+    <div className="p-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Tableau de bord</h2>
-        <button
-          onClick={() => setIsCompact(!isCompact)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          {isCompact ? 'Mode Normal' : 'Mode Compact'}
-        </button>
+        {months.length === 0 && (
+          <button
+            onClick={resetMonths}
+            className="text-gray-400 hover:text-gray-300 text-sm transition-colors"
+          >
+            Réinitialiser les mois
+          </button>
+        )}
       </div>
       <div style={{
         background: '#2d3748',
@@ -977,6 +962,32 @@ function TableView() {
           </table>
         </div>
       </div>
+
+      {/* Mode compact optionnel */}
+      <div style={{
+        position: 'fixed',
+        bottom: '72px',
+        right: '16px',
+        zIndex: 100
+      }}>
+        <button
+          onClick={() => setIsCompact(prev => !prev)}
+          style={{
+            background: '#4a5568',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '50%',
+            width: '40px',
+            height: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+          }}
+        >
+          {isCompact ? '↔' : '↕'}
+        </button>
+      </div>
     </div>
   );
 }
@@ -1213,6 +1224,7 @@ function Visualisation() {
 const App = () => {
   const [page, setPage] = useState("tableau");
   const { isAuthenticated, user, logout } = useStore();
+  const [isCompact, setIsCompact] = useState(false);
 
   if (!isAuthenticated) {
     return <Login />;
