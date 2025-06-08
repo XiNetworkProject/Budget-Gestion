@@ -180,7 +180,7 @@ function BadgeEco({ value }) {
   return <span style={{background:bg,color:'#fff',borderRadius:12,padding:'0.2em 0.8em',fontWeight:600,marginLeft:8,transition:'background 0.3s'}}>{value} €</span>;
 }
 
-function TableView() {
+function TableView({ isCompact, setIsCompact }) {
   const { months, categories, data, setValue, addCategory, removeCategory, addMonth, removeMonth, incomeTypes, incomes, setIncome, addIncomeType, removeIncomeType, renameIncomeType, renameCategory, sideByMonth, setSideByMonth, renameMonth } = useStore();
   
   // Optimisation des états avec useMemo
@@ -200,7 +200,6 @@ function TableView() {
   const [newMonth, setNewMonth] = useState("");
   const [isLandscape, setIsLandscape] = useState(false);
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
-  const [isCompact, setIsCompact] = useState(false);
 
   // Ajouter un écouteur pour la rotation de l'écran
   useEffect(() => {
@@ -1256,134 +1255,86 @@ function Visualisation() {
 const App = () => {
   const [page, setPage] = useState("tableau");
   const { isAuthenticated, user, logout } = useStore();
+  const [isCompact, setIsCompact] = useState(false);
 
   if (!isAuthenticated) {
     return <Login />;
   }
 
   return (
-    <div style={{
-      background: '#1a202c',
+    <div style={{ 
       minHeight: '100vh',
+      background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
       color: '#e2e8f0',
-      paddingBottom: '72px' // Espace pour la barre de navigation
+      paddingBottom: '72px'
     }}>
-      <header style={{
-        background: '#2d3748',
-        padding: '16px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        position: 'sticky',
-        top: 0,
-        zIndex: 100
+      <div style={{
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '16px'
       }}>
-        <h1 style={{
-          margin: 0,
-          fontSize: '24px',
-          color: '#e2e8f0',
-        }}>Budget Manager</h1>
-        <div style={{
+        <header style={{
           display: 'flex',
+          justifyContent: 'space-between',
           alignItems: 'center',
-          gap: '1rem'
+          marginBottom: '24px',
+          padding: '16px',
+          background: 'rgba(30, 41, 59, 0.8)',
+          backdropFilter: 'blur(8px)',
+          borderRadius: '12px',
+          position: 'sticky',
+          top: 0,
+          zIndex: 1000
         }}>
-          {user?.picture && (
-            <img 
-              src={user.picture} 
-              alt={user.name}
+          <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>Budget Gestion</h1>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <span style={{ color: '#94a3b8' }}>{user?.email}</span>
+            <button
+              onClick={logout}
               style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%'
+                background: '#ef4444',
+                color: 'white',
+                border: 'none',
+                borderRadius: '8px',
+                padding: '8px 16px',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s ease'
               }}
-            />
+            >
+              Déconnexion
+            </button>
+          </div>
+        </header>
+
+        <main>
+          {page === "tableau" ? (
+            <TableView isCompact={isCompact} setIsCompact={setIsCompact} />
+          ) : (
+            <Visualisation />
           )}
-          <span style={{ color: '#e2e8f0' }}>{user?.name}</span>
-          <button
-            onClick={logout}
-            style={{
-              background: '#4a5568',
-              color: '#e2e8f0',
-              border: 'none',
-              borderRadius: '4px',
-              padding: '8px 16px',
-              cursor: 'pointer'
-            }}
-          >
-            Déconnexion
-          </button>
-        </div>
-      </header>
+        </main>
+      </div>
 
-      <main style={{
-        padding: '16px',
-        maxWidth: '100%',
-        margin: '0 auto'
-      }}>
-        {page === "tableau" ? <TableView /> : <Visualisation />}
-      </main>
-
-      <nav style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        background: '#2d3748',
-        display: 'flex',
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        height: '56px',
-        boxShadow: '0 -2px 4px rgba(0,0,0,0.1)',
-        zIndex: 100,
-        paddingBottom: 'env(safe-area-inset-bottom)'
-      }}>
-        <button 
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: page === 'tableau' ? '#4299e1' : '#a0aec0',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '4px',
-            padding: '8px',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            touchAction: 'manipulation',
-            WebkitTapHighlightColor: 'transparent',
-            userSelect: 'none',
-            minHeight: '48px',
-            minWidth: '48px'
-          }} 
+      <nav style={styles.nav}>
+        <button
           onClick={() => setPage("tableau")}
+          style={{
+            ...styles.navButton,
+            ...(page === "tableau" ? styles.activeNavButton : {})
+          }}
         >
           <TableIcon />
-          <span style={{fontSize: '12px'}}>Tableau</span>
+          <span>Tableau</span>
         </button>
-        <button 
+        <button
+          onClick={() => setPage("visualisation")}
           style={{
-            background: 'transparent',
-            border: 'none',
-            color: page === 'visu' ? '#4299e1' : '#a0aec0',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '4px',
-            padding: '8px',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            touchAction: 'manipulation',
-            WebkitTapHighlightColor: 'transparent',
-            userSelect: 'none',
-            minHeight: '48px',
-            minWidth: '48px'
-          }} 
-          onClick={() => setPage("visu")}
+            ...styles.navButton,
+            ...(page === "visualisation" ? styles.activeNavButton : {})
+          }}
         >
           <ChartIcon />
-          <span style={{fontSize: '12px'}}>Visualisation</span>
+          <span>Visualisation</span>
         </button>
       </nav>
     </div>
