@@ -280,9 +280,6 @@ function TableView() {
       WebkitOverflowScrolling: 'touch',
       msOverflowStyle: 'none',
       scrollbarWidth: 'none',
-      WebkitScrollbar: {
-        display: 'none'
-      },
       transform: 'translateZ(0)',
       backfaceVisibility: 'hidden',
       perspective: '1000px',
@@ -301,166 +298,684 @@ function TableView() {
           {isCompact ? 'Mode Normal' : 'Mode Compact'}
         </button>
       </div>
-
-      {/* Navigation par mois */}
-      <div className="flex justify-center items-center mb-4 space-x-2">
-        {months.map((month, index) => (
-          <div key={month} className="flex items-center space-x-1">
-            <button
-              onClick={() => setCurrentMonthIndex(index)}
-              className={`px-3 py-1 rounded-lg transition-colors ${
-                currentMonthIndex === index
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-              }`}
-            >
-              {month}
-            </button>
-            {months.length > 1 && (
+      <div style={{
+        background: '#2d3748',
+        borderRadius: '12px',
+        padding: '24px',
+        marginBottom: '24px',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '20px'
+        }}>
+          <h2 style={{
+            color: '#e2e8f0',
+            fontSize: '20px',
+            fontWeight: '500',
+            margin: 0
+          }}>Tableau de Budget</h2>
+          <div style={{
+            display: 'flex',
+            gap: '16px',
+            marginBottom: '16px',
+            flexWrap: 'wrap'
+          }}>
+            {!addingCat ? (
               <button
-                onClick={() => removeMonth(index)}
-                className="text-red-500 hover:text-red-400 p-1"
-                title="Supprimer ce mois"
+                onClick={() => setAddingCat(true)}
+                style={{
+                  background: '#2d3748',
+                  color: '#e2e8f0',
+                  border: '1px solid #4a5568',
+                  borderRadius: '6px',
+                  padding: '8px 16px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
               >
-                ×
+                <PlusIcon />
+                Ajouter Catégorie
               </button>
+            ) : (
+              <div style={{
+                display: 'flex',
+                gap: '8px',
+                alignItems: 'center'
+              }}>
+                <input
+                  type="text"
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && newCategory.trim()) {
+                      addCategory(newCategory.trim());
+                      setNewCategory('');
+                      setAddingCat(false);
+                    }
+                  }}
+                  placeholder="Nouvelle catégorie"
+                  style={{
+                    background: '#2d3748',
+                    color: '#e2e8f0',
+                    border: '1px solid #4a5568',
+                    borderRadius: '6px',
+                    padding: '8px 12px',
+                    width: '200px'
+                  }}
+                />
+                <button
+                  onClick={() => {
+                    if (newCategory.trim()) {
+                      addCategory(newCategory.trim());
+                      setNewCategory('');
+                      setAddingCat(false);
+                    }
+                  }}
+                  style={{
+                    background: '#2d3748',
+                    color: '#e2e8f0',
+                    border: '1px solid #4a5568',
+                    borderRadius: '6px',
+                    padding: '8px 16px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Valider
+                </button>
+                <button
+                  onClick={() => {
+                    setNewCategory('');
+                    setAddingCat(false);
+                  }}
+                  style={{
+                    background: '#2d3748',
+                    color: '#e2e8f0',
+                    border: '1px solid #4a5568',
+                    borderRadius: '6px',
+                    padding: '8px 16px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Annuler
+                </button>
+              </div>
+            )}
+
+            {!addingIncome ? (
+              <button
+                onClick={() => setAddingIncome(true)}
+                style={{
+                  background: '#2d3748',
+                  color: '#e2e8f0',
+                  border: '1px solid #4a5568',
+                  borderRadius: '6px',
+                  padding: '8px 16px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <PlusIcon />
+                Ajouter Revenu
+              </button>
+            ) : (
+              <div style={{
+                display: 'flex',
+                gap: '8px',
+                alignItems: 'center'
+              }}>
+                <input
+                  type="text"
+                  value={newIncome}
+                  onChange={(e) => setNewIncome(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter' && newIncome.trim()) {
+                      addIncomeType(newIncome.trim());
+                      setNewIncome('');
+                      setAddingIncome(false);
+                    }
+                  }}
+                  placeholder="Nouveau revenu"
+                  style={{
+                    background: '#2d3748',
+                    color: '#e2e8f0',
+                    border: '1px solid #4a5568',
+                    borderRadius: '6px',
+                    padding: '8px 12px',
+                    width: '200px'
+                  }}
+                />
+                <button
+                  onClick={() => {
+                    if (newIncome.trim()) {
+                      addIncomeType(newIncome.trim());
+                      setNewIncome('');
+                      setAddingIncome(false);
+                    }
+                  }}
+                  style={{
+                    background: '#2d3748',
+                    color: '#e2e8f0',
+                    border: '1px solid #4a5568',
+                    borderRadius: '6px',
+                    padding: '8px 16px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Valider
+                </button>
+                <button
+                  onClick={() => {
+                    setNewIncome('');
+                    setAddingIncome(false);
+                  }}
+                  style={{
+                    background: '#2d3748',
+                    color: '#e2e8f0',
+                    border: '1px solid #4a5568',
+                    borderRadius: '6px',
+                    padding: '8px 16px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Annuler
+                </button>
+              </div>
             )}
           </div>
-        ))}
-        {!addingMonth ? (
-          <button
-            onClick={() => setAddingMonth(true)}
-            className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-          >
-            + Ajouter un mois
-          </button>
-        ) : (
-          <div className="flex items-center space-x-2">
-            <input
-              type="text"
-              value={newMonth}
-              onChange={(e) => setNewMonth(e.target.value)}
-              placeholder="Nouveau mois"
-              className="bg-gray-700 text-white px-3 py-1 rounded-lg"
-            />
-            <button
-              onClick={() => {
-                if (newMonth.trim()) {
-                  addMonth(newMonth.trim());
-                  setNewMonth("");
-                }
-                setAddingMonth(false);
-              }}
-              className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Ajouter
-            </button>
-            <button
-              onClick={() => {
-                setAddingMonth(false);
-                setNewMonth("");
-              }}
-              className="px-3 py-1 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              Annuler
-            </button>
-          </div>
-        )}
-      </div>
+        </div>
 
-      {/* Contenu du tableau */}
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse">
-          <thead>
-            <tr>
-              <th className="sticky left-0 z-20 bg-gray-800 text-left p-2">Catégorie</th>
-              {months.map(m => (
-                <th key={m} className="text-center p-2">{m}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {categories.map((category, catIndex) => (
-              <tr key={category} className="border-t border-gray-700">
-                <td className="sticky left-0 z-10 bg-gray-800 p-2">
-                  {editCatIdx === catIndex ? (
-                    <input
-                      type="text"
-                      value={catEditValue}
-                      onChange={(e) => setCatEditValue(e.target.value)}
-                      onBlur={() => {
-                        if (catEditValue.trim()) {
-                          renameCategory(catIndex, catEditValue.trim());
-                        }
-                        setEditCatIdx(null);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          if (catEditValue.trim()) {
-                            renameCategory(catIndex, catEditValue.trim());
-                          }
-                          setEditCatIdx(null);
-                        }
-                      }}
-                      className="w-full bg-gray-700 text-white p-1 rounded"
-                      autoFocus
-                    />
-                  ) : (
-                    <div className="flex items-center justify-between group">
-                      <span>{category}</span>
-                      <button
-                        onClick={() => {
-                          setEditCatIdx(catIndex);
-                          setCatEditValue(category);
-                        }}
-                        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-gray-300 ml-2"
-                      >
-                        ✎
-                      </button>
+        <div style={{
+          overflowX: 'auto',
+          background: '#1a202c',
+          borderRadius: '8px',
+          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
+          WebkitOverflowScrolling: 'touch',
+          msOverflowStyle: 'none',
+          scrollbarWidth: 'none',
+          '&::-webkit-scrollbar': {
+            display: 'none'
+          },
+          transform: 'translateZ(0)',
+          backfaceVisibility: 'hidden',
+          perspective: '1000px',
+          willChange: 'transform',
+          width: '100%',
+          margin: '0 auto',
+          padding: '0.5rem',
+          position: 'relative'
+        }}>
+          {/* Indicateurs de navigation */}
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: 0,
+            right: 0,
+            display: 'flex',
+            justifyContent: 'space-between',
+            padding: '0 8px',
+            pointerEvents: 'none',
+            zIndex: 5
+          }}>
+            {currentMonthIndex > 0 && (
+              <div style={{
+                background: 'rgba(45, 55, 72, 0.8)',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                pointerEvents: 'auto',
+                cursor: 'pointer'
+              }} onClick={() => handleSwipe('right')}>
+                ←
+              </div>
+            )}
+            {currentMonthIndex < months.length - 1 && (
+              <div style={{
+                background: 'rgba(45, 55, 72, 0.8)',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                pointerEvents: 'auto',
+                cursor: 'pointer'
+              }} onClick={() => handleSwipe('left')}>
+                →
+              </div>
+            )}
+          </div>
+
+          {/* Indicateurs de mois */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '4px',
+            marginBottom: '8px',
+            overflowX: 'auto',
+            padding: '4px 0'
+          }}>
+            {months.map((month, idx) => (
+              <div
+                key={month}
+                style={{
+                  background: idx === currentMonthIndex ? '#4299e1' : '#4a5568',
+                  color: '#fff',
+                  padding: '4px 8px',
+                  borderRadius: '12px',
+                  fontSize: '12px',
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer'
+                }}
+                onClick={() => setCurrentMonthIndex(idx)}
+              >
+                {month}
+              </div>
+            ))}
+          </div>
+
+          <table style={{
+            width: '100%',
+            borderCollapse: 'separate',
+            borderSpacing: 0,
+            minWidth: 'auto',
+            fontSize: '14px',
+            tableLayout: 'fixed',
+            transform: isLandscape ? 'none' : `translateX(-${currentMonthIndex * 100}%)`,
+            transition: 'transform 0.3s ease'
+          }}>
+            <thead>
+              <tr>
+                <th style={{
+                  background: '#2d3748',
+                  color: '#e2e8f0',
+                  padding: '8px 4px',
+                  textAlign: 'left',
+                  fontWeight: '500',
+                  borderBottom: '2px solid #4a5568',
+                  position: 'sticky',
+                  left: 0,
+                  zIndex: 10,
+                  whiteSpace: 'nowrap',
+                  width: '30%'
+                }}>Catégories</th>
+                {months.map((month, idx) => (
+                  <th key={month} style={{
+                    background: '#2d3748',
+                    color: '#e2e8f0',
+                    padding: '8px 4px',
+                    textAlign: 'center',
+                    fontWeight: '500',
+                    borderBottom: '2px solid #4a5568',
+                    minWidth: '70px',
+                    width: `${70 / months.length}%`
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <span style={{ fontSize: '12px' }}>{month}</span>
+                      {idx === months.length - 1 && (
+                        <button
+                          onClick={() => addMonth(getNextMonth())}
+                          style={{
+                            background: '#4a5568',
+                            border: 'none',
+                            color: '#e2e8f0',
+                            borderRadius: '4px',
+                            padding: '2px 4px',
+                            cursor: 'pointer',
+                            fontSize: '10px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '2px'
+                          }}
+                        >
+                          <PlusIcon /> +
+                        </button>
+                      )}
                     </div>
-                  )}
-                </td>
-                {months.map(m => (
-                  <td key={m} className="text-center p-2">
-                    {editCell.row === catIndex && editCell.col === months.indexOf(m) ? (
-                      <input
-                        type="number"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        onBlur={() => {
-                          if (inputValue !== "") {
-                            setValue(catIndex, months.indexOf(m), parseFloat(inputValue));
-                          }
-                          setEditCell({ row: null, col: null });
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            if (inputValue !== "") {
-                              setValue(catIndex, months.indexOf(m), parseFloat(inputValue));
-                            }
-                            setEditCell({ row: null, col: null });
-                          }
-                        }}
-                        className="w-full bg-gray-700 text-white p-1 rounded text-center"
-                        autoFocus
-                      />
-                    ) : (
-                      <div
-                        onClick={() => {
-                          setEditCell({ row: catIndex, col: months.indexOf(m) });
-                          setInputValue(data[catIndex]?.[months.indexOf(m)]?.toString() || "");
-                        }}
-                        className="cursor-pointer hover:bg-gray-700 p-1 rounded"
-                      >
-                        {data[catIndex]?.[months.indexOf(m)] || 0}
-                      </div>
-                    )}
-                  </td>
+                  </th>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {/* Section Revenus */}
+              <tr>
+                <td colSpan={months.length + 1} style={{
+                  background: '#2d3748',
+                  color: '#e2e8f0',
+                  padding: '8px 16px',
+                  fontWeight: '600',
+                  fontSize: '0.9rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  borderBottom: '2px solid #4a5568'
+                }}>
+                  Revenus
+                </td>
+              </tr>
+              {incomeTypes.map((type, idx) => (
+                <tr key={type}>
+                  <td style={{
+                    background: '#2d3748',
+                    color: '#e2e8f0',
+                    padding: '12px 16px',
+                    borderBottom: '1px solid #4a5568',
+                    position: 'sticky',
+                    left: 0,
+                    zIndex: 5,
+                    borderLeft: '4px solid #48bb78'
+                  }}>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                      {editIncomeIdx === idx ? (
+                        <input
+                          type="text"
+                          value={incomeEditValue}
+                          onChange={(e) => setIncomeEditValue(e.target.value)}
+                          onBlur={() => {
+                            if (incomeEditValue.trim()) {
+                              renameIncomeType(type, incomeEditValue);
+                            }
+                            setEditIncomeIdx(null);
+                          }}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter' && incomeEditValue.trim()) {
+                              renameIncomeType(type, incomeEditValue);
+                              setEditIncomeIdx(null);
+                            }
+                          }}
+                          style={{
+                            background: '#4a5568',
+                            border: '1px solid #2d3748',
+                            borderRadius: '4px',
+                            padding: '4px 8px',
+                            color: '#e2e8f0',
+                            width: '120px'
+                          }}
+                        />
+                      ) : (
+                        <span onClick={() => {
+                          setEditIncomeIdx(idx);
+                          setIncomeEditValue(type);
+                        }} style={{cursor: 'pointer'}}>{type}</span>
+                      )}
+                      <button
+                        onClick={() => removeIncomeType(type)}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: '#f56565',
+                          cursor: 'pointer',
+                          padding: '4px'
+                        }}
+                      >
+                        <CrossIcon />
+                      </button>
+                    </div>
+                  </td>
+                  {months.map((_, i) => (
+                    <td key={i} style={{
+                      background: '#1a202c',
+                      color: '#e2e8f0',
+                      padding: '12px',
+                      textAlign: 'center',
+                      borderBottom: '1px solid #4a5568'
+                    }}>
+                      {editIncomeCell.row === idx && editIncomeCell.col === i ? (
+                        <input
+                          type="number"
+                          value={incomeInputValue}
+                          onChange={(e) => setIncomeInputValue(e.target.value)}
+                          onBlur={() => {
+                            const val = parseFloat(incomeInputValue);
+                            if (!isNaN(val)) {
+                              setIncome(type, i, val);
+                            }
+                            setEditIncomeCell({ row: null, col: null });
+                          }}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              const val = parseFloat(incomeInputValue);
+                              if (!isNaN(val)) {
+                                setIncome(type, i, val);
+                              }
+                              setEditIncomeCell({ row: null, col: null });
+                            }
+                          }}
+                          style={{
+                            background: '#4a5568',
+                            border: '1px solid #2d3748',
+                            borderRadius: '4px',
+                            padding: '4px 8px',
+                            color: '#e2e8f0',
+                            width: '80px',
+                            textAlign: 'center'
+                          }}
+                        />
+                      ) : (
+                        <span
+                          onClick={() => {
+                            setEditIncomeCell({ row: idx, col: i });
+                            setIncomeInputValue(incomes[type]?.[i] || '');
+                          }}
+                          style={{
+                            cursor: 'pointer',
+                            color: incomes[type]?.[i] ? '#48bb78' : '#a0aec0'
+                          }}
+                        >
+                          {incomes[type]?.[i]?.toLocaleString() || '0'} €
+                        </span>
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+
+              {/* Section Dépenses */}
+              <tr>
+                <td colSpan={months.length + 1} style={{
+                  background: '#2d3748',
+                  color: '#e2e8f0',
+                  padding: '8px 16px',
+                  fontWeight: '600',
+                  fontSize: '0.9rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  borderBottom: '2px solid #4a5568'
+                }}>
+                  Dépenses
+                </td>
+              </tr>
+              {categories.map((cat, idx) => (
+                <tr key={cat}>
+                  <td style={{
+                    background: '#2d3748',
+                    color: '#e2e8f0',
+                    padding: '12px 16px',
+                    borderBottom: '1px solid #4a5568',
+                    position: 'sticky',
+                    left: 0,
+                    zIndex: 5,
+                    borderLeft: '4px solid #f56565'
+                  }}>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                      {editCatIdx === idx ? (
+                        <input
+                          type="text"
+                          value={catEditValue}
+                          onChange={(e) => setCatEditValue(e.target.value)}
+                          onBlur={() => {
+                            if (catEditValue.trim()) {
+                              renameCategory(cat, catEditValue);
+                            }
+                            setEditCatIdx(null);
+                          }}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter' && catEditValue.trim()) {
+                              renameCategory(cat, catEditValue);
+                              setEditCatIdx(null);
+                            }
+                          }}
+                          style={{
+                            background: '#4a5568',
+                            border: '1px solid #2d3748',
+                            borderRadius: '4px',
+                            padding: '4px 8px',
+                            color: '#e2e8f0',
+                            width: '120px'
+                          }}
+                        />
+                      ) : (
+                        <span onClick={() => {
+                          setEditCatIdx(idx);
+                          setCatEditValue(cat);
+                        }} style={{cursor: 'pointer'}}>{cat}</span>
+                      )}
+                      <button
+                        onClick={() => removeCategory(cat)}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: '#f56565',
+                          cursor: 'pointer',
+                          padding: '4px'
+                        }}
+                      >
+                        <CrossIcon />
+                      </button>
+                    </div>
+                  </td>
+                  {months.map((_, i) => (
+                    <td key={i} style={{
+                      background: '#1a202c',
+                      color: '#e2e8f0',
+                      padding: '12px',
+                      textAlign: 'center',
+                      borderBottom: '1px solid #4a5568'
+                    }}>
+                      {editCell.row === idx && editCell.col === i ? (
+                        <input
+                          type="number"
+                          value={inputValue}
+                          onChange={(e) => setInputValue(e.target.value)}
+                          onBlur={() => {
+                            const val = parseFloat(inputValue);
+                            if (!isNaN(val)) {
+                              setValue(cat, i, val);
+                            }
+                            setEditCell({ row: null, col: null });
+                          }}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              const val = parseFloat(inputValue);
+                              if (!isNaN(val)) {
+                                setValue(cat, i, val);
+                              }
+                              setEditCell({ row: null, col: null });
+                            }
+                          }}
+                          style={{
+                            background: '#4a5568',
+                            border: '1px solid #2d3748',
+                            borderRadius: '4px',
+                            padding: '4px 8px',
+                            color: '#e2e8f0',
+                            width: '80px',
+                            textAlign: 'center',
+                            WebkitAppearance: 'none',
+                            appearance: 'none',
+                            fontSize: '16px',
+                            minHeight: '48px'
+                          }}
+                        />
+                      ) : (
+                        <span
+                          onClick={() => {
+                            setEditCell({ row: idx, col: i });
+                            setInputValue(data[cat]?.[i] || '');
+                          }}
+                          style={{
+                            cursor: 'pointer',
+                            color: getCellColor(data[cat]?.[i] || 0)
+                          }}
+                        >
+                          {data[cat]?.[i]?.toLocaleString() || '0'} €
+                        </span>
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+
+              {/* Titre Section Économies */}
+              <tr>
+                <td colSpan={months.length + 1} style={{
+                  background: '#2d3748',
+                  color: '#e2e8f0',
+                  padding: '8px 16px',
+                  fontWeight: '600',
+                  fontSize: '0.9rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.05em',
+                  borderBottom: '2px solid #4a5568'
+                }}>
+                  Économies
+                </td>
+              </tr>
+
+              {/* Section Économies */}
+              <tr>
+                <td style={{
+                  background: '#2d3748',
+                  color: '#e2e8f0',
+                  padding: '12px 16px',
+                  borderBottom: '1px solid #4a5568',
+                  position: 'sticky',
+                  left: 0,
+                  zIndex: 5,
+                  fontWeight: '500',
+                  borderLeft: '4px solid #9f7aea'
+                }}>
+                  Économies
+                </td>
+                {months.map((_, i) => {
+                  const totalRev = incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[i] || 0), 0);
+                  const totalDep = categories.reduce((acc, cat) => acc + (data[cat]?.[i] || 0), 0);
+                  const economie = totalRev - totalDep;
+                  return (
+                    <td key={i} style={{
+                      background: '#1a202c',
+                      color: '#e2e8f0',
+                      padding: '12px',
+                      textAlign: 'center',
+                      borderBottom: '1px solid #4a5568',
+                      fontWeight: '500'
+                    }}>
+                      <span style={{
+                        color: economie >= 0 ? '#48bb78' : '#f56565',
+                        fontWeight: '600'
+                      }}>
+                        {economie.toLocaleString()} €
+                      </span>
+                    </td>
+                  );
+                })}
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
