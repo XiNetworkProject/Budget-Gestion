@@ -4,6 +4,12 @@ body {
   min-height: 100vh;
   font-family: 'Segoe UI', Arial, sans-serif;
   margin: 0;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  /* Optimisations Android */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none; /* Empêche l'effet de rebond sur Android */
 }
 
 h1, h2, h3 {
@@ -87,13 +93,110 @@ input:focus, select:focus {
   border-color: #2563eb;
 }
 
-@media (max-width: 600px) {
+/* Optimisations spécifiques Android */
+@media screen and (max-width: 600px) {
   .tableau {
     padding: 0.5rem;
     font-size: 0.95em;
+    margin: 1rem auto;
+    /* Améliore le rendu sur Android */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000;
   }
+  
   .btn {
     width: 100%;
     margin: 0.3em 0;
+    padding: 0.8em 1.2em;
+    /* Optimisations tactiles Android */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
   }
+
+  input, select {
+    font-size: 16px;
+    padding: 0.6em 0.8em;
+    /* Améliore le rendu des inputs sur Android */
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 4px;
+  }
+
+  /* Optimise le défilement sur Android */
+  * {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
+  }
+
+  /* Améliore les performances de défilement sur Android */
+  .tableau table {
+    will-change: transform;
+    transform: translateZ(0);
+  }
+
+  /* Optimise les animations sur Android */
+  button, 
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 48px; /* Taille recommandée pour Android */
+    min-width: 48px;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  button:active {
+    transform: scale(0.98);
+  }
+
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.3rem; }
+  h3 { font-size: 1.1rem; }
+
+  .card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .spacing {
+    gap: 0.8rem;
+  }
+}
+
+/* Support des grands écrans */
+@media (min-width: 601px) {
+  .tableau {
+    max-width: 95vw;
+  }
+}
+
+/* Optimisation pour les appareils à haute densité de pixels */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .tableau {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+/* Support du mode sombre natif */
+@media (prefers-color-scheme: dark) {
+  body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  }
+}
+
+/* Améliore l'accessibilité tactile */
+button, 
+input[type="button"],
+input[type="submit"] {
+  min-height: 48px; /* Taille standard Android */
+  min-width: 48px;
+  touch-action: manipulation;
+}
+
+/* Optimise le défilement sur mobile */
+* {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
 }

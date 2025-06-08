@@ -460,26 +460,38 @@ function TableView() {
           overflowX: 'auto',
           background: '#1a202c',
           borderRadius: '8px',
-          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)'
+          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
+          WebkitOverflowScrolling: 'touch',
+          msOverflowStyle: 'none',
+          scrollbarWidth: 'none',
+          '&::-webkit-scrollbar': {
+            display: 'none'
+          },
+          transform: 'translateZ(0)',
+          backfaceVisibility: 'hidden',
+          perspective: '1000px',
+          willChange: 'transform'
         }}>
           <table style={{
             width: '100%',
             borderCollapse: 'separate',
             borderSpacing: 0,
-            minWidth: '800px'
+            minWidth: '800px',
+            fontSize: '14px'
           }}>
             <thead>
               <tr>
                 <th style={{
                   background: '#2d3748',
                   color: '#e2e8f0',
-                  padding: '16px',
+                  padding: '12px 8px',
                   textAlign: 'left',
                   fontWeight: '500',
                   borderBottom: '2px solid #4a5568',
                   position: 'sticky',
                   left: 0,
-                  zIndex: 10
+                  zIndex: 10,
+                  whiteSpace: 'nowrap'
                 }}>Catégories</th>
                 {months.map((month, idx) => (
                   <th key={month} style={{
@@ -813,7 +825,11 @@ function TableView() {
                             padding: '4px 8px',
                             color: '#e2e8f0',
                             width: '80px',
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            WebkitAppearance: 'none',
+                            appearance: 'none',
+                            fontSize: '16px',
+                            minHeight: '48px'
                           }}
                         />
                       ) : (
@@ -975,8 +991,8 @@ function Visualisation() {
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-        gap: '16px',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+        gap: '12px',
         marginBottom: '24px'
       }}>
         <div style={{
@@ -1189,9 +1205,10 @@ const App = () => {
       </header>
 
       <main style={{
-        padding: '20px',
-        maxWidth: '1200px',
-        margin: '0 auto'
+        padding: '16px',
+        maxWidth: '100%',
+        margin: '0 auto',
+        paddingBottom: '72px'
       }}>
         {page === "tableau" ? <TableView /> : <Visualisation />}
       </main>
@@ -1205,9 +1222,10 @@ const App = () => {
         display: 'flex',
         justifyContent: 'space-around',
         alignItems: 'center',
-        height: '64px',
+        height: '56px',
         boxShadow: '0 -2px 4px rgba(0,0,0,0.1)',
-        zIndex: 100
+        zIndex: 100,
+        paddingBottom: 'env(safe-area-inset-bottom)'
       }}>
         <button 
           style={{
@@ -1220,7 +1238,12 @@ const App = () => {
             gap: '4px',
             padding: '8px',
             cursor: 'pointer',
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent',
+            userSelect: 'none',
+            minHeight: '48px',
+            minWidth: '48px'
           }} 
           onClick={() => setPage("tableau")}
         >
@@ -1238,7 +1261,12 @@ const App = () => {
             gap: '4px',
             padding: '8px',
             cursor: 'pointer',
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
+            touchAction: 'manipulation',
+            WebkitTapHighlightColor: 'transparent',
+            userSelect: 'none',
+            minHeight: '48px',
+            minWidth: '48px'
           }} 
           onClick={() => setPage("visu")}
         >
