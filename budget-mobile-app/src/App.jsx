@@ -1224,6 +1224,7 @@ function Visualisation() {
 const App = () => {
   const [page, setPage] = useState("tableau");
   const { isAuthenticated, user, logout } = useStore();
+  const [isCompact, setIsCompact] = useState(false);
 
   if (!isAuthenticated) {
     return <Login />;
@@ -1233,7 +1234,8 @@ const App = () => {
     <div style={{
       background: '#1a202c',
       minHeight: '100vh',
-      color: '#e2e8f0'
+      color: '#e2e8f0',
+      paddingBottom: '72px' // Espace pour la barre de navigation
     }}>
       <header style={{
         background: '#2d3748',
@@ -1241,7 +1243,10 @@ const App = () => {
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100
       }}>
         <h1 style={{
           margin: 0,
@@ -1284,8 +1289,7 @@ const App = () => {
       <main style={{
         padding: '16px',
         maxWidth: '100%',
-        margin: '0 auto',
-        paddingBottom: '72px'
+        margin: '0 auto'
       }}>
         {page === "tableau" ? <TableView /> : <Visualisation />}
       </main>
