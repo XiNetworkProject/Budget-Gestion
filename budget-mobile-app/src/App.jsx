@@ -198,8 +198,9 @@ function TableView() {
   const [newIncome, setNewIncome] = useState('');
   const [addingMonth, setAddingMonth] = useState(false);
   const [newMonth, setNewMonth] = useState("");
-  const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
+  const [isLandscape, setIsLandscape] = useState(false);
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
+  const [isCompact, setIsCompact] = useState(false);
 
   // Ajouter un écouteur pour la rotation de l'écran
   useEffect(() => {
@@ -997,31 +998,28 @@ function TableView() {
         </div>
       </div>
 
-      {/* Mode compact optionnel */}
-      <div style={{
-        position: 'fixed',
-        bottom: '72px',
-        right: '16px',
-        zIndex: 100
-      }}>
-        <button
-          onClick={() => setIsCompact(prev => !prev)}
-          style={{
-            background: '#4a5568',
-            color: '#fff',
-            border: 'none',
-            borderRadius: '50%',
-            width: '40px',
-            height: '40px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-          }}
-        >
-          {isCompact ? '↔' : '↕'}
-        </button>
-      </div>
+      {/* Bouton pour basculer le mode compact */}
+      <button
+        onClick={() => setIsCompact(!isCompact)}
+        style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          zIndex: 1000,
+          padding: '8px 16px',
+          backgroundColor: '#4a5568',
+          color: '#e2e8f0',
+          border: 'none',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+        }}
+      >
+        {isCompact ? 'Mode Normal' : 'Mode Compact'}
+      </button>
     </div>
   );
 }
@@ -1258,7 +1256,6 @@ function Visualisation() {
 const App = () => {
   const [page, setPage] = useState("tableau");
   const { isAuthenticated, user, logout } = useStore();
-  const [isCompact, setIsCompact] = useState(false);
 
   if (!isAuthenticated) {
     return <Login />;
