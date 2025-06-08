@@ -610,7 +610,34 @@ function TableView() {
                       alignItems: 'center',
                       gap: '4px'
                     }}>
-                      <span style={{ fontSize: '12px' }}>{month}</span>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}>
+                        <span style={{ fontSize: '12px' }}>{month}</span>
+                        {idx === months.length - 1 && (
+                          <button
+                            onClick={() => removeMonth(month)}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              color: '#f56565',
+                              cursor: 'pointer',
+                              padding: '2px',
+                              opacity: '0.7',
+                              transition: 'opacity 0.2s',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
+                          >
+                            <CrossIcon />
+                          </button>
+                        )}
+                      </div>
                       {idx === months.length - 1 && (
                         <button
                           onClick={() => addMonth(getNextMonth())}
@@ -835,8 +862,15 @@ function TableView() {
                           border: 'none',
                           color: '#f56565',
                           cursor: 'pointer',
-                          padding: '4px'
+                          padding: '4px',
+                          opacity: '0.7',
+                          transition: 'opacity 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
                         }}
+                        onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                        onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
                       >
                         <CrossIcon />
                       </button>

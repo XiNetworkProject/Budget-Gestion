@@ -159,10 +159,9 @@ input:focus, select:focus {
 
   /* Améliore la visibilité des boutons d'action */
   .tableau button {
-    padding: 4px;
-    min-width: 32px;
-    min-height: 32px;
-    font-size: 12px;
+    padding: 6px;
+    min-width: 36px;
+    min-height: 36px;
   }
 
   /* Optimise l'affichage des inputs */
@@ -229,6 +228,11 @@ input:focus, select:focus {
 
   .spacing {
     gap: 0.8rem;
+  }
+
+  .tableau button.add {
+    padding: 4px 6px;
+    font-size: 11px;
   }
 }
 
@@ -383,4 +387,51 @@ input[type="submit"] {
   .month-indicator {
     padding: 6px 12px;
   }
+}
+
+/* Styles des boutons d'action */
+.tableau button {
+  padding: 4px;
+  min-width: 32px;
+  min-height: 32px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.tableau button:hover {
+  transform: scale(1.1);
+}
+
+.tableau button:active {
+  transform: scale(0.95);
+}
+
+/* Style spécifique pour les boutons de suppression */
+.tableau button.delete {
+  color: #f56565;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.tableau button.delete:hover {
+  opacity: 1;
+}
+
+/* Style spécifique pour les boutons d'ajout */
+.tableau button.add {
+  background: #4a5568;
+  color: #e2e8f0;
+  border-radius: 4px;
+  padding: 2px 4px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.tableau button.add:hover {
+  background: #2d3748;
 }
