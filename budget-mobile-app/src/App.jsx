@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useStore } from "./store";
 import { Pie, Bar } from "react-chartjs-2";
 import { Chart, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from "chart.js";
@@ -198,6 +198,26 @@ function TableView() {
   const [newIncome, setNewIncome] = useState('');
   const [addingMonth, setAddingMonth] = useState(false);
   const [newMonth, setNewMonth] = useState("");
+  const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
+  const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
+
+  // Ajouter un écouteur pour la rotation de l'écran
+  useEffect(() => {
+    const handleResize = () => {
+      setIsLandscape(window.innerWidth > window.innerHeight);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Fonction pour gérer le swipe
+  const handleSwipe = (direction) => {
+    if (direction === 'left' && currentMonthIndex < months.length - 1) {
+      setCurrentMonthIndex(prev => prev + 1);
+    } else if (direction === 'right' && currentMonthIndex > 0) {
+      setCurrentMonthIndex(prev => prev - 1);
+    }
+  };
 
   const resetMonths = () => {
     if (!window.confirm('Êtes-vous sûr de vouloir réinitialiser les mois ? Cette action supprimera toutes les données existantes.')) {
@@ -470,93 +490,127 @@ function TableView() {
           transform: 'translateZ(0)',
           backfaceVisibility: 'hidden',
           perspective: '1000px',
-          willChange: 'transform'
+          willChange: 'transform',
+          width: '100%',
+          margin: '0 auto',
+          padding: '0.5rem',
+          position: 'relative'
         }}>
+          {/* Indicateurs de navigation */}
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: 0,
+            right: 0,
+            display: 'flex',
+            justifyContent: 'space-between',
+            padding: '0 8px',
+            pointerEvents: 'none',
+            zIndex: 5
+          }}>
+            {currentMonthIndex > 0 && (
+              <div style={{
+                background: 'rgba(45, 55, 72, 0.8)',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                pointerEvents: 'auto',
+                cursor: 'pointer'
+              }} onClick={() => handleSwipe('right')}>
+                ←
+              </div>
+            )}
+            {currentMonthIndex < months.length - 1 && (
+              <div style={{
+                background: 'rgba(45, 55, 72, 0.8)',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                pointerEvents: 'auto',
+                cursor: 'pointer'
+              }} onClick={() => handleSwipe('left')}>
+                →
+              </div>
+            )}
+          </div>
+
+          {/* Indicateurs de mois */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '4px',
+            marginBottom: '8px',
+            overflowX: 'auto',
+            padding: '4px 0'
+          }}>
+            {months.map((month, idx) => (
+              <div
+                key={month}
+                style={{
+                  background: idx === currentMonthIndex ? '#4299e1' : '#4a5568',
+                  color: '#fff',
+                  padding: '4px 8px',
+                  borderRadius: '12px',
+                  fontSize: '12px',
+                  whiteSpace: 'nowrap',
+                  cursor: 'pointer'
+                }}
+                onClick={() => setCurrentMonthIndex(idx)}
+              >
+                {month}
+              </div>
+            ))}
+          </div>
+
           <table style={{
             width: '100%',
             borderCollapse: 'separate',
             borderSpacing: 0,
-            minWidth: '800px',
-            fontSize: '14px'
+            minWidth: 'auto',
+            fontSize: '14px',
+            tableLayout: 'fixed',
+            transform: isLandscape ? 'none' : `translateX(-${currentMonthIndex * 100}%)`,
+            transition: 'transform 0.3s ease'
           }}>
             <thead>
               <tr>
                 <th style={{
                   background: '#2d3748',
                   color: '#e2e8f0',
-                  padding: '12px 8px',
+                  padding: '8px 4px',
                   textAlign: 'left',
                   fontWeight: '500',
                   borderBottom: '2px solid #4a5568',
                   position: 'sticky',
                   left: 0,
                   zIndex: 10,
-                  whiteSpace: 'nowrap'
+                  whiteSpace: 'nowrap',
+                  width: '30%'
                 }}>Catégories</th>
                 {months.map((month, idx) => (
                   <th key={month} style={{
                     background: '#2d3748',
                     color: '#e2e8f0',
-                    padding: '16px',
+                    padding: '8px 4px',
                     textAlign: 'center',
                     fontWeight: '500',
                     borderBottom: '2px solid #4a5568',
-                    minWidth: '120px'
+                    minWidth: '70px',
+                    width: `${70 / months.length}%`
                   }}>
-                    <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
-                      <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'}}>
-                        {editCatIdx === idx ? (
-                          <input
-                            type="text"
-                            value={catEditValue}
-                            onChange={(e) => setCatEditValue(e.target.value)}
-                            onBlur={() => {
-                              if (catEditValue.trim()) {
-                                renameMonth(month, catEditValue.trim());
-                              }
-                              setEditCatIdx(null);
-                            }}
-                            onKeyPress={(e) => {
-                              if (e.key === 'Enter' && catEditValue.trim()) {
-                                renameMonth(month, catEditValue.trim());
-                                setEditCatIdx(null);
-                              }
-                            }}
-                            style={{
-                              background: '#4a5568',
-                              border: '1px solid #2d3748',
-                              borderRadius: '4px',
-                              padding: '4px 8px',
-                              color: '#e2e8f0',
-                              width: '80px',
-                              textAlign: 'center'
-                            }}
-                          />
-                        ) : (
-                          <span onClick={() => {
-                            setEditCatIdx(idx);
-                            setCatEditValue(month);
-                          }} style={{cursor: 'pointer'}}>{month}</span>
-                        )}
-                        {idx === months.length - 1 && (
-                          <button
-                            onClick={() => removeMonth(month)}
-                            style={{
-                              background: 'transparent',
-                              border: 'none',
-                              color: '#f56565',
-                              cursor: 'pointer',
-                              padding: '4px',
-                              opacity: '0.7',
-                              transition: 'opacity 0.2s'
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
-                          >
-                            <CrossIcon />
-                          </button>
-                        )}
-                      </div>
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <span style={{ fontSize: '12px' }}>{month}</span>
                       {idx === months.length - 1 && (
                         <button
                           onClick={() => addMonth(getNextMonth())}
@@ -565,16 +619,15 @@ function TableView() {
                             border: 'none',
                             color: '#e2e8f0',
                             borderRadius: '4px',
-                            padding: '4px 8px',
+                            padding: '2px 4px',
                             cursor: 'pointer',
-                            fontSize: '12px',
+                            fontSize: '10px',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '4px',
-                            margin: '0 auto'
+                            gap: '2px'
                           }}
                         >
-                          <PlusIcon /> Ajouter
+                          <PlusIcon /> +
                         </button>
                       )}
                     </div>
@@ -910,7 +963,31 @@ function TableView() {
         </div>
       </div>
 
-      {/* ... rest of the code ... */}
+      {/* Mode compact optionnel */}
+      <div style={{
+        position: 'fixed',
+        bottom: '72px',
+        right: '16px',
+        zIndex: 100
+      }}>
+        <button
+          onClick={() => setIsCompact(prev => !prev)}
+          style={{
+            background: '#4a5568',
+            color: '#fff',
+            border: 'none',
+            borderRadius: '50%',
+            width: '40px',
+            height: '40px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+          }}
+        >
+          {isCompact ? '↔' : '↕'}
+        </button>
+      </div>
     </div>
   );
 }

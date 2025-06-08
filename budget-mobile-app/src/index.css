@@ -99,12 +99,76 @@ input:focus, select:focus {
     padding: 0.5rem;
     font-size: 0.95em;
     margin: 1rem auto;
-    /* Améliore le rendu sur Android */
     transform: translateZ(0);
     backface-visibility: hidden;
     perspective: 1000;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
-  
+
+  /* Optimise l'affichage du tableau sur mobile */
+  .tableau table {
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  .tableau th,
+  .tableau td {
+    padding: 8px 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Première colonne fixe */
+  .tableau th:first-child,
+  .tableau td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: #2d3748;
+    width: 30%;
+  }
+
+  /* Colonnes de données */
+  .tableau th:not(:first-child),
+  .tableau td:not(:first-child) {
+    width: calc(70% / var(--columns-count, 6));
+    min-width: 70px;
+  }
+
+  /* Améliore la visibilité des en-têtes */
+  .tableau th {
+    background: #2d3748;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+  }
+
+  /* Optimise l'affichage des valeurs */
+  .tableau td {
+    text-align: center;
+  }
+
+  /* Améliore la visibilité des boutons d'action */
+  .tableau button {
+    padding: 4px;
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 12px;
+  }
+
+  /* Optimise l'affichage des inputs */
+  .tableau input {
+    width: 100%;
+    padding: 4px;
+    font-size: 12px;
+    text-align: center;
+  }
+
   .btn {
     width: 100%;
     margin: 0.3em 0;
@@ -199,4 +263,120 @@ input[type="submit"] {
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
   overscroll-behavior: contain;
+}
+
+/* Mode paysage */
+@media screen and (orientation: landscape) {
+  .tableau {
+    max-width: 100%;
+    padding: 1rem;
+  }
+
+  .tableau table {
+    transform: none !important;
+  }
+
+  .tableau th,
+  .tableau td {
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  /* Ajuste la largeur des colonnes en mode paysage */
+  .tableau th:first-child,
+  .tableau td:first-child {
+    width: 25%;
+  }
+
+  .tableau th:not(:first-child),
+  .tableau td:not(:first-child) {
+    width: calc(75% / var(--columns-count, 6));
+  }
+}
+
+/* Mode compact */
+.tableau.compact {
+  font-size: 0.9em;
+}
+
+.tableau.compact th,
+.tableau.compact td {
+  padding: 4px 2px;
+  font-size: 11px;
+}
+
+.tableau.compact button {
+  padding: 2px;
+  min-width: 24px;
+  min-height: 24px;
+  font-size: 10px;
+}
+
+.tableau.compact input {
+  padding: 2px;
+  font-size: 11px;
+}
+
+/* Animations de transition */
+.tableau table {
+  transition: transform 0.3s ease;
+}
+
+/* Indicateurs de navigation */
+.nav-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(45, 55, 72, 0.8);
+  color: white;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  transition: opacity 0.2s ease;
+}
+
+.nav-indicator:hover {
+  opacity: 0.8;
+}
+
+/* Indicateurs de mois */
+.month-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 8px;
+  overflow-x: auto;
+  padding: 4px 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.month-indicator {
+  background: #4a5568;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.month-indicator.active {
+  background: #4299e1;
+}
+
+/* Optimisations tactiles */
+@media (hover: none) {
+  .nav-indicator {
+    opacity: 0.8;
+  }
+
+  .month-indicator {
+    padding: 6px 12px;
+  }
 }
