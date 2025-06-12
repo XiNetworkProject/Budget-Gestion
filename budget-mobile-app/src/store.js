@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { budgetService } from './services/budgetService';
+import toast from 'react-hot-toast';
 
 const defaultMonths = [
   'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
@@ -56,9 +57,11 @@ const useStore = create(
               sideByMonth: state.sideByMonth,
               totalPotentialSavings: state.totalPotentialSavings
             });
+            toast.success('Budget sauvegardé');
           } catch (error) {
             console.error('Debounced save error:', error);
             set({ error: error.message });
+            toast.error(error.message);
           } finally {
             set({ isSaving: false });
           }
@@ -140,7 +143,7 @@ const useStore = create(
           if (state.user) scheduleSave();
         },
 
-        addCategory: async (cat) => {
+        addCategory: (cat) => {
           const state = get();
           if (state.categories.includes(cat)) return;
 
@@ -148,62 +151,20 @@ const useStore = create(
           newData[cat] = state.months.map(() => 0);
           const newCategories = [...state.categories, cat];
           
-          set({
-            categories: newCategories,
-            data: newData,
-          });
-
-          if (state.user) {
-            try {
-              await budgetService.saveBudget(state.user.id, {
-                months: state.months,
-                categories: newCategories,
-                data: newData,
-                revenus: state.revenus,
-                incomeTypes: state.incomeTypes,
-                incomes: state.incomes,
-                persons: state.persons,
-                saved: state.saved,
-                sideByMonth: state.sideByMonth
-              });
-            } catch (error) {
-              console.error('Error saving budget:', error);
-              set({ error: error.message });
-            }
-          }
+          set({ categories: newCategories, data: newData });
+          scheduleSave();
         },
 
-        removeCategory: async (cat) => {
+        removeCategory: (cat) => {
           const state = get();
           const { [cat]: _, ...rest } = state.data;
           const newCategories = state.categories.filter((c) => c !== cat);
           
-          set({
-            categories: newCategories,
-            data: rest,
-          });
-
-          if (state.user) {
-            try {
-              await budgetService.saveBudget(state.user.id, {
-                months: state.months,
-                categories: newCategories,
-                data: rest,
-                revenus: state.revenus,
-                incomeTypes: state.incomeTypes,
-                incomes: state.incomes,
-                persons: state.persons,
-                saved: state.saved,
-                sideByMonth: state.sideByMonth
-              });
-            } catch (error) {
-              console.error('Error saving budget:', error);
-              set({ error: error.message });
-            }
-          }
+          set({ categories: newCategories, data: rest });
+          scheduleSave();
         },
 
-        addMonth: async (month) => {
+        addMonth: (month) => {
           const state = get();
           if (state.months.includes(month)) return;
 
@@ -237,28 +198,10 @@ const useStore = create(
             incomes: newIncomes,
             sideByMonth: newSide,
           });
-
-          if (state.user) {
-            try {
-              await budgetService.saveBudget(state.user.id, {
-                months: newMonths,
-                categories: state.categories,
-                data: newData,
-                revenus: newRevenus,
-                incomeTypes: state.incomeTypes,
-                incomes: newIncomes,
-                persons: state.persons,
-                saved: state.saved,
-                sideByMonth: newSide
-              });
-            } catch (error) {
-              console.error('Error saving budget:', error);
-              set({ error: error.message });
-            }
-          }
+          scheduleSave();
         },
 
-        removeMonth: async (month) => {
+        removeMonth: (month) => {
           const currentMonth = new Date().toLocaleString('fr-FR', { month: 'long' });
           if (month === currentMonth) {
             alert("Impossible de supprimer le mois en cours");
@@ -290,57 +233,20 @@ const useStore = create(
             revenus: newRevenus,
             sideByMonth: newSideByMonth,
           });
-
-          if (state.user) {
-            try {
-              await budgetService.saveBudget(state.user.id, {
-                months: newMonths,
-                categories: state.categories,
-                data: newData,
-                revenus: newRevenus,
-                incomeTypes: state.incomeTypes,
-                incomes: newIncomes,
-                persons: state.persons,
-                saved: state.saved,
-                sideByMonth: newSideByMonth,
-                totalPotentialSavings: state.totalPotentialSavings
-              });
-            } catch (error) {
-              console.error('Error saving budget:', error);
-              set({ error: error.message });
-            }
-          }
+          scheduleSave();
         },
 
-        setIncome: async (type, monthIdx, value) => {
+        setIncome: (type, monthIdx, value) => {
           const state = get();
           const newIncomes = { ...state.incomes };
           newIncomes[type] = [...newIncomes[type]];
           newIncomes[type][monthIdx] = value;
-          
-          set({ incomes: newIncomes });
 
-          if (state.user) {
-            try {
-              await budgetService.saveBudget(state.user.id, {
-                months: state.months,
-                categories: state.categories,
-                data: state.data,
-                revenus: state.revenus,
-                incomeTypes: state.incomeTypes,
-                incomes: newIncomes,
-                persons: state.persons,
-                saved: state.saved,
-                sideByMonth: state.sideByMonth
-              });
-            } catch (error) {
-              console.error('Error saving budget:', error);
-              set({ error: error.message });
-            }
-          }
+          set({ incomes: newIncomes });
+          if (state.user) scheduleSave();
         },
 
-        addIncomeType: async (type) => {
+        addIncomeType: (type) => {
           const state = get();
           if (state.incomeTypes.includes(type)) return;
 
@@ -348,62 +254,20 @@ const useStore = create(
           newIncomes[type] = state.months.map(() => 0);
           const newIncomeTypes = [...state.incomeTypes, type];
           
-          set({
-            incomeTypes: newIncomeTypes,
-            incomes: newIncomes,
-          });
-
-          if (state.user) {
-            try {
-              await budgetService.saveBudget(state.user.id, {
-                months: state.months,
-                categories: state.categories,
-                data: state.data,
-                revenus: state.revenus,
-                incomeTypes: newIncomeTypes,
-                incomes: newIncomes,
-                persons: state.persons,
-                saved: state.saved,
-                sideByMonth: state.sideByMonth
-              });
-            } catch (error) {
-              console.error('Error saving budget:', error);
-              set({ error: error.message });
-            }
-          }
+          set({ incomeTypes: newIncomeTypes, incomes: newIncomes });
+          scheduleSave();
         },
 
-        removeIncomeType: async (type) => {
+        removeIncomeType: (type) => {
           const state = get();
           const { [type]: _, ...rest } = state.incomes;
           const newIncomeTypes = state.incomeTypes.filter((t) => t !== type);
           
-          set({
-            incomeTypes: newIncomeTypes,
-            incomes: rest,
-          });
-
-          if (state.user) {
-            try {
-              await budgetService.saveBudget(state.user.id, {
-                months: state.months,
-                categories: state.categories,
-                data: state.data,
-                revenus: state.revenus,
-                incomeTypes: newIncomeTypes,
-                incomes: rest,
-                persons: state.persons,
-                saved: state.saved,
-                sideByMonth: state.sideByMonth
-              });
-            } catch (error) {
-              console.error('Error saving budget:', error);
-              set({ error: error.message });
-            }
-          }
+          set({ incomeTypes: newIncomeTypes, incomes: rest });
+          scheduleSave();
         },
 
-        renameIncomeType: async (oldType, newType) => {
+        renameIncomeType: (oldType, newType) => {
           const state = get();
           if (state.incomeTypes.includes(newType)) return;
 
@@ -413,55 +277,19 @@ const useStore = create(
           delete newIncomes[oldType];
           
           set({ incomeTypes: newIncomeTypes, incomes: newIncomes });
-
-          if (state.user) {
-            try {
-              await budgetService.saveBudget(state.user.id, {
-                months: state.months,
-                categories: state.categories,
-                data: state.data,
-                revenus: state.revenus,
-                incomeTypes: newIncomeTypes,
-                incomes: newIncomes,
-                persons: state.persons,
-                saved: state.saved,
-                sideByMonth: state.sideByMonth
-              });
-            } catch (error) {
-              console.error('Error saving budget:', error);
-              set({ error: error.message });
-            }
-          }
+          scheduleSave();
         },
 
-        setSideByMonth: async (monthIdx, value) => {
+        setSideByMonth: (monthIdx, value) => {
           const state = get();
           const newSide = [...state.sideByMonth];
           newSide[monthIdx] = value;
           
           set({ sideByMonth: newSide });
-
-          if (state.user) {
-            try {
-              await budgetService.saveBudget(state.user.id, {
-                months: state.months,
-                categories: state.categories,
-                data: state.data,
-                revenus: state.revenus,
-                incomeTypes: state.incomeTypes,
-                incomes: state.incomes,
-                persons: state.persons,
-                saved: state.saved,
-                sideByMonth: newSide
-              });
-            } catch (error) {
-              console.error('Error saving budget:', error);
-              set({ error: error.message });
-            }
-          }
+          scheduleSave();
         },
 
-        renameCategory: async (oldName, newName) => {
+        renameCategory: (oldName, newName) => {
           const state = get();
           const newData = { ...state.data };
           const newCategories = [...state.categories];
@@ -473,29 +301,8 @@ const useStore = create(
             delete newData[oldName];
           }
           
-          set({
-            categories: newCategories,
-            data: newData
-          });
-
-          if (state.user) {
-            try {
-              await budgetService.saveBudget(state.user.id, {
-                months: state.months,
-                categories: newCategories,
-                data: newData,
-                revenus: state.revenus,
-                incomeTypes: state.incomeTypes,
-                incomes: state.incomes,
-                persons: state.persons,
-                saved: state.saved,
-                sideByMonth: state.sideByMonth
-              });
-            } catch (error) {
-              console.error('Error saving budget:', error);
-              set({ error: error.message });
-            }
-          }
+          set({ categories: newCategories, data: newData });
+          scheduleSave();
         },
 
         logout: () => {
@@ -516,7 +323,7 @@ const useStore = create(
           });
         },
 
-        renameMonth: async (oldMonth, newMonth) => {
+        renameMonth: (oldMonth, newMonth) => {
           const state = get();
           const monthIdx = state.months.indexOf(oldMonth);
           if (monthIdx === -1) return;
@@ -524,29 +331,26 @@ const useStore = create(
           const newMonths = [...state.months];
           newMonths[monthIdx] = newMonth;
 
-          set({
-            months: newMonths
-          });
+          set({ months: newMonths });
+          scheduleSave();
+        },
 
-          if (state.user) {
-            try {
-              await budgetService.saveBudget(state.user.id, {
-                months: newMonths,
-                categories: state.categories,
-                data: state.data,
-                revenus: state.revenus,
-                incomeTypes: state.incomeTypes,
-                incomes: state.incomes,
-                persons: state.persons,
-                saved: state.saved,
-                sideByMonth: state.sideByMonth,
-                totalPotentialSavings: state.totalPotentialSavings
-              });
-            } catch (error) {
-              console.error('Error saving budget:', error);
-              set({ error: error.message });
-            }
-          }
+        reorderCategories: (sourceIdx, destIdx) => {
+          const state = get();
+          const newCategories = Array.from(state.categories);
+          const [moved] = newCategories.splice(sourceIdx, 1);
+          newCategories.splice(destIdx, 0, moved);
+          set({ categories: newCategories });
+          scheduleSave();
+        },
+
+        reorderIncomeTypes: (sourceIdx, destIdx) => {
+          const state = get();
+          const newIncomeTypes = Array.from(state.incomeTypes);
+          const [moved] = newIncomeTypes.splice(sourceIdx, 1);
+          newIncomeTypes.splice(destIdx, 0, moved);
+          set({ incomeTypes: newIncomeTypes });
+          scheduleSave();
         },
       };
     },

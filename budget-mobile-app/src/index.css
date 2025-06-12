@@ -435,3 +435,8 @@ input[type="submit"] {
 .tableau button.add:hover {
   background: #2d3748;
 }
+
+/* Dark mode inversion rapide */
+.dark-mode {
+  filter: invert(1) hue-rotate(180deg);
+}

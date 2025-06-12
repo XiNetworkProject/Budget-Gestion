@@ -1,0 +1,9 @@
+{
+  "app": { "title": "Budget Management" },
+  "theme": { "light": "Light", "dark": "Dark" },
+  "logout": "Logout",
+  "nav": { "table": "Table", "chart": "Visualization" },
+  "login": { "title": "Login to Budget Management" },
+  "dashboard": { "title": "Dashboard", "tableTitle": "Budget Table" },
+  "budget": { "title": "Budget" }
+} 

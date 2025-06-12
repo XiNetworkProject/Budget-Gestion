@@ -1,0 +1,9 @@
+{
+  "app": { "title": "Budget Gestion" },
+  "theme": { "light": "Light", "dark": "Dark" },
+  "logout": "Déconnexion",
+  "nav": { "table": "Tableau", "chart": "Visualisation" },
+  "login": { "title": "Connexion à Budget Gestion" },
+  "dashboard": { "title": "Tableau de bord", "tableTitle": "Tableau de Budget" },
+  "budget": { "title": "Budget" }
+} 
