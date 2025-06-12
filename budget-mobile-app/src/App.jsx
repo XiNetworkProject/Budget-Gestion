@@ -263,16 +263,6 @@ function TableView({ isCompact, setIsCompact }) {
     }
   };
 
-  // Placeholder skeleton pendant le chargement initial
-  if (isLoading) {
-    return (
-      <div className="p-4">
-        <Skeleton height={40} count={5} style={{ marginBottom: '8px' }} />
-        <Skeleton height={200} />
-      </div>
-    );
-  }
-
   // Fonction pour gérer le swipe
   const handleSwipe = (direction) => {
     if (direction === 'left' && currentMonthIndex < months.length - 1) {
@@ -332,6 +322,16 @@ function TableView({ isCompact, setIsCompact }) {
   const reste = Math.max(ecoMois - side, 0);
 
   const potentielMiseDeCoteTotal = sideByMonth.reduce((acc, val) => acc + val, 0);
+
+  // Placeholder skeleton pendant le chargement initial
+  if (isLoading) {
+    return (
+      <div className="p-4">
+        <Skeleton height={40} count={5} style={{ marginBottom: '8px' }} />
+        <Skeleton height={200} />
+      </div>
+    );
+  }
 
   // Vue portrait : n'affiche qu'un seul mois
   if (!isLandscape) {
