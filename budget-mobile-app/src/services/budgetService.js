@@ -16,6 +16,12 @@ export const budgetService = {
         body: JSON.stringify({ userId, ...data }),
       });
 
+      // Déconnexion automatique si session expirée ou non autorisée
+      if (response.status === 401 || response.status === 403) {
+        useStore.getState().logout();
+        throw new Error('Session expirée, reconnecte-toi');
+      }
+
       if (!response.ok) {
         const error = await response.json();
         console.error('Erreur de sauvegarde:', error);
@@ -39,6 +45,12 @@ export const budgetService = {
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const response = await fetch(`${API_URL}/api/budget/${userId}`, { headers });
       
+      // Déconnexion automatique si session expirée ou non autorisée
+      if (response.status === 401 || response.status === 403) {
+        useStore.getState().logout();
+        throw new Error('Session expirée, reconnecte-toi');
+      }
+
       if (!response.ok) {
         const error = await response.json();
         console.error('Erreur de récupération:', error);
@@ -62,6 +74,12 @@ export const budgetService = {
         method: 'DELETE',
         headers
       });
+
+      // Déconnexion automatique si session expirée ou non autorisée
+      if (response.status === 401 || response.status === 403) {
+        useStore.getState().logout();
+        throw new Error('Session expirée, reconnecte-toi');
+      }
 
       if (!response.ok) {
         throw new Error('Failed to delete budget');

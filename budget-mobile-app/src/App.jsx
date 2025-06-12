@@ -484,9 +484,6 @@ function TableView({ isCompact, setIsCompact }) {
           WebkitOverflowScrolling: 'touch',
           msOverflowStyle: 'none',
           scrollbarWidth: 'none',
-          '&::-webkit-scrollbar': {
-            display: 'none'
-          },
           transform: 'translateZ(0)',
           backfaceVisibility: 'hidden',
           perspective: '1000px',
