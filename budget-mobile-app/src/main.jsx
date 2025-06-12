@@ -3,6 +3,15 @@ import { createRoot } from 'react-dom/client'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import './index.css'
 import './i18n'
+// Supprimer les warnings React sur defaultProps dans les composants memo
+const suppressedErrors = [/Support for defaultProps/];
+const originalConsoleError = console.error.bind(console);
+console.error = (...args) => {
+  if (typeof args[0] === 'string' && suppressedErrors.some(re => re.test(args[0]))) {
+    return;
+  }
+  originalConsoleError(...args);
+};
 import App from './App.jsx'
 import { Toaster } from 'react-hot-toast'
 
