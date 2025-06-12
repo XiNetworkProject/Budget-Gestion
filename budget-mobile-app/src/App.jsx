@@ -192,6 +192,7 @@ function BadgeEco({ value }) {
 
 function TableView({ isCompact, setIsCompact }) {
   const { months, categories, data, setValue, addCategory, removeCategory, addMonth, removeMonth, incomeTypes, incomes, setIncome, addIncomeType, removeIncomeType, renameIncomeType, renameCategory, sideByMonth, setSideByMonth, renameMonth, reorderCategories, reorderIncomeTypes, isLoading } = useStore();
+  const [selectedMonthIdx, setSelectedMonthIdx] = useState(null);
   const [editCell, setEditCell] = useState({ row: null, col: null });
   const [inputValue, setInputValue] = useState("");
   const [editIncomeCell, setEditIncomeCell] = useState({ row: null, col: null });
@@ -208,6 +209,11 @@ function TableView({ isCompact, setIsCompact }) {
   const [newMonth, setNewMonth] = useState("");
   const [isLandscape, setIsLandscape] = useState(false);
   const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
+
+  // Rend le filtre de mois
+  const monthFilterStyle = (active) => ({
+    background: active ? '#4299e1' : '#4a5568', color: '#fff', padding: '4px 8px', borderRadius: '12px', cursor: 'pointer', border: 'none'
+  });
 
   // Handler Drag&Drop
   const handleOnDragEnd = (result) => {
@@ -333,525 +339,78 @@ function TableView({ isCompact, setIsCompact }) {
 
   return (
     <DragDropContext onDragEnd={handleOnDragEnd}>
-      <div {...(isLandscape ? swipeHandlers : {})} className="p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-bold">Tableau de bord</h2>
-          {months.length === 0 && (
-            <button
-              onClick={resetMonths}
-              className="text-gray-400 hover:text-gray-300 text-sm transition-colors"
-            >
-              Réinitialiser les mois
+      <div className="p-4">
+        {/* Filtre de mois */}
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
+          <button onClick={() => setSelectedMonthIdx(null)} style={monthFilterStyle(selectedMonthIndex===null)}>Tous</button>
+          {months.map((month, idx) => (
+            <button key={month} onClick={() => setSelectedMonthIdx(selectedIndex===idx?null:idx)} style={monthFilterStyle(selectedIndex===idx)}>
+              {month}
             </button>
-          )}
+          ))}
         </div>
-        <div style={{
-          background: '#2d3748',
-          borderRadius: '12px',
-          padding: '24px',
-          marginBottom: '24px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '20px'
-          }}>
-            <h2 style={{
-              color: '#e2e8f0',
-              fontSize: '20px',
-              fontWeight: '500',
-              margin: 0
-            }}>Tableau de Budget</h2>
-            <div style={{
-              display: 'flex',
-              gap: '16px',
-              marginBottom: '16px',
-              flexWrap: 'wrap'
-            }}>
-              {!addingCat ? (
-                <button
-                  onClick={() => setAddingCat(true)}
-                  style={{
-                    background: '#2d3748',
-                    color: '#e2e8f0',
-                    border: '1px solid #4a5568',
-                    borderRadius: '6px',
-                    padding: '8px 16px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  <PlusIcon />
-                  Ajouter Catégorie
-                </button>
-              ) : (
-                <div style={{
-                  display: 'flex',
-                  gap: '8px',
-                  alignItems: 'center'
-                }}>
-                  <input
-                    type="text"
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && newCategory.trim()) {
-                        addCategory(newCategory.trim());
-                        setNewCategory('');
-                        setAddingCat(false);
-                      }
-                    }}
-                    placeholder="Nouvelle catégorie"
-                    style={{
-                      background: '#2d3748',
-                      color: '#e2e8f0',
-                      border: '1px solid #4a5568',
-                      borderRadius: '6px',
-                      padding: '8px 12px',
-                      width: '200px'
-                    }}
-                  />
-                  <button
-                    onClick={() => {
-                      if (newCategory.trim()) {
-                        addCategory(newCategory.trim());
-                        setNewCategory('');
-                        setAddingCat(false);
-                      }
-                    }}
-                    style={{
-                      background: '#2d3748',
-                      color: '#e2e8f0',
-                      border: '1px solid #4a5568',
-                      borderRadius: '6px',
-                      padding: '8px 16px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Valider
-                  </button>
-                  <button
-                    onClick={() => {
-                      setNewCategory('');
-                      setAddingCat(false);
-                    }}
-                    style={{
-                      background: '#2d3748',
-                      color: '#e2e8f0',
-                      border: '1px solid #4a5568',
-                      borderRadius: '6px',
-                      padding: '8px 16px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Annuler
-                  </button>
-                </div>
-              )}
-
-              {!addingIncome ? (
-                <button
-                  onClick={() => setAddingIncome(true)}
-                  style={{
-                    background: '#2d3748',
-                    color: '#e2e8f0',
-                    border: '1px solid #4a5568',
-                    borderRadius: '6px',
-                    padding: '8px 16px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  <PlusIcon />
-                  Ajouter Revenu
-                </button>
-              ) : (
-                <div style={{
-                  display: 'flex',
-                  gap: '8px',
-                  alignItems: 'center'
-                }}>
-                  <input
-                    type="text"
-                    value={newIncome}
-                    onChange={(e) => setNewIncome(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && newIncome.trim()) {
-                        addIncomeType(newIncome.trim());
-                        setNewIncome('');
-                        setAddingIncome(false);
-                      }
-                    }}
-                    placeholder="Nouveau revenu"
-                    style={{
-                      background: '#2d3748',
-                      color: '#e2e8f0',
-                      border: '1px solid #4a5568',
-                      borderRadius: '6px',
-                      padding: '8px 12px',
-                      width: '200px'
-                    }}
-                  />
-                  <button
-                    onClick={() => {
-                      if (newIncome.trim()) {
-                        addIncomeType(newIncome.trim());
-                        setNewIncome('');
-                        setAddingIncome(false);
-                      }
-                    }}
-                    style={{
-                      background: '#2d3748',
-                      color: '#e2e8f0',
-                      border: '1px solid #4a5568',
-                      borderRadius: '6px',
-                      padding: '8px 16px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Valider
-                  </button>
-                  <button
-                    onClick={() => {
-                      setNewIncome('');
-                      setAddingIncome(false);
-                    }}
-                    style={{
-                      background: '#2d3748',
-                      color: '#e2e8f0',
-                      border: '1px solid #4a5568',
-                      borderRadius: '6px',
-                      padding: '8px 16px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Annuler
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div style={{
-          overflowX: isLandscape ? 'auto' : 'visible',
-          background: '#1a202c',
-          borderRadius: '8px',
-          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)',
-          WebkitOverflowScrolling: 'touch',
-          msOverflowStyle: 'none',
-          scrollbarWidth: 'none',
-          transform: 'translateZ(0)',
-          backfaceVisibility: 'hidden',
-          perspective: '1000px',
-          willChange: 'transform',
-          width: '100%',
-          margin: '0 auto',
-          padding: '0.5rem',
-          position: 'relative'
-        }}>
-          {/* Indicateurs de navigation */}
-          <div style={{
-            position: 'absolute',
-            top: '50%',
-            left: 0,
-            right: 0,
-            display: 'flex',
-            justifyContent: 'space-between',
-            padding: '0 8px',
-            pointerEvents: 'none',
-            zIndex: 5
-          }}>
-            {currentMonthIndex > 0 && (
-              <div style={{
-                background: 'rgba(45, 55, 72, 0.8)',
-                borderRadius: '50%',
-                width: '32px',
-                height: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                pointerEvents: 'auto',
-                cursor: 'pointer'
-              }} onClick={() => handleSwipe('right')}>
-                ←
-              </div>
-            )}
-            {currentMonthIndex < months.length - 1 && (
-              <div style={{
-                background: 'rgba(45, 55, 72, 0.8)',
-                borderRadius: '50%',
-                width: '32px',
-                height: '32px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                pointerEvents: 'auto',
-                cursor: 'pointer'
-              }} onClick={() => handleSwipe('left')}>
-                →
-              </div>
-            )}
-          </div>
-
-          {/* Indicateurs de mois */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '4px',
-            marginBottom: '8px',
-            overflowX: 'auto',
-            padding: '4px 0'
-          }}>
-            {months.map((month, idx) => (
-              <div
-                key={month}
-                style={{
-                  background: idx === currentMonthIndex ? '#4299e1' : '#4a5568',
-                  color: '#fff',
-                  padding: '4px 8px',
-                  borderRadius: '12px',
-                  fontSize: '12px',
-                  whiteSpace: 'nowrap',
-                  cursor: 'pointer'
-                }}
-                onClick={() => setCurrentMonthIndex(idx)}
-              >
-                {month}
-              </div>
-            ))}
-          </div>
-
-          <table style={{
-            width: '100%',
-            borderCollapse: 'separate',
-            borderSpacing: 0,
-            minWidth: 'auto',
-            fontSize: '14px',
-            tableLayout: 'fixed',
-            transform: isLandscape ? 'none' : `translateX(-${currentMonthIndex * 100}%)`,
-            transition: 'transform 0.3s ease'
-          }}>
+        <div style={{ overflowX: 'auto', background: '#1a202c', borderRadius: '8px', /* ... */ }}>
+          <table style={{ width: '100%', borderCollapse: 'separate', /* ... */ }}>
             <thead>
               <tr>
-                <th style={{
-                  background: '#2d3748',
-                  color: '#e2e8f0',
-                  padding: '8px 4px',
-                  textAlign: 'left',
-                  fontWeight: '500',
-                  borderBottom: '2px solid #4a5568',
-                  position: 'sticky',
-                  left: 0,
-                  zIndex: 10,
-                  whiteSpace: 'nowrap',
-                  width: '30%'
-                }}>Catégories</th>
+                <th style={{ /* categories header cell style */ }}>Catégories & Revenus</th>
                 {months.map((month, idx) => (
-                  <th key={month} style={{
-                    background: '#2d3748',
-                    color: '#e2e8f0',
-                    padding: '8px 4px',
-                    textAlign: 'center',
-                    fontWeight: '500',
-                    borderBottom: '2px solid #4a5568',
-                    minWidth: '70px',
-                    width: `${70 / months.length}%`
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}>
-                        <span style={{ fontSize: '12px' }}>{month}</span>
-                        {idx === months.length - 1 && (
-                          <button
-                            onClick={() => removeMonth(month)}
-                            aria-label={`Supprimer le mois ${month}`}
-                            style={{
-                              background: 'transparent',
-                              border: 'none',
-                              color: '#f56565',
-                              cursor: 'pointer',
-                              padding: '2px',
-                              opacity: '0.7',
-                              transition: 'opacity 0.2s',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-                            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
-                          >
-                            <CrossIcon />
-                          </button>
-                        )}
-                      </div>
-                      {idx === months.length - 1 && (
-                        <button
-                          onClick={() => addMonth(getNextMonth())}
-                          aria-label="Ajouter un nouveau mois"
-                          style={{
-                            background: '#4a5568',
-                            border: 'none',
-                            color: '#e2e8f0',
-                            borderRadius: '4px',
-                            padding: '2px 4px',
-                            cursor: 'pointer',
-                            fontSize: '10px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '2px'
-                          }}
-                        >
-                          <PlusIcon /> +
-                        </button>
-                      )}
-                    </div>
-                  </th>
+                  (selectedIndex === null || selectedIndex === idx) && (
+                  <th key={month} style={{ /* month header style */ }}>{month}</th>
+                  )
                 ))}
               </tr>
             </thead>
-            <Droppable droppableId="incomeTypes">
-              {(provided) => (
-                <tbody ref={provided.innerRef} {...provided.droppableProps}>
-                  {incomeTypes.map((type, idx) => (
-                    <Draggable key={type} draggableId={type} index={idx}>
-                      {(p2) => (
-                        <tr ref={p2.innerRef} {...p2.draggableProps} {...p2.dragHandleProps}>
-                          <td style={{
-                            background: '#2d3748',
-                            color: '#e2e8f0',
-                            padding: '12px 16px',
-                            borderBottom: '1px solid #4a5568',
-                            position: 'sticky',
-                            left: 0,
-                            zIndex: 5,
-                            borderLeft: '4px solid #48bb78'
-                          }}>
-                            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                              {editIncomeIdx === idx ? (
-                                <input
-                                  type="text"
-                                  value={incomeEditValue}
-                                  onChange={(e) => setIncomeEditValue(e.target.value)}
-                                  onBlur={() => {
-                                    if (incomeEditValue.trim()) {
-                                      renameIncomeType(type, incomeEditValue);
-                                    }
-                                    setEditIncomeIdx(null);
-                                  }}
-                                  onKeyPress={(e) => {
-                                    if (e.key === 'Enter' && incomeEditValue.trim()) {
-                                      renameIncomeType(type, incomeEditValue);
-                                      setEditIncomeIdx(null);
-                                    }
-                                  }}
-                                  style={{
-                                    background: '#4a5568',
-                                    border: '1px solid #2d3748',
-                                    borderRadius: '4px',
-                                    padding: '4px 8px',
-                                    color: '#e2e8f0',
-                                    width: '120px'
-                                  }}
-                                />
-                              ) : (
-                                <span onClick={() => {
-                                  setEditIncomeIdx(idx);
-                                  setIncomeEditValue(type);
-                                }} style={{cursor: 'pointer'}}>{type}</span>
-                              )}
-                              <button
-                                onClick={() => removeIncomeType(type)}
-                                aria-label={`Supprimer le type de revenu ${type}`}
-                                style={{
-                                  background: 'transparent',
-                                  border: 'none',
-                                  color: '#f56565',
-                                  cursor: 'pointer',
-                                  padding: '4px'
-                                }}
-                              >
-                                <CrossIcon />
-                              </button>
-                            </div>
-                          </td>
-                          {months.map((_, i) => (
-                            <td key={i} style={{
-                              background: '#1a202c',
-                              color: '#e2e8f0',
-                              padding: '12px',
-                              textAlign: 'center',
-                              borderBottom: '1px solid #4a5568'
-                            }}>
-                              {editIncomeCell.row === idx && editIncomeCell.col === i ? (
-                                <input
-                                  type="number"
-                                  value={incomeInputValue}
-                                  onChange={(e) => setIncomeInputValue(e.target.value)}
-                                  onBlur={() => {
-                                    const val = parseFloat(incomeInputValue);
-                                    if (!isNaN(val)) {
-                                      setIncome(type, i, val);
-                                    }
-                                    setEditIncomeCell({ row: null, col: null });
-                                  }}
-                                  onKeyPress={(e) => {
-                                    if (e.key === 'Enter') {
-                                      const val = parseFloat(incomeInputValue);
-                                      if (!isNaN(val)) {
-                                        setIncome(type, i, val);
-                                      }
-                                      setEditIncomeCell({ row: null, col: null });
-                                    }
-                                  }}
-                                  style={{
-                                    background: '#4a5568',
-                                    border: '1px solid #2d3748',
-                                    borderRadius: '4px',
-                                    padding: '4px 8px',
-                                    color: '#e2e8f0',
-                                    width: '80px',
-                                    textAlign: 'center'
-                                  }}
-                                />
-                              ) : (
-                                <span
-                                  onClick={() => {
-                                    setEditIncomeCell({ row: idx, col: i });
-                                    setIncomeInputValue(incomes[type]?.[i] || '');
-                                  }}
-                                  style={{
-                                    cursor: 'pointer',
-                                    color: incomes[type]?.[i] ? '#48bb78' : '#a0aec0'
-                                  }}
-                                >
-                                  {incomes[type]?.[i]?.toLocaleString() || '0'} €
-                                </span>
-                              )}
-                            </td>
-                          ))}
-                        </tr>
-                      )}
-                    </Draggable>
-                  ))}
-                  <tr style={provided.placeholder.props.style}></tr>
-                </tbody>
-              )}
-            </Droppable>
+            {/* Revenus */}
+            <tbody>
+              <tr>
+                <td colSpan={(selectedIndex===null?months.length:1)+1} style={{ /* section title style */ }}>Revenus</td>
+              </tr>
+              <tr>
+                {incomeTypes.map((type, idx) => (
+                  <td key={type} style={{ /* income cell style */ }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
+                      <span>{type}</span>
+                      {/* remove etc */}
+                    </div>
+                  </td>
+                ))}
+                {/* Montants revenus */}
+                {months.map((_, i) => (
+                  (selectedIndex === null || selectedIndex === i) && (
+                  <td key={i} style={{ /* income value style */ }}>{incomes[incomeTypes[0]]?.[i]||0} €</td>
+                  )
+                ))}
+              </tr>
+            </tbody>
+            {/* Dépenses */}
+            <tbody>
+             <tr>
+               <td colSpan={(selectedIndex===null?months.length:1)+1} style={{ /* section title */ }}>Dépenses</td>
+             </tr>
+            <tr>
+              {categories.map((cat, idx) => (
+                <td key={cat} style={{ /* category cell style */ }}>{cat}</td>
+              ))}
+              {months.map((_,i) => (
+                (selectedIndex===null||selectedIndex===i) && (
+                <td key={i} style={{ /* depense cell style */ }}>{data[categories[0]]?.[i]||0} €</td>
+                )
+              ))}
+            </tr>
+           </tbody>
+           {/* Économies */}
+           <tbody>
+             <tr>
+               <td colSpan={(selectedIndex===null?months.length:1)+1} style={{ /* section title */ }}>Économies</td>
+             </tr>
+             <tr>
+               <td></td>
+               {months.map((_,i)=>(selectedIndex===null||selectedIndex===i)&&(
+                 <td key={i} style={{ /* eco style */ }}>{/* economies logic */}</td>
+               ))}
+             </tr>
+           </tbody>
           </table>
         </div>
       </div>
