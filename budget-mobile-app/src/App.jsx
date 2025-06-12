@@ -13,6 +13,7 @@ import 'nprogress/nprogress.css';
 import { useTranslation } from 'react-i18next';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { Draggable, Droppable } from 'react-beautiful-dnd';
+import Joyride, { STATUS } from 'react-joyride';
 
 Chart.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
