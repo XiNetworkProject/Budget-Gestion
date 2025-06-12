@@ -6,6 +6,8 @@ import { PlusIcon, CrossIcon, TableIcon, ChartIcon } from "./icons";
 import Login from "./components/Login";
 import Budget from "./components/Budget";
 import { useSwipeable } from 'react-swipeable';
+import Skeleton from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
 import { useTranslation } from 'react-i18next';
