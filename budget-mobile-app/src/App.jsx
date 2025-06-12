@@ -333,26 +333,16 @@ function TableView({ isCompact, setIsCompact }) {
     );
   }
 
-  // Vue portrait : n'affiche qu'un seul mois
+  // Vue portrait : éditez la valeur du mois sélectionné pour chaque catégorie
   if (!isLandscape) {
     return (
       <div className="p-4">
         <div style={{ display: 'flex', justifyContent: 'center', gap: '4px', marginBottom: '16px' }}>
           {months.map((month, idx) => (
-            <button key={month}
-              onClick={() => setCurrentMonthIndex(idx)}
-              style={{
-                background: idx === currentMonthIndex ? '#4299e1' : '#4a5568',
-                color: '#fff',
-                padding: '4px 8px',
-                borderRadius: '12px',
-                fontSize: '12px',
-                whiteSpace: 'nowrap',
-                cursor: 'pointer'
-              }}
-            >
-              {month}
-            </button>
+            <button key={month} onClick={() => setCurrentMonthIndex(idx)} style={{
+              background: idx === currentMonthIndex ? '#4299e1' : '#4a5568',
+              color: '#fff', padding: '4px 8px', borderRadius: '12px', fontSize: '12px', whiteSpace: 'nowrap', cursor: 'pointer'
+            }}>{month}</button>
           ))}
         </div>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -362,25 +352,33 @@ function TableView({ isCompact, setIsCompact }) {
               <th style={{ background: '#2d3748', color: '#e2e8f0', padding: '8px', textAlign: 'center' }}>{months[currentMonthIndex]}</th>
             </tr>
           </thead>
-          <List
-            height={Math.min(categories.length * 50, 400)}
-            itemCount={categories.length}
-            itemSize={50}
-            width="100%"
-            outerElementType="tbody"
-          >
-            {({ index, style }) => {
-              const cat = categories[index];
-              return (
-                <tr key={cat} style={style}>
-                  <td style={{ background: '#2d3748', color: '#e2e8f0', padding: '8px' }}>{cat}</td>
-                  <td style={{ background: '#1a202c', color: '#e2e8f0', padding: '8px', textAlign: 'center' }}>
-                    {data[cat]?.[currentMonthIndex]?.toLocaleString() || '0'} €
-                  </td>
-                </tr>
-              );
-            }}
-          </List>
+          <tbody>
+            {categories.map((cat, idx) => (
+              <tr key={cat}>
+                <td style={{ background: '#2d3748', color: '#e2e8f0', padding: '8px' }}>{cat}</td>
+                <td style={{ background: '#1a202c', color: '#e2e8f0', padding: '8px', textAlign: 'center' }}>
+                  {editCell.row === idx && editCell.col === currentMonthIndex ? (
+                    <input
+                      type="number"
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onBlur={() => {
+                        const val = parseFloat(inputValue);
+                        if (!isNaN(val)) setValue(cat, currentMonthIndex, val);
+                        setEditCell({ row: null, col: null });
+                      }}
+                      onKeyPress={(e) => e.key === 'Enter' && (() => { const val= parseFloat(inputValue); if(!isNaN(val)) setValue(cat, currentMonthIndex, val); setEditCell({row:null,col:null}); })()}
+                      style={{ background: '#4a5568', border: '1px solid #2d3748', borderRadius: '4px', padding: '4px 8px', color: '#e2e8f0', width: '80px', textAlign: 'center' }}
+                    />
+                  ) : (
+                    <span onClick={() => { setEditCell({ row: idx, col: currentMonthIndex }); setInputValue(data[cat]?.[currentMonthIndex] || ''); }} style={{ cursor: 'pointer', color: getCellColor(data[cat]?.[currentMonthIndex] || 0) }}>
+                      {data[cat]?.[currentMonthIndex]?.toLocaleString() || '0'} €
+                    </span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </div>
     );
