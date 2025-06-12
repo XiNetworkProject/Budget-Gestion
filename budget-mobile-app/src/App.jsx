@@ -190,231 +190,191 @@ function BadgeEco({ value }) {
   return <span style={{background:bg,color:'#fff',borderRadius:12,padding:'0.2em 0.8em',fontWeight:600,marginLeft:8,transition:'background 0.3s'}}>{value} €</span>;
 }
 
+// Réimplémentation de TableView pour table statique avec édition inline et boutons ▲/▼
 function TableView({ isCompact, setIsCompact }) {
-  const { months, categories, data, setValue, addCategory, removeCategory, addMonth, removeMonth, incomeTypes, incomes, setIncome, addIncomeType, removeIncomeType, renameIncomeType, renameCategory, sideByMonth, setSideByMonth, renameMonth, reorderCategories, reorderIncomeTypes, isLoading } = useStore();
-  const [selectedMonthIdx, setSelectedMonthIdx] = useState(null);
-  const [editCell, setEditCell] = useState({ row: null, col: null });
-  const [inputValue, setInputValue] = useState("");
+  const { months, incomeTypes, incomes, categories, data, setIncome, setValue, addIncomeType, removeIncomeType, renameIncomeType, addCategory, removeCategory, renameCategory, reorderIncomeTypes, reorderCategories, addMonth, removeMonth, isLoading } = useStore();
   const [editIncomeCell, setEditIncomeCell] = useState({ row: null, col: null });
   const [incomeInputValue, setIncomeInputValue] = useState("");
-  const [editCatIdx, setEditCatIdx] = useState(null);
-  const [catEditValue, setCatEditValue] = useState("");
+  const [editExpenseCell, setEditExpenseCell] = useState({ row: null, col: null });
+  const [expenseInputValue, setExpenseInputValue] = useState("");
   const [editIncomeIdx, setEditIncomeIdx] = useState(null);
   const [incomeEditValue, setIncomeEditValue] = useState("");
-  const [addingCat, setAddingCat] = useState(false);
-  const [newCategory, setNewCategory] = useState('');
+  const [editCatIdx, setEditCatIdx] = useState(null);
+  const [catEditValue, setCatEditValue] = useState("");
   const [addingIncome, setAddingIncome] = useState(false);
-  const [newIncome, setNewIncome] = useState('');
+  const [newIncome, setNewIncome] = useState("");
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
   const [addingMonth, setAddingMonth] = useState(false);
   const [newMonth, setNewMonth] = useState("");
-  const [isLandscape, setIsLandscape] = useState(false);
-  const [currentMonthIndex, setCurrentMonthIndex] = useState(0);
 
-  // Rend le filtre de mois
-  const monthFilterStyle = (active) => ({
-    background: active ? '#4299e1' : '#4a5568', color: '#fff', padding: '4px 8px', borderRadius: '12px', cursor: 'pointer', border: 'none'
-  });
-
-  // Handler Drag&Drop
-  const handleOnDragEnd = (result) => {
-    if (!result.destination) return;
-    if (result.source.droppableId === 'incomeTypes') {
-      reorderIncomeTypes(result.source.index, result.destination.index);
-    }
-    if (result.source.droppableId === 'categories') {
-      reorderCategories(result.source.index, result.destination.index);
-    }
-  };
-
-  // Ajouter un écouteur pour la rotation de l'écran
-  useEffect(() => {
-    const handleResize = () => {
-      setIsLandscape(window.innerWidth > window.innerHeight);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Navigation clavier (← →)
-  useEffect(() => {
-    const handleKey = (e) => {
-      if (e.key === 'ArrowLeft') setCurrentMonthIndex(i => Math.max(i - 1, 0));
-      if (e.key === 'ArrowRight') setCurrentMonthIndex(i => Math.min(i + 1, months.length - 1));
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [months]);
-  
-  // Synchroniser le mois sélectionné avec l'URL
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const moisParam = params.get('mois');
-    if (moisParam) {
-      const idx = months.indexOf(moisParam);
-      if (idx >= 0) setCurrentMonthIndex(idx);
-    }
-  }, [months]);
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    params.set('mois', months[currentMonthIndex] || '');
-    window.history.replaceState(null, '', `?${params.toString()}`);
-  }, [currentMonthIndex, months]);
-  
-  // Swipeable pour vue paysage/portrait
-  const swipeHandlers = useSwipeable({
-    onSwipedLeft: () => setCurrentMonthIndex(i => Math.min(i + 1, months.length - 1)),
-    onSwipedRight: () => setCurrentMonthIndex(i => Math.max(i - 1, 0)),
-    trackMouse: true
-  });
-
-  // Fonction pour gérer le swipe
-  const handleSwipe = (direction) => {
-    if (direction === 'left' && currentMonthIndex < months.length - 1) {
-      setCurrentMonthIndex(prev => prev + 1);
-    } else if (direction === 'right' && currentMonthIndex > 0) {
-      setCurrentMonthIndex(prev => prev - 1);
-    }
-  };
-
-  const resetMonths = () => {
-    if (!window.confirm('Êtes-vous sûr de vouloir réinitialiser les mois ? Cette action supprimera toutes les données existantes.')) {
-      return;
-    }
-
-    const currentDate = new Date();
-    const currentMonth = currentDate.toLocaleString('fr-FR', { month: 'long' });
-    
-    // Ajouter le mois en cours
-    addMonth(currentMonth);
-    
-    // Ajouter les 5 mois précédents
-    for (let i = 1; i <= 5; i++) {
-      const date = new Date();
-      date.setMonth(date.getMonth() - i);
-      const monthName = date.toLocaleString('fr-FR', { month: 'long' });
-      addMonth(monthName);
-    }
-  };
-
-  // Remplacer useMemo par une fonction normale
   const getNextMonth = () => {
-    const mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-    const lastMonth = months[months.length - 1];
-    const lastMonthIndex = mois.indexOf(lastMonth);
-    return mois[(lastMonthIndex + 1) % 12];
+    const mois = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+    const last = months[months.length - 1];
+    const idx = mois.indexOf(last);
+    return mois[(idx + 1) % 12];
   };
 
-  // Optimisation des calculs de totaux
-  const totalRevenus = useMemo(() => 
-    months.map((_, i) => incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[i] || 0), 0)),
-    [months, incomeTypes, incomes]
-  );
-
-  const economies = useMemo(() => 
-    months.map((_, i) => {
-      const totalDep = categories.reduce((acc, cat) => acc + (data[cat]?.[i] || 0), 0);
-      return totalRevenus[i] - totalDep;
-    }),
-    [months, categories, data, totalRevenus]
-  );
-
-  // Calculs
-  const moisActuel = months[new Date().getMonth() % months.length] || months[0];
-  const idxMois = months.indexOf(moisActuel);
-  const ecoMois = economies[idxMois] || 0;
-  const side = sideByMonth[idxMois] || 0;
-  const reste = Math.max(ecoMois - side, 0);
-
-  const potentielMiseDeCoteTotal = sideByMonth.reduce((acc, val) => acc + val, 0);
-
-  // Placeholder skeleton pendant le chargement initial
   if (isLoading) {
-    return (
-      <div className="p-4">
-        <Skeleton height={40} count={5} style={{ marginBottom: '8px' }} />
-        <Skeleton height={200} />
-      </div>
-    );
+    return <div className="p-4">Chargement…</div>;
   }
 
   return (
-    <DragDropContext onDragEnd={handleOnDragEnd}>
-      <div className="p-4">
-        {/* Filtre de mois */}
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
-          <button onClick={() => setSelectedMonthIdx(null)} style={monthFilterStyle(selectedMonthIdx===null)}>Tous</button>
-          {months.map((month, idx) => (
-            <button key={month} onClick={() => setSelectedMonthIdx(selectedMonthIdx===idx ? null : idx)} style={monthFilterStyle(selectedMonthIdx===idx)}>
-              {month}
-            </button>
-          ))}
-        </div>
-        <div style={{ overflowX: 'auto', background: '#1a202c', borderRadius: '8px', /* ... */ }}>
-          <table style={{ width: '100%', borderCollapse: 'separate', /* ... */ }}>
-            <thead>
-              <tr>
-                <th style={{ /* categories header cell style */ }}>Catégories & Revenus</th>
-                {months.map((month, idx) => (
-                  (selectedMonthIdx === null || selectedMonthIdx === idx) && (
-                  <th key={month} style={{ /* month header style */ }}>{month}</th>
-                  )
-                ))}
-              </tr>
-            </thead>
-            {/* Revenus */}
-            <tbody>
-              <tr>
-                <td colSpan={(selectedMonthIdx===null?months.length:1)+1} style={{ /* section title style */ }}>Revenus</td>
-              </tr>
-              <tr>
-                {incomeTypes.map((type, idx) => (
-                  <td key={type} style={{ /* income cell style */ }}>
-                    <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-                      <span>{type}</span>
-                      {/* remove etc */}
-                    </div>
-                  </td>
-                ))}
-                {/* Montants revenus */}
-                {months.map((_, i) => (
-                  (selectedMonthIdx === null || selectedMonthIdx === i) && (
-                  <td key={i} style={{ /* income value style */ }}>{incomes[incomeTypes[0]]?.[i]||0} €</td>
-                  )
-                ))}
-              </tr>
-            </tbody>
-            {/* Dépenses */}
-            <tbody>
-             <tr>
-               <td colSpan={(selectedMonthIdx===null?months.length:1)+1} style={{ /* section title */ }}>Dépenses</td>
-             </tr>
-            <tr>
-              {categories.map((cat, idx) => (
-                <td key={cat} style={{ /* category cell style */ }}>{cat}</td>
+    <div className="p-4 overflow-x-auto">
+      <table className={`w-full table-auto border-separate ${isCompact ? 'text-sm' : ''}`}> 
+        <thead>
+          <tr>
+            <th>Catégories & Revenus</th>
+            {months.map((month, mi) => (
+              <th key={month}>
+                {month}
+                <button onClick={() => removeMonth(month)} className="ml-1 text-red-400">×</button>
+              </th>
+            ))}
+            <th>
+              {addingMonth ? (
+                <input
+                  type="text"
+                  value={newMonth}
+                  onChange={e => setNewMonth(e.target.value)}
+                  onBlur={() => { if (newMonth.trim()) addMonth(newMonth.trim()); setNewMonth(''); setAddingMonth(false); }}
+                  onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+                  autoFocus
+                />
+              ) : (
+                <button onClick={() => { addMonth(getNextMonth()); }} className="text-green-400">+ Mois</button>
+              )}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colSpan={months.length + 2} className="font-bold">Revenus</td></tr>
+          {incomeTypes.map((type, ri) => (
+            <tr key={type}>
+              <td>
+                {editIncomeIdx === ri ? (
+                  <input
+                    type="text"
+                    value={incomeEditValue}
+                    onChange={e => setIncomeEditValue(e.target.value)}
+                    onBlur={() => { if (incomeEditValue.trim()) renameIncomeType(incomeEditValue.trim(), ri); setEditIncomeIdx(null); }}
+                    onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+                    autoFocus
+                  />
+                ) : (
+                  <>
+                    <button disabled={ri === 0} onClick={() => reorderIncomeTypes(ri, ri - 1)}>▲</button>
+                    <button disabled={ri === incomeTypes.length - 1} onClick={() => reorderIncomeTypes(ri, ri + 1)}>▼</button>
+                    <span onDoubleClick={() => { setEditIncomeIdx(ri); setIncomeEditValue(type); }}>{type}</span>
+                    <button onClick={() => removeIncomeType(type)} className="ml-1 text-red-400">×</button>
+                  </>
+                )}
+              </td>
+              {months.map((_, mi) => (
+                <td key={mi} onClick={() => { setEditIncomeCell({ row: ri, col: mi }); setIncomeInputValue((incomes[type]?.[mi] || 0).toString()); }}>
+                  {editIncomeCell.row === ri && editIncomeCell.col === mi ? (
+                    <input
+                      type="number"
+                      value={incomeInputValue}
+                      onChange={e => setIncomeInputValue(e.target.value)}
+                      onBlur={() => { const val = parseFloat(incomeInputValue) || 0; setIncome(type, mi, val); setEditIncomeCell({ row: null, col: null }); }}
+                      onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+                      autoFocus
+                    />
+                  ) : (`${incomes[type]?.[mi] || 0} €`)}
+                </td>
               ))}
-              {months.map((_,i) => (
-                (selectedMonthIdx===null||selectedMonthIdx===i) && (
-                <td key={i} style={{ /* depense cell style */ }}>{data[categories[0]]?.[i]||0} €</td>
-                )
-              ))}
+              <td>
+                {ri === incomeTypes.length - 1 && (
+                  addingIncome ? (
+                    <input
+                      type="text"
+                      placeholder="Nouveau"
+                      value={newIncome}
+                      onChange={e => setNewIncome(e.target.value)}
+                      onBlur={() => { if (newIncome.trim()) addIncomeType(newIncome.trim()); setNewIncome(''); setAddingIncome(false); }}
+                      onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+                      autoFocus
+                    />
+                  ) : (
+                    <button onClick={() => setAddingIncome(true)} className="text-green-400">+ Ajouter</button>
+                  )
+                )}
+              </td>
             </tr>
-           </tbody>
-           {/* Économies */}
-           <tbody>
-             <tr>
-               <td colSpan={(selectedMonthIdx===null?months.length:1)+1} style={{ /* section title */ }}>Économies</td>
-             </tr>
-             <tr>
-               <td></td>
-               {months.map((_,i)=>(selectedMonthIdx===null||selectedMonthIdx===i)&&(
-                 <td key={i} style={{ /* eco style */ }}>{/* economies logic */}</td>
-               ))}
-             </tr>
-           </tbody>
-          </table>
-        </div>
+          ))}
+          <tr><td colSpan={months.length + 2} className="font-bold">Dépenses</td></tr>
+          {categories.map((cat, rc) => (
+            <tr key={cat}>
+              <td>
+                {editCatIdx === rc ? (
+                  <input
+                    type="text"
+                    value={catEditValue}
+                    onChange={e => setCatEditValue(e.target.value)}
+                    onBlur={() => { if (catEditValue.trim()) renameCategory(catEditValue.trim(), rc); setEditCatIdx(null); }}
+                    onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+                    autoFocus
+                  />
+                ) : (
+                  <>
+                    <button disabled={rc === 0} onClick={() => reorderCategories(rc, rc - 1)}>▲</button>
+                    <button disabled={rc === categories.length - 1} onClick={() => reorderCategories(rc, rc + 1)}>▼</button>
+                    <span onDoubleClick={() => { setEditCatIdx(rc); setCatEditValue(cat); }}>{cat}</span>
+                    <button onClick={() => removeCategory(cat)} className="ml-1 text-red-400">×</button>
+                  </>
+                )}
+              </td>
+              {months.map((_, mi) => (
+                <td key={mi} onClick={() => { setEditExpenseCell({ row: rc, col: mi }); setExpenseInputValue((data[cat]?.[mi] || 0).toString()); }}>
+                  {editExpenseCell.row === rc && editExpenseCell.col === mi ? (
+                    <input
+                      type="number"
+                      value={expenseInputValue}
+                      onChange={e => setExpenseInputValue(e.target.value)}
+                      onBlur={() => { const val = parseFloat(expenseInputValue) || 0; setValue(cat, mi, val); setEditExpenseCell({ row: null, col: null }); }}
+                      onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+                      autoFocus
+                    />
+                  ) : (`${data[cat]?.[mi] || 0} €`)}
+                </td>
+              ))}
+              <td>
+                {rc === categories.length - 1 && (
+                  addingCategory ? (
+                    <input
+                      type="text"
+                      placeholder="Nouveau"
+                      value={newCategory}
+                      onChange={e => setNewCategory(e.target.value)}
+                      onBlur={() => { if (newCategory.trim()) addCategory(newCategory.trim()); setNewCategory(''); setAddingCategory(false); }}
+                      onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+                      autoFocus
+                    />
+                  ) : (
+                    <button onClick={() => setAddingCategory(true)} className="text-green-400">+ Ajouter</button>
+                  )
+                )}
+              </td>
+            </tr>
+          ))}
+          <tr><td className="font-bold">Économies</td>
+            {months.map((_, mi) => {
+              const totalInc = incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[mi] || 0), 0);
+              const totalDep = categories.reduce((acc, cat) => acc + (data[cat]?.[mi] || 0), 0);
+              const eco = totalInc - totalDep;
+              return <td key={mi} className={eco >= 0 ? 'text-green-400' : 'text-red-500'}>{eco.toLocaleString('fr-FR')} €</td>;
+            })}
+            <td />
+          </tr>
+        </tbody>
+      </table>
+      <div className="mt-4">
+        <button onClick={() => setIsCompact(!isCompact)} className="p-2 bg-gray-700 rounded">
+          {isCompact ? 'Mode normal' : 'Mode compact'}
+        </button>
       </div>
-    </DragDropContext>
+    </div>
   );
 }
 
