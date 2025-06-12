@@ -342,9 +342,9 @@ function TableView({ isCompact, setIsCompact }) {
       <div className="p-4">
         {/* Filtre de mois */}
         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
-          <button onClick={() => setSelectedMonthIdx(null)} style={monthFilterStyle(selectedMonthIndex===null)}>Tous</button>
+          <button onClick={() => setSelectedMonthIdx(null)} style={monthFilterStyle(selectedMonthIdx===null)}>Tous</button>
           {months.map((month, idx) => (
-            <button key={month} onClick={() => setSelectedMonthIdx(selectedIndex===idx?null:idx)} style={monthFilterStyle(selectedIndex===idx)}>
+            <button key={month} onClick={() => setSelectedMonthIdx(selectedMonthIdx===idx ? null : idx)} style={monthFilterStyle(selectedMonthIdx===idx)}>
               {month}
             </button>
           ))}
@@ -355,7 +355,7 @@ function TableView({ isCompact, setIsCompact }) {
               <tr>
                 <th style={{ /* categories header cell style */ }}>Catégories & Revenus</th>
                 {months.map((month, idx) => (
-                  (selectedIndex === null || selectedIndex === idx) && (
+                  (selectedMonthIdx === null || selectedMonthIdx === idx) && (
                   <th key={month} style={{ /* month header style */ }}>{month}</th>
                   )
                 ))}
@@ -364,7 +364,7 @@ function TableView({ isCompact, setIsCompact }) {
             {/* Revenus */}
             <tbody>
               <tr>
-                <td colSpan={(selectedIndex===null?months.length:1)+1} style={{ /* section title style */ }}>Revenus</td>
+                <td colSpan={(selectedMonthIdx===null?months.length:1)+1} style={{ /* section title style */ }}>Revenus</td>
               </tr>
               <tr>
                 {incomeTypes.map((type, idx) => (
@@ -377,7 +377,7 @@ function TableView({ isCompact, setIsCompact }) {
                 ))}
                 {/* Montants revenus */}
                 {months.map((_, i) => (
-                  (selectedIndex === null || selectedIndex === i) && (
+                  (selectedMonthIdx === null || selectedMonthIdx === i) && (
                   <td key={i} style={{ /* income value style */ }}>{incomes[incomeTypes[0]]?.[i]||0} €</td>
                   )
                 ))}
@@ -386,14 +386,14 @@ function TableView({ isCompact, setIsCompact }) {
             {/* Dépenses */}
             <tbody>
              <tr>
-               <td colSpan={(selectedIndex===null?months.length:1)+1} style={{ /* section title */ }}>Dépenses</td>
+               <td colSpan={(selectedMonthIdx===null?months.length:1)+1} style={{ /* section title */ }}>Dépenses</td>
              </tr>
             <tr>
               {categories.map((cat, idx) => (
                 <td key={cat} style={{ /* category cell style */ }}>{cat}</td>
               ))}
               {months.map((_,i) => (
-                (selectedIndex===null||selectedIndex===i) && (
+                (selectedMonthIdx===null||selectedMonthIdx===i) && (
                 <td key={i} style={{ /* depense cell style */ }}>{data[categories[0]]?.[i]||0} €</td>
                 )
               ))}
@@ -402,11 +402,11 @@ function TableView({ isCompact, setIsCompact }) {
            {/* Économies */}
            <tbody>
              <tr>
-               <td colSpan={(selectedIndex===null?months.length:1)+1} style={{ /* section title */ }}>Économies</td>
+               <td colSpan={(selectedMonthIdx===null?months.length:1)+1} style={{ /* section title */ }}>Économies</td>
              </tr>
              <tr>
                <td></td>
-               {months.map((_,i)=>(selectedIndex===null||selectedIndex===i)&&(
+               {months.map((_,i)=>(selectedMonthIdx===null||selectedMonthIdx===i)&&(
                  <td key={i} style={{ /* eco style */ }}>{/* economies logic */}</td>
                ))}
              </tr>
