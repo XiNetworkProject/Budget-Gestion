@@ -3,6 +3,7 @@ import { MongoClient } from 'mongodb';
 import cors from 'cors';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { OAuth2Client } from 'google-auth-library';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -29,6 +30,8 @@ const dbName = process.env.VITE_MONGODB_DB;
 
 let client;
 let db;
+
+const googleClient = new OAuth2Client(process.env.VITE_GOOGLE_CLIENT_ID);
 
 async function connectToMongo() {
   try {
@@ -63,18 +66,39 @@ async function connectToMongo() {
 // Initialisation de la connexion au démarrage
 connectToMongo().catch(console.error);
 
+// Middleware pour vérifier le token Google
+async function verifyAuth(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Missing or invalid Authorization header' });
+  }
+  const token = authHeader.split(' ')[1];
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: token,
+      audience: process.env.VITE_GOOGLE_CLIENT_ID
+    });
+    const payload = ticket.getPayload();
+    req.user = { id: payload.sub, email: payload.email };
+    next();
+  } catch (err) {
+    console.error('Authentication error:', err);
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
 // Routes API
-app.post('/api/budget', async (req, res) => {
+app.post('/api/budget', verifyAuth, async (req, res) => {
   try {
-    const { userId, ...data } = req.body;
+    const { userId: _ignored, ...data } = req.body;
+    const userId = req.user.id;
     console.log('=== Sauvegarde du budget ===');
     console.log('userId:', userId);
-    console.log('Données reçues:', JSON.stringify(data, null, 2));
 
     const result = await db.collection('budgets').updateOne(
       { userId },
@@ -89,7 +113,6 @@ app.post('/api/budget', async (req, res) => {
       upsertedId: result.upsertedId
     });
 
-    // Vérification après sauvegarde
     const savedData = await db.collection('budgets').findOne({ userId });
     console.log('Données sauvegardées:', savedData ? 'Oui' : 'Non');
 
@@ -100,18 +123,22 @@ app.post('/api/budget', async (req, res) => {
   }
 });
 
-app.get('/api/budget/:userId', async (req, res) => {
+app.get('/api/budget/:userId', verifyAuth, async (req, res) => {
   try {
-    const { userId } = req.params;
+    const paramUserId = req.params.userId;
+    if (req.user.id !== paramUserId) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    const userId = paramUserId;
     console.log('=== Récupération du budget ===');
     console.log('userId:', userId);
-    
+
     const data = await db.collection('budgets').findOne({ userId });
     console.log('Données trouvées:', data ? 'Oui' : 'Non');
     if (data) {
       console.log('Structure des données:', Object.keys(data));
     }
-    
+
     res.json(data || {});
   } catch (error) {
     console.error('Erreur lors de la récupération:', error);
@@ -119,11 +146,15 @@ app.get('/api/budget/:userId', async (req, res) => {
   }
 });
 
-app.delete('/api/budget/:userId', async (req, res) => {
+app.delete('/api/budget/:userId', verifyAuth, async (req, res) => {
   try {
-    const { userId } = req.params;
+    const paramUserId = req.params.userId;
+    if (req.user.id !== paramUserId) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    const userId = paramUserId;
     const { db } = await connectToMongo();
-    
+
     await db.collection('budgets').deleteOne({ userId });
     res.json({ success: true });
   } catch (error) {

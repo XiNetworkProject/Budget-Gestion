@@ -1254,7 +1254,7 @@ function Visualisation() {
 
 const App = () => {
   const [page, setPage] = useState("tableau");
-  const { isAuthenticated, user, logout } = useStore();
+  const { isAuthenticated, user, logout, isSaving } = useStore();
   const [isCompact, setIsCompact] = useState(false);
 
   if (!isAuthenticated) {
@@ -1305,6 +1305,20 @@ const App = () => {
             </button>
           </div>
         </header>
+
+        {isSaving && (
+          <div style={{
+            backgroundColor: '#2563eb',
+            color: 'white',
+            textAlign: 'center',
+            padding: '4px 0',
+            fontSize: '0.9rem',
+            marginBottom: '16px',
+            borderRadius: '4px'
+          }}>
+            Enregistrement en cours...
+          </div>
+        )}
 
         <main>
           {page === "tableau" ? (
