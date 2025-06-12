@@ -918,7 +918,6 @@ function TableView({ isCompact, setIsCompact }) {
                           )}
                         </Draggable>
                       ))}
-                      {provided.placeholder}
                     </tbody>
                   )}
                 </Droppable>
@@ -1073,7 +1072,6 @@ function TableView({ isCompact, setIsCompact }) {
                           )}
                         </Draggable>
                       ))}
-                      {provided.placeholder}
                     </>
                   )}
                 </Droppable>
