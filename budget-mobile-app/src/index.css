@@ -19,36 +19,51 @@ h1, h2, h3 {
 }
 
 .tableau {
-  background: #222e3a;
-  border-radius: 18px;
-  box-shadow: 0 4px 24px #0004;
-  padding: 1.5rem;
+  background: #1e293b;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 1rem;
   margin: 2rem auto;
-  max-width: 95vw;
   overflow-x: auto;
-  color: #e2e8f0;
 }
 
 .tableau table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  color: #e2e8f0;
+  border-collapse: collapse;
+  table-layout: fixed;
 }
 
-.tableau th, .tableau td {
-  padding: 0.7em 1em;
-  text-align: center;
-  color: #e2e8f0;
+.tableau th,
+.tableau td {
+  padding: 0.75rem 0.5rem;
 }
 
 .tableau th {
-  background: #334155;
+  background: linear-gradient(90deg, #4b5563, #2d3748);
   color: #fff;
-  font-size: 1.1em;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
   position: sticky;
   top: 0;
+  z-index: 3;
+}
+
+.tableau td {
+  color: #e2e8f0;
+}
+
+.tableau th:first-child,
+.tableau td:first-child {
+  position: sticky;
+  left: 0;
+  background: #1e293b;
   z-index: 2;
+  text-align: left;
+}
+
+.tableau td:not(:first-child) {
+  text-align: right;
 }
 
 .tableau tr:nth-child(even) td {
@@ -56,11 +71,12 @@ h1, h2, h3 {
 }
 
 .tableau tr:nth-child(odd) td {
-  background: #222e3a;
+  background: #1e293b;
 }
 
-.tableau td {
-  border-bottom: 1px solid #334155;
+.tableau tr:hover td {
+  background: #334155;
+  transition: background 0.2s ease;
 }
 
 .btn {
