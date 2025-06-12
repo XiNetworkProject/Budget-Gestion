@@ -220,13 +220,13 @@ function TableView({ isCompact, setIsCompact }) {
   }
 
   return (
-    <div className="p-4 overflow-x-auto">
-      <table className={`w-full table-auto border-separate ${isCompact ? 'text-sm' : ''}`}> 
-        <thead>
+    <div className="p-4 overflow-x-auto bg-gray-800 rounded-lg shadow-lg">
+      <table className="min-w-full table-fixed divide-y divide-gray-700 text-gray-100">
+        <thead className="bg-gray-900 sticky top-0 z-10">
           <tr>
-            <th>Catégories & Revenus</th>
+            <th className="sticky left-0 bg-gray-900 z-20 px-4 py-2 text-left font-medium uppercase">Catégories & Revenus</th>
             {months.map((month, mi) => (
-              <th key={month}>
+              <th key={month} className="px-4 py-2 text-right font-medium uppercase">
                 {month}
                 <button onClick={() => removeMonth(month)} className="ml-1 text-red-400">×</button>
               </th>
@@ -247,11 +247,11 @@ function TableView({ isCompact, setIsCompact }) {
             </th>
           </tr>
         </thead>
-        <tbody>
-          <tr><td colSpan={months.length + 2} className="font-bold">Revenus</td></tr>
+        <tbody className="divide-y divide-gray-700">
+          <tr className="bg-gray-700"><td colSpan={months.length + 2} className="font-bold px-4 py-2 text-left">Revenus</td></tr>
           {incomeTypes.map((type, ri) => (
-            <tr key={type}>
-              <td>
+            <tr key={type} className="hover:bg-gray-700 transition-colors">
+              <td className="sticky left-0 bg-gray-800 z-10 px-4 py-2 whitespace-nowrap">
                 {editIncomeIdx === ri ? (
                   <input
                     type="text"
@@ -271,7 +271,7 @@ function TableView({ isCompact, setIsCompact }) {
                 )}
               </td>
               {months.map((_, mi) => (
-                <td key={mi} onClick={() => { setEditIncomeCell({ row: ri, col: mi }); setIncomeInputValue((incomes[type]?.[mi] || 0).toString()); }}>
+                <td key={mi} onClick={() => { setEditIncomeCell({ row: ri, col: mi }); setIncomeInputValue((incomes[type]?.[mi] || 0).toString()); }} className="px-4 py-2 text-right whitespace-nowrap">
                   {editIncomeCell.row === ri && editIncomeCell.col === mi ? (
                     <input
                       type="number"
@@ -303,10 +303,10 @@ function TableView({ isCompact, setIsCompact }) {
               </td>
             </tr>
           ))}
-          <tr><td colSpan={months.length + 2} className="font-bold">Dépenses</td></tr>
+          <tr className="bg-gray-700"><td colSpan={months.length + 2} className="font-bold px-4 py-2 text-left">Dépenses</td></tr>
           {categories.map((cat, rc) => (
-            <tr key={cat}>
-              <td>
+            <tr key={cat} className="hover:bg-gray-700 transition-colors">
+              <td className="sticky left-0 bg-gray-800 z-10 px-4 py-2 whitespace-nowrap">
                 {editCatIdx === rc ? (
                   <input
                     type="text"
@@ -326,7 +326,7 @@ function TableView({ isCompact, setIsCompact }) {
                 )}
               </td>
               {months.map((_, mi) => (
-                <td key={mi} onClick={() => { setEditExpenseCell({ row: rc, col: mi }); setExpenseInputValue((data[cat]?.[mi] || 0).toString()); }}>
+                <td key={mi} onClick={() => { setEditExpenseCell({ row: rc, col: mi }); setExpenseInputValue((data[cat]?.[mi] || 0).toString()); }} className="px-4 py-2 text-right whitespace-nowrap">
                   {editExpenseCell.row === rc && editExpenseCell.col === mi ? (
                     <input
                       type="number"
@@ -358,22 +358,17 @@ function TableView({ isCompact, setIsCompact }) {
               </td>
             </tr>
           ))}
-          <tr><td className="font-bold">Économies</td>
+          <tr className="bg-gray-700"><td className="font-bold px-4 py-2 text-left">Économies</td>
             {months.map((_, mi) => {
               const totalInc = incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[mi] || 0), 0);
               const totalDep = categories.reduce((acc, cat) => acc + (data[cat]?.[mi] || 0), 0);
               const eco = totalInc - totalDep;
-              return <td key={mi} className={eco >= 0 ? 'text-green-400' : 'text-red-500'}>{eco.toLocaleString('fr-FR')} €</td>;
+              return <td key={mi} className={`px-4 py-2 text-right ${eco >= 0 ? 'text-green-400' : 'text-red-500'}`}>{eco.toLocaleString('fr-FR')} €</td>;
             })}
-            <td />
+            <td className="px-4 py-2"></td>
           </tr>
         </tbody>
       </table>
-      <div className="mt-4">
-        <button onClick={() => setIsCompact(!isCompact)} className="p-2 bg-gray-700 rounded">
-          {isCompact ? 'Mode normal' : 'Mode compact'}
-        </button>
-      </div>
     </div>
   );
 }
