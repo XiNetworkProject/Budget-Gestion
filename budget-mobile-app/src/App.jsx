@@ -5,13 +5,6 @@ import { Chart, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElem
 import { PlusIcon, CrossIcon, TableIcon, ChartIcon } from "./icons";
 import Login from "./components/Login";
 import Budget from "./components/Budget";
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { GoogleOAuthProvider } from '@react-oauth/google'
-import { Toaster } from 'react-hot-toast';
-import './index.css'
-import Skeleton from 'react-loading-skeleton';
-import 'react-loading-skeleton/dist/skeleton.css';
 import { useSwipeable } from 'react-swipeable';
 import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
@@ -1422,11 +1415,7 @@ const App = () => {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  if (!isAuthenticated) {
-    return <Login />;
-  }
-
-  // Callback Joyride
+  // Hooks Joyride toujours appelés avant le guard auth
   const handleJoyrideCallback = (data) => {
     const { status } = data;
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
@@ -1442,6 +1431,10 @@ const App = () => {
       NProgress.done();
     }
   }, [isLoading, isSaving]);
+
+  if (!isAuthenticated) {
+    return <Login />;
+  }
 
   return (
     <>
@@ -1559,18 +1552,5 @@ const App = () => {
     </>
   );
 };
-
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
-
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <>
-        <App />
-        <Toaster position="bottom-right" />
-      </>
-    </GoogleOAuthProvider>
-  </StrictMode>,
-)
 
 export default App;
