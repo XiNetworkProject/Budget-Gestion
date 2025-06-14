@@ -193,6 +193,13 @@ function BadgeEco({ value }) {
 // Réimplémentation de TableView pour table statique avec édition inline et boutons ▲/▼
 function TableView({ isCompact, setIsCompact }) {
   const { months, incomeTypes, incomes, categories, data, setIncome, setValue, addIncomeType, removeIncomeType, renameIncomeType, addCategory, removeCategory, renameCategory, reorderIncomeTypes, reorderCategories, addMonth, removeMonth, sideByMonth, setSideByMonth, isLoading } = useStore();
+  const [highlightedCat, setHighlightedCat] = useState(null);
+  const handleReorderCategories = (sourceIdx, destIdx) => {
+    const catName = categories[sourceIdx];
+    reorderCategories(sourceIdx, destIdx);
+    setHighlightedCat(catName);
+    setTimeout(() => setHighlightedCat(null), 800);
+  };
   const [editIncomeCell, setEditIncomeCell] = useState({ row: null, col: null });
   const [incomeInputValue, setIncomeInputValue] = useState("");
   const [editExpenseCell, setEditExpenseCell] = useState({ row: null, col: null });
@@ -316,7 +323,7 @@ function TableView({ isCompact, setIsCompact }) {
           ))}
           <tr><td colSpan={months.length + 2}>Dépenses</td></tr>
           {categories.map((cat, rc) => (
-            <tr key={cat}>
+            <tr key={cat} className={highlightedCat === cat ? 'highlight-row' : ''}>
               <td>
                 {editCatIdx === rc ? (
                   <input
@@ -329,8 +336,8 @@ function TableView({ isCompact, setIsCompact }) {
                   />
                 ) : (
                   <>
-                    <button className="btn btn-action" disabled={rc === 0} onClick={() => reorderCategories(rc, rc - 1)}>▲</button>
-                    <button className="btn btn-action" disabled={rc === categories.length - 1} onClick={() => reorderCategories(rc, rc + 1)}>▼</button>
+                    <button className="btn btn-action" disabled={rc === 0} onClick={() => handleReorderCategories(rc, rc - 1)}>▲</button>
+                    <button className="btn btn-action" disabled={rc === categories.length - 1} onClick={() => handleReorderCategories(rc, rc + 1)}>▼</button>
                     <span onDoubleClick={() => { setEditCatIdx(rc); setCatEditValue(cat); }}>{cat}</span>
                     <button onClick={() => removeCategory(cat)} className="btn delete">×</button>
                   </>
