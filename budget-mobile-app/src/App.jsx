@@ -724,6 +724,8 @@ const App = () => {
         }}>
           <header style={{
             display: 'flex',
+            flexWrap: 'wrap',
+            gap: '8px',
             justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: '24px',
