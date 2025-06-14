@@ -23,17 +23,17 @@ const Login = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <div className="p-8 bg-white rounded-lg shadow-md">
-        <h1 className="mb-6 text-2xl font-bold text-center text-gray-800">
-          Connexion à Budget Gestion
-        </h1>
+    <div className="login-page">
+      <h1 className="login-title">Budget Gestion</h1>
+      <div className="login-container">
+        <h2 className="text-lg text-white">Connectez-vous pour démarrer</h2>
         <GoogleLogin
           onSuccess={handleSuccess}
           onError={handleError}
           useOneTap
         />
       </div>
+      <span className="login-watermark">XimaMDev - 2025</span>
     </div>
   );
 };

@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { Draggable, Droppable } from 'react-beautiful-dnd';
 import Joyride, { STATUS } from 'react-joyride';
+import Splash from './components/Splash';
 
 Chart.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
@@ -658,6 +659,12 @@ function Visualisation() {
 
 const App = () => {
   const { t } = useTranslation();
+  const [showSplash, setShowSplash] = useState(true);
+  useEffect(() => {
+    const timer = setTimeout(() => setShowSplash(false), 2500);
+    return () => clearTimeout(timer);
+  }, []);
+  if (showSplash) return <Splash />;
   const [page, setPage] = useState("tableau");
   const { isAuthenticated, user, logout, isSaving, isLoading } = useStore();
   const [isCompact, setIsCompact] = useState(false);
