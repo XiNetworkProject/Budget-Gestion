@@ -488,3 +488,39 @@ input[type="submit"] {
 .dark-mode {
   filter: invert(1) hue-rotate(180deg);
 }
+
+/* Header responsive */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+@media screen and (max-width: 640px) {
+  .app-header {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .app-header > * {
+    flex: 0 0 auto;
+  }
+  .app-header h1 {
+    flex: 0 0 auto;
+    font-size: 1rem;
+  }
+  .app-header .header-controls {
+    display: flex;
+    gap: 4px;
+    flex: 0 0 auto;
+  }
+}
