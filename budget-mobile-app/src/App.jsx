@@ -235,7 +235,7 @@ function TableView({ isCompact, setIsCompact }) {
             {months.map((month, mi) => (
               <th key={month}>
                 {month}
-                <button className="delete" onClick={() => removeMonth(month)}>×</button>
+                <button className="btn delete" onClick={() => removeMonth(month)}>×</button>
               </th>
             ))}
             <th>
@@ -270,10 +270,10 @@ function TableView({ isCompact, setIsCompact }) {
                   />
                 ) : (
                   <>
-                    <button className="btn-action" disabled={ri === 0} onClick={() => reorderIncomeTypes(ri, ri - 1)}>▲</button>
-                    <button className="btn-action" disabled={ri === incomeTypes.length - 1} onClick={() => reorderIncomeTypes(ri, ri + 1)}>▼</button>
+                    <button className="btn btn-action" disabled={ri === 0} onClick={() => reorderIncomeTypes(ri, ri - 1)}>▲</button>
+                    <button className="btn btn-action" disabled={ri === incomeTypes.length - 1} onClick={() => reorderIncomeTypes(ri, ri + 1)}>▼</button>
                     <span onDoubleClick={() => { setEditIncomeIdx(ri); setIncomeEditValue(type); }}>{type}</span>
-                    <button onClick={() => removeIncomeType(type)} className="delete">×</button>
+                    <button onClick={() => removeIncomeType(type)} className="btn delete">×</button>
                   </>
                 )}
               </td>
@@ -329,10 +329,10 @@ function TableView({ isCompact, setIsCompact }) {
                   />
                 ) : (
                   <>
-                    <button className="btn-action" disabled={rc === 0} onClick={() => reorderCategories(rc, rc - 1)}>▲</button>
-                    <button className="btn-action" disabled={rc === categories.length - 1} onClick={() => reorderCategories(rc, rc + 1)}>▼</button>
+                    <button className="btn btn-action" disabled={rc === 0} onClick={() => reorderCategories(rc, rc - 1)}>▲</button>
+                    <button className="btn btn-action" disabled={rc === categories.length - 1} onClick={() => reorderCategories(rc, rc + 1)}>▼</button>
                     <span onDoubleClick={() => { setEditCatIdx(rc); setCatEditValue(cat); }}>{cat}</span>
-                    <button onClick={() => removeCategory(cat)} className="delete">×</button>
+                    <button onClick={() => removeCategory(cat)} className="btn delete">×</button>
                   </>
                 )}
               </td>
