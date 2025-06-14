@@ -192,7 +192,7 @@ function BadgeEco({ value }) {
 
 // Réimplémentation de TableView pour table statique avec édition inline et boutons ▲/▼
 function TableView({ isCompact, setIsCompact }) {
-  const { months, incomeTypes, incomes, categories, data, setIncome, setValue, addIncomeType, removeIncomeType, renameIncomeType, addCategory, removeCategory, renameCategory, reorderIncomeTypes, reorderCategories, addMonth, removeMonth, isLoading } = useStore();
+  const { months, incomeTypes, incomes, categories, data, setIncome, setValue, addIncomeType, removeIncomeType, renameIncomeType, addCategory, removeCategory, renameCategory, reorderIncomeTypes, reorderCategories, addMonth, removeMonth, sideByMonth, setSideByMonth, isLoading } = useStore();
   const [editIncomeCell, setEditIncomeCell] = useState({ row: null, col: null });
   const [incomeInputValue, setIncomeInputValue] = useState("");
   const [editExpenseCell, setEditExpenseCell] = useState({ row: null, col: null });
@@ -207,6 +207,8 @@ function TableView({ isCompact, setIsCompact }) {
   const [newCategory, setNewCategory] = useState("");
   const [addingMonth, setAddingMonth] = useState(false);
   const [newMonth, setNewMonth] = useState("");
+  const [editSaveCell, setEditSaveCell] = useState(null);
+  const [saveInputValue, setSaveInputValue] = useState("");
 
   const getNextMonth = () => {
     const mois = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
@@ -371,6 +373,32 @@ function TableView({ isCompact, setIsCompact }) {
               </td>
             </tr>
           ))}
+          <tr>
+            <td>Mise de côté</td>
+            {months.map((_, mi) => {
+              const totalInc = incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[mi] || 0), 0);
+              const totalDep = categories.reduce((acc, cat) => acc + (data[cat]?.[mi] || 0), 0);
+              const defaultSave = (totalInc - totalDep) / 2;
+              const saved = sideByMonth[mi] != null ? sideByMonth[mi] : defaultSave;
+              return (
+                <td key={mi} onClick={() => { setEditSaveCell(mi); setSaveInputValue(saved.toString()); }}>
+                  {editSaveCell === mi ? (
+                    <input
+                      type="number"
+                      value={saveInputValue}
+                      onChange={e => setSaveInputValue(e.target.value)}
+                      onBlur={() => { const val = parseFloat(saveInputValue) || 0; setSideByMonth(mi, val); setEditSaveCell(null); }}
+                      onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+                      autoFocus
+                    />
+                  ) : (
+                    `${saved.toLocaleString('fr-FR')} €`
+                  )}
+                </td>
+              );
+            })}
+            <td></td>
+          </tr>
           <tr>
             <td>Économies</td>
             {months.map((_, mi) => {
