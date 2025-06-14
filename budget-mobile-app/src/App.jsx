@@ -270,8 +270,8 @@ function TableView({ isCompact, setIsCompact }) {
                   />
                 ) : (
                   <>
-                    <button disabled={ri === 0} onClick={() => reorderIncomeTypes(ri, ri - 1)}>▲</button>
-                    <button disabled={ri === incomeTypes.length - 1} onClick={() => reorderIncomeTypes(ri, ri + 1)}>▼</button>
+                    <button className="btn-action" disabled={ri === 0} onClick={() => reorderIncomeTypes(ri, ri - 1)}>▲</button>
+                    <button className="btn-action" disabled={ri === incomeTypes.length - 1} onClick={() => reorderIncomeTypes(ri, ri + 1)}>▼</button>
                     <span onDoubleClick={() => { setEditIncomeIdx(ri); setIncomeEditValue(type); }}>{type}</span>
                     <button onClick={() => removeIncomeType(type)} className="delete">×</button>
                   </>
@@ -329,8 +329,8 @@ function TableView({ isCompact, setIsCompact }) {
                   />
                 ) : (
                   <>
-                    <button disabled={rc === 0} onClick={() => reorderCategories(rc, rc - 1)}>▲</button>
-                    <button disabled={rc === categories.length - 1} onClick={() => reorderCategories(rc, rc + 1)}>▼</button>
+                    <button className="btn-action" disabled={rc === 0} onClick={() => reorderCategories(rc, rc - 1)}>▲</button>
+                    <button className="btn-action" disabled={rc === categories.length - 1} onClick={() => reorderCategories(rc, rc + 1)}>▼</button>
                     <span onDoubleClick={() => { setEditCatIdx(rc); setCatEditValue(cat); }}>{cat}</span>
                     <button onClick={() => removeCategory(cat)} className="delete">×</button>
                   </>
@@ -404,8 +404,13 @@ function TableView({ isCompact, setIsCompact }) {
             {months.map((_, mi) => {
               const totalInc = incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[mi] || 0), 0);
               const totalDep = categories.reduce((acc, cat) => acc + (data[cat]?.[mi] || 0), 0);
-              const eco = totalInc - totalDep;
-              return <td key={mi} className={getEcoColor(eco)}>{eco.toLocaleString('fr-FR')} €</td>;
+              const save = sideByMonth[mi] || 0;
+              const eco = totalInc - totalDep - save;
+              return (
+                <td key={mi} className={getEcoColor(eco)}>
+                  {eco.toLocaleString('fr-FR')} €
+                </td>
+              );
             })}
             <td></td>
           </tr>
