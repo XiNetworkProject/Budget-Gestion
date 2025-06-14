@@ -722,23 +722,9 @@ const App = () => {
           margin: '0 auto',
           padding: '16px'
         }}>
-          <header style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '8px',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '24px',
-            padding: '16px',
-            background: 'rgba(30, 41, 59, 0.8)',
-            backdropFilter: 'blur(8px)',
-            borderRadius: '12px',
-            position: 'sticky',
-            top: 0,
-            zIndex: 1000
-          }}>
+          <header className="app-header">
             <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>{t('app.title')}</h1>
-            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <div className="header-controls">
               <button
                 onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
                 style={{
