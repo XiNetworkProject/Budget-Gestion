@@ -738,7 +738,7 @@ const App = () => {
               >
                 {theme === 'dark' ? t('theme.light') : t('theme.dark')}
               </button>
-              <span style={{ color: '#94a3b8' }}>{user?.email}</span>
+              <img src={user?.picture} alt={user?.name} className="avatar" />
               <button
                 onClick={logout}
                 style={{

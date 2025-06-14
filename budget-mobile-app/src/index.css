@@ -1,5 +1,6 @@
 body {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  overflow-x: hidden;
   color: #fff;
   min-height: 100vh;
   font-family: 'Segoe UI', Arial, sans-serif;
@@ -492,10 +493,10 @@ input[type="submit"] {
 /* Header responsive */
 .app-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  flex-wrap: wrap;
   background: rgba(30, 41, 59, 0.8);
   backdrop-filter: blur(8px);
   border-radius: 12px;
@@ -507,9 +508,8 @@ input[type="submit"] {
 
 @media screen and (max-width: 640px) {
   .app-header {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    flex-wrap: wrap;
+    overflow-x: visible;
   }
   .app-header > * {
     flex: 0 0 auto;
@@ -522,5 +522,14 @@ input[type="submit"] {
     display: flex;
     gap: 4px;
     flex: 0 0 auto;
+    align-items: center;
   }
+}
+
+/* Avatar utilisateur */
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
 }
