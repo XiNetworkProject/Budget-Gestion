@@ -220,7 +220,12 @@ function TableView({ isCompact, setIsCompact }) {
   }
 
   return (
-    <div className="tableau">
+    <div className={`tableau ${isCompact ? 'compact' : ''}`}>
+      <div className="flex justify-end mb-2">
+        <button className="btn" onClick={() => setIsCompact(!isCompact)}>
+          {isCompact ? 'Vue normale' : 'Vue compacte'}
+        </button>
+      </div>
       <table style={{"--columns-count": months.length}}>
         <thead>
           <tr>
@@ -242,7 +247,7 @@ function TableView({ isCompact, setIsCompact }) {
                   autoFocus
                 />
               ) : (
-                <button onClick={() => { addMonth(getNextMonth()); }} className="text-green-400">+ Mois</button>
+                <button onClick={() => { addMonth(getNextMonth()); }} className="add">+ Mois</button>
               )}
             </th>
           </tr>
@@ -266,7 +271,7 @@ function TableView({ isCompact, setIsCompact }) {
                     <button disabled={ri === 0} onClick={() => reorderIncomeTypes(ri, ri - 1)}>▲</button>
                     <button disabled={ri === incomeTypes.length - 1} onClick={() => reorderIncomeTypes(ri, ri + 1)}>▼</button>
                     <span onDoubleClick={() => { setEditIncomeIdx(ri); setIncomeEditValue(type); }}>{type}</span>
-                    <button onClick={() => removeIncomeType(type)} className="ml-1 text-red-400">×</button>
+                    <button onClick={() => removeIncomeType(type)} className="delete">×</button>
                   </>
                 )}
               </td>
@@ -281,7 +286,11 @@ function TableView({ isCompact, setIsCompact }) {
                       onKeyDown={e => e.key === 'Enter' && e.target.blur()}
                       autoFocus
                     />
-                  ) : (`${incomes[type]?.[mi] || 0} €`)}
+                  ) : (
+                    <span style={{ color: getCellColor(incomes[type]?.[mi] || 0) }}>
+                      {`${incomes[type]?.[mi] || 0} €`}
+                    </span>
+                  )}
                 </td>
               ))}
               <td>
@@ -297,7 +306,7 @@ function TableView({ isCompact, setIsCompact }) {
                       autoFocus
                     />
                   ) : (
-                    <button onClick={() => setAddingIncome(true)} className="text-green-400">+ Ajouter</button>
+                    <button onClick={() => setAddingIncome(true)} className="add">+ Ajouter</button>
                   )
                 )}
               </td>
@@ -321,7 +330,7 @@ function TableView({ isCompact, setIsCompact }) {
                     <button disabled={rc === 0} onClick={() => reorderCategories(rc, rc - 1)}>▲</button>
                     <button disabled={rc === categories.length - 1} onClick={() => reorderCategories(rc, rc + 1)}>▼</button>
                     <span onDoubleClick={() => { setEditCatIdx(rc); setCatEditValue(cat); }}>{cat}</span>
-                    <button onClick={() => removeCategory(cat)} className="ml-1 text-red-400">×</button>
+                    <button onClick={() => removeCategory(cat)} className="delete">×</button>
                   </>
                 )}
               </td>
@@ -336,7 +345,11 @@ function TableView({ isCompact, setIsCompact }) {
                       onKeyDown={e => e.key === 'Enter' && e.target.blur()}
                       autoFocus
                     />
-                  ) : (`${data[cat]?.[mi] || 0} €`)}
+                  ) : (
+                    <span style={{ color: getCellColor(-(data[cat]?.[mi] || 0)) }}>
+                      {`${data[cat]?.[mi] || 0} €`}
+                    </span>
+                  )}
                 </td>
               ))}
               <td>
@@ -352,18 +365,19 @@ function TableView({ isCompact, setIsCompact }) {
                       autoFocus
                     />
                   ) : (
-                    <button onClick={() => setAddingCategory(true)} className="text-green-400">+ Ajouter</button>
+                    <button onClick={() => setAddingCategory(true)} className="add">+ Ajouter</button>
                   )
                 )}
               </td>
             </tr>
           ))}
-          <tr><td>Économies</td>
+          <tr>
+            <td>Économies</td>
             {months.map((_, mi) => {
               const totalInc = incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[mi] || 0), 0);
               const totalDep = categories.reduce((acc, cat) => acc + (data[cat]?.[mi] || 0), 0);
               const eco = totalInc - totalDep;
-              return <td key={mi}>{eco.toLocaleString('fr-FR')} €</td>;
+              return <td key={mi} className={getEcoColor(eco)}>{eco.toLocaleString('fr-FR')} €</td>;
             })}
             <td></td>
           </tr>
