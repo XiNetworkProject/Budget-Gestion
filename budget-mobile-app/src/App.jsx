@@ -659,20 +659,19 @@ function Visualisation() {
 
 const App = () => {
   const { t } = useTranslation();
+  // Splash screen
   const [showSplash, setShowSplash] = useState(true);
   useEffect(() => {
     const timer = setTimeout(() => setShowSplash(false), 2500);
     return () => clearTimeout(timer);
   }, []);
-  if (showSplash) return <Splash />;
+  // App state hooks (toujours appelés)
   const [page, setPage] = useState("tableau");
   const { isAuthenticated, user, logout, isSaving, isLoading } = useStore();
   const [isCompact, setIsCompact] = useState(false);
-  // Theme (dark/light)
   const [theme, setTheme] = useState(
     localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
   );
-  // Tour guidé onboarding
   const [runTour, setRunTour] = useState(false);
   const tourSteps = [
     { target: 'header h1', content: t('app.title') },
@@ -681,21 +680,16 @@ const App = () => {
     { target: '.nav button:first-child', content: 'Accède au tableau' },
     { target: '.nav button:last-child', content: 'Accède aux visualisations' },
   ];
-
   useEffect(() => {
     document.documentElement.classList.toggle('dark-mode', theme === 'dark');
     localStorage.setItem('theme', theme);
   }, [theme]);
-
-  // Hooks Joyride toujours appelés avant le guard auth
   const handleJoyrideCallback = (data) => {
     const { status } = data;
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
       setRunTour(false);
     }
   };
-
-  // Barre de chargement top
   useEffect(() => {
     if (isLoading || isSaving) {
       NProgress.start();
@@ -703,10 +697,9 @@ const App = () => {
       NProgress.done();
     }
   }, [isLoading, isSaving]);
-
-  if (!isAuthenticated) {
-    return <Login />;
-  }
+  // Conditional rendering après tous les hooks
+  if (showSplash) return <Splash />;
+  if (!isAuthenticated) return <Login />;
 
   return (
     <>
