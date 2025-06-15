@@ -31,6 +31,8 @@ const defaultSaved = {};
 defaultPersons.forEach((p) => { defaultSaved[p.name] = 0; });
 
 const defaultSideByMonth = defaultMonths.map(() => 0);
+const defaultCategoryLimits = {};
+defaultCategories.forEach(cat => { defaultCategoryLimits[cat] = 0; });
 
 const useStore = create(
   persist(
@@ -84,6 +86,7 @@ const useStore = create(
         persons: defaultPersons,
         saved: defaultSaved,
         sideByMonth: defaultSideByMonth,
+        budgetLimits: defaultCategoryLimits,
         totalPotentialSavings: 0,
 
         setUser: async (user) => {
@@ -150,8 +153,9 @@ const useStore = create(
           const newData = { ...state.data };
           newData[cat] = state.months.map(() => 0);
           const newCategories = [...state.categories, cat];
+          const newLimits = { ...state.budgetLimits, [cat]: 0 };
           
-          set({ categories: newCategories, data: newData });
+          set({ categories: newCategories, data: newData, budgetLimits: newLimits });
           scheduleSave();
         },
 
@@ -159,8 +163,9 @@ const useStore = create(
           const state = get();
           const { [cat]: _, ...rest } = state.data;
           const newCategories = state.categories.filter((c) => c !== cat);
+          const { [cat]: __, ...newLimits } = state.budgetLimits;
           
-          set({ categories: newCategories, data: rest });
+          set({ categories: newCategories, data: rest, budgetLimits: newLimits });
           scheduleSave();
         },
 
@@ -350,6 +355,13 @@ const useStore = create(
           const [moved] = newIncomeTypes.splice(sourceIdx, 1);
           newIncomeTypes.splice(destIdx, 0, moved);
           set({ incomeTypes: newIncomeTypes });
+          scheduleSave();
+        },
+
+        setCategoryLimit: (cat, value) => {
+          const state = get();
+          const newLimits = { ...state.budgetLimits, [cat]: value };
+          set({ budgetLimits: newLimits });
           scheduleSave();
         },
       };
