@@ -15,6 +15,7 @@ import { DragDropContext } from 'react-beautiful-dnd';
 import { Draggable, Droppable } from 'react-beautiful-dnd';
 import Joyride, { STATUS } from 'react-joyride';
 import Splash from './components/Splash';
+import toast from 'react-hot-toast';
 
 Chart.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
@@ -354,11 +355,18 @@ function TableView({ isCompact, setIsCompact }) {
                     type="number"
                     value={limitInputValue}
                     onChange={e => setLimitInputValue(e.target.value)}
-                    onBlur={() => { setCategoryLimit(cat, parseFloat(limitInputValue)||0); setEditingLimitCat(null); }}
-                    onKeyDown={e => e.key==='Enter'&&e.target.blur()}
+                    onBlur={() => {
+                      const val = parseFloat(limitInputValue) || 0;
+                      setCategoryLimit(cat, val);
+                      setEditingLimitCat(null);
+                      toast.success(`Plafond pour ${cat} fixé à ${val}€`);
+                    }}
+                    onKeyDown={e => e.key === 'Enter' && e.target.blur()}
                     autoFocus
                   />
-                ) : <span style={{ color: budgetLimits[cat] < 0 ? 'red' : '#fff' }}>{`${(budgetLimits[cat]||0).toLocaleString('fr-FR')} €`}</span>}
+                ) : (
+                  <span style={{ color: budgetLimits[cat] < 0 ? '#e53e3e' : '#fff' }}>{`${(budgetLimits[cat]||0).toLocaleString('fr-FR')} €`}</span>
+                )}
               </td>
               {months.map((_, mi) => (
                 <td key={mi} onClick={() => { setEditExpenseCell({ row: rc, col: mi }); setExpenseInputValue((data[cat]?.[mi] || 0).toString()); }}>
@@ -367,7 +375,16 @@ function TableView({ isCompact, setIsCompact }) {
                       type="number"
                       value={expenseInputValue}
                       onChange={e => setExpenseInputValue(e.target.value)}
-                      onBlur={() => { const val = parseFloat(expenseInputValue) || 0; setValue(cat, mi, val); setEditExpenseCell({ row: null, col: null }); }}
+                      onBlur={() => {
+                        const val = parseFloat(expenseInputValue) || 0;
+                        setValue(cat, mi, val);
+                        setEditExpenseCell({ row: null, col: null });
+                        if (val > (budgetLimits[cat] || 0)) {
+                          toast.error(`Dépassement du budget pour ${cat}: ${val} > ${budgetLimits[cat]}`);
+                        } else {
+                          toast.success('Dépense mise à jour');
+                        }
+                      }}
                       onKeyDown={e => e.key === 'Enter' && e.target.blur()}
                       autoFocus
                     />
