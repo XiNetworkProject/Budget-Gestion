@@ -193,8 +193,10 @@ function BadgeEco({ value }) {
 
 // Réimplémentation de TableView pour table statique avec édition inline et boutons ▲/▼
 function TableView({ isCompact, setIsCompact }) {
-  const { months, incomeTypes, incomes, categories, data, setIncome, setValue, addIncomeType, removeIncomeType, renameIncomeType, addCategory, removeCategory, renameCategory, reorderIncomeTypes, reorderCategories, addMonth, removeMonth, sideByMonth, setSideByMonth, isLoading } = useStore();
+  const { months, incomeTypes, incomes, categories, data, setIncome, setValue, addIncomeType, removeIncomeType, renameIncomeType, addCategory, removeCategory, renameCategory, reorderIncomeTypes, reorderCategories, addMonth, removeMonth, sideByMonth, setSideByMonth, budgetLimits, setCategoryLimit, isLoading } = useStore();
   const [highlightedCat, setHighlightedCat] = useState(null);
+  const [editingLimitCat, setEditingLimitCat] = useState(null);
+  const [limitInputValue, setLimitInputValue] = useState("");
   const handleReorderCategories = (sourceIdx, destIdx) => {
     const catName = categories[sourceIdx];
     reorderCategories(sourceIdx, destIdx);
@@ -240,6 +242,7 @@ function TableView({ isCompact, setIsCompact }) {
         <thead>
           <tr>
             <th>Catégories & Revenus</th>
+            <th>Plafond</th>
             {months.map((month, mi) => (
               <th key={month}>
                 {month}
@@ -263,7 +266,7 @@ function TableView({ isCompact, setIsCompact }) {
           </tr>
         </thead>
         <tbody>
-          <tr><td colSpan={months.length + 2}>Revenus</td></tr>
+          <tr><td colSpan={months.length + 3}>Revenus</td></tr>
           {incomeTypes.map((type, ri) => (
             <tr key={type}>
               <td>
@@ -285,6 +288,7 @@ function TableView({ isCompact, setIsCompact }) {
                   </>
                 )}
               </td>
+              <td></td>
               {months.map((_, mi) => (
                 <td key={mi} onClick={() => { setEditIncomeCell({ row: ri, col: mi }); setIncomeInputValue((incomes[type]?.[mi] || 0).toString()); }}>
                   {editIncomeCell.row === ri && editIncomeCell.col === mi ? (
@@ -322,7 +326,7 @@ function TableView({ isCompact, setIsCompact }) {
               </td>
             </tr>
           ))}
-          <tr><td colSpan={months.length + 2}>Dépenses</td></tr>
+          <tr><td colSpan={months.length + 3}>Dépenses</td></tr>
           {categories.map((cat, rc) => (
             <tr key={cat} className={highlightedCat === cat ? 'highlight-row' : ''}>
               <td>
@@ -343,6 +347,18 @@ function TableView({ isCompact, setIsCompact }) {
                     <button onClick={() => removeCategory(cat)} className="btn delete">×</button>
                   </>
                 )}
+              </td>
+              <td onClick={() => { setEditingLimitCat(cat); setLimitInputValue((budgetLimits[cat]||0).toString()); }}>
+                {editingLimitCat === cat ? (
+                  <input
+                    type="number"
+                    value={limitInputValue}
+                    onChange={e => setLimitInputValue(e.target.value)}
+                    onBlur={() => { setCategoryLimit(cat, parseFloat(limitInputValue)||0); setEditingLimitCat(null); }}
+                    onKeyDown={e => e.key==='Enter'&&e.target.blur()}
+                    autoFocus
+                  />
+                ) : <span style={{ color: budgetLimits[cat] < 0 ? 'red' : '#fff' }}>{`${(budgetLimits[cat]||0).toLocaleString('fr-FR')} €`}</span>}
               </td>
               {months.map((_, mi) => (
                 <td key={mi} onClick={() => { setEditExpenseCell({ row: rc, col: mi }); setExpenseInputValue((data[cat]?.[mi] || 0).toString()); }}>
@@ -383,6 +399,7 @@ function TableView({ isCompact, setIsCompact }) {
           ))}
           <tr>
             <td>Mise de côté</td>
+            <td></td>
             {months.map((_, mi) => {
               const totalInc = incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[mi] || 0), 0);
               const totalDep = categories.reduce((acc, cat) => acc + (data[cat]?.[mi] || 0), 0);
@@ -409,6 +426,7 @@ function TableView({ isCompact, setIsCompact }) {
           </tr>
           <tr>
             <td>Économies</td>
+            <td></td>
             {months.map((_, mi) => {
               const totalInc = incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[mi] || 0), 0);
               const totalDep = categories.reduce((acc, cat) => acc + (data[cat]?.[mi] || 0), 0);
