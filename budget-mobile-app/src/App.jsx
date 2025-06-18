@@ -5,7 +5,6 @@ import { Chart, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElem
 import { PlusIcon, CrossIcon, TableIcon, ChartIcon } from "./icons";
 import Login from "./components/Login";
 import Budget from "./components/Budget";
-import Tutorial from "./components/Tutorial";
 import { useSwipeable } from 'react-swipeable';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
@@ -708,15 +707,9 @@ const App = () => {
     user, 
     logout, 
     isSaving, 
-    isLoading, 
-    tutorialCompleted, 
-    forceTutorial,
-    setTutorialCompleted,
-    clearForceTutorial,
-    forceShowTutorial
+    isLoading
   } = useStore();
   const [isCompact, setIsCompact] = useState(false);
-  const [showTutorial, setShowTutorial] = useState(false);
   const [theme, setTheme] = useState(
     localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
   );
@@ -725,23 +718,6 @@ const App = () => {
     document.documentElement.classList.toggle('dark-mode', theme === 'dark');
     localStorage.setItem('theme', theme);
   }, [theme]);
-  
-  // Gestion du tutoriel - améliorée
-  useEffect(() => {
-    if (!showSplash && isAuthenticated && (!tutorialCompleted || forceTutorial)) {
-      console.log('Tutoriel: Conditions remplies, lancement dans 3 secondes...', { tutorialCompleted, forceTutorial });
-      // Délai pour laisser l'utilisateur s'habituer à l'interface
-      const timer = setTimeout(() => {
-        console.log('Tutoriel: Lancement maintenant');
-        setShowTutorial(true);
-        // Si c'était un relancement forcé, on nettoie l'état
-        if (forceTutorial) {
-          clearForceTutorial();
-        }
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [showSplash, isAuthenticated, tutorialCompleted, forceTutorial, clearForceTutorial]);
   
   useEffect(() => {
     if (isLoading || isSaving) {
@@ -757,16 +733,6 @@ const App = () => {
 
   return (
     <>
-      <Tutorial 
-        open={showTutorial}
-        onClose={() => setShowTutorial(false)}
-        onComplete={() => {
-          setTutorialCompleted(true);
-          setShowTutorial(false);
-          toast.success('Tutoriel terminé ! Vous pouvez le relancer depuis les paramètres.');
-        }}
-      />
-      
       <div style={{ 
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
@@ -781,42 +747,6 @@ const App = () => {
           <header className="app-header">
             <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>{t('app.title')}</h1>
             <div className="header-controls">
-              {/* Bouton de test temporaire pour le tutoriel */}
-              <button
-                onClick={() => {
-                  console.log('Test: Forcer l\'affichage du tutoriel');
-                  setShowTutorial(true);
-                }}
-                style={{
-                  background: '#1976d2',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '4px 8px',
-                  cursor: 'pointer',
-                  marginRight: '8px'
-                }}
-              >
-                Test Tutoriel
-              </button>
-              {/* Bouton de test pour forcer le relancement */}
-              <button
-                onClick={() => {
-                  console.log('Test: Forcer le relancement du tutoriel');
-                  forceShowTutorial();
-                }}
-                style={{
-                  background: '#ed6c02',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '4px 8px',
-                  cursor: 'pointer',
-                  marginRight: '8px'
-                }}
-              >
-                Force Relance
-              </button>
               <button
                 onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
                 style={{
