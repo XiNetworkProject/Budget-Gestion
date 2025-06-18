@@ -29,7 +29,6 @@ import { Pie, Bar, Line } from 'react-chartjs-2';
 import { 
   Chart as ChartJS, 
   ArcElement, 
-  Tooltip, 
   Legend, 
   CategoryScale, 
   LinearScale, 
@@ -41,7 +40,6 @@ import {
 
 ChartJS.register(
   ArcElement, 
-  Tooltip, 
   Legend, 
   CategoryScale, 
   LinearScale, 
