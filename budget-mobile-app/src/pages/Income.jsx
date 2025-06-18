@@ -39,7 +39,7 @@ import {
 } from '@mui/material';
 import {
   DeleteIcon,
-  EditIcon,
+  Edit,
   Add,
   TrendingUp,
   Work,
@@ -337,7 +337,7 @@ const Income = () => {
                     secondaryAction={
                       <>
                         <IconButton edge="end" aria-label="edit" onClick={() => handleEdit(index, incomes[type]?.[idx] || 0)}>
-                          <EditIcon />
+                          <Edit />
                         </IconButton>
                         <IconButton edge="end" aria-label="delete" color="error" onClick={() => setDeleteIdx(index)}>
                           <DeleteIcon />
