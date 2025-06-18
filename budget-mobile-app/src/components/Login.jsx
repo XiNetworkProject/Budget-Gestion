@@ -2,9 +2,11 @@ import React from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useStore } from '../store';
 import { jwtDecode } from 'jwt-decode';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const { setUser, setToken } = useStore();
+  const navigate = useNavigate();
 
   const handleSuccess = (credentialResponse) => {
     const token = credentialResponse.credential;
@@ -16,6 +18,7 @@ const Login = () => {
       name: decoded.name,
       picture: decoded.picture
     });
+    navigate('/onboarding', { replace: true });
   };
 
   const handleError = () => {
