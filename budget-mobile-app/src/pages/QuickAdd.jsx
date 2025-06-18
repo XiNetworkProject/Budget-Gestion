@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
-import Button from '../components/atoms/Button';
-import Input from '../components/atoms/Input';
-import Card from '../components/atoms/Card';
+import { Paper, Typography, TextField, Button, FormControl, InputLabel, Select, MenuItem, Box } from '@mui/material';
 
 const QuickAdd = () => {
   const { months, categories, setValue } = useStore();
@@ -17,29 +15,37 @@ const QuickAdd = () => {
   };
 
   return (
-    <div className="p-4 space-y-4">
-      <h1 className="text-2xl font-bold">Ajout Rapide</h1>
-      <Card>
-        <h2 className="text-lg font-semibold mb-2">Nouvelle dépense</h2>
-        <select
-          className="w-full mb-2 bg-secondary text-primary border border-gray-400 rounded px-3 py-2"
-          value={category}
-          onChange={e => setCategory(e.target.value)}
-        >
-          {categories.map(c => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-        <Input
+    <Box sx={{ p: 2 }}>
+      <Paper sx={{ p: 3, mb: 2 }}> 
+        <Typography variant="h5" gutterBottom>
+          Ajout Rapide
+        </Typography>
+        <FormControl fullWidth sx={{ mb: 2 }}>
+          <InputLabel id="select-category-label">Catégorie</InputLabel>
+          <Select
+            labelId="select-category-label"
+            value={category}
+            label="Catégorie"
+            onChange={e => setCategory(e.target.value)}
+          >
+            {categories.map(c => (
+              <MenuItem key={c} value={c}>{c}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <TextField
+          fullWidth
           type="number"
-          placeholder="Montant (€)"
+          label="Montant (€)"
           value={amount}
           onChange={e => setAmount(e.target.value)}
-          className="w-full mb-4"
+          sx={{ mb: 2 }}
         />
-        <Button onClick={handleAdd}>Ajouter</Button>
-      </Card>
-    </div>
+        <Button variant="contained" color="primary" onClick={handleAdd} fullWidth>
+          Ajouter
+        </Button>
+      </Paper>
+    </Box>
   );
 };
 
