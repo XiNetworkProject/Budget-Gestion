@@ -1,8 +1,77 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
-import { Box, Typography, Paper, List, ListItem, ListItemText, Divider, IconButton, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Button, Snackbar, Alert } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
+import { 
+  Box, 
+  Typography, 
+  Paper, 
+  List, 
+  ListItem, 
+  ListItemText, 
+  Divider, 
+  IconButton, 
+  TextField, 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions, 
+  Button, 
+  Snackbar, 
+  Alert,
+  Card,
+  CardContent,
+  Grid,
+  Chip,
+  Avatar,
+  Fab,
+  AppBar,
+  Toolbar,
+  Tabs,
+  Tab,
+  LinearProgress,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  InputAdornment,
+  Tooltip
+} from '@mui/material';
+import {
+  DeleteIcon,
+  EditIcon,
+  Add,
+  TrendingDown,
+  Category,
+  CalendarToday,
+  Euro,
+  ExpandMore,
+  Save,
+  Cancel,
+  Warning,
+  CheckCircle,
+  Info
+} from '@mui/icons-material';
+import { Doughnut, Bar } from 'react-chartjs-2';
+import { 
+  Chart as ChartJS, 
+  CategoryScale, 
+  LinearScale, 
+  BarElement, 
+  Title, 
+  Legend,
+  ArcElement
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale, 
+  LinearScale, 
+  BarElement, 
+  Title, 
+  Legend,
+  ArcElement
+);
 
 const Expenses = () => {
   const { months, categories, data, setValue, removeCategory } = useStore();
@@ -11,78 +80,479 @@ const Expenses = () => {
   const [editValue, setEditValue] = useState('');
   const [deleteIdx, setDeleteIdx] = useState(null);
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
+  const [activeTab, setActiveTab] = useState(0);
+  const [localExpenses, setLocalExpenses] = useState([]);
+  const [newExpense, setNewExpense] = useState({
+    category: '',
+    amount: '',
+    date: new Date().toISOString().split('T')[0],
+    description: '',
+    recurring: false
+  });
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [customCategories, setCustomCategories] = useState([]);
+
+  // Charger les données depuis localStorage
+  useEffect(() => {
+    const savedExpenses = localStorage.getItem('expensesData');
+    const savedCategories = localStorage.getItem('customCategories');
+    
+    if (savedExpenses) {
+      try {
+        setLocalExpenses(JSON.parse(savedExpenses));
+      } catch (error) {
+        console.error('Erreur lors du chargement des dépenses:', error);
+      }
+    }
+    
+    if (savedCategories) {
+      try {
+        setCustomCategories(JSON.parse(savedCategories));
+      } catch (error) {
+        console.error('Erreur lors du chargement des catégories:', error);
+      }
+    }
+  }, []);
+
+  // Sauvegarder les données
+  const saveExpenses = (expenses) => {
+    setLocalExpenses(expenses);
+    localStorage.setItem('expensesData', JSON.stringify(expenses));
+  };
+
+  const saveCategories = (categories) => {
+    setCustomCategories(categories);
+    localStorage.setItem('customCategories', JSON.stringify(categories));
+  };
 
   const handleEdit = (i, val) => {
     setEditIdx(i);
     setEditValue(val);
   };
+
   const handleEditSave = (cat) => {
     setValue(cat, idx, parseFloat(editValue) || 0);
     setEditIdx(null);
-    setSnack({ open: true, message: 'Dépense modifiée', severity: 'success' });
+    setSnack({ open: true, message: 'Dépense modifiée avec succès', severity: 'success' });
   };
+
   const handleDelete = (cat) => {
     removeCategory(cat);
     setDeleteIdx(null);
     setSnack({ open: true, message: 'Catégorie supprimée', severity: 'info' });
   };
 
+  const handleAddExpense = () => {
+    if (newExpense.category && newExpense.amount) {
+      const expense = {
+        id: Date.now(),
+        ...newExpense,
+        amount: parseFloat(newExpense.amount),
+        date: new Date(newExpense.date).toLocaleDateString('fr-FR')
+      };
+      
+      const updatedExpenses = [...localExpenses, expense];
+      saveExpenses(updatedExpenses);
+      
+      // Ajouter la catégorie si elle n'existe pas
+      if (!customCategories.includes(newExpense.category)) {
+        const updatedCategories = [...customCategories, newExpense.category];
+        saveCategories(updatedCategories);
+      }
+      
+      setNewExpense({
+        category: '',
+        amount: '',
+        date: new Date().toISOString().split('T')[0],
+        description: '',
+        recurring: false
+      });
+      setShowAddDialog(false);
+      setSnack({ open: true, message: 'Dépense ajoutée avec succès', severity: 'success' });
+    }
+  };
+
+  const handleDeleteExpense = (expenseId) => {
+    const updatedExpenses = localExpenses.filter(exp => exp.id !== expenseId);
+    saveExpenses(updatedExpenses);
+    setSnack({ open: true, message: 'Dépense supprimée', severity: 'info' });
+  };
+
+  // Calculs pour les graphiques
+  const totalExpenses = localExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const monthlyExpenses = localExpenses.reduce((sum, exp) => {
+    const month = new Date(exp.date).getMonth();
+    const currentMonth = new Date().getMonth();
+    if (month === currentMonth) {
+      return sum + exp.amount;
+    }
+    return sum;
+  }, 0);
+
+  const categoryTotals = {};
+  localExpenses.forEach(exp => {
+    categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
+  });
+
+  const doughnutData = {
+    labels: Object.keys(categoryTotals),
+    datasets: [{
+      data: Object.values(categoryTotals),
+      backgroundColor: [
+        '#FF6384',
+        '#36A2EB',
+        '#FFCE56',
+        '#4BC0C0',
+        '#9966FF',
+        '#FF9F40',
+        '#FF6384',
+        '#C9CBCF'
+      ],
+      borderWidth: 2,
+      borderColor: '#fff'
+    }]
+  };
+
+  const barData = {
+    labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+    datasets: [{
+      label: 'Dépenses hebdomadaires',
+      data: [120, 85, 200, 150, 90, 180, 95],
+      backgroundColor: 'rgba(255, 99, 132, 0.8)',
+      borderColor: 'rgba(255, 99, 132, 1)',
+      borderWidth: 1
+    }]
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'bottom'
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            return `${context.label}: ${context.parsed}€`;
+          }
+        }
+      }
+    }
+  };
+
+  const getCategoryIcon = (category) => {
+    const icons = {
+      'Alimentation': '🍔',
+      'Transport': '🚗',
+      'Loisirs': '🎬',
+      'Logement': '🏠',
+      'Santé': '💊',
+      'Shopping': '🛍️',
+      'Restaurant': '🍽️',
+      'Voyages': '✈️'
+    };
+    return icons[category] || '💰';
+  };
+
+  const getCategoryColor = (category) => {
+    const colors = {
+      'Alimentation': '#FF6384',
+      'Transport': '#36A2EB',
+      'Loisirs': '#FFCE56',
+      'Logement': '#4BC0C0',
+      'Santé': '#9966FF',
+      'Shopping': '#FF9F40'
+    };
+    return colors[category] || '#C9CBCF';
+  };
+
   return (
-    <Box sx={{ p: 2 }}>
-      <Typography variant="h5" gutterBottom>
-        Dépenses
-      </Typography>
-      <Paper>
-        <List>
-          {categories.map((cat, index) => (
-            <React.Fragment key={cat}>
-              <ListItem
-                secondaryAction={
-                  <>
-                    <IconButton edge="end" aria-label="edit" onClick={() => handleEdit(index, data[cat]?.[idx] || 0)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton edge="end" aria-label="delete" color="error" onClick={() => setDeleteIdx(index)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </>
-                }
+    <Box sx={{ pb: 8 }}>
+      {/* AppBar */}
+      <AppBar position="static" elevation={0}>
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Dépenses
+          </Typography>
+          <IconButton color="inherit">
+            <Info />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+
+      {/* KPIs */}
+      <Box sx={{ p: 2 }}>
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={6}>
+            <Card sx={{ bgcolor: 'error.main', color: 'white' }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <TrendingDown sx={{ mr: 1 }} />
+                  <Typography variant="h6">Total</Typography>
+                </Box>
+                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                  {totalExpenses.toLocaleString()}€
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                  Toutes les dépenses
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={6}>
+            <Card sx={{ bgcolor: 'warning.main', color: 'white' }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <CalendarToday sx={{ mr: 1 }} />
+                  <Typography variant="h6">Ce mois</Typography>
+                </Box>
+                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                  {monthlyExpenses.toLocaleString()}€
+                </Typography>
+                <LinearProgress 
+                  variant="determinate" 
+                  value={Math.min((monthlyExpenses / 2000) * 100, 100)} 
+                  sx={{ mt: 1, bgcolor: 'rgba(255,255,255,0.3)', '& .MuiLinearProgress-bar': { bgcolor: 'white' } }}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Tabs */}
+        <Paper sx={{ mb: 2 }}>
+          <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
+            <Tab label="Catégories" />
+            <Tab label="Historique" />
+            <Tab label="Analytics" />
+          </Tabs>
+        </Paper>
+
+        {/* Tab Content */}
+        {activeTab === 0 && (
+          <Paper>
+            <List>
+              {categories.map((cat, index) => (
+                <React.Fragment key={cat}>
+                  <ListItem
+                    secondaryAction={
+                      <>
+                        <IconButton edge="end" aria-label="edit" onClick={() => handleEdit(index, data[cat]?.[idx] || 0)}>
+                          <EditIcon />
+                        </IconButton>
+                        <IconButton edge="end" aria-label="delete" color="error" onClick={() => setDeleteIdx(index)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </>
+                    }
+                  >
+                    {editIdx === index ? (
+                      <TextField
+                        type="number"
+                        value={editValue}
+                        onChange={e => setEditValue(e.target.value)}
+                        size="small"
+                        sx={{ width: 100, mr: 2 }}
+                        onBlur={() => handleEditSave(cat)}
+                        onKeyDown={e => { if (e.key === 'Enter') handleEditSave(cat); }}
+                        autoFocus
+                        InputProps={{
+                          startAdornment: <InputAdornment position="start">€</InputAdornment>,
+                        }}
+                      />
+                    ) : (
+                      <>
+                        <ListItemText 
+                          primary={cat} 
+                          secondary={`${localExpenses.filter(exp => exp.category === cat).length} transactions`}
+                        />
+                        <Typography variant="h6" color="error.main" sx={{ fontWeight: 'bold' }}>
+                          {(data[cat]?.[idx] || 0).toLocaleString()}€
+                        </Typography>
+                      </>
+                    )}
+                  </ListItem>
+                  {index < categories.length - 1 && <Divider />}
+                  
+                  {/* Dialog de confirmation suppression */}
+                  <Dialog open={deleteIdx === index} onClose={() => setDeleteIdx(null)}>
+                    <DialogTitle>Supprimer la catégorie ?</DialogTitle>
+                    <DialogContent>
+                      Cette action supprimera la catégorie <b>{cat}</b> et toutes ses données.
+                    </DialogContent>
+                    <DialogActions>
+                      <Button onClick={() => setDeleteIdx(null)}>Annuler</Button>
+                      <Button color="error" onClick={() => handleDelete(cat)}>Supprimer</Button>
+                    </DialogActions>
+                  </Dialog>
+                </React.Fragment>
+              ))}
+            </List>
+          </Paper>
+        )}
+
+        {activeTab === 1 && (
+          <Box>
+            {localExpenses.length === 0 ? (
+              <Paper sx={{ p: 4, textAlign: 'center' }}>
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  Aucune dépense enregistrée
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Ajoutez votre première dépense en utilisant le bouton +
+                </Typography>
+              </Paper>
+            ) : (
+              <List>
+                {localExpenses.map((expense, index) => (
+                  <React.Fragment key={expense.id}>
+                    <ListItem>
+                      <ListItemText
+                        primary={
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="subtitle1">{expense.category}</Typography>
+                            {expense.recurring && (
+                              <Chip label="Récurrent" size="small" color="warning" />
+                            )}
+                          </Box>
+                        }
+                        secondary={
+                          <Box>
+                            <Typography variant="body2" color="text.secondary">
+                              {expense.date} • {expense.description}
+                            </Typography>
+                          </Box>
+                        }
+                      />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="h6" color="error.main" sx={{ fontWeight: 'bold' }}>
+                          -{expense.amount}€
+                        </Typography>
+                        <IconButton 
+                          size="small" 
+                          color="error" 
+                          onClick={() => handleDeleteExpense(expense.id)}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Box>
+                    </ListItem>
+                    {index < localExpenses.length - 1 && <Divider />}
+                  </React.Fragment>
+                ))}
+              </List>
+            )}
+          </Box>
+        )}
+
+        {activeTab === 2 && (
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <Paper sx={{ p: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                  Répartition par catégorie
+                </Typography>
+                <Box sx={{ height: 300 }}>
+                  <Doughnut data={doughnutData} options={chartOptions} />
+                </Box>
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Paper sx={{ p: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                  Dépenses hebdomadaires
+                </Typography>
+                <Box sx={{ height: 300 }}>
+                  <Bar data={barData} options={chartOptions} />
+                </Box>
+              </Paper>
+            </Grid>
+          </Grid>
+        )}
+      </Box>
+
+      {/* FAB pour ajouter */}
+      <Fab
+        color="primary"
+        aria-label="add"
+        sx={{ position: 'fixed', bottom: 80, right: 16 }}
+        onClick={() => setShowAddDialog(true)}
+      >
+        <Add />
+      </Fab>
+
+      {/* Dialog d'ajout de dépense */}
+      <Dialog open={showAddDialog} onClose={() => setShowAddDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Ajouter une dépense</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 1 }}>
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel>Catégorie</InputLabel>
+              <Select
+                value={newExpense.category}
+                onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
+                label="Catégorie"
               >
-                {editIdx === index ? (
-                  <TextField
-                    type="number"
-                    value={editValue}
-                    onChange={e => setEditValue(e.target.value)}
-                    size="small"
-                    sx={{ width: 100, mr: 2 }}
-                    onBlur={() => handleEditSave(cat)}
-                    onKeyDown={e => { if (e.key === 'Enter') handleEditSave(cat); }}
-                    autoFocus
-                  />
-                ) : (
-                  <>
-                    <ListItemText primary={cat} />
-                    <Typography>{(data[cat]?.[idx] || 0).toLocaleString()} €</Typography>
-                  </>
-                )}
-              </ListItem>
-              {index < categories.length - 1 && <Divider />}
-              {/* Dialog de confirmation suppression */}
-              <Dialog open={deleteIdx === index} onClose={() => setDeleteIdx(null)}>
-                <DialogTitle>Supprimer la catégorie ?</DialogTitle>
-                <DialogContent>
-                  Cette action supprimera la catégorie <b>{cat}</b> et toutes ses données.
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={() => setDeleteIdx(null)}>Annuler</Button>
-                  <Button color="error" onClick={() => handleDelete(cat)}>Supprimer</Button>
-                </DialogActions>
-              </Dialog>
-            </React.Fragment>
-          ))}
-        </List>
-      </Paper>
-      <Snackbar open={snack.open} autoHideDuration={2000} onClose={() => setSnack(s => ({ ...s, open: false }))} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+                {[...categories, ...customCategories].map((cat) => (
+                  <MenuItem key={cat} value={cat}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <span>{getCategoryIcon(cat)}</span>
+                      {cat}
+                    </Box>
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            
+            <TextField
+              fullWidth
+              label="Montant"
+              type="number"
+              value={newExpense.amount}
+              onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
+              sx={{ mb: 2 }}
+              InputProps={{
+                startAdornment: <InputAdornment position="start">€</InputAdornment>,
+              }}
+            />
+            
+            <TextField
+              fullWidth
+              label="Date"
+              type="date"
+              value={newExpense.date}
+              onChange={(e) => setNewExpense({ ...newExpense, date: e.target.value })}
+              sx={{ mb: 2 }}
+              InputLabelProps={{ shrink: true }}
+            />
+            
+            <TextField
+              fullWidth
+              label="Description (optionnel)"
+              value={newExpense.description}
+              onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
+              sx={{ mb: 2 }}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowAddDialog(false)}>Annuler</Button>
+          <Button 
+            onClick={handleAddExpense} 
+            variant="contained"
+            disabled={!newExpense.category || !newExpense.amount}
+          >
+            Ajouter
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar 
+        open={snack.open} 
+        autoHideDuration={3000} 
+        onClose={() => setSnack(s => ({ ...s, open: false }))} 
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
         <Alert onClose={() => setSnack(s => ({ ...s, open: false }))} severity={snack.severity} sx={{ width: '100%' }}>
           {snack.message}
         </Alert>
