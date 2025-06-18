@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Typography, Paper, List, ListItem, ListItemAvatar, Avatar, ListItemText, Divider, IconButton, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Button, Snackbar, Alert } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
+import Delete from '@mui/icons-material/Delete';
+import Edit from '@mui/icons-material/Edit';
 
 const initialItems = [
   { icon: '🍔', title: 'McD, Point Cook', date: '5 Jan 2021, Food', amount: 5.00 },
@@ -43,10 +43,10 @@ const History = () => {
                 secondaryAction={
                   <>
                     <IconButton edge="end" aria-label="edit" onClick={() => handleEdit(idx, item)}>
-                      <EditIcon />
+                      <Edit />
                     </IconButton>
                     <IconButton edge="end" aria-label="delete" color="error" onClick={() => setDeleteIdx(idx)}>
-                      <DeleteIcon />
+                      <Delete />
                     </IconButton>
                   </>
                 }

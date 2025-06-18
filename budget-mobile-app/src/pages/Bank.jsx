@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Box, Typography, Paper, List, ListItem, ListItemText, Divider, IconButton, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Button, Snackbar, Alert, Fab, Menu, MenuItem, Chip } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
+import Add from '@mui/icons-material/Add';
+import Edit from '@mui/icons-material/Edit';
+import Delete from '@mui/icons-material/Delete';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import SavingsIcon from '@mui/icons-material/Savings';
@@ -112,10 +112,10 @@ const Bank = () => {
                 secondaryAction={
                   <>
                     <IconButton edge="end" aria-label="edit" onClick={() => handleEdit(idx, account)}>
-                      <EditIcon />
+                      <Edit />
                     </IconButton>
                     <IconButton edge="end" aria-label="delete" color="error" onClick={() => setDeleteIdx(idx)}>
-                      <DeleteIcon />
+                      <Delete />
                     </IconButton>
                   </>
                 }
@@ -192,7 +192,7 @@ const Bank = () => {
         sx={{ position: 'fixed', bottom: 80, right: 16 }}
         onClick={() => setAddDialog(true)}
       >
-        <AddIcon />
+        <Add />
       </Fab>
 
       {/* Dialog d'ajout de compte */}

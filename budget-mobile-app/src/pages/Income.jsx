@@ -38,7 +38,7 @@ import {
   Tooltip
 } from '@mui/material';
 import {
-  DeleteIcon,
+  Delete,
   Edit,
   Add,
   TrendingUp,
@@ -340,7 +340,7 @@ const Income = () => {
                           <Edit />
                         </IconButton>
                         <IconButton edge="end" aria-label="delete" color="error" onClick={() => setDeleteIdx(index)}>
-                          <DeleteIcon />
+                          <Delete />
                         </IconButton>
                       </>
                     }
