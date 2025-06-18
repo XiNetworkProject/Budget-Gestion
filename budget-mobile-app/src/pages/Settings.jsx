@@ -85,7 +85,8 @@ import {
   PrivacyTip,
   Analytics,
   Timeline,
-  Assessment
+  Assessment,
+  School
 } from '@mui/icons-material';
 
 const Settings = () => {
@@ -101,7 +102,8 @@ const Settings = () => {
     deleteAccount,
     setActiveAccount,
     logout,
-    clearAllData
+    clearAllData,
+    showTutorial
   } = useStore();
 
   const [activeTab, setActiveTab] = useState(0);
@@ -236,6 +238,11 @@ const Settings = () => {
     setFeedbackDialog(false);
   };
 
+  const handleRestartTutorial = () => {
+    showTutorial();
+    setSnack({ open: true, message: 'Tutoriel relancé !', severity: 'success' });
+  };
+
   const languages = [
     { code: 'fr', name: 'Français', flag: '🇫🇷' },
     { code: 'en', name: 'English', flag: '🇬🇧' },
@@ -284,6 +291,7 @@ const Settings = () => {
           <Tab label="Apparence" />
           <Tab label="Sécurité" />
           <Tab label="Données" />
+          <Tab label="Aide" />
         </Tabs>
       </Paper>
 
@@ -740,6 +748,113 @@ const Settings = () => {
                   onClick={logout}
                 >
                   Déconnexion
+                </Button>
+              </ListItem>
+            </List>
+          </Paper>
+        </Box>
+      )}
+
+      {activeTab === 5 && (
+        <Box>
+          {/* Tutoriel */}
+          <Paper sx={{ mb: 2 }}>
+            <List>
+              <ListItem>
+                <ListItemIcon>
+                  <School color="primary" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Tutoriel interactif" 
+                  secondary="Relancer le guide d'introduction pour découvrir toutes les fonctionnalités"
+                />
+                <Button variant="outlined" size="small" onClick={handleRestartTutorial}>
+                  Relancer
+                </Button>
+              </ListItem>
+              <Divider />
+              <ListItem>
+                <ListItemIcon>
+                  <Help color="primary" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Centre d'aide" 
+                  secondary="Consulter la documentation et les FAQ"
+                />
+                <Button variant="outlined" size="small">
+                  Consulter
+                </Button>
+              </ListItem>
+              <Divider />
+              <ListItem>
+                <ListItemIcon>
+                  <Feedback color="primary" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Envoyer un feedback" 
+                  secondary="Partager vos suggestions et signaler des problèmes"
+                />
+                <Button variant="outlined" size="small" onClick={() => setFeedbackDialog(true)}>
+                  Feedback
+                </Button>
+              </ListItem>
+              <Divider />
+              <ListItem>
+                <ListItemIcon>
+                  <BugReport color="primary" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Signaler un bug" 
+                  secondary="Signaler un problème technique"
+                />
+                <Button variant="outlined" size="small">
+                  Signaler
+                </Button>
+              </ListItem>
+            </List>
+          </Paper>
+
+          {/* Informations sur l'app */}
+          <Paper sx={{ mb: 2 }}>
+            <List>
+              <ListItem>
+                <ListItemIcon>
+                  <Info color="primary" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Version de l'application" 
+                  secondary="Budget Gestion v1.0.0"
+                />
+              </ListItem>
+              <Divider />
+              <ListItem>
+                <ListItemIcon>
+                  <Star color="primary" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Évaluer l'application" 
+                  secondary="Donner votre avis sur l'App Store"
+                />
+                <Button variant="outlined" size="small">
+                  Évaluer
+                </Button>
+              </ListItem>
+            </List>
+          </Paper>
+
+          {/* Contact */}
+          <Paper sx={{ mb: 2 }}>
+            <List>
+              <ListItem>
+                <ListItemIcon>
+                  <AccountCircle color="primary" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Support client" 
+                  secondary="Contacter notre équipe support"
+                />
+                <Button variant="outlined" size="small">
+                  Contacter
                 </Button>
               </ListItem>
             </List>

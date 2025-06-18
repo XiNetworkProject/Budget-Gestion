@@ -761,6 +761,17 @@ const useStore = create(
           set({ budgetLimits: newLimits });
           scheduleSave();
         },
+
+        // Gestion du tutoriel
+        tutorialCompleted: false,
+        setTutorialCompleted: (completed) => {
+          set({ tutorialCompleted: completed });
+          scheduleSave();
+        },
+
+        showTutorial: () => {
+          set({ tutorialCompleted: false });
+        },
       };
     },
     {
@@ -772,7 +783,8 @@ const useStore = create(
         userProfile: state.userProfile,
         appSettings: state.appSettings,
         accounts: state.accounts,
-        activeAccount: state.activeAccount
+        activeAccount: state.activeAccount,
+        tutorialCompleted: state.tutorialCompleted
       })
     }
   )

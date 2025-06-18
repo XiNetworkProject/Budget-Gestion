@@ -5,6 +5,7 @@ import { Chart, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElem
 import { PlusIcon, CrossIcon, TableIcon, ChartIcon } from "./icons";
 import Login from "./components/Login";
 import Budget from "./components/Budget";
+import Tutorial from "./components/Tutorial";
 import { useSwipeable } from 'react-swipeable';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
@@ -700,14 +701,25 @@ const App = () => {
     const timer = setTimeout(() => setShowSplash(false), 2500);
     return () => clearTimeout(timer);
   }, []);
+  
   // App state hooks (toujours appelés)
   const [page, setPage] = useState("tableau");
-  const { isAuthenticated, user, logout, isSaving, isLoading } = useStore();
+  const { 
+    isAuthenticated, 
+    user, 
+    logout, 
+    isSaving, 
+    isLoading, 
+    tutorialCompleted, 
+    setTutorialCompleted 
+  } = useStore();
   const [isCompact, setIsCompact] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [theme, setTheme] = useState(
     localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
   );
   const [runTour, setRunTour] = useState(false);
+  
   const tourSteps = [
     { target: 'header h1', content: t('app.title') },
     { target: 'button[aria-label="Ajouter un nouveau mois"]', content: 'Ajoute un mois' },
@@ -715,16 +727,30 @@ const App = () => {
     { target: '.nav button:first-child', content: 'Accède au tableau' },
     { target: '.nav button:last-child', content: 'Accède aux visualisations' },
   ];
+  
   useEffect(() => {
     document.documentElement.classList.toggle('dark-mode', theme === 'dark');
     localStorage.setItem('theme', theme);
   }, [theme]);
+  
+  // Gestion du tutoriel
+  useEffect(() => {
+    if (!showSplash && isAuthenticated && !tutorialCompleted) {
+      // Délai pour laisser l'utilisateur s'habituer à l'interface
+      const timer = setTimeout(() => {
+        setShowTutorial(true);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSplash, isAuthenticated, tutorialCompleted]);
+  
   const handleJoyrideCallback = (data) => {
     const { status } = data;
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
       setRunTour(false);
     }
   };
+  
   useEffect(() => {
     if (isLoading || isSaving) {
       NProgress.start();
@@ -732,6 +758,7 @@ const App = () => {
       NProgress.done();
     }
   }, [isLoading, isSaving]);
+  
   // Conditional rendering après tous les hooks
   if (showSplash) return <Splash />;
   if (!isAuthenticated) return <Login />;
@@ -746,6 +773,17 @@ const App = () => {
         callback={handleJoyrideCallback}
         styles={{ options: { zIndex: 2000 } }}
       />
+      
+      <Tutorial 
+        open={showTutorial}
+        onClose={() => setShowTutorial(false)}
+        onComplete={() => {
+          setTutorialCompleted(true);
+          setShowTutorial(false);
+          toast.success('Tutoriel terminé ! Vous pouvez le relancer depuis les paramètres.');
+        }}
+      />
+      
       <div style={{ 
         minHeight: '100vh',
         background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
