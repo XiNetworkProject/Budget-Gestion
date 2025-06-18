@@ -55,7 +55,18 @@ ChartJS.register(
 );
 
 const Home = () => {
-  const { user, months, revenus, data, sideByMonth, budgetLimits, incomeTransactions, expenses } = useStore();
+  const { 
+    user, 
+    months, 
+    revenus, 
+    data, 
+    sideByMonth, 
+    budgetLimits, 
+    incomeTransactions, 
+    expenses,
+    incomes,
+    activeAccount 
+  } = useStore();
   const [localData, setLocalData] = useState({
     income: [],
     expenses: [],
@@ -84,27 +95,89 @@ const Home = () => {
   };
 
   const idx = months.length - 1;
-  const income = revenus[idx] || 0;
-  const expense = Object.values(data).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
-  const saved = sideByMonth[idx] || 0;
+
+  // Filtrer les données par compte actif
+  const filteredIncomeTransactions = incomeTransactions.filter(t => !activeAccount || t.accountId === activeAccount?.id);
+  const filteredExpenses = expenses.filter(e => !activeAccount || e.accountId === activeAccount?.id);
+
+  // Calculer les revenus du mois courant (revenus par type + transactions)
+  const currentMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
+  const currentMonthIncomeTransactions = filteredIncomeTransactions
+    .filter(t => {
+      const transactionDate = new Date(t.date);
+      const currentMonth = new Date();
+      return transactionDate.getMonth() === currentMonth.getMonth() && 
+             transactionDate.getFullYear() === currentMonth.getFullYear();
+    })
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
+  const income = currentMonthIncomeByType + currentMonthIncomeTransactions;
+
+  // Calculer les dépenses du mois courant (dépenses par catégorie + transactions)
+  const currentMonthExpensesByCategory = Object.values(data).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
+  const currentMonthExpenses = filteredExpenses
+    .filter(e => {
+      const expenseDate = new Date(e.date);
+      const currentMonth = new Date();
+      return expenseDate.getMonth() === currentMonth.getMonth() && 
+             expenseDate.getFullYear() === currentMonth.getFullYear();
+    })
+    .reduce((sum, e) => sum + (e.amount || 0), 0);
+  const expense = currentMonthExpensesByCategory + currentMonthExpenses;
+
+  // Calculer les économies (revenus - dépenses)
+  const saved = income - expense;
+
+  // Factures à venir (limites de budget)
   const upcoming = Object.values(budgetLimits).reduce((sum, val) => sum + val, 0);
 
-  // Données pour les graphiques
+  // Données pour les graphiques (6 derniers mois)
+  const last6Months = months.slice(-6);
+  
+  // Revenus par mois pour les graphiques
+  const revenuesByMonth = last6Months.map((_, i) => {
+    const monthIdx = months.length - 6 + i;
+    const monthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[monthIdx] || 0), 0);
+    const monthIncomeTransactions = filteredIncomeTransactions
+      .filter(t => {
+        const transactionDate = new Date(t.date);
+        const monthDate = new Date();
+        monthDate.setMonth(monthDate.getMonth() - (5 - i));
+        return transactionDate.getMonth() === monthDate.getMonth() && 
+               transactionDate.getFullYear() === monthDate.getFullYear();
+      })
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+    return monthIncomeByType + monthIncomeTransactions;
+  });
+
+  // Dépenses par mois pour les graphiques
+  const expensesByMonth = last6Months.map((_, i) => {
+    const monthIdx = months.length - 6 + i;
+    const monthExpensesByCategory = Object.values(data).reduce((sum, arr) => sum + (arr[monthIdx] || 0), 0);
+    const monthExpenses = filteredExpenses
+      .filter(e => {
+        const expenseDate = new Date(e.date);
+        const monthDate = new Date();
+        monthDate.setMonth(monthDate.getMonth() - (5 - i));
+        return expenseDate.getMonth() === monthDate.getMonth() && 
+               expenseDate.getFullYear() === monthDate.getFullYear();
+      })
+      .reduce((sum, e) => sum + (e.amount || 0), 0);
+    return monthExpensesByCategory + monthExpenses;
+  });
+
   const lineData = {
-    labels: months.slice(-6), // 6 derniers mois
+    labels: last6Months,
     datasets: [
       {
         label: 'Revenus',
-        data: revenus.slice(-6),
+        data: revenuesByMonth,
         borderColor: 'rgba(75, 192, 192, 1)',
         backgroundColor: 'rgba(75, 192, 192, 0.1)',
         tension: 0.4
       },
       {
         label: 'Dépenses',
-        data: months.slice(-6).map((_, i) => 
-          Object.values(data).reduce((sum, arr) => sum + (arr[arr.length - 6 + i] || 0), 0)
-        ),
+        data: expensesByMonth,
         borderColor: 'rgba(255, 99, 132, 1)',
         backgroundColor: 'rgba(255, 99, 132, 0.1)',
         tension: 0.4
@@ -161,14 +234,14 @@ const Home = () => {
 
   // Transactions récentes réelles (revenus et dépenses)
   const allTransactions = [
-    ...incomeTransactions.map(t => ({
+    ...filteredIncomeTransactions.map(t => ({
       ...t,
       type: 'income',
       icon: '💰',
       category: t.type || 'Revenu',
       date: t.date ? new Date(t.date) : new Date()
     })),
-    ...expenses.map(t => ({
+    ...filteredExpenses.map(t => ({
       ...t,
       type: 'expense',
       icon: '💸',
@@ -200,9 +273,16 @@ const Home = () => {
       <Fade in timeout={500}>
         <Box sx={{ mb: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-              Bonjour{user?.name ? `, ${user.name}` : ''}
-            </Typography>
+            <Box>
+              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                Bonjour{user?.name ? `, ${user.name}` : ''}
+              </Typography>
+              {activeAccount && (
+                <Typography variant="body2" color="text.secondary" component="span">
+                  Compte : {activeAccount.name}
+                </Typography>
+              )}
+            </Box>
             <Box>
               <IconButton>
                 <Notifications />
