@@ -1,28 +1,544 @@
-import React from 'react';
-import { useStore } from '../store';
-import { Box, Typography, Paper } from '@mui/material';
-import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from 'chart.js';
+import React, { useState } from 'react';
+import { 
+  Box, 
+  Typography, 
+  Paper, 
+  Grid, 
+  Card, 
+  CardContent, 
+  Button, 
+  Dialog, 
+  DialogTitle, 
+  DialogContent, 
+  DialogActions, 
+  TextField, 
+  LinearProgress, 
+  Chip, 
+  IconButton, 
+  Fab,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemAvatar,
+  Avatar,
+  Divider,
+  Snackbar,
+  Alert,
+  Tooltip
+} from '@mui/material';
+import {
+  Add,
+  Edit,
+  Delete,
+  TrendingUp,
+  Savings,
+  Target,
+  CheckCircle,
+  Warning,
+  Info
+} from '@mui/icons-material';
+import { Bar, Doughnut } from 'react-chartjs-2';
+import { 
+  Chart as ChartJS, 
+  BarElement, 
+  CategoryScale, 
+  LinearScale, 
+  Tooltip, 
+  Legend,
+  ArcElement
+} from 'chart.js';
 
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement);
 
 const Savings = () => {
-  const { months, sideByMonth } = useStore();
+  const [goals, setGoals] = useState([
+    {
+      id: 1,
+      name: 'Vacances d\'été',
+      target: 2000,
+      current: 1200,
+      icon: '🏖️',
+      color: '#FF6384',
+      deadline: '2024-07-01'
+    },
+    {
+      id: 2,
+      name: 'Nouvelle voiture',
+      target: 15000,
+      current: 8500,
+      icon: '🚗',
+      color: '#36A2EB',
+      deadline: '2024-12-31'
+    },
+    {
+      id: 3,
+      name: 'Fonds d\'urgence',
+      target: 5000,
+      current: 5000,
+      icon: '🛡️',
+      color: '#FFCE56',
+      deadline: '2024-06-01'
+    }
+  ]);
+
+  const [addDialog, setAddDialog] = useState(false);
+  const [editDialog, setEditDialog] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [selectedGoal, setSelectedGoal] = useState(null);
+  const [newGoal, setNewGoal] = useState({ name: '', target: '', current: '', icon: '💰' });
+  const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
+
+  // Données simulées pour les graphiques
+  const monthlyData = {
+    labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+    data: [500, 800, 1200, 1500, 2000, 2500]
+  };
+
+  const totalSaved = goals.reduce((sum, goal) => sum + goal.current, 0);
+  const totalTarget = goals.reduce((sum, goal) => sum + goal.target, 0);
+  const overallProgress = ((totalSaved / totalTarget) * 100).toFixed(1);
+
+  const barData = {
+    labels: monthlyData.labels,
+    datasets: [{
+      label: 'Économies mensuelles',
+      data: monthlyData.data,
+      backgroundColor: 'rgba(75, 192, 192, 0.8)',
+      borderColor: 'rgba(75, 192, 192, 1)',
+      borderWidth: 1
+    }]
+  };
+
+  const doughnutData = {
+    labels: goals.map(goal => goal.name),
+    datasets: [{
+      data: goals.map(goal => goal.current),
+      backgroundColor: goals.map(goal => goal.color),
+      borderWidth: 2,
+      borderColor: '#fff'
+    }]
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'bottom'
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            return `${context.label}: ${context.parsed}€`;
+          }
+        }
+      }
+    }
+  };
+
+  const barOptions = {
+    ...chartOptions,
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function(value) {
+            return value + '€';
+          }
+        }
+      }
+    }
+  };
+
+  const handleAddGoal = () => {
+    const goal = {
+      id: Date.now(),
+      name: newGoal.name,
+      target: parseFloat(newGoal.target),
+      current: parseFloat(newGoal.current) || 0,
+      icon: newGoal.icon,
+      color: `hsl(${Math.random() * 360}, 70%, 50%)`,
+      deadline: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    };
+    setGoals([...goals, goal]);
+    setAddDialog(false);
+    setNewGoal({ name: '', target: '', current: '', icon: '💰' });
+    setSnack({ open: true, message: 'Objectif d\'épargne ajouté', severity: 'success' });
+  };
+
+  const handleEditGoal = () => {
+    if (selectedGoal) {
+      setGoals(goals.map(goal => 
+        goal.id === selectedGoal.id 
+          ? { ...goal, name: newGoal.name, target: parseFloat(newGoal.target), current: parseFloat(newGoal.current) }
+          : goal
+      ));
+      setEditDialog(false);
+      setSelectedGoal(null);
+      setNewGoal({ name: '', target: '', current: '', icon: '💰' });
+      setSnack({ open: true, message: 'Objectif modifié', severity: 'success' });
+    }
+  };
+
+  const handleDeleteGoal = () => {
+    if (selectedGoal) {
+      setGoals(goals.filter(goal => goal.id !== selectedGoal.id));
+      setDeleteDialog(false);
+      setSelectedGoal(null);
+      setSnack({ open: true, message: 'Objectif supprimé', severity: 'info' });
+    }
+  };
+
+  const handleUpdateProgress = (goalId, amount) => {
+    setGoals(goals.map(goal => 
+      goal.id === goalId 
+        ? { ...goal, current: Math.min(goal.current + amount, goal.target) }
+        : goal
+    ));
+  };
+
+  const getProgressColor = (progress) => {
+    if (progress >= 100) return 'success';
+    if (progress >= 75) return 'warning';
+    return 'primary';
+  };
+
+  const getDaysUntilDeadline = (deadline) => {
+    const days = Math.ceil((new Date(deadline) - new Date()) / (1000 * 60 * 60 * 24));
+    return days > 0 ? days : 0;
+  };
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
         Économies
       </Typography>
-      <Paper sx={{ p: 2 }}>
-        <Bar
-          data={{
-            labels: months,
-            datasets: [{ label: 'Économies', data: sideByMonth }]
-          }}
-          options={{ responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }}
-        />
+
+      {/* KPIs */}
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ bgcolor: 'primary.main', color: 'white' }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <Savings sx={{ mr: 1 }} />
+                <Typography variant="h6">Total épargné</Typography>
+              </Box>
+              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                {totalSaved.toLocaleString()}€
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                Sur {totalTarget.toLocaleString()}€
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ bgcolor: 'success.main', color: 'white' }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <TrendingUp sx={{ mr: 1 }} />
+                <Typography variant="h6">Progression</Typography>
+              </Box>
+              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                {overallProgress}%
+              </Typography>
+              <LinearProgress 
+                variant="determinate" 
+                value={parseFloat(overallProgress)} 
+                sx={{ mt: 1, bgcolor: 'rgba(255,255,255,0.3)', '& .MuiLinearProgress-bar': { bgcolor: 'white' } }}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ bgcolor: 'info.main', color: 'white' }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <Target sx={{ mr: 1 }} />
+                <Typography variant="h6">Objectifs</Typography>
+              </Box>
+              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                {goals.length}
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                {goals.filter(g => (g.current / g.target) >= 1).length} atteints
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ bgcolor: 'warning.main', color: 'white' }}>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                <Info sx={{ mr: 1 }} />
+                <Typography variant="h6">Moyenne mensuelle</Typography>
+              </Box>
+              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                {Math.round(monthlyData.data[monthlyData.data.length - 1] / 6)}€
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                Ce mois
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Objectifs d'épargne */}
+      <Paper sx={{ p: 2, mb: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h6">Mes objectifs d'épargne</Typography>
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => setAddDialog(true)}
+          >
+            Ajouter un objectif
+          </Button>
+        </Box>
+        
+        <Grid container spacing={2}>
+          {goals.map((goal) => {
+            const progress = ((goal.current / goal.target) * 100).toFixed(1);
+            const daysLeft = getDaysUntilDeadline(goal.deadline);
+            
+            return (
+              <Grid item xs={12} md={6} lg={4} key={goal.id}>
+                <Card>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Typography variant="h3" sx={{ mr: 1 }}>{goal.icon}</Typography>
+                        <Box>
+                          <Typography variant="h6">{goal.name}</Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {daysLeft} jours restants
+                          </Typography>
+                        </Box>
+                      </Box>
+                      <Box>
+                        {progress >= 100 && <CheckCircle color="success" />}
+                        <IconButton 
+                          size="small" 
+                          onClick={() => {
+                            setSelectedGoal(goal);
+                            setNewGoal({ name: goal.name, target: goal.target, current: goal.current, icon: goal.icon });
+                            setEditDialog(true);
+                          }}
+                        >
+                          <Edit />
+                        </IconButton>
+                        <IconButton 
+                          size="small" 
+                          color="error"
+                          onClick={() => {
+                            setSelectedGoal(goal);
+                            setDeleteDialog(true);
+                          }}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Box>
+                    </Box>
+                    
+                    <Box sx={{ mb: 2 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant="body2">
+                          {goal.current.toLocaleString()}€ / {goal.target.toLocaleString()}€
+                        </Typography>
+                        <Chip 
+                          label={`${progress}%`} 
+                          size="small" 
+                          color={getProgressColor(progress)}
+                        />
+                      </Box>
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={Math.min(parseFloat(progress), 100)} 
+                        color={getProgressColor(progress)}
+                        sx={{ height: 8, borderRadius: 4 }}
+                      />
+                    </Box>
+
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleUpdateProgress(goal.id, 100)}
+                        disabled={goal.current >= goal.target}
+                      >
+                        +100€
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleUpdateProgress(goal.id, 500)}
+                        disabled={goal.current >= goal.target}
+                      >
+                        +500€
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            );
+          })}
+        </Grid>
       </Paper>
+
+      {/* Graphiques */}
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Évolution mensuelle
+            </Typography>
+            <Box sx={{ height: 300 }}>
+              <Bar data={barData} options={barOptions} />
+            </Box>
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ p: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Répartition par objectif
+            </Typography>
+            <Box sx={{ height: 300 }}>
+              <Doughnut data={doughnutData} options={chartOptions} />
+            </Box>
+          </Paper>
+        </Grid>
+      </Grid>
+
+      {/* FAB */}
+      <Fab 
+        color="primary" 
+        aria-label="add" 
+        sx={{ position: 'fixed', bottom: 80, right: 16 }}
+        onClick={() => setAddDialog(true)}
+      >
+        <Add />
+      </Fab>
+
+      {/* Dialogs */}
+      <Dialog open={addDialog} onClose={() => setAddDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Ajouter un objectif d'épargne</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Nom de l'objectif"
+            fullWidth
+            variant="outlined"
+            value={newGoal.name}
+            onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="Montant cible (€)"
+            type="number"
+            fullWidth
+            variant="outlined"
+            value={newGoal.target}
+            onChange={(e) => setNewGoal({ ...newGoal, target: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="Montant actuel (€)"
+            type="number"
+            fullWidth
+            variant="outlined"
+            value={newGoal.current}
+            onChange={(e) => setNewGoal({ ...newGoal, current: e.target.value })}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddDialog(false)}>Annuler</Button>
+          <Button 
+            onClick={handleAddGoal} 
+            variant="contained"
+            disabled={!newGoal.name || !newGoal.target}
+          >
+            Ajouter
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={editDialog} onClose={() => setEditDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Modifier l'objectif</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Nom de l'objectif"
+            fullWidth
+            variant="outlined"
+            value={newGoal.name}
+            onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="Montant cible (€)"
+            type="number"
+            fullWidth
+            variant="outlined"
+            value={newGoal.target}
+            onChange={(e) => setNewGoal({ ...newGoal, target: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="Montant actuel (€)"
+            type="number"
+            fullWidth
+            variant="outlined"
+            value={newGoal.current}
+            onChange={(e) => setNewGoal({ ...newGoal, current: e.target.value })}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialog(false)}>Annuler</Button>
+          <Button 
+            onClick={handleEditGoal} 
+            variant="contained"
+            disabled={!newGoal.name || !newGoal.target}
+          >
+            Modifier
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={deleteDialog} onClose={() => setDeleteDialog(false)}>
+        <DialogTitle>Supprimer l'objectif</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Êtes-vous sûr de vouloir supprimer l'objectif "{selectedGoal?.name}" ?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialog(false)}>Annuler</Button>
+          <Button onClick={handleDeleteGoal} color="error" variant="contained">
+            Supprimer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar 
+        open={snack.open} 
+        autoHideDuration={3000} 
+        onClose={() => setSnack(s => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={() => setSnack(s => ({ ...s, open: false }))} severity={snack.severity}>
+          {snack.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
