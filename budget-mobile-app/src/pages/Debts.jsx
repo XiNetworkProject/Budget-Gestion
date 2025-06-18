@@ -55,13 +55,12 @@ import {
   BarElement, 
   CategoryScale, 
   LinearScale, 
-  Tooltip, 
   Legend,
   LineElement,
   PointElement
 } from 'chart.js';
 
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, LineElement, PointElement);
+ChartJS.register(BarElement, CategoryScale, LinearScale, Legend, LineElement, PointElement);
 
 const Debts = () => {
   const [debts, setDebts] = useState([
