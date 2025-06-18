@@ -1,17 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Box, Typography, Paper, List, ListItem, ListItemText, Divider, Switch } from '@mui/material';
 
 const Settings = () => {
+  const [darkMode, setDarkMode] = useState(false);
+  const [notifications, setNotifications] = useState(true);
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Paramètres</h1>
-      {/* Liste des options */}
-      <ul className="divide-y divide-gray-400">
-        <li className="py-4"><div className="bg-gray-300 h-4 w-1/2 rounded"></div></li>
-        <li className="py-4"><div className="bg-gray-300 h-4 w-2/3 rounded"></div></li>
-        <li className="py-4"><div className="bg-gray-300 h-4 w-1/3 rounded"></div></li>
-        <li className="py-4"><div className="bg-gray-300 h-4 w-1/2 rounded"></div></li>
-      </ul>
-    </div>
+    <Box sx={{ p: 2 }}>
+      <Typography variant="h5" gutterBottom>
+        Paramètres
+      </Typography>
+      <Paper>
+        <List>
+          <ListItem>
+            <ListItemText primary="Mode sombre" />
+            <Switch checked={darkMode} onChange={e => setDarkMode(e.target.checked)} />
+          </ListItem>
+          <Divider />
+          <ListItem>
+            <ListItemText primary="Notifications" />
+            <Switch checked={notifications} onChange={e => setNotifications(e.target.checked)} />
+          </ListItem>
+          <Divider />
+          <ListItem>
+            <ListItemText primary="Langue" secondary="Français" />
+          </ListItem>
+          <Divider />
+          <ListItem>
+            <ListItemText primary="Version" secondary="1.0.0" />
+          </ListItem>
+        </List>
+      </Paper>
+    </Box>
   );
 };
 
