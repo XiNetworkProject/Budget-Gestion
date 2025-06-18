@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Splash from './components/Splash';
 import Login from './components/Login';
 import Onboarding from './pages/Onboarding';
@@ -40,11 +41,25 @@ function LayoutWithTabs() {
   );
 }
 
+// Composant intercepteur pour splash avec redirection
+function SplashRedirect() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    console.log('SplashRedirect monté, redirection dans 2.5s');
+    const timer = setTimeout(() => {
+      console.log('Redirection vers /login');
+      navigate('/login', { replace: true });
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [navigate]);
+  return <Splash />;
+}
+
 export default function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Splash />} />
+        <Route path="/" element={<SplashRedirect />} />
         <Route path="/login" element={<Login />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/*" element={<LayoutWithTabs />} />
