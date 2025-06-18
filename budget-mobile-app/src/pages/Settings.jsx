@@ -103,7 +103,7 @@ const Settings = () => {
     setActiveAccount,
     logout,
     clearAllData,
-    showTutorial
+    resetTutorial
   } = useStore();
 
   const [activeTab, setActiveTab] = useState(0);
@@ -239,8 +239,12 @@ const Settings = () => {
   };
 
   const handleRestartTutorial = () => {
-    showTutorial();
-    setSnack({ open: true, message: 'Tutoriel relancé !', severity: 'success' });
+    resetTutorial();
+    setSnack({ open: true, message: 'Tutoriel relancé ! Il se lancera automatiquement.', severity: 'success' });
+    // Rediriger vers la page d'accueil pour déclencher le tutoriel
+    setTimeout(() => {
+      window.location.href = '/home';
+    }, 1000);
   };
 
   const languages = [

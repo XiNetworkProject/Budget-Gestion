@@ -765,12 +765,21 @@ const useStore = create(
         // Gestion du tutoriel
         tutorialCompleted: false,
         setTutorialCompleted: (completed) => {
+          console.log('Tutoriel: setTutorialCompleted appelé avec', completed);
           set({ tutorialCompleted: completed });
           scheduleSave();
         },
 
         showTutorial: () => {
+          console.log('Tutoriel: showTutorial appelé');
           set({ tutorialCompleted: false });
+          scheduleSave();
+        },
+
+        resetTutorial: () => {
+          console.log('Tutoriel: resetTutorial appelé');
+          set({ tutorialCompleted: false });
+          scheduleSave();
         },
       };
     },

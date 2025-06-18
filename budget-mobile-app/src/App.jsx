@@ -14,7 +14,6 @@ import 'nprogress/nprogress.css';
 import { useTranslation } from 'react-i18next';
 import { DragDropContext } from 'react-beautiful-dnd';
 import { Draggable, Droppable } from 'react-beautiful-dnd';
-import Joyride, { STATUS } from 'react-joyride';
 import Splash from './components/Splash';
 import toast from 'react-hot-toast';
 
@@ -718,38 +717,24 @@ const App = () => {
   const [theme, setTheme] = useState(
     localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
   );
-  const [runTour, setRunTour] = useState(false);
-  
-  const tourSteps = [
-    { target: 'header h1', content: t('app.title') },
-    { target: 'button[aria-label="Ajouter un nouveau mois"]', content: 'Ajoute un mois' },
-    { target: '.p-4 table', content: 'Voici le tableau de gestion des dépenses' },
-    { target: '.nav button:first-child', content: 'Accède au tableau' },
-    { target: '.nav button:last-child', content: 'Accède aux visualisations' },
-  ];
   
   useEffect(() => {
     document.documentElement.classList.toggle('dark-mode', theme === 'dark');
     localStorage.setItem('theme', theme);
   }, [theme]);
   
-  // Gestion du tutoriel
+  // Gestion du tutoriel - améliorée
   useEffect(() => {
     if (!showSplash && isAuthenticated && !tutorialCompleted) {
+      console.log('Tutoriel: Conditions remplies, lancement dans 3 secondes...');
       // Délai pour laisser l'utilisateur s'habituer à l'interface
       const timer = setTimeout(() => {
+        console.log('Tutoriel: Lancement maintenant');
         setShowTutorial(true);
-      }, 2000);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [showSplash, isAuthenticated, tutorialCompleted]);
-  
-  const handleJoyrideCallback = (data) => {
-    const { status } = data;
-    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
-      setRunTour(false);
-    }
-  };
   
   useEffect(() => {
     if (isLoading || isSaving) {
@@ -765,15 +750,6 @@ const App = () => {
 
   return (
     <>
-      <Joyride
-        steps={tourSteps}
-        run={runTour}
-        continuous
-        showSkipButton
-        callback={handleJoyrideCallback}
-        styles={{ options: { zIndex: 2000 } }}
-      />
-      
       <Tutorial 
         open={showTutorial}
         onClose={() => setShowTutorial(false)}
@@ -798,6 +774,24 @@ const App = () => {
           <header className="app-header">
             <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>{t('app.title')}</h1>
             <div className="header-controls">
+              {/* Bouton de test temporaire pour le tutoriel */}
+              <button
+                onClick={() => {
+                  console.log('Test: Forcer l\'affichage du tutoriel');
+                  setShowTutorial(true);
+                }}
+                style={{
+                  background: '#1976d2',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '4px 8px',
+                  cursor: 'pointer',
+                  marginRight: '8px'
+                }}
+              >
+                Test Tutoriel
+              </button>
               <button
                 onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
                 style={{
