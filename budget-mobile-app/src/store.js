@@ -691,6 +691,9 @@ const useStore = create(
             accounts: [],
             activeAccount: null
           });
+          
+          // Rediriger vers la page de connexion
+          window.location.href = '/login';
         },
 
         clearAllData: () => {

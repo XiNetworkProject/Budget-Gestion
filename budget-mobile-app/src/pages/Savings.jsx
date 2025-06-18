@@ -263,7 +263,7 @@ const Savings = () => {
                 {goals.length}
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                {goals.filter(g => (g.current / g.target) >= 1).length} atteints
+                {goals.filter(g => g.target > 0 && ((g.current || 0) / g.target) >= 1).length} atteints
               </Typography>
             </CardContent>
           </Card>
@@ -301,91 +301,104 @@ const Savings = () => {
         </Box>
         
         <Grid container spacing={2}>
-          {goals.map((goal) => {
-            const progress = ((goal.current / goal.target) * 100).toFixed(1);
-            const daysLeft = getDaysUntilDeadline(goal.deadline);
-            
-            return (
-              <Grid item xs={12} md={6} lg={4} key={goal.id}>
-                <Card>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Typography variant="h3" sx={{ mr: 1 }}>{goal.icon}</Typography>
+          {goals.length === 0 ? (
+            <Grid item xs={12}>
+              <Paper sx={{ p: 4, textAlign: 'center' }}>
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  Aucun objectif d'épargne
+                </Typography>
+                <Typography variant="body2" color="text.secondary" component="span">
+                  Ajoutez votre premier objectif d'épargne en utilisant le bouton +
+                </Typography>
+              </Paper>
+            </Grid>
+          ) : (
+            goals.map((goal) => {
+              const progress = goal.target > 0 ? ((goal.current || 0) / goal.target * 100).toFixed(1) : 0;
+              const daysLeft = getDaysUntilDeadline(goal.deadline);
+              
+              return (
+                <Grid item xs={12} md={6} lg={4} key={goal.id}>
+                  <Card>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Typography variant="h3" sx={{ mr: 1 }}>{goal.icon || '💰'}</Typography>
+                          <Box>
+                            <Typography variant="h6">{goal.name}</Typography>
+                            <Typography variant="body2" color="text.secondary" component="span">
+                              {daysLeft} jours restants
+                            </Typography>
+                          </Box>
+                        </Box>
                         <Box>
-                          <Typography variant="h6">{goal.name}</Typography>
-                          <Typography variant="body2" color="text.secondary" component="span">
-                            {daysLeft} jours restants
-                          </Typography>
+                          {progress >= 100 && <CheckCircle color="success" />}
+                          <IconButton 
+                            size="small" 
+                            onClick={() => {
+                              setSelectedGoal(goal);
+                              setNewGoal({ name: goal.name, target: goal.target, current: goal.current || 0, icon: goal.icon || '💰', deadline: goal.deadline });
+                              setEditDialog(true);
+                            }}
+                          >
+                            <Edit />
+                          </IconButton>
+                          <IconButton 
+                            size="small" 
+                            color="error"
+                            onClick={() => {
+                              setSelectedGoal(goal);
+                              setDeleteDialog(true);
+                            }}
+                          >
+                            <Delete />
+                          </IconButton>
                         </Box>
                       </Box>
-                      <Box>
-                        {progress >= 100 && <CheckCircle color="success" />}
-                        <IconButton 
-                          size="small" 
-                          onClick={() => {
-                            setSelectedGoal(goal);
-                            setNewGoal({ name: goal.name, target: goal.target, current: goal.current, icon: goal.icon, deadline: goal.deadline });
-                            setEditDialog(true);
-                          }}
-                        >
-                          <Edit />
-                        </IconButton>
-                        <IconButton 
-                          size="small" 
-                          color="error"
-                          onClick={() => {
-                            setSelectedGoal(goal);
-                            setDeleteDialog(true);
-                          }}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Box>
-                    </Box>
-                    
-                    <Box sx={{ mb: 2 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body2" component="span">
-                          {goal.current.toLocaleString()}€ / {goal.target.toLocaleString()}€
-                        </Typography>
-                        <Chip 
-                          label={`${progress}%`} 
-                          size="small" 
+                      
+                      <Box sx={{ mb: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography variant="body2" component="span">
+                            {(goal.current || 0).toLocaleString()}€ / {goal.target.toLocaleString()}€
+                          </Typography>
+                          <Chip 
+                            label={`${progress}%`} 
+                            size="small" 
+                            color={getProgressColor(progress)}
+                          />
+                        </Box>
+                        <LinearProgress 
+                          variant="determinate" 
+                          value={Math.min(parseFloat(progress), 100)} 
                           color={getProgressColor(progress)}
+                          sx={{ height: 8, borderRadius: 4 }}
                         />
                       </Box>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={Math.min(parseFloat(progress), 100)} 
-                        color={getProgressColor(progress)}
-                        sx={{ height: 8, borderRadius: 4 }}
-                      />
-                    </Box>
 
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => handleUpdateProgress(goal.id, 100)}
-                        disabled={goal.current >= goal.target}
-                      >
-                        +100€
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => handleUpdateProgress(goal.id, 500)}
-                        disabled={goal.current >= goal.target}
-                      >
-                        +500€
-                      </Button>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            );
-          })}
+                      <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => handleUpdateProgress(goal.id, 100)}
+                          disabled={(goal.current || 0) >= goal.target}
+                        >
+                          +100€
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => handleUpdateProgress(goal.id, 500)}
+                          disabled={(goal.current || 0) >= goal.target}
+                        >
+                          +500€
+                        </Button>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })
+          )}
         </Grid>
       </Paper>
 
