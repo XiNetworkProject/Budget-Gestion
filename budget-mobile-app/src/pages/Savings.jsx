@@ -32,7 +32,7 @@ import {
   Delete,
   TrendingUp,
   Savings as SavingsIcon,
-  Target,
+  Flag,
   CheckCircle,
   Warning,
   Info
@@ -254,7 +254,7 @@ const Savings = () => {
           <Card sx={{ bgcolor: 'info.main', color: 'white' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <Target sx={{ mr: 1 }} />
+                <Flag sx={{ mr: 1 }} />
                 <Typography variant="h6">Objectifs</Typography>
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
