@@ -1,17 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useStore } from '../store';
-import { Paper, Typography, TextField, Button, FormControl, InputLabel, Select, MenuItem, Box } from '@mui/material';
+import { Paper, Typography, TextField, Button, FormControl, InputLabel, Select, MenuItem, Box, Snackbar, Alert } from '@mui/material';
 
 const QuickAdd = () => {
   const { months, categories, setValue } = useStore();
   const [category, setCategory] = useState(categories[0] || '');
   const [amount, setAmount] = useState('');
+  const [open, setOpen] = useState(false);
   const idx = months.length - 1;
+  const amountRef = useRef();
 
   const handleAdd = () => {
     const val = parseFloat(amount) || 0;
     setValue(category, idx, val);
     setAmount('');
+    setOpen(true);
+    setTimeout(() => {
+      amountRef.current?.focus();
+    }, 100);
+  };
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') return;
+    setOpen(false);
   };
 
   return (
@@ -40,11 +51,17 @@ const QuickAdd = () => {
           value={amount}
           onChange={e => setAmount(e.target.value)}
           sx={{ mb: 2 }}
+          inputRef={amountRef}
         />
-        <Button variant="contained" color="primary" onClick={handleAdd} fullWidth>
+        <Button variant="contained" color="primary" onClick={handleAdd} fullWidth disabled={!amount}>
           Ajouter
         </Button>
       </Paper>
+      <Snackbar open={open} autoHideDuration={2000} onClose={handleClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
+          Dépense ajoutée !
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
