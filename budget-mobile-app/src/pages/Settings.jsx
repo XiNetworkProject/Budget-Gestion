@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useStore } from '../store';
 import { 
   Box, 
   Typography, 
@@ -7,6 +8,7 @@ import {
   ListItem, 
   ListItemText, 
   ListItemIcon,
+  ListItemAvatar,
   Divider, 
   Switch,
   Select,
@@ -27,7 +29,18 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Grid
+  Grid,
+  Avatar,
+  Card,
+  CardContent,
+  Tabs,
+  Tab,
+  FormControlLabel,
+  Checkbox,
+  Slider,
+  InputAdornment,
+  Fab,
+  Badge
 } from '@mui/material';
 import {
   DarkMode,
@@ -48,35 +61,143 @@ import {
   Help,
   Feedback,
   BugReport,
-  Star
+  Star,
+  Add,
+  AccountCircle,
+  Lock,
+  Visibility,
+  VisibilityOff,
+  Save,
+  Cancel,
+  Warning,
+  CheckCircle,
+  Settings as SettingsIcon,
+  Palette,
+  Smartphone,
+  Computer,
+  CloudUpload,
+  CloudDownload,
+  Refresh,
+  Logout,
+  VpnKey,
+  Fingerprint,
+  Shield,
+  PrivacyTip,
+  Analytics,
+  Timeline,
+  Assessment
 } from '@mui/icons-material';
 
 const Settings = () => {
-  const [darkMode, setDarkMode] = useState(false);
-  const [notifications, setNotifications] = useState(true);
-  const [language, setLanguage] = useState('fr');
-  const [currency, setCurrency] = useState('EUR');
-  const [exportDialog, setExportDialog] = useState(false);
-  const [importDialog, setImportDialog] = useState(false);
+  const { 
+    userProfile, 
+    appSettings, 
+    accounts, 
+    activeAccount,
+    updateUserProfile, 
+    updateAppSettings,
+    addAccount,
+    updateAccount,
+    deleteAccount,
+    setActiveAccount,
+    logout
+  } = useStore();
+
+  const [activeTab, setActiveTab] = useState(0);
+  const [profileDialog, setProfileDialog] = useState(false);
+  const [accountDialog, setAccountDialog] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [feedbackDialog, setFeedbackDialog] = useState(false);
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
-  const [feedback, setFeedback] = useState({ type: 'feedback', message: '' });
+  
+  // États pour les formulaires
+  const [profileForm, setProfileForm] = useState({
+    firstName: userProfile.firstName || '',
+    lastName: userProfile.lastName || '',
+    email: userProfile.email || '',
+    phone: userProfile.phone || '',
+    avatar: userProfile.avatar || ''
+  });
+
+  const [accountForm, setAccountForm] = useState({
+    name: '',
+    type: 'personal',
+    balance: 0,
+    currency: 'EUR',
+    color: '#1976d2'
+  });
+
+  const [editingAccount, setEditingAccount] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+
+  // Charger les données du profil au démarrage
+  useEffect(() => {
+    setProfileForm({
+      firstName: userProfile.firstName || '',
+      lastName: userProfile.lastName || '',
+      email: userProfile.email || '',
+      phone: userProfile.phone || '',
+      avatar: userProfile.avatar || ''
+    });
+  }, [userProfile]);
+
+  const handleProfileSave = () => {
+    updateUserProfile(profileForm);
+    setProfileDialog(false);
+    setSnack({ open: true, message: 'Profil mis à jour avec succès', severity: 'success' });
+  };
+
+  const handleAccountSave = () => {
+    if (editingAccount) {
+      updateAccount(editingAccount.id, accountForm);
+      setSnack({ open: true, message: 'Compte mis à jour avec succès', severity: 'success' });
+    } else {
+      addAccount(accountForm);
+      setSnack({ open: true, message: 'Compte ajouté avec succès', severity: 'success' });
+    }
+    setAccountDialog(false);
+    setEditingAccount(null);
+    setAccountForm({ name: '', type: 'personal', balance: 0, currency: 'EUR', color: '#1976d2' });
+  };
+
+  const handleAccountEdit = (account) => {
+    setEditingAccount(account);
+    setAccountForm({
+      name: account.name,
+      type: account.type,
+      balance: account.balance,
+      currency: account.currency,
+      color: account.color
+    });
+    setAccountDialog(true);
+  };
+
+  const handleAccountDelete = (accountId) => {
+    deleteAccount(accountId);
+    setDeleteDialog(false);
+    setSnack({ open: true, message: 'Compte supprimé avec succès', severity: 'info' });
+  };
 
   const handleExport = () => {
     const data = {
-      settings: { darkMode, notifications, language, currency },
+      userProfile,
+      appSettings,
+      accounts,
       timestamp: new Date().toISOString()
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `budget-settings-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `budget-data-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    setExportDialog(false);
-    setSnack({ open: true, message: 'Paramètres exportés avec succès', severity: 'success' });
+    setSnack({ open: true, message: 'Données exportées avec succès', severity: 'success' });
   };
 
   const handleImport = (event) => {
@@ -86,27 +207,20 @@ const Settings = () => {
       reader.onload = (e) => {
         try {
           const data = JSON.parse(e.target.result);
-          // Ici on pourrait appliquer les paramètres importés
-          setSnack({ open: true, message: 'Paramètres importés avec succès', severity: 'success' });
+          if (data.userProfile) updateUserProfile(data.userProfile);
+          if (data.appSettings) updateAppSettings(data.appSettings);
+          setSnack({ open: true, message: 'Données importées avec succès', severity: 'success' });
         } catch (error) {
           setSnack({ open: true, message: 'Erreur lors de l\'import', severity: 'error' });
         }
       };
       reader.readAsText(file);
     }
-    setImportDialog(false);
-  };
-
-  const handleDeleteData = () => {
-    // Simulation de suppression des données
-    setSnack({ open: true, message: 'Toutes les données ont été supprimées', severity: 'warning' });
-    setDeleteDialog(false);
   };
 
   const handleFeedback = () => {
     setSnack({ open: true, message: 'Merci pour votre feedback !', severity: 'success' });
     setFeedbackDialog(false);
-    setFeedback({ type: 'feedback', message: '' });
   };
 
   const languages = [
@@ -123,361 +237,604 @@ const Settings = () => {
     { code: 'CHF', name: 'Franc Suisse', symbol: 'CHF' }
   ];
 
+  const accountTypes = [
+    { value: 'personal', label: 'Personnel', icon: '👤' },
+    { value: 'business', label: 'Professionnel', icon: '💼' },
+    { value: 'savings', label: 'Épargne', icon: '💰' },
+    { value: 'investment', label: 'Investissement', icon: '📈' }
+  ];
+
+  const getAccountIcon = (type) => {
+    const accountType = accountTypes.find(t => t.value === type);
+    return accountType ? accountType.icon : '💳';
+  };
+
   return (
-    <Box sx={{ p: 2 }}>
-      <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
-        Paramètres
-      </Typography>
+    <Box sx={{ pb: 8 }}>
+      {/* En-tête */}
+      <Paper sx={{ p: 2, mb: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+            Paramètres
+          </Typography>
+          <IconButton color="primary">
+            <Info />
+          </IconButton>
+        </Box>
+      </Paper>
 
-      {/* Profil */}
+      {/* Tabs principales */}
       <Paper sx={{ mb: 2 }}>
-        <List>
-          <ListItem>
-            <ListItemIcon>
-              <Person color="primary" />
-            </ListItemIcon>
-            <ListItemText 
-              primary="Profil utilisateur" 
-              secondary="Gérer vos informations personnelles"
-            />
-            <IconButton>
-              <Edit />
-            </IconButton>
-          </ListItem>
-        </List>
+        <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
+          <Tab label="Profil" />
+          <Tab label="Comptes" />
+          <Tab label="Apparence" />
+          <Tab label="Sécurité" />
+          <Tab label="Données" />
+        </Tabs>
       </Paper>
 
-      {/* Apparence */}
-      <Accordion defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMore />}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <DarkMode sx={{ mr: 1 }} />
-            <Typography variant="h6">Apparence</Typography>
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails>
-          <List>
-            <ListItem>
-              <ListItemText 
-                primary="Mode sombre" 
-                secondary="Activer le thème sombre pour l'application"
-              />
-              <Switch checked={darkMode} onChange={e => setDarkMode(e.target.checked)} />
-            </ListItem>
-            <Divider />
-            <ListItem>
-              <ListItemText 
-                primary="Langue" 
-                secondary="Choisir la langue de l'application"
-              />
-              <FormControl size="small" sx={{ minWidth: 120 }}>
-                <Select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value)}
+      {/* Contenu des tabs */}
+      {activeTab === 0 && (
+        <Box>
+          {/* Profil utilisateur */}
+          <Paper sx={{ mb: 2 }}>
+            <List>
+              <ListItem>
+                <ListItemAvatar>
+                  <Avatar 
+                    src={userProfile.avatar} 
+                    sx={{ width: 60, height: 60, bgcolor: 'primary.main' }}
+                  >
+                    {userProfile.firstName?.charAt(0) || userProfile.email?.charAt(0) || 'U'}
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText 
+                  primary={`${userProfile.firstName || 'Prénom'} ${userProfile.lastName || 'Nom'}`}
+                  secondary={userProfile.email || 'Aucun email'}
+                />
+                <IconButton onClick={() => setProfileDialog(true)}>
+                  <Edit />
+                </IconButton>
+              </ListItem>
+            </List>
+          </Paper>
+
+          {/* Informations du compte */}
+          <Paper sx={{ mb: 2 }}>
+            <List>
+              <ListItem>
+                <ListItemIcon>
+                  <AccountCircle color="primary" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Compte créé le" 
+                  secondary={new Date(userProfile.createdAt).toLocaleDateString('fr-FR')}
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemIcon>
+                  <Timeline color="primary" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Dernière connexion" 
+                  secondary={new Date(userProfile.lastLogin).toLocaleDateString('fr-FR')}
+                />
+              </ListItem>
+            </List>
+          </Paper>
+        </Box>
+      )}
+
+      {activeTab === 1 && (
+        <Box>
+          {/* Compte actif */}
+          {activeAccount && (
+            <Paper sx={{ mb: 2, p: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                Compte actif
+              </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Avatar sx={{ bgcolor: activeAccount.color, width: 50, height: 50 }}>
+                  {getAccountIcon(activeAccount.type)}
+                </Avatar>
+                <Box>
+                  <Typography variant="subtitle1">{activeAccount.name}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {activeAccount.balance.toLocaleString()} {activeAccount.currency}
+                  </Typography>
+                </Box>
+              </Box>
+            </Paper>
+          )}
+
+          {/* Liste des comptes */}
+          <Paper sx={{ mb: 2 }}>
+            <List>
+              {accounts.map((account) => (
+                <React.Fragment key={account.id}>
+                  <ListItem>
+                    <ListItemAvatar>
+                      <Avatar sx={{ bgcolor: account.color }}>
+                        {getAccountIcon(account.type)}
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText 
+                      primary={account.name}
+                      secondary={`${account.balance.toLocaleString()} ${account.currency}`}
+                    />
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      {account.id === activeAccount?.id && (
+                        <Chip label="Actif" size="small" color="primary" />
+                      )}
+                      <IconButton onClick={() => handleAccountEdit(account)}>
+                        <Edit />
+                      </IconButton>
+                      <IconButton 
+                        color="error" 
+                        onClick={() => {
+                          setEditingAccount(account);
+                          setDeleteDialog(true);
+                        }}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </Box>
+                  </ListItem>
+                  <Divider />
+                </React.Fragment>
+              ))}
+            </List>
+          </Paper>
+
+          {/* Bouton d'ajout */}
+          <Fab
+            color="primary"
+            aria-label="add account"
+            sx={{ position: 'fixed', bottom: 80, right: 16 }}
+            onClick={() => setAccountDialog(true)}
+          >
+            <Add />
+          </Fab>
+        </Box>
+      )}
+
+      {activeTab === 2 && (
+        <Box>
+          {/* Thème */}
+          <Paper sx={{ mb: 2 }}>
+            <List>
+              <ListItem>
+                <ListItemText 
+                  primary="Mode sombre" 
+                  secondary="Activer le thème sombre pour l'application"
+                />
+                <Switch 
+                  checked={appSettings.theme === 'dark'} 
+                  onChange={e => updateAppSettings({ theme: e.target.checked ? 'dark' : 'light' })} 
+                />
+              </ListItem>
+              <Divider />
+              <ListItem>
+                <ListItemText 
+                  primary="Mode compact" 
+                  secondary="Réduire l'espacement des éléments"
+                />
+                <Switch 
+                  checked={appSettings.display.compactMode} 
+                  onChange={e => updateAppSettings({ 
+                    display: { ...appSettings.display, compactMode: e.target.checked } 
+                  })} 
+                />
+              </ListItem>
+            </List>
+          </Paper>
+
+          {/* Langue et devise */}
+          <Paper sx={{ mb: 2 }}>
+            <List>
+              <ListItem>
+                <ListItemText 
+                  primary="Langue" 
+                  secondary="Choisir la langue de l'application"
+                />
+                <FormControl size="small" sx={{ minWidth: 120 }}>
+                  <Select
+                    value={appSettings.language}
+                    onChange={(e) => updateAppSettings({ language: e.target.value })}
+                  >
+                    {languages.map(lang => (
+                      <MenuItem key={lang.code} value={lang.code}>
+                        {lang.flag} {lang.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </ListItem>
+              <Divider />
+              <ListItem>
+                <ListItemText 
+                  primary="Devise" 
+                  secondary="Choisir la devise d'affichage"
+                />
+                <FormControl size="small" sx={{ minWidth: 120 }}>
+                  <Select
+                    value={appSettings.currency}
+                    onChange={(e) => updateAppSettings({ currency: e.target.value })}
+                  >
+                    {currencies.map(curr => (
+                      <MenuItem key={curr.code} value={curr.code}>
+                        {curr.symbol} {curr.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </ListItem>
+            </List>
+          </Paper>
+
+          {/* Affichage */}
+          <Paper sx={{ mb: 2 }}>
+            <List>
+              <ListItem>
+                <ListItemText 
+                  primary="Afficher les pourcentages" 
+                  secondary="Montrer les pourcentages dans les graphiques"
+                />
+                <Switch 
+                  checked={appSettings.display.showPercentages} 
+                  onChange={e => updateAppSettings({ 
+                    display: { ...appSettings.display, showPercentages: e.target.checked } 
+                  })} 
+                />
+              </ListItem>
+            </List>
+          </Paper>
+        </Box>
+      )}
+
+      {activeTab === 3 && (
+        <Box>
+          {/* Authentification */}
+          <Paper sx={{ mb: 2 }}>
+            <List>
+              <ListItem>
+                <ListItemText 
+                  primary="Verrouillage automatique" 
+                  secondary="Verrouiller l'app après inactivité"
+                />
+                <Switch 
+                  checked={appSettings.privacy.autoLock} 
+                  onChange={e => updateAppSettings({ 
+                    privacy: { ...appSettings.privacy, autoLock: e.target.checked } 
+                  })} 
+                />
+              </ListItem>
+              <Divider />
+              <ListItem>
+                <ListItemText 
+                  primary="Authentification biométrique" 
+                  secondary="Utiliser l'empreinte digitale ou Face ID"
+                />
+                <Switch 
+                  checked={appSettings.privacy.biometricAuth} 
+                  onChange={e => updateAppSettings({ 
+                    privacy: { ...appSettings.privacy, biometricAuth: e.target.checked } 
+                  })} 
+                />
+              </ListItem>
+              <Divider />
+              <ListItem>
+                <ListItemText 
+                  primary="Partage de données" 
+                  secondary="Autoriser le partage de données anonymes"
+                />
+                <Switch 
+                  checked={appSettings.privacy.dataSharing} 
+                  onChange={e => updateAppSettings({ 
+                    privacy: { ...appSettings.privacy, dataSharing: e.target.checked } 
+                  })} 
+                />
+              </ListItem>
+            </List>
+          </Paper>
+
+          {/* Changer le mot de passe */}
+          <Paper sx={{ mb: 2 }}>
+            <List>
+              <ListItem>
+                <ListItemIcon>
+                  <VpnKey color="primary" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Changer le mot de passe" 
+                  secondary="Modifier votre mot de passe de sécurité"
+                />
+                <Button variant="outlined" size="small">
+                  Modifier
+                </Button>
+              </ListItem>
+            </List>
+          </Paper>
+        </Box>
+      )}
+
+      {activeTab === 4 && (
+        <Box>
+          {/* Notifications */}
+          <Paper sx={{ mb: 2 }}>
+            <List>
+              <ListItem>
+                <ListItemText 
+                  primary="Alertes de budget" 
+                  secondary="Recevoir des alertes quand vous dépassez votre budget"
+                />
+                <Switch 
+                  checked={appSettings.notifications.budgetAlerts} 
+                  onChange={e => updateAppSettings({ 
+                    notifications: { ...appSettings.notifications, budgetAlerts: e.target.checked } 
+                  })} 
+                />
+              </ListItem>
+              <Divider />
+              <ListItem>
+                <ListItemText 
+                  primary="Rappels de factures" 
+                  secondary="Rappels pour les factures à venir"
+                />
+                <Switch 
+                  checked={appSettings.notifications.billReminders} 
+                  onChange={e => updateAppSettings({ 
+                    notifications: { ...appSettings.notifications, billReminders: e.target.checked } 
+                  })} 
+                />
+              </ListItem>
+              <Divider />
+              <ListItem>
+                <ListItemText 
+                  primary="Objectifs d'épargne" 
+                  secondary="Notifications pour les objectifs d'épargne"
+                />
+                <Switch 
+                  checked={appSettings.notifications.savingsGoals} 
+                  onChange={e => updateAppSettings({ 
+                    notifications: { ...appSettings.notifications, savingsGoals: e.target.checked } 
+                  })} 
+                />
+              </ListItem>
+            </List>
+          </Paper>
+
+          {/* Export/Import */}
+          <Paper sx={{ mb: 2 }}>
+            <List>
+              <ListItem>
+                <ListItemIcon>
+                  <CloudDownload color="primary" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Exporter les données" 
+                  secondary="Sauvegarder toutes vos données"
+                />
+                <Button variant="outlined" size="small" onClick={handleExport}>
+                  Exporter
+                </Button>
+              </ListItem>
+              <Divider />
+              <ListItem>
+                <ListItemIcon>
+                  <CloudUpload color="primary" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Importer les données" 
+                  secondary="Restaurer vos données depuis un fichier"
+                />
+                <Button variant="outlined" size="small" component="label">
+                  Importer
+                  <input type="file" hidden accept=".json" onChange={handleImport} />
+                </Button>
+              </ListItem>
+            </List>
+          </Paper>
+
+          {/* Suppression des données */}
+          <Paper sx={{ mb: 2 }}>
+            <List>
+              <ListItem>
+                <ListItemIcon>
+                  <Delete color="error" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Supprimer toutes les données" 
+                  secondary="Cette action est irréversible"
+                />
+                <Button 
+                  variant="outlined" 
+                  color="error" 
+                  size="small"
+                  onClick={() => setDeleteDialog(true)}
                 >
-                  {languages.map(lang => (
-                    <MenuItem key={lang.code} value={lang.code}>
-                      {lang.flag} {lang.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </ListItem>
-          </List>
-        </AccordionDetails>
-      </Accordion>
+                  Supprimer
+                </Button>
+              </ListItem>
+            </List>
+          </Paper>
 
-      {/* Notifications */}
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMore />}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Notifications sx={{ mr: 1 }} />
-            <Typography variant="h6">Notifications</Typography>
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails>
-          <List>
-            <ListItem>
-              <ListItemText 
-                primary="Notifications push" 
-                secondary="Recevoir des notifications sur votre appareil"
-              />
-              <Switch checked={notifications} onChange={e => setNotifications(e.target.checked)} />
-            </ListItem>
-            <Divider />
-            <ListItem>
-              <ListItemText 
-                primary="Rappels de budget" 
-                secondary="Être alerté quand vous approchez de votre limite"
-              />
-              <Switch defaultChecked />
-            </ListItem>
-            <Divider />
-            <ListItem>
-              <ListItemText 
-                primary="Résumé hebdomadaire" 
-                secondary="Recevoir un récapitulatif de vos dépenses"
-              />
-              <Switch defaultChecked />
-            </ListItem>
-          </List>
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Monnaie et catégories */}
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMore />}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <CurrencyExchange sx={{ mr: 1 }} />
-            <Typography variant="h6">Monnaie et catégories</Typography>
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails>
-          <List>
-            <ListItem>
-              <ListItemText 
-                primary="Devise principale" 
-                secondary="Choisir la devise pour vos transactions"
-              />
-              <FormControl size="small" sx={{ minWidth: 120 }}>
-                <Select
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
+          {/* Déconnexion */}
+          <Paper sx={{ mb: 2 }}>
+            <List>
+              <ListItem>
+                <ListItemIcon>
+                  <Logout color="primary" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Se déconnecter" 
+                  secondary="Fermer votre session"
+                />
+                <Button 
+                  variant="outlined" 
+                  color="primary" 
+                  size="small"
+                  onClick={logout}
                 >
-                  {currencies.map(curr => (
-                    <MenuItem key={curr.code} value={curr.code}>
-                      {curr.symbol} {curr.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </ListItem>
-            <Divider />
-            <ListItem>
-              <ListItemText 
-                primary="Gérer les catégories" 
-                secondary="Personnaliser vos catégories de dépenses"
-              />
-              <IconButton>
-                <Edit />
-              </IconButton>
-            </ListItem>
-          </List>
-        </AccordionDetails>
-      </Accordion>
+                  Déconnexion
+                </Button>
+              </ListItem>
+            </List>
+          </Paper>
+        </Box>
+      )}
 
-      {/* Données et sauvegarde */}
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMore />}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Backup sx={{ mr: 1 }} />
-            <Typography variant="h6">Données et sauvegarde</Typography>
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={6}>
-              <Button
-                variant="outlined"
-                startIcon={<Download />}
-                fullWidth
-                onClick={() => setExportDialog(true)}
-              >
-                Exporter les données
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Button
-                variant="outlined"
-                startIcon={<Upload />}
-                fullWidth
-                onClick={() => setImportDialog(true)}
-              >
-                Importer des données
-              </Button>
-            </Grid>
-            <Grid item xs={12}>
-              <Button
-                variant="outlined"
-                color="error"
-                startIcon={<Delete />}
-                fullWidth
-                onClick={() => setDeleteDialog(true)}
-              >
-                Supprimer toutes les données
-              </Button>
-            </Grid>
-          </Grid>
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Support et feedback */}
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMore />}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Help sx={{ mr: 1 }} />
-            <Typography variant="h6">Support et feedback</Typography>
-          </Box>
-        </AccordionSummary>
-        <AccordionDetails>
-          <List>
-            <ListItem button onClick={() => setFeedbackDialog(true)}>
-              <ListItemIcon>
-                <Feedback />
-              </ListItemIcon>
-              <ListItemText 
-                primary="Envoyer un feedback" 
-                secondary="Partagez votre expérience avec nous"
-              />
-            </ListItem>
-            <Divider />
-            <ListItem button>
-              <ListItemIcon>
-                <BugReport />
-              </ListItemIcon>
-              <ListItemText 
-                primary="Signaler un bug" 
-                secondary="Aidez-nous à améliorer l'application"
-              />
-            </ListItem>
-            <Divider />
-            <ListItem button>
-              <ListItemIcon>
-                <Star />
-              </ListItemIcon>
-              <ListItemText 
-                primary="Évaluer l'application" 
-                secondary="Donnez-nous votre avis sur le store"
-              />
-            </ListItem>
-          </List>
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Informations */}
-      <Paper sx={{ mt: 2 }}>
-        <List>
-          <ListItem>
-            <ListItemText 
-              primary="Version de l'application" 
-              secondary="1.0.0 (Build 2024.1.1)"
+      {/* Dialog de profil */}
+      <Dialog open={profileDialog} onClose={() => setProfileDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Modifier le profil</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 1 }}>
+            <TextField
+              fullWidth
+              label="Prénom"
+              value={profileForm.firstName}
+              onChange={(e) => setProfileForm({ ...profileForm, firstName: e.target.value })}
+              sx={{ mb: 2 }}
             />
-            <Chip label="À jour" color="success" size="small" />
-          </ListItem>
-          <Divider />
-          <ListItem>
-            <ListItemText 
-              primary="Espace utilisé" 
-              secondary="2.3 MB sur 50 MB"
+            <TextField
+              fullWidth
+              label="Nom"
+              value={profileForm.lastName}
+              onChange={(e) => setProfileForm({ ...profileForm, lastName: e.target.value })}
+              sx={{ mb: 2 }}
             />
-            <Tooltip title="Espace de stockage utilisé">
-              <IconButton size="small">
-                <Info />
-              </IconButton>
-            </Tooltip>
-          </ListItem>
-        </List>
-      </Paper>
-
-      {/* Dialogs */}
-      <Dialog open={exportDialog} onClose={() => setExportDialog(false)}>
-        <DialogTitle>Exporter les données</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Cette action va exporter tous vos paramètres et données dans un fichier JSON.
-          </Typography>
+            <TextField
+              fullWidth
+              label="Email"
+              type="email"
+              value={profileForm.email}
+              onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="Téléphone"
+              value={profileForm.phone}
+              onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              fullWidth
+              label="URL de l'avatar (optionnel)"
+              value={profileForm.avatar}
+              onChange={(e) => setProfileForm({ ...profileForm, avatar: e.target.value })}
+            />
+          </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setExportDialog(false)}>Annuler</Button>
-          <Button onClick={handleExport} variant="contained">Exporter</Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={importDialog} onClose={() => setImportDialog(false)}>
-        <DialogTitle>Importer des données</DialogTitle>
-        <DialogContent>
-          <Typography gutterBottom>
-            Sélectionnez un fichier JSON pour importer vos données.
-          </Typography>
-          <input
-            type="file"
-            accept=".json"
-            onChange={handleImport}
-            style={{ display: 'none' }}
-            id="import-file"
-          />
-          <label htmlFor="import-file">
-            <Button variant="outlined" component="span" fullWidth>
-              Choisir un fichier
-            </Button>
-          </label>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setImportDialog(false)}>Annuler</Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={deleteDialog} onClose={() => setDeleteDialog(false)}>
-        <DialogTitle>Supprimer toutes les données</DialogTitle>
-        <DialogContent>
-          <Alert severity="warning" sx={{ mb: 2 }}>
-            Cette action est irréversible ! Toutes vos données seront définitivement supprimées.
-          </Alert>
-          <Typography>
-            Êtes-vous sûr de vouloir supprimer toutes vos données ?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialog(false)}>Annuler</Button>
-          <Button onClick={handleDeleteData} color="error" variant="contained">
-            Supprimer
+          <Button onClick={() => setProfileDialog(false)}>Annuler</Button>
+          <Button onClick={handleProfileSave} variant="contained">
+            Sauvegarder
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={feedbackDialog} onClose={() => setFeedbackDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Envoyer un feedback</DialogTitle>
+      {/* Dialog de compte */}
+      <Dialog open={accountDialog} onClose={() => setAccountDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>{editingAccount ? 'Modifier le compte' : 'Ajouter un compte'}</DialogTitle>
         <DialogContent>
-          <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Type de feedback</InputLabel>
-            <Select
-              value={feedback.type}
-              onChange={(e) => setFeedback({ ...feedback, type: e.target.value })}
-            >
-              <MenuItem value="feedback">Feedback général</MenuItem>
-              <MenuItem value="bug">Signaler un bug</MenuItem>
-              <MenuItem value="feature">Demande de fonctionnalité</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            multiline
-            rows={4}
-            fullWidth
-            label="Votre message"
-            value={feedback.message}
-            onChange={(e) => setFeedback({ ...feedback, message: e.target.value })}
-            placeholder="Partagez votre expérience avec nous..."
-          />
+          <Box sx={{ pt: 1 }}>
+            <TextField
+              fullWidth
+              label="Nom du compte"
+              value={accountForm.name}
+              onChange={(e) => setAccountForm({ ...accountForm, name: e.target.value })}
+              sx={{ mb: 2 }}
+            />
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel>Type de compte</InputLabel>
+              <Select
+                value={accountForm.type}
+                onChange={(e) => setAccountForm({ ...accountForm, type: e.target.value })}
+                label="Type de compte"
+              >
+                {accountTypes.map(type => (
+                  <MenuItem key={type.value} value={type.value}>
+                    {type.icon} {type.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              fullWidth
+              label="Solde initial"
+              type="number"
+              value={accountForm.balance}
+              onChange={(e) => setAccountForm({ ...accountForm, balance: parseFloat(e.target.value) || 0 })}
+              sx={{ mb: 2 }}
+              InputProps={{
+                startAdornment: <InputAdornment position="start">€</InputAdornment>,
+              }}
+            />
+            <FormControl fullWidth sx={{ mb: 2 }}>
+              <InputLabel>Devise</InputLabel>
+              <Select
+                value={accountForm.currency}
+                onChange={(e) => setAccountForm({ ...accountForm, currency: e.target.value })}
+                label="Devise"
+              >
+                {currencies.map(curr => (
+                  <MenuItem key={curr.code} value={curr.code}>
+                    {curr.symbol} {curr.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <TextField
+              fullWidth
+              label="Couleur du compte"
+              type="color"
+              value={accountForm.color}
+              onChange={(e) => setAccountForm({ ...accountForm, color: e.target.value })}
+            />
+          </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setFeedbackDialog(false)}>Annuler</Button>
+          <Button onClick={() => setAccountDialog(false)}>Annuler</Button>
           <Button 
-            onClick={handleFeedback} 
+            onClick={handleAccountSave} 
             variant="contained"
-            disabled={!feedback.message.trim()}
+            disabled={!accountForm.name}
           >
-            Envoyer
+            {editingAccount ? 'Modifier' : 'Ajouter'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Dialog de suppression */}
+      <Dialog open={deleteDialog} onClose={() => setDeleteDialog(false)}>
+        <DialogTitle>Confirmer la suppression</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Êtes-vous sûr de vouloir supprimer {editingAccount ? `le compte "${editingAccount.name}"` : 'toutes les données'} ? 
+            Cette action est irréversible.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialog(false)}>Annuler</Button>
+          <Button 
+            onClick={() => editingAccount ? handleAccountDelete(editingAccount.id) : handleDeleteData()} 
+            color="error" 
+            variant="contained"
+          >
+            Supprimer
           </Button>
         </DialogActions>
       </Dialog>
 
       <Snackbar 
         open={snack.open} 
-        autoHideDuration={4000} 
-        onClose={() => setSnack(s => ({ ...s, open: false }))}
+        autoHideDuration={3000} 
+        onClose={() => setSnack(s => ({ ...s, open: false }))} 
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert onClose={() => setSnack(s => ({ ...s, open: false }))} severity={snack.severity}>
+        <Alert onClose={() => setSnack(s => ({ ...s, open: false }))} severity={snack.severity} sx={{ width: '100%' }}>
           {snack.message}
         </Alert>
       </Snackbar>

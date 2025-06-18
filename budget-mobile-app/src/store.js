@@ -34,6 +34,42 @@ const defaultSideByMonth = defaultMonths.map(() => 0);
 const defaultCategoryLimits = {};
 defaultCategories.forEach(cat => { defaultCategoryLimits[cat] = 0; });
 
+// Configuration par défaut de l'application
+const defaultAppSettings = {
+  theme: 'light',
+  currency: 'EUR',
+  language: 'fr',
+  notifications: {
+    budgetAlerts: true,
+    billReminders: true,
+    savingsGoals: true,
+    weeklyReports: true
+  },
+  privacy: {
+    biometricAuth: false,
+    autoLock: true,
+    dataSharing: false
+  },
+  display: {
+    compactMode: false,
+    showPercentages: true,
+    defaultView: 'home'
+  }
+};
+
+// Profil utilisateur par défaut
+const defaultUserProfile = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  phone: '',
+  avatar: '',
+  preferences: defaultAppSettings,
+  accounts: [],
+  createdAt: new Date().toISOString(),
+  lastLogin: new Date().toISOString()
+};
+
 const useStore = create(
   persist(
     (set, get) => {
@@ -57,13 +93,20 @@ const useStore = create(
               persons: state.persons,
               saved: state.saved,
               sideByMonth: state.sideByMonth,
-              totalPotentialSavings: state.totalPotentialSavings
+              totalPotentialSavings: state.totalPotentialSavings,
+              budgetLimits: state.budgetLimits,
+              expenses: state.expenses,
+              incomes: state.incomes,
+              savings: state.savings,
+              debts: state.debts,
+              bankAccounts: state.bankAccounts,
+              transactions: state.transactions
             });
-            toast.success('Budget sauvegardé');
+            toast.success('Données sauvegardées');
           } catch (error) {
             console.error('Debounced save error:', error);
             set({ error: error.message });
-            toast.error(error.message);
+            toast.error('Erreur de sauvegarde');
           } finally {
             set({ isSaving: false });
           }
@@ -77,6 +120,8 @@ const useStore = create(
         isAuthenticated: false,
         isLoading: false,
         error: null,
+        
+        // Données budgétaires
         months: defaultMonths,
         categories: defaultCategories,
         data: defaultData,
@@ -88,6 +133,22 @@ const useStore = create(
         sideByMonth: defaultSideByMonth,
         budgetLimits: defaultCategoryLimits,
         totalPotentialSavings: 0,
+
+        // Nouvelles données pour la persistance complète
+        expenses: [],
+        savings: [],
+        debts: [],
+        bankAccounts: [],
+        transactions: [],
+        
+        // Profil et paramètres utilisateur
+        userProfile: defaultUserProfile,
+        appSettings: defaultAppSettings,
+        currentAccountId: null,
+
+        // Gestion des comptes multiples
+        accounts: [],
+        activeAccount: null,
 
         setUser: async (user) => {
           set({ user, isAuthenticated: !!user });
@@ -107,6 +168,16 @@ const useStore = create(
                   saved: data.saved || defaultSaved,
                   sideByMonth: data.sideByMonth || defaultSideByMonth,
                   totalPotentialSavings: data.totalPotentialSavings || 0,
+                  budgetLimits: data.budgetLimits || defaultCategoryLimits,
+                  expenses: data.expenses || [],
+                  savings: data.savings || [],
+                  debts: data.debts || [],
+                  bankAccounts: data.bankAccounts || [],
+                  transactions: data.transactions || [],
+                  userProfile: data.userProfile || defaultUserProfile,
+                  appSettings: data.appSettings || defaultAppSettings,
+                  accounts: data.accounts || [],
+                  activeAccount: data.activeAccount || null,
                   isLoading: false
                 });
               } else {
@@ -120,7 +191,17 @@ const useStore = create(
                   persons: defaultPersons,
                   saved: defaultSaved,
                   sideByMonth: defaultSideByMonth,
-                  totalPotentialSavings: 0
+                  totalPotentialSavings: 0,
+                  budgetLimits: defaultCategoryLimits,
+                  expenses: [],
+                  savings: [],
+                  debts: [],
+                  bankAccounts: [],
+                  transactions: [],
+                  userProfile: { ...defaultUserProfile, email: user.email },
+                  appSettings: defaultAppSettings,
+                  accounts: [],
+                  activeAccount: null
                 };
                 set({ ...defaultBudget, isLoading: false });
                 await budgetService.saveBudget(user.id, defaultBudget);
@@ -134,16 +215,281 @@ const useStore = create(
 
         setLoading: (isLoading) => set({ isLoading }),
         setError: (error) => set({ error }),
-
         setToken: (token) => set({ token }),
 
+        // Gestion du profil utilisateur
+        updateUserProfile: (updates) => {
+          const state = get();
+          const updatedProfile = { ...state.userProfile, ...updates };
+          set({ userProfile: updatedProfile });
+          scheduleSave();
+        },
+
+        updateAppSettings: (updates) => {
+          const state = get();
+          const updatedSettings = { ...state.appSettings, ...updates };
+          set({ appSettings: updatedSettings });
+          scheduleSave();
+        },
+
+        // Gestion des comptes multiples
+        addAccount: (account) => {
+          const state = get();
+          const newAccount = {
+            id: Date.now().toString(),
+            name: account.name,
+            type: account.type || 'personal',
+            balance: account.balance || 0,
+            currency: account.currency || 'EUR',
+            color: account.color || '#1976d2',
+            isActive: account.isActive || false,
+            createdAt: new Date().toISOString()
+          };
+          
+          const updatedAccounts = [...state.accounts, newAccount];
+          set({ accounts: updatedAccounts });
+          
+          if (newAccount.isActive) {
+            set({ activeAccount: newAccount });
+          }
+          
+          scheduleSave();
+        },
+
+        updateAccount: (accountId, updates) => {
+          const state = get();
+          const updatedAccounts = state.accounts.map(acc => 
+            acc.id === accountId ? { ...acc, ...updates } : acc
+          );
+          set({ accounts: updatedAccounts });
+          
+          if (state.activeAccount?.id === accountId) {
+            set({ activeAccount: { ...state.activeAccount, ...updates } });
+          }
+          
+          scheduleSave();
+        },
+
+        deleteAccount: (accountId) => {
+          const state = get();
+          const updatedAccounts = state.accounts.filter(acc => acc.id !== accountId);
+          set({ accounts: updatedAccounts });
+          
+          if (state.activeAccount?.id === accountId) {
+            set({ activeAccount: updatedAccounts[0] || null });
+          }
+          
+          scheduleSave();
+        },
+
+        setActiveAccount: (accountId) => {
+          const state = get();
+          const account = state.accounts.find(acc => acc.id === accountId);
+          if (account) {
+            set({ activeAccount: account });
+            scheduleSave();
+          }
+        },
+
+        // Gestion des transactions
+        addTransaction: (transaction) => {
+          const state = get();
+          const newTransaction = {
+            id: Date.now().toString(),
+            ...transaction,
+            accountId: transaction.accountId || state.activeAccount?.id,
+            date: transaction.date || new Date().toISOString(),
+            createdAt: new Date().toISOString()
+          };
+          
+          const updatedTransactions = [...state.transactions, newTransaction];
+          set({ transactions: updatedTransactions });
+          scheduleSave();
+        },
+
+        updateTransaction: (transactionId, updates) => {
+          const state = get();
+          const updatedTransactions = state.transactions.map(trans => 
+            trans.id === transactionId ? { ...trans, ...updates } : trans
+          );
+          set({ transactions: updatedTransactions });
+          scheduleSave();
+        },
+
+        deleteTransaction: (transactionId) => {
+          const state = get();
+          const updatedTransactions = state.transactions.filter(trans => trans.id !== transactionId);
+          set({ transactions: updatedTransactions });
+          scheduleSave();
+        },
+
+        // Gestion des dépenses
+        addExpense: (expense) => {
+          const state = get();
+          const newExpense = {
+            id: Date.now().toString(),
+            ...expense,
+            accountId: expense.accountId || state.activeAccount?.id,
+            date: expense.date || new Date().toISOString(),
+            createdAt: new Date().toISOString()
+          };
+          
+          const updatedExpenses = [...state.expenses, newExpense];
+          set({ expenses: updatedExpenses });
+          scheduleSave();
+        },
+
+        updateExpense: (expenseId, updates) => {
+          const state = get();
+          const updatedExpenses = state.expenses.map(exp => 
+            exp.id === expenseId ? { ...exp, ...updates } : exp
+          );
+          set({ expenses: updatedExpenses });
+          scheduleSave();
+        },
+
+        deleteExpense: (expenseId) => {
+          const state = get();
+          const updatedExpenses = state.expenses.filter(exp => exp.id !== expenseId);
+          set({ expenses: updatedExpenses });
+          scheduleSave();
+        },
+
+        // Gestion des revenus
+        addIncome: (income) => {
+          const state = get();
+          const newIncome = {
+            id: Date.now().toString(),
+            ...income,
+            accountId: income.accountId || state.activeAccount?.id,
+            date: income.date || new Date().toISOString(),
+            createdAt: new Date().toISOString()
+          };
+          
+          const updatedIncomes = [...state.incomes, newIncome];
+          set({ incomes: updatedIncomes });
+          scheduleSave();
+        },
+
+        updateIncome: (incomeId, updates) => {
+          const state = get();
+          const updatedIncomes = state.incomes.map(inc => 
+            inc.id === incomeId ? { ...inc, ...updates } : inc
+          );
+          set({ incomes: updatedIncomes });
+          scheduleSave();
+        },
+
+        deleteIncome: (incomeId) => {
+          const state = get();
+          const updatedIncomes = state.incomes.filter(inc => inc.id !== incomeId);
+          set({ incomes: updatedIncomes });
+          scheduleSave();
+        },
+
+        // Gestion de l'épargne
+        addSavingsGoal: (goal) => {
+          const state = get();
+          const newGoal = {
+            id: Date.now().toString(),
+            ...goal,
+            accountId: goal.accountId || state.activeAccount?.id,
+            createdAt: new Date().toISOString(),
+            progress: 0
+          };
+          
+          const updatedSavings = [...state.savings, newGoal];
+          set({ savings: updatedSavings });
+          scheduleSave();
+        },
+
+        updateSavingsGoal: (goalId, updates) => {
+          const state = get();
+          const updatedSavings = state.savings.map(goal => 
+            goal.id === goalId ? { ...goal, ...updates } : goal
+          );
+          set({ savings: updatedSavings });
+          scheduleSave();
+        },
+
+        deleteSavingsGoal: (goalId) => {
+          const state = get();
+          const updatedSavings = state.savings.filter(goal => goal.id !== goalId);
+          set({ savings: updatedSavings });
+          scheduleSave();
+        },
+
+        // Gestion des dettes
+        addDebt: (debt) => {
+          const state = get();
+          const newDebt = {
+            id: Date.now().toString(),
+            ...debt,
+            accountId: debt.accountId || state.activeAccount?.id,
+            createdAt: new Date().toISOString(),
+            paidAmount: 0
+          };
+          
+          const updatedDebts = [...state.debts, newDebt];
+          set({ debts: updatedDebts });
+          scheduleSave();
+        },
+
+        updateDebt: (debtId, updates) => {
+          const state = get();
+          const updatedDebts = state.debts.map(debt => 
+            debt.id === debtId ? { ...debt, ...updates } : debt
+          );
+          set({ debts: updatedDebts });
+          scheduleSave();
+        },
+
+        deleteDebt: (debtId) => {
+          const state = get();
+          const updatedDebts = state.debts.filter(debt => debt.id !== debtId);
+          set({ debts: updatedDebts });
+          scheduleSave();
+        },
+
+        // Gestion des comptes bancaires
+        addBankAccount: (account) => {
+          const state = get();
+          const newBankAccount = {
+            id: Date.now().toString(),
+            ...account,
+            createdAt: new Date().toISOString(),
+            balance: account.balance || 0
+          };
+          
+          const updatedBankAccounts = [...state.bankAccounts, newBankAccount];
+          set({ bankAccounts: updatedBankAccounts });
+          scheduleSave();
+        },
+
+        updateBankAccount: (accountId, updates) => {
+          const state = get();
+          const updatedBankAccounts = state.bankAccounts.map(acc => 
+            acc.id === accountId ? { ...acc, ...updates } : acc
+          );
+          set({ bankAccounts: updatedBankAccounts });
+          scheduleSave();
+        },
+
+        deleteBankAccount: (accountId) => {
+          const state = get();
+          const updatedBankAccounts = state.bankAccounts.filter(acc => acc.id !== accountId);
+          set({ bankAccounts: updatedBankAccounts });
+          scheduleSave();
+        },
+
+        // Fonctions existantes avec sauvegarde améliorée
         setValue: (cat, monthIdx, value) => {
           const state = get();
           const newData = { ...state.data };
           newData[cat] = [...newData[cat]];
           newData[cat][monthIdx] = value;
           set({ data: newData });
-          if (state.user) scheduleSave();
+          scheduleSave();
         },
 
         addCategory: (cat) => {
@@ -248,7 +594,7 @@ const useStore = create(
           newIncomes[type][monthIdx] = value;
 
           set({ incomes: newIncomes });
-          if (state.user) scheduleSave();
+          scheduleSave();
         },
 
         addIncomeType: (type) => {
@@ -324,7 +670,16 @@ const useStore = create(
             incomes: defaultIncomes,
             persons: defaultPersons,
             saved: defaultSaved,
-            sideByMonth: defaultSideByMonth
+            sideByMonth: defaultSideByMonth,
+            expenses: [],
+            savings: [],
+            debts: [],
+            bankAccounts: [],
+            transactions: [],
+            userProfile: defaultUserProfile,
+            appSettings: defaultAppSettings,
+            accounts: [],
+            activeAccount: null
           });
         },
 
@@ -372,7 +727,10 @@ const useStore = create(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
         token: state.token,
-        budgetLimits: state.budgetLimits
+        userProfile: state.userProfile,
+        appSettings: state.appSettings,
+        accounts: state.accounts,
+        activeAccount: state.activeAccount
       })
     }
   )

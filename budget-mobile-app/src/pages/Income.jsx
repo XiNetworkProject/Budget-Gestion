@@ -78,14 +78,24 @@ ChartJS.register(
 );
 
 const Income = () => {
-  const { months, incomeTypes, incomes, setIncome, removeIncomeType } = useStore();
+  const { 
+    months, 
+    incomeTypes, 
+    incomes, 
+    setIncome, 
+    removeIncomeType,
+    addIncome,
+    updateIncome,
+    deleteIncome,
+    activeAccount
+  } = useStore();
+  
   const idx = months.length - 1;
   const [editIdx, setEditIdx] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [deleteIdx, setDeleteIdx] = useState(null);
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
   const [activeTab, setActiveTab] = useState(0);
-  const [localIncomes, setLocalIncomes] = useState([]);
   const [newIncome, setNewIncome] = useState({
     type: '',
     amount: '',
@@ -95,40 +105,6 @@ const Income = () => {
     source: ''
   });
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [customTypes, setCustomTypes] = useState([]);
-
-  // Charger les données depuis localStorage
-  useEffect(() => {
-    const savedIncomes = localStorage.getItem('incomeData');
-    const savedTypes = localStorage.getItem('customIncomeTypes');
-    
-    if (savedIncomes) {
-      try {
-        setLocalIncomes(JSON.parse(savedIncomes));
-      } catch (error) {
-        console.error('Erreur lors du chargement des revenus:', error);
-      }
-    }
-    
-    if (savedTypes) {
-      try {
-        setCustomTypes(JSON.parse(savedTypes));
-      } catch (error) {
-        console.error('Erreur lors du chargement des types:', error);
-      }
-    }
-  }, []);
-
-  // Sauvegarder les données
-  const saveIncomes = (incomes) => {
-    setLocalIncomes(incomes);
-    localStorage.setItem('incomeData', JSON.stringify(incomes));
-  };
-
-  const saveTypes = (types) => {
-    setCustomTypes(types);
-    localStorage.setItem('customIncomeTypes', JSON.stringify(types));
-  };
 
   const handleEdit = (i, val) => {
     setEditIdx(i);
@@ -150,20 +126,16 @@ const Income = () => {
   const handleAddIncome = () => {
     if (newIncome.type && newIncome.amount) {
       const income = {
-        id: Date.now(),
-        ...newIncome,
+        type: newIncome.type,
         amount: parseFloat(newIncome.amount),
-        date: new Date(newIncome.date).toLocaleDateString('fr-FR')
+        date: new Date(newIncome.date).toLocaleDateString('fr-FR'),
+        description: newIncome.description,
+        recurring: newIncome.recurring,
+        source: newIncome.source,
+        accountId: activeAccount?.id
       };
       
-      const updatedIncomes = [...localIncomes, income];
-      saveIncomes(updatedIncomes);
-      
-      // Ajouter le type si il n'existe pas
-      if (!customTypes.includes(newIncome.type)) {
-        const updatedTypes = [...customTypes, newIncome.type];
-        saveTypes(updatedTypes);
-      }
+      addIncome(income);
       
       setNewIncome({
         type: '',
@@ -179,25 +151,17 @@ const Income = () => {
   };
 
   const handleDeleteIncome = (incomeId) => {
-    const updatedIncomes = localIncomes.filter(inc => inc.id !== incomeId);
-    saveIncomes(updatedIncomes);
+    deleteIncome(incomeId);
     setSnack({ open: true, message: 'Revenu supprimé', severity: 'info' });
   };
 
   // Calculs pour les graphiques
-  const totalIncome = localIncomes.reduce((sum, inc) => sum + inc.amount, 0);
-  const monthlyIncome = localIncomes.reduce((sum, inc) => {
-    const month = new Date(inc.date).getMonth();
-    const currentMonth = new Date().getMonth();
-    if (month === currentMonth) {
-      return sum + inc.amount;
-    }
-    return sum;
-  }, 0);
+  const totalIncome = Object.values(incomes).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
+  const monthlyIncome = Object.values(incomes).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
 
   const typeTotals = {};
-  localIncomes.forEach(inc => {
-    typeTotals[inc.type] = (typeTotals[inc.type] || 0) + inc.amount;
+  Object.keys(incomes).forEach(type => {
+    typeTotals[type] = incomes[type][idx] || 0;
   });
 
   const doughnutData = {
@@ -399,7 +363,7 @@ const Income = () => {
                       <>
                         <ListItemText 
                           primary={type} 
-                          secondary={`${localIncomes.filter(inc => inc.type === type).length} transactions`}
+                          secondary={`${(incomes[type]?.[idx] || 0).toLocaleString()}€ ce mois`}
                         />
                         <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold' }}>
                           {(incomes[type]?.[idx] || 0).toLocaleString()}€
@@ -428,56 +392,14 @@ const Income = () => {
 
         {activeTab === 1 && (
           <Box>
-            {localIncomes.length === 0 ? (
-              <Paper sx={{ p: 4, textAlign: 'center' }}>
-                <Typography variant="h6" color="text.secondary" gutterBottom>
-                  Aucun revenu enregistré
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Ajoutez votre premier revenu en utilisant le bouton +
-                </Typography>
-              </Paper>
-            ) : (
-              <List>
-                {localIncomes.map((income, index) => (
-                  <React.Fragment key={income.id}>
-                    <ListItem>
-                      <ListItemText
-                        primary={
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="subtitle1">{income.type}</Typography>
-                            {income.recurring && (
-                              <Chip label="Récurrent" size="small" color="success" />
-                            )}
-                          </Box>
-                        }
-                        secondary={
-                          <Box>
-                            <Typography variant="body2" color="text.secondary">
-                              {income.date} • {income.description}
-                              {income.source && ` • ${income.source}`}
-                            </Typography>
-                          </Box>
-                        }
-                      />
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold' }}>
-                          +{income.amount}€
-                        </Typography>
-                        <IconButton 
-                          size="small" 
-                          color="error" 
-                          onClick={() => handleDeleteIncome(income.id)}
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Box>
-                    </ListItem>
-                    {index < localIncomes.length - 1 && <Divider />}
-                  </React.Fragment>
-                ))}
-              </List>
-            )}
+            <Paper sx={{ p: 4, textAlign: 'center' }}>
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                Historique des revenus
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                L'historique détaillé sera disponible dans une prochaine version
+              </Typography>
+            </Paper>
           </Box>
         )}
 
@@ -529,7 +451,7 @@ const Income = () => {
                 onChange={(e) => setNewIncome({ ...newIncome, type: e.target.value })}
                 label="Type de revenu"
               >
-                {[...incomeTypes, ...customTypes, ...incomeSources].filter((type, index, arr) => arr.indexOf(type) === index).map((type) => (
+                {[...incomeTypes, ...incomeSources].filter((type, index, arr) => arr.indexOf(type) === index).map((type) => (
                   <MenuItem key={type} value={type}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <span>{getTypeIcon(type)}</span>

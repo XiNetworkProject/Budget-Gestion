@@ -74,14 +74,25 @@ ChartJS.register(
 );
 
 const Expenses = () => {
-  const { months, categories, data, setValue, removeCategory } = useStore();
+  const { 
+    months, 
+    categories, 
+    data, 
+    setValue, 
+    removeCategory,
+    expenses,
+    addExpense,
+    updateExpense,
+    deleteExpense,
+    activeAccount
+  } = useStore();
+  
   const idx = months.length - 1;
   const [editIdx, setEditIdx] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [deleteIdx, setDeleteIdx] = useState(null);
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
   const [activeTab, setActiveTab] = useState(0);
-  const [localExpenses, setLocalExpenses] = useState([]);
   const [newExpense, setNewExpense] = useState({
     category: '',
     amount: '',
@@ -90,40 +101,6 @@ const Expenses = () => {
     recurring: false
   });
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [customCategories, setCustomCategories] = useState([]);
-
-  // Charger les données depuis localStorage
-  useEffect(() => {
-    const savedExpenses = localStorage.getItem('expensesData');
-    const savedCategories = localStorage.getItem('customCategories');
-    
-    if (savedExpenses) {
-      try {
-        setLocalExpenses(JSON.parse(savedExpenses));
-      } catch (error) {
-        console.error('Erreur lors du chargement des dépenses:', error);
-      }
-    }
-    
-    if (savedCategories) {
-      try {
-        setCustomCategories(JSON.parse(savedCategories));
-      } catch (error) {
-        console.error('Erreur lors du chargement des catégories:', error);
-      }
-    }
-  }, []);
-
-  // Sauvegarder les données
-  const saveExpenses = (expenses) => {
-    setLocalExpenses(expenses);
-    localStorage.setItem('expensesData', JSON.stringify(expenses));
-  };
-
-  const saveCategories = (categories) => {
-    setCustomCategories(categories);
-    localStorage.setItem('customCategories', JSON.stringify(categories));
-  };
 
   const handleEdit = (i, val) => {
     setEditIdx(i);
@@ -145,20 +122,15 @@ const Expenses = () => {
   const handleAddExpense = () => {
     if (newExpense.category && newExpense.amount) {
       const expense = {
-        id: Date.now(),
-        ...newExpense,
+        category: newExpense.category,
         amount: parseFloat(newExpense.amount),
-        date: new Date(newExpense.date).toLocaleDateString('fr-FR')
+        date: new Date(newExpense.date).toLocaleDateString('fr-FR'),
+        description: newExpense.description,
+        recurring: newExpense.recurring,
+        accountId: activeAccount?.id
       };
       
-      const updatedExpenses = [...localExpenses, expense];
-      saveExpenses(updatedExpenses);
-      
-      // Ajouter la catégorie si elle n'existe pas
-      if (!customCategories.includes(newExpense.category)) {
-        const updatedCategories = [...customCategories, newExpense.category];
-        saveCategories(updatedCategories);
-      }
+      addExpense(expense);
       
       setNewExpense({
         category: '',
@@ -173,14 +145,13 @@ const Expenses = () => {
   };
 
   const handleDeleteExpense = (expenseId) => {
-    const updatedExpenses = localExpenses.filter(exp => exp.id !== expenseId);
-    saveExpenses(updatedExpenses);
+    deleteExpense(expenseId);
     setSnack({ open: true, message: 'Dépense supprimée', severity: 'info' });
   };
 
   // Calculs pour les graphiques
-  const totalExpenses = localExpenses.reduce((sum, exp) => sum + exp.amount, 0);
-  const monthlyExpenses = localExpenses.reduce((sum, exp) => {
+  const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const monthlyExpenses = expenses.reduce((sum, exp) => {
     const month = new Date(exp.date).getMonth();
     const currentMonth = new Date().getMonth();
     if (month === currentMonth) {
@@ -190,7 +161,7 @@ const Expenses = () => {
   }, 0);
 
   const categoryTotals = {};
-  localExpenses.forEach(exp => {
+  expenses.forEach(exp => {
     categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
   });
 
@@ -364,7 +335,7 @@ const Expenses = () => {
                       <>
                         <ListItemText 
                           primary={cat} 
-                          secondary={`${localExpenses.filter(exp => exp.category === cat).length} transactions`}
+                          secondary={`${expenses.filter(exp => exp.category === cat).length} transactions`}
                         />
                         <Typography variant="h6" color="error.main" sx={{ fontWeight: 'bold' }}>
                           {(data[cat]?.[idx] || 0).toLocaleString()}€
@@ -393,7 +364,7 @@ const Expenses = () => {
 
         {activeTab === 1 && (
           <Box>
-            {localExpenses.length === 0 ? (
+            {expenses.length === 0 ? (
               <Paper sx={{ p: 4, textAlign: 'center' }}>
                 <Typography variant="h6" color="text.secondary" gutterBottom>
                   Aucune dépense enregistrée
@@ -404,7 +375,7 @@ const Expenses = () => {
               </Paper>
             ) : (
               <List>
-                {localExpenses.map((expense, index) => (
+                {expenses.map((expense, index) => (
                   <React.Fragment key={expense.id}>
                     <ListItem>
                       <ListItemText
@@ -437,7 +408,7 @@ const Expenses = () => {
                         </IconButton>
                       </Box>
                     </ListItem>
-                    {index < localExpenses.length - 1 && <Divider />}
+                    {index < expenses.length - 1 && <Divider />}
                   </React.Fragment>
                 ))}
               </List>
@@ -493,7 +464,7 @@ const Expenses = () => {
                 onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
                 label="Catégorie"
               >
-                {[...categories, ...customCategories].map((cat) => (
+                {categories.map((cat) => (
                   <MenuItem key={cat} value={cat}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                       <span>{getCategoryIcon(cat)}</span>
