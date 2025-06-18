@@ -103,7 +103,7 @@ const Settings = () => {
     setActiveAccount,
     logout,
     clearAllData,
-    resetTutorial
+    forceShowTutorial
   } = useStore();
 
   const [activeTab, setActiveTab] = useState(0);
@@ -239,7 +239,7 @@ const Settings = () => {
   };
 
   const handleRestartTutorial = () => {
-    resetTutorial();
+    forceShowTutorial();
     setSnack({ open: true, message: 'Tutoriel relancé ! Il se lancera automatiquement.', severity: 'success' });
     // Rediriger vers la page d'accueil pour déclencher le tutoriel
     setTimeout(() => {

@@ -764,6 +764,7 @@ const useStore = create(
 
         // Gestion du tutoriel
         tutorialCompleted: false,
+        forceTutorial: false,
         setTutorialCompleted: (completed) => {
           console.log('Tutoriel: setTutorialCompleted appelé avec', completed);
           set({ tutorialCompleted: completed });
@@ -781,6 +782,18 @@ const useStore = create(
           set({ tutorialCompleted: false });
           scheduleSave();
         },
+
+        forceShowTutorial: () => {
+          console.log('Tutoriel: forceShowTutorial appelé');
+          set({ forceTutorial: true, tutorialCompleted: false });
+          scheduleSave();
+        },
+
+        clearForceTutorial: () => {
+          console.log('Tutoriel: clearForceTutorial appelé');
+          set({ forceTutorial: false });
+          scheduleSave();
+        },
       };
     },
     {
@@ -793,7 +806,8 @@ const useStore = create(
         appSettings: state.appSettings,
         accounts: state.accounts,
         activeAccount: state.activeAccount,
-        tutorialCompleted: state.tutorialCompleted
+        tutorialCompleted: state.tutorialCompleted,
+        forceTutorial: state.forceTutorial
       })
     }
   )

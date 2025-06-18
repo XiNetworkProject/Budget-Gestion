@@ -710,7 +710,10 @@ const App = () => {
     isSaving, 
     isLoading, 
     tutorialCompleted, 
-    setTutorialCompleted 
+    forceTutorial,
+    setTutorialCompleted,
+    clearForceTutorial,
+    forceShowTutorial
   } = useStore();
   const [isCompact, setIsCompact] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
@@ -725,16 +728,20 @@ const App = () => {
   
   // Gestion du tutoriel - améliorée
   useEffect(() => {
-    if (!showSplash && isAuthenticated && !tutorialCompleted) {
-      console.log('Tutoriel: Conditions remplies, lancement dans 3 secondes...');
+    if (!showSplash && isAuthenticated && (!tutorialCompleted || forceTutorial)) {
+      console.log('Tutoriel: Conditions remplies, lancement dans 3 secondes...', { tutorialCompleted, forceTutorial });
       // Délai pour laisser l'utilisateur s'habituer à l'interface
       const timer = setTimeout(() => {
         console.log('Tutoriel: Lancement maintenant');
         setShowTutorial(true);
+        // Si c'était un relancement forcé, on nettoie l'état
+        if (forceTutorial) {
+          clearForceTutorial();
+        }
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [showSplash, isAuthenticated, tutorialCompleted]);
+  }, [showSplash, isAuthenticated, tutorialCompleted, forceTutorial, clearForceTutorial]);
   
   useEffect(() => {
     if (isLoading || isSaving) {
@@ -791,6 +798,24 @@ const App = () => {
                 }}
               >
                 Test Tutoriel
+              </button>
+              {/* Bouton de test pour forcer le relancement */}
+              <button
+                onClick={() => {
+                  console.log('Test: Forcer le relancement du tutoriel');
+                  forceShowTutorial();
+                }}
+                style={{
+                  background: '#ed6c02',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '4px 8px',
+                  cursor: 'pointer',
+                  marginRight: '8px'
+                }}
+              >
+                Force Relance
               </button>
               <button
                 onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
