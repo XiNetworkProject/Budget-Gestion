@@ -51,41 +51,118 @@ ChartJS.register(
 );
 
 const Analytics = () => {
-  const { months, categories, incomeTransactions, expenses, savings, sideByMonth } = useStore();
+  const { 
+    months, 
+    categories, 
+    data, 
+    revenus, 
+    incomeTypes, 
+    incomes, 
+    incomeTransactions, 
+    expenses, 
+    savings, 
+    sideByMonth,
+    activeAccount 
+  } = useStore();
   const [timeFilter, setTimeFilter] = useState('month');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  // Regrouper les revenus et dépenses par mois et catégorie
-  const last6Months = months.slice(-6);
-  const getMonthIdx = (date) => {
-    const d = new Date(date);
-    return months.findIndex(m => d.toLocaleString('fr-FR', { month: 'long' }) === m);
-  };
-
-  // Revenus par mois
-  const revenuesByMonth = months.map((_, i) =>
-    incomeTransactions.filter(t => getMonthIdx(t.date) === i).reduce((sum, t) => sum + (t.amount || 0), 0)
-  );
-  // Dépenses par mois
-  const expensesByMonth = months.map((_, i) =>
-    expenses.filter(t => getMonthIdx(t.date) === i).reduce((sum, t) => sum + (t.amount || 0), 0)
-  );
-  // Économies par mois (si savings/sideByMonth)
-  const savingsByMonth = sideByMonth;
-
-  // Catégories de dépenses (pour le mois courant)
+  // Index du mois courant
   const idx = months.length - 1;
-  const expenseByCategory = categories.map(cat => ({
-    category: cat,
-    amount: expenses.filter(e => e.category === cat && getMonthIdx(e.date) === idx).reduce((sum, e) => sum + (e.amount || 0), 0)
-  }));
 
-  // KPIs
-  const currentRevenue = revenuesByMonth[idx] || 0;
-  const totalExpenses = expensesByMonth[idx] || 0;
-  const currentSavings = savingsByMonth[idx] || 0;
-  const savingsRate = currentRevenue ? ((currentSavings / currentRevenue) * 100).toFixed(1) : 0;
-  const expenseRate = currentRevenue ? ((totalExpenses / currentRevenue) * 100).toFixed(1) : 0;
+  // Filtrer les données par compte actif
+  const filteredIncomeTransactions = incomeTransactions.filter(t => !activeAccount || t.accountId === activeAccount?.id);
+  const filteredExpenses = expenses.filter(e => !activeAccount || e.accountId === activeAccount?.id);
+  const filteredSavings = savings.filter(s => !activeAccount || s.accountId === activeAccount?.id);
+
+  // Calculer les revenus du mois courant (transactions + revenus par type)
+  const currentMonthIncomeTransactions = filteredIncomeTransactions
+    .filter(t => {
+      const transactionDate = new Date(t.date);
+      const currentMonth = new Date();
+      return transactionDate.getMonth() === currentMonth.getMonth() && 
+             transactionDate.getFullYear() === currentMonth.getFullYear();
+    })
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+  const currentMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
+  const currentRevenue = currentMonthIncomeTransactions + currentMonthIncomeByType;
+
+  // Calculer les dépenses du mois courant (transactions + dépenses par catégorie)
+  const currentMonthExpenses = filteredExpenses
+    .filter(e => {
+      const expenseDate = new Date(e.date);
+      const currentMonth = new Date();
+      return expenseDate.getMonth() === currentMonth.getMonth() && 
+             expenseDate.getFullYear() === currentMonth.getFullYear();
+    })
+    .reduce((sum, e) => sum + (e.amount || 0), 0);
+
+  const currentMonthExpensesByCategory = Object.values(data).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
+  const totalExpenses = currentMonthExpenses + currentMonthExpensesByCategory;
+
+  // Calculer les économies (revenus - dépenses)
+  const currentSavings = currentRevenue - totalExpenses;
+
+  // Calculer les taux
+  const savingsRate = currentRevenue > 0 ? ((currentSavings / currentRevenue) * 100).toFixed(1) : 0;
+  const expenseRate = currentRevenue > 0 ? ((totalExpenses / currentRevenue) * 100).toFixed(1) : 0;
+
+  // Revenus par mois (6 derniers mois)
+  const revenuesByMonth = months.slice(-6).map((_, i) => {
+    const monthIdx = months.length - 6 + i;
+    const monthIncomeTransactions = filteredIncomeTransactions
+      .filter(t => {
+        const transactionDate = new Date(t.date);
+        const monthDate = new Date();
+        monthDate.setMonth(monthDate.getMonth() - (5 - i));
+        return transactionDate.getMonth() === monthDate.getMonth() && 
+               transactionDate.getFullYear() === monthDate.getFullYear();
+      })
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+    
+    const monthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[monthIdx] || 0), 0);
+    return monthIncomeTransactions + monthIncomeByType;
+  });
+
+  // Dépenses par mois (6 derniers mois)
+  const expensesByMonth = months.slice(-6).map((_, i) => {
+    const monthIdx = months.length - 6 + i;
+    const monthExpenses = filteredExpenses
+      .filter(e => {
+        const expenseDate = new Date(e.date);
+        const monthDate = new Date();
+        monthDate.setMonth(monthDate.getMonth() - (5 - i));
+        return expenseDate.getMonth() === monthDate.getMonth() && 
+               expenseDate.getFullYear() === monthDate.getFullYear();
+      })
+      .reduce((sum, e) => sum + (e.amount || 0), 0);
+    
+    const monthExpensesByCategory = Object.values(data).reduce((sum, arr) => sum + (arr[monthIdx] || 0), 0);
+    return monthExpenses + monthExpensesByCategory;
+  });
+
+  // Économies par mois (revenus - dépenses)
+  const savingsByMonth = revenuesByMonth.map((revenue, i) => revenue - expensesByMonth[i]);
+
+  // Catégories de dépenses pour le mois courant
+  const expenseByCategory = categories.map(cat => {
+    const categoryExpenses = filteredExpenses
+      .filter(e => {
+        const expenseDate = new Date(e.date);
+        const currentMonth = new Date();
+        return e.category === cat && 
+               expenseDate.getMonth() === currentMonth.getMonth() && 
+               expenseDate.getFullYear() === currentMonth.getFullYear();
+      })
+      .reduce((sum, e) => sum + (e.amount || 0), 0);
+    
+    const categoryData = data[cat] ? data[cat][idx] || 0 : 0;
+    return {
+      category: cat,
+      amount: categoryExpenses + categoryData
+    };
+  }).filter(item => item.amount > 0);
 
   // Graphiques
   const pieData = {
@@ -99,29 +176,31 @@ const Analytics = () => {
       borderColor: '#fff'
     }]
   };
+
   const barData = {
-    labels: last6Months,
+    labels: months.slice(-6),
     datasets: [{
       label: 'Économies',
-      data: savingsByMonth.slice(-6),
+      data: savingsByMonth,
       backgroundColor: 'rgba(75, 192, 192, 0.8)',
       borderColor: 'rgba(75, 192, 192, 1)',
       borderWidth: 1
     }]
   };
+
   const lineData = {
-    labels: last6Months,
+    labels: months.slice(-6),
     datasets: [
       {
         label: 'Revenus',
-        data: revenuesByMonth.slice(-6),
+        data: revenuesByMonth,
         borderColor: 'rgba(54, 162, 235, 1)',
         backgroundColor: 'rgba(54, 162, 235, 0.1)',
         tension: 0.4
       },
       {
         label: 'Dépenses',
-        data: expensesByMonth.slice(-6),
+        data: expensesByMonth,
         borderColor: 'rgba(255, 99, 132, 1)',
         backgroundColor: 'rgba(255, 99, 132, 0.1)',
         tension: 0.4
@@ -180,9 +259,16 @@ const Analytics = () => {
   return (
     <Box sx={{ p: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-          Analytics
-        </Typography>
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+            Analytics
+          </Typography>
+          {activeAccount && (
+            <Typography variant="body2" color="text.secondary" component="span">
+              Compte : {activeAccount.name}
+            </Typography>
+          )}
+        </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Période</InputLabel>
@@ -354,28 +440,43 @@ const Analytics = () => {
         <Typography variant="h6" gutterBottom>
           Détails par catégorie
         </Typography>
-        <Grid container spacing={2}>
-          {expenseByCategory.map((item, index) => (
-            <Grid item xs={12} sm={6} md={4} key={item.category}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1 }}>
-                <Box>
-                  <Typography variant="body2" color="text.secondary" component="span">
-                    {item.category}
-                  </Typography>
-                  <Typography variant="h6">
-                    {item.amount.toLocaleString()}€
-                  </Typography>
+        {expenseByCategory.length === 0 ? (
+          <Typography variant="body2" color="text.secondary" textAlign="center" component="span">
+            Aucune dépense enregistrée pour ce mois
+          </Typography>
+        ) : (
+          <Grid container spacing={2}>
+            {expenseByCategory.map((item, index) => (
+              <Grid item xs={12} sm={6} md={4} key={item.category}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  p: 2,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  bgcolor: 'background.paper'
+                }}>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" component="span">
+                      {item.category}
+                    </Typography>
+                    <Typography variant="h6">
+                      {item.amount.toLocaleString()}€
+                    </Typography>
+                  </Box>
+                  <Chip 
+                    label={`${totalExpenses > 0 ? ((item.amount / totalExpenses) * 100).toFixed(1) : 0}%`}
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                  />
                 </Box>
-                <Chip 
-                  label={`${((item.amount / totalExpenses) * 100).toFixed(1)}%`}
-                  size="small"
-                  color="primary"
-                  variant="outlined"
-                />
-              </Box>
-            </Grid>
-          ))}
-        </Grid>
+              </Grid>
+            ))}
+          </Grid>
+        )}
       </Paper>
     </Box>
   );
