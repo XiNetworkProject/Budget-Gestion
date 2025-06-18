@@ -31,7 +31,7 @@ import {
   Edit,
   Delete,
   TrendingUp,
-  Savings,
+  Savings as SavingsIcon,
   Target,
   CheckCircle,
   Warning,
@@ -43,12 +43,11 @@ import {
   BarElement, 
   CategoryScale, 
   LinearScale, 
-  Tooltip, 
   Legend,
   ArcElement
 } from 'chart.js';
 
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend, ArcElement);
+ChartJS.register(BarElement, CategoryScale, LinearScale, Legend, ArcElement);
 
 const Savings = () => {
   const [goals, setGoals] = useState([
@@ -219,7 +218,7 @@ const Savings = () => {
           <Card sx={{ bgcolor: 'primary.main', color: 'white' }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <Savings sx={{ mr: 1 }} />
+                <SavingsIcon sx={{ mr: 1 }} />
                 <Typography variant="h6">Total épargné</Typography>
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
