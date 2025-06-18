@@ -12,7 +12,7 @@ console.error = (...args) => {
   }
   originalConsoleError(...args);
 };
-import App from './App.jsx'
+import AppRoutes from './Routes.jsx'
 import { Toaster } from 'react-hot-toast'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
@@ -21,7 +21,7 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <>
-        <App />
+        <AppRoutes />
         <Toaster position="bottom-right" />
       </>
     </GoogleOAuthProvider>

@@ -371,7 +371,8 @@ const useStore = create(
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
-        token: state.token
+        token: state.token,
+        budgetLimits: state.budgetLimits
       })
     }
   )
