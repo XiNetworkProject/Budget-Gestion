@@ -80,6 +80,7 @@ const Expenses = () => {
     data, 
     setValue, 
     removeCategory,
+    addCategory,
     expenses,
     addExpense,
     updateExpense,
@@ -101,6 +102,8 @@ const Expenses = () => {
     recurring: false
   });
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showCategoryDialog, setShowCategoryDialog] = useState(false);
+  const [newCategory, setNewCategory] = useState('');
 
   const handleEdit = (i, val) => {
     setEditIdx(i);
@@ -117,6 +120,15 @@ const Expenses = () => {
     removeCategory(cat);
     setDeleteIdx(null);
     setSnack({ open: true, message: 'Catégorie supprimée', severity: 'info' });
+  };
+
+  const handleAddCategory = () => {
+    if (newCategory.trim()) {
+      addCategory(newCategory.trim());
+      setNewCategory('');
+      setShowCategoryDialog(false);
+      setSnack({ open: true, message: 'Catégorie ajoutée avec succès', severity: 'success' });
+    }
   };
 
   const handleAddExpense = () => {
@@ -264,7 +276,7 @@ const Expenses = () => {
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                   {totalExpenses.toLocaleString()}€
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                   Toutes les dépenses
                 </Typography>
               </CardContent>
@@ -369,7 +381,7 @@ const Expenses = () => {
                 <Typography variant="h6" color="text.secondary" gutterBottom>
                   Aucune dépense enregistrée
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" component="span">
                   Ajoutez votre première dépense en utilisant le bouton +
                 </Typography>
               </Paper>
@@ -389,7 +401,7 @@ const Expenses = () => {
                         }
                         secondary={
                           <Box>
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography variant="body2" color="text.secondary" component="span">
                               {expense.date} • {expense.description}
                             </Typography>
                           </Box>
@@ -475,6 +487,16 @@ const Expenses = () => {
               </Select>
             </FormControl>
             
+            <Button 
+              variant="outlined" 
+              size="small" 
+              onClick={() => setShowCategoryDialog(true)}
+              sx={{ mb: 2 }}
+              startIcon={<Add />}
+            >
+              Créer une nouvelle catégorie
+            </Button>
+            
             <TextField
               fullWidth
               label="Montant"
@@ -514,6 +536,34 @@ const Expenses = () => {
             disabled={!newExpense.category || !newExpense.amount}
           >
             Ajouter
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Dialog d'ajout de catégorie */}
+      <Dialog open={showCategoryDialog} onClose={() => setShowCategoryDialog(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Créer une nouvelle catégorie</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 1 }}>
+            <TextField
+              fullWidth
+              label="Nom de la catégorie"
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+              sx={{ mb: 2 }}
+              placeholder="Ex: Loisirs, Transport, Alimentation..."
+              autoFocus
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowCategoryDialog(false)}>Annuler</Button>
+          <Button 
+            onClick={handleAddCategory} 
+            variant="contained"
+            disabled={!newCategory.trim()}
+          >
+            Créer
           </Button>
         </DialogActions>
       </Dialog>

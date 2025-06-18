@@ -4,7 +4,6 @@ import { AppBar, Toolbar, Typography, Box, BottomNavigation, BottomNavigationAct
 import HomeIcon from '@mui/icons-material/Home';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import HistoryIcon from '@mui/icons-material/History';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import SettingsIcon from '@mui/icons-material/Settings';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 
@@ -12,7 +11,7 @@ const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   // map path to nav value
-  const paths = ['/home', '/analytics', '/history', '/bank', '/settings'];
+  const paths = ['/home', '/analytics', '/quickadd', '/history', '/settings'];
   const [value, setValue] = useState(paths.indexOf(location.pathname) !== -1 ? paths.indexOf(location.pathname) : 0);
 
   const handleChange = (event, newValue) => {
@@ -45,7 +44,6 @@ const Layout = () => {
         <BottomNavigationAction label="Analytics" icon={<BarChartIcon />} />
         <BottomNavigationAction label="Ajouter" icon={<AddCircleIcon />} />
         <BottomNavigationAction label="Historique" icon={<HistoryIcon />} />
-        <BottomNavigationAction label="Banque" icon={<AccountBalanceIcon />} />
         <BottomNavigationAction label="Paramètres" icon={<SettingsIcon />} />
       </BottomNavigation>
     </Box>

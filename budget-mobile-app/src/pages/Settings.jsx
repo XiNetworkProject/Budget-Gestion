@@ -100,7 +100,8 @@ const Settings = () => {
     updateAccount,
     deleteAccount,
     setActiveAccount,
-    logout
+    logout,
+    clearAllData
   } = useStore();
 
   const [activeTab, setActiveTab] = useState(0);
@@ -181,6 +182,18 @@ const Settings = () => {
     deleteAccount(accountId);
     setDeleteDialog(false);
     setSnack({ open: true, message: 'Compte supprimé avec succès', severity: 'info' });
+  };
+
+  const handleChangeActiveAccount = (accountId) => {
+    setActiveAccount(accountId);
+    setSnack({ open: true, message: 'Compte actif changé avec succès', severity: 'success' });
+  };
+
+  const handleDeleteData = () => {
+    // Supprimer toutes les données du store
+    clearAllData();
+    setDeleteDialog(false);
+    setSnack({ open: true, message: 'Toutes les données ont été supprimées', severity: 'info' });
   };
 
   const handleExport = () => {
@@ -309,7 +322,7 @@ const Settings = () => {
                 </ListItemIcon>
                 <ListItemText 
                   primary="Compte créé le" 
-                  secondary={new Date(userProfile.createdAt).toLocaleDateString('fr-FR')}
+                  secondary={userProfile.createdAt ? new Date(userProfile.createdAt).toLocaleDateString('fr-FR') : 'Non disponible'}
                 />
               </ListItem>
               <ListItem>
@@ -318,7 +331,7 @@ const Settings = () => {
                 </ListItemIcon>
                 <ListItemText 
                   primary="Dernière connexion" 
-                  secondary={new Date(userProfile.lastLogin).toLocaleDateString('fr-FR')}
+                  secondary={userProfile.lastLogin ? new Date(userProfile.lastLogin).toLocaleDateString('fr-FR') : 'Non disponible'}
                 />
               </ListItem>
             </List>
@@ -340,7 +353,7 @@ const Settings = () => {
                 </Avatar>
                 <Box>
                   <Typography variant="subtitle1">{activeAccount.name}</Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" component="span">
                     {activeAccount.balance.toLocaleString()} {activeAccount.currency}
                   </Typography>
                 </Box>
@@ -366,6 +379,15 @@ const Settings = () => {
                     <Box sx={{ display: 'flex', gap: 1 }}>
                       {account.id === activeAccount?.id && (
                         <Chip label="Actif" size="small" color="primary" />
+                      )}
+                      {account.id !== activeAccount?.id && (
+                        <Button 
+                          variant="outlined" 
+                          size="small"
+                          onClick={() => handleChangeActiveAccount(account.id)}
+                        >
+                          Activer
+                        </Button>
                       )}
                       <IconButton onClick={() => handleAccountEdit(account)}>
                         <Edit />
@@ -421,9 +443,12 @@ const Settings = () => {
                   secondary="Réduire l'espacement des éléments"
                 />
                 <Switch 
-                  checked={appSettings.display.compactMode} 
+                  checked={appSettings.display?.compactMode || false} 
                   onChange={e => updateAppSettings({ 
-                    display: { ...appSettings.display, compactMode: e.target.checked } 
+                    display: { 
+                      ...appSettings.display, 
+                      compactMode: e.target.checked 
+                    } 
                   })} 
                 />
               </ListItem>
@@ -440,7 +465,7 @@ const Settings = () => {
                 />
                 <FormControl size="small" sx={{ minWidth: 120 }}>
                   <Select
-                    value={appSettings.language}
+                    value={appSettings.language || 'fr'}
                     onChange={(e) => updateAppSettings({ language: e.target.value })}
                   >
                     {languages.map(lang => (
@@ -459,7 +484,7 @@ const Settings = () => {
                 />
                 <FormControl size="small" sx={{ minWidth: 120 }}>
                   <Select
-                    value={appSettings.currency}
+                    value={appSettings.currency || 'EUR'}
                     onChange={(e) => updateAppSettings({ currency: e.target.value })}
                   >
                     {currencies.map(curr => (
@@ -482,9 +507,12 @@ const Settings = () => {
                   secondary="Montrer les pourcentages dans les graphiques"
                 />
                 <Switch 
-                  checked={appSettings.display.showPercentages} 
+                  checked={appSettings.display?.showPercentages || true} 
                   onChange={e => updateAppSettings({ 
-                    display: { ...appSettings.display, showPercentages: e.target.checked } 
+                    display: { 
+                      ...appSettings.display, 
+                      showPercentages: e.target.checked 
+                    } 
                   })} 
                 />
               </ListItem>
@@ -504,9 +532,12 @@ const Settings = () => {
                   secondary="Verrouiller l'app après inactivité"
                 />
                 <Switch 
-                  checked={appSettings.privacy.autoLock} 
+                  checked={appSettings.privacy?.autoLock || true} 
                   onChange={e => updateAppSettings({ 
-                    privacy: { ...appSettings.privacy, autoLock: e.target.checked } 
+                    privacy: { 
+                      ...appSettings.privacy, 
+                      autoLock: e.target.checked 
+                    } 
                   })} 
                 />
               </ListItem>
@@ -517,9 +548,12 @@ const Settings = () => {
                   secondary="Utiliser l'empreinte digitale ou Face ID"
                 />
                 <Switch 
-                  checked={appSettings.privacy.biometricAuth} 
+                  checked={appSettings.privacy?.biometricAuth || false} 
                   onChange={e => updateAppSettings({ 
-                    privacy: { ...appSettings.privacy, biometricAuth: e.target.checked } 
+                    privacy: { 
+                      ...appSettings.privacy, 
+                      biometricAuth: e.target.checked 
+                    } 
                   })} 
                 />
               </ListItem>
@@ -530,9 +564,12 @@ const Settings = () => {
                   secondary="Autoriser le partage de données anonymes"
                 />
                 <Switch 
-                  checked={appSettings.privacy.dataSharing} 
+                  checked={appSettings.privacy?.dataSharing || false} 
                   onChange={e => updateAppSettings({ 
-                    privacy: { ...appSettings.privacy, dataSharing: e.target.checked } 
+                    privacy: { 
+                      ...appSettings.privacy, 
+                      dataSharing: e.target.checked 
+                    } 
                   })} 
                 />
               </ListItem>
@@ -570,9 +607,12 @@ const Settings = () => {
                   secondary="Recevoir des alertes quand vous dépassez votre budget"
                 />
                 <Switch 
-                  checked={appSettings.notifications.budgetAlerts} 
+                  checked={appSettings.notifications?.budgetAlerts || true} 
                   onChange={e => updateAppSettings({ 
-                    notifications: { ...appSettings.notifications, budgetAlerts: e.target.checked } 
+                    notifications: { 
+                      ...appSettings.notifications, 
+                      budgetAlerts: e.target.checked 
+                    } 
                   })} 
                 />
               </ListItem>
@@ -583,9 +623,12 @@ const Settings = () => {
                   secondary="Rappels pour les factures à venir"
                 />
                 <Switch 
-                  checked={appSettings.notifications.billReminders} 
+                  checked={appSettings.notifications?.billReminders || true} 
                   onChange={e => updateAppSettings({ 
-                    notifications: { ...appSettings.notifications, billReminders: e.target.checked } 
+                    notifications: { 
+                      ...appSettings.notifications, 
+                      billReminders: e.target.checked 
+                    } 
                   })} 
                 />
               </ListItem>
@@ -596,9 +639,28 @@ const Settings = () => {
                   secondary="Notifications pour les objectifs d'épargne"
                 />
                 <Switch 
-                  checked={appSettings.notifications.savingsGoals} 
+                  checked={appSettings.notifications?.savingsGoals || true} 
                   onChange={e => updateAppSettings({ 
-                    notifications: { ...appSettings.notifications, savingsGoals: e.target.checked } 
+                    notifications: { 
+                      ...appSettings.notifications, 
+                      savingsGoals: e.target.checked 
+                    } 
+                  })} 
+                />
+              </ListItem>
+              <Divider />
+              <ListItem>
+                <ListItemText 
+                  primary="Rapports hebdomadaires" 
+                  secondary="Recevoir un résumé hebdomadaire"
+                />
+                <Switch 
+                  checked={appSettings.notifications?.weeklyReports || true} 
+                  onChange={e => updateAppSettings({ 
+                    notifications: { 
+                      ...appSettings.notifications, 
+                      weeklyReports: e.target.checked 
+                    } 
                   })} 
                 />
               </ListItem>

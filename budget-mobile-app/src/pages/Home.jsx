@@ -55,7 +55,7 @@ ChartJS.register(
 );
 
 const Home = () => {
-  const { user, months, revenus, data, sideByMonth, budgetLimits } = useStore();
+  const { user, months, revenus, data, sideByMonth, budgetLimits, incomeTransactions, expenses } = useStore();
   const [localData, setLocalData] = useState({
     income: [],
     expenses: [],
@@ -159,13 +159,30 @@ const Home = () => {
     }
   };
 
-  // Transactions récentes simulées
-  const recentTransactions = [
-    { id: 1, type: 'expense', amount: 45, category: 'Alimentation', date: 'Aujourd\'hui', icon: '🍔' },
-    { id: 2, type: 'income', amount: 2500, category: 'Salaire', date: 'Hier', icon: '💰' },
-    { id: 3, type: 'expense', amount: 120, category: 'Transport', date: 'Il y a 2 jours', icon: '🚗' },
-    { id: 4, type: 'expense', amount: 80, category: 'Loisirs', date: 'Il y a 3 jours', icon: '🎬' }
+  // Transactions récentes réelles (revenus et dépenses)
+  const allTransactions = [
+    ...incomeTransactions.map(t => ({
+      ...t,
+      type: 'income',
+      icon: '💰',
+      category: t.type || 'Revenu',
+      date: t.date ? new Date(t.date) : new Date()
+    })),
+    ...expenses.map(t => ({
+      ...t,
+      type: 'expense',
+      icon: '💸',
+      category: t.category || 'Dépense',
+      date: t.date ? new Date(t.date) : new Date()
+    }))
   ];
+  const recentTransactions = allTransactions
+    .sort((a, b) => b.date - a.date)
+    .slice(0, 5)
+    .map(t => ({
+      ...t,
+      date: t.date instanceof Date ? t.date.toLocaleDateString('fr-FR') : t.date
+    }));
 
   const getBalanceColor = (amount) => {
     if (amount > 0) return 'success.main';
@@ -208,7 +225,7 @@ const Home = () => {
               {saved.toLocaleString()}€
             </Avatar>
           </Box>
-          <Typography variant="body2" textAlign="center" color="text.secondary" sx={{ mt: 1 }}>
+          <Typography variant="body2" textAlign="center" color="text.secondary" sx={{ mt: 1 }} component="span">
             Solde actuel
           </Typography>
         </Box>
@@ -227,7 +244,7 @@ const Home = () => {
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                   {income.toLocaleString()}€
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                   Ce mois
                 </Typography>
               </CardContent>
@@ -246,7 +263,7 @@ const Home = () => {
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                   {expense.toLocaleString()}€
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                   Ce mois
                 </Typography>
               </CardContent>
@@ -286,7 +303,7 @@ const Home = () => {
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                   {upcoming.toLocaleString()}€
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                   À venir
                 </Typography>
               </CardContent>

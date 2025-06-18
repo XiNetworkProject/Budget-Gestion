@@ -304,7 +304,7 @@ const Debts = () => {
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 {totalDebt.toLocaleString()}€
               </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.8 }}>
+              <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                 {remainingDebt.toLocaleString()}€ restants
               </Typography>
             </CardContent>
@@ -340,7 +340,7 @@ const Debts = () => {
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 {totalMonthlyPayment.toLocaleString()}€
               </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.8 }}>
+              <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                 Total par mois
               </Typography>
             </CardContent>
@@ -357,7 +357,7 @@ const Debts = () => {
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 {debts.reduce((sum, debt) => sum + parseFloat(calculateInterestCost(debt)), 0).toFixed(0)}€
               </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.8 }}>
+              <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                 Coût mensuel
               </Typography>
             </CardContent>
@@ -436,7 +436,7 @@ const Debts = () => {
                     
                     <Box sx={{ mb: 2 }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body2">
+                        <Typography variant="body2" component="span">
                           {debt.paid.toLocaleString()}€ / {debt.amount.toLocaleString()}€
                         </Typography>
                         <Chip 
@@ -454,30 +454,30 @@ const Debts = () => {
                     </Box>
 
                     <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                      <Typography variant="body2" color="text.secondary" gutterBottom component="span">
                         Détails
                       </Typography>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="body2">Reste à payer:</Typography>
-                        <Typography variant="body2" fontWeight="bold">
+                        <Typography variant="body2" component="span">Reste à payer:</Typography>
+                        <Typography variant="body2" fontWeight="bold" component="span">
                           {remaining.toLocaleString()}€
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="body2">Paiement mensuel:</Typography>
-                        <Typography variant="body2" fontWeight="bold">
+                        <Typography variant="body2" component="span">Paiement mensuel:</Typography>
+                        <Typography variant="body2" fontWeight="bold" component="span">
                           {debt.monthlyPayment}€
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="body2">Intérêts mensuels:</Typography>
-                        <Typography variant="body2" color="error.main" fontWeight="bold">
+                        <Typography variant="body2" component="span">Intérêts mensuels:</Typography>
+                        <Typography variant="body2" color="error.main" fontWeight="bold" component="span">
                           {monthlyInterest}€
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2">Échéance:</Typography>
-                        <Typography variant="body2" color={daysLeft <= 7 ? 'error.main' : 'text.secondary'}>
+                        <Typography variant="body2" component="span">Échéance:</Typography>
+                        <Typography variant="body2" color={daysLeft <= 7 ? 'error.main' : 'text.secondary'} component="span">
                           {daysLeft} jours
                         </Typography>
                       </Box>

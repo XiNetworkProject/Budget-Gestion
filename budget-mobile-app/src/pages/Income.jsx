@@ -87,7 +87,8 @@ const Income = () => {
     addIncome,
     updateIncome,
     deleteIncome,
-    activeAccount
+    activeAccount,
+    incomeTransactions
   } = useStore();
   
   const idx = months.length - 1;
@@ -265,6 +266,9 @@ const Income = () => {
     'Autres'
   ];
 
+  // Historique des transactions de revenus
+  const transactions = incomeTransactions.filter(inc => !activeAccount || inc.accountId === activeAccount.id);
+
   return (
     <Box sx={{ pb: 8 }}>
       {/* AppBar */}
@@ -292,7 +296,7 @@ const Income = () => {
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                   {totalIncome.toLocaleString()}€
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                   Tous les revenus
                 </Typography>
               </CardContent>
@@ -392,14 +396,42 @@ const Income = () => {
 
         {activeTab === 1 && (
           <Box>
-            <Paper sx={{ p: 4, textAlign: 'center' }}>
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                Historique des revenus
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                L'historique détaillé sera disponible dans une prochaine version
-              </Typography>
-            </Paper>
+            {transactions.length === 0 ? (
+              <Paper sx={{ p: 4, textAlign: 'center' }}>
+                <Typography variant="h6" color="text.secondary" gutterBottom>
+                  Aucun revenu enregistré
+                </Typography>
+                <Typography variant="body2" color="text.secondary" component="span">
+                  Ajoutez votre premier revenu en utilisant le bouton +
+                </Typography>
+              </Paper>
+            ) : (
+              <List>
+                {transactions.map((income, index) => (
+                  <React.Fragment key={income.id}>
+                    <ListItem>
+                      <ListItemText
+                        primary={income.type}
+                        secondary={`${income.date} • ${income.description}`}
+                      />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold' }}>
+                          +{income.amount}€
+                        </Typography>
+                        <IconButton 
+                          size="small" 
+                          color="error" 
+                          onClick={() => handleDeleteIncome(income.id)}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Box>
+                    </ListItem>
+                    {index < transactions.length - 1 && <Divider />}
+                  </React.Fragment>
+                ))}
+              </List>
+            )}
           </Box>
         )}
 

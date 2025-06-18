@@ -96,11 +96,15 @@ const useStore = create(
               totalPotentialSavings: state.totalPotentialSavings,
               budgetLimits: state.budgetLimits,
               expenses: state.expenses,
-              incomes: state.incomes,
+              incomeTransactions: state.incomeTransactions,
               savings: state.savings,
               debts: state.debts,
               bankAccounts: state.bankAccounts,
-              transactions: state.transactions
+              transactions: state.transactions,
+              userProfile: state.userProfile,
+              appSettings: state.appSettings,
+              accounts: state.accounts,
+              activeAccount: state.activeAccount
             });
             toast.success('Données sauvegardées');
           } catch (error) {
@@ -136,6 +140,7 @@ const useStore = create(
 
         // Nouvelles données pour la persistance complète
         expenses: [],
+        incomeTransactions: [],
         savings: [],
         debts: [],
         bankAccounts: [],
@@ -170,6 +175,7 @@ const useStore = create(
                   totalPotentialSavings: data.totalPotentialSavings || 0,
                   budgetLimits: data.budgetLimits || defaultCategoryLimits,
                   expenses: data.expenses || [],
+                  incomeTransactions: data.incomeTransactions || [],
                   savings: data.savings || [],
                   debts: data.debts || [],
                   bankAccounts: data.bankAccounts || [],
@@ -194,6 +200,7 @@ const useStore = create(
                   totalPotentialSavings: 0,
                   budgetLimits: defaultCategoryLimits,
                   expenses: [],
+                  incomeTransactions: [],
                   savings: [],
                   debts: [],
                   bankAccounts: [],
@@ -276,7 +283,7 @@ const useStore = create(
           set({ accounts: updatedAccounts });
           
           if (state.activeAccount?.id === accountId) {
-            set({ activeAccount: updatedAccounts[0] || null });
+            set({ activeAccount: null });
           }
           
           scheduleSave();
@@ -366,22 +373,24 @@ const useStore = create(
             createdAt: new Date().toISOString()
           };
           
-          const updatedIncomes = [...state.incomes, newIncome];
-          set({ incomes: updatedIncomes });
+          const updatedIncomeTransactions = [...state.incomeTransactions, newIncome];
+          set({ incomeTransactions: updatedIncomeTransactions });
           scheduleSave();
         },
 
         updateIncome: (incomeId, updates) => {
           const state = get();
-          const updatedIncomes = state.incomes.map(inc => 
+          const updatedIncomeTransactions = state.incomeTransactions.map(inc => 
             inc.id === incomeId ? { ...inc, ...updates } : inc
           );
-          set({ incomes: updatedIncomes });
+          set({ incomeTransactions: updatedIncomeTransactions });
           scheduleSave();
         },
 
         deleteIncome: (incomeId) => {
           const state = get();
+          const updatedIncomeTransactions = state.incomeTransactions.filter(inc => inc.id !== incomeId);
+          set({ incomeTransactions: updatedIncomeTransactions });
           const updatedIncomes = state.incomes.filter(inc => inc.id !== incomeId);
           set({ incomes: updatedIncomes });
           scheduleSave();
@@ -672,6 +681,7 @@ const useStore = create(
             saved: defaultSaved,
             sideByMonth: defaultSideByMonth,
             expenses: [],
+            incomeTransactions: [],
             savings: [],
             debts: [],
             bankAccounts: [],
@@ -680,6 +690,35 @@ const useStore = create(
             appSettings: defaultAppSettings,
             accounts: [],
             activeAccount: null
+          });
+        },
+
+        clearAllData: () => {
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            error: null,
+            months: defaultMonths,
+            categories: defaultCategories,
+            data: defaultData,
+            revenus: defaultRevenus,
+            incomeTypes: defaultIncomeTypes,
+            incomes: defaultIncomes,
+            persons: defaultPersons,
+            saved: defaultSaved,
+            sideByMonth: defaultSideByMonth,
+            expenses: [],
+            incomeTransactions: [],
+            savings: [],
+            debts: [],
+            bankAccounts: [],
+            transactions: [],
+            userProfile: defaultUserProfile,
+            appSettings: defaultAppSettings,
+            accounts: [],
+            activeAccount: null,
+            budgetLimits: {}
           });
         },
 

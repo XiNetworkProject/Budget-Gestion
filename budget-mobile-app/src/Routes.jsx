@@ -8,7 +8,6 @@ import Layout from './components/Layout';
 import Home from './pages/Home';
 import Analytics from './pages/Analytics';
 import History from './pages/History';
-import Bank from './pages/Bank';
 import Settings from './pages/Settings';
 import QuickAdd from './pages/QuickAdd';
 import Expenses from './pages/Expenses';
@@ -27,7 +26,12 @@ function SplashRedirect() {
 
 export default function AppRoutes() {
   return (
-    <BrowserRouter>
+    <BrowserRouter
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true
+      }}
+    >
       <Routes>
         <Route path="/" element={<SplashRedirect />} />
         <Route path="/login" element={<Login />} />
@@ -35,14 +39,13 @@ export default function AppRoutes() {
         <Route element={<Layout />}>
           <Route path="/home" element={<Home />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/quickadd" element={<QuickAdd />} />
           <Route path="/history" element={<History />} />
-          <Route path="/bank" element={<Bank />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/quick-add" element={<QuickAdd />} />
           <Route path="/expenses" element={<Expenses />} />
           <Route path="/income" element={<Income />} />
           <Route path="/savings" element={<Savings />} />
-          <Route path="/debt s" element={<Debts />} />
+          <Route path="/debts" element={<Debts />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Route>
       </Routes>

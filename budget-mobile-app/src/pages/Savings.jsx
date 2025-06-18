@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useStore } from '../store';
 import { 
   Box, 
   Typography, 
@@ -50,42 +51,29 @@ import {
 ChartJS.register(BarElement, CategoryScale, LinearScale, Legend, ArcElement);
 
 const Savings = () => {
-  const [goals, setGoals] = useState([
-    {
-      id: 1,
-      name: 'Vacances d\'été',
-      target: 2000,
-      current: 1200,
-      icon: '🏖️',
-      color: '#FF6384',
-      deadline: '2024-07-01'
-    },
-    {
-      id: 2,
-      name: 'Nouvelle voiture',
-      target: 15000,
-      current: 8500,
-      icon: '🚗',
-      color: '#36A2EB',
-      deadline: '2024-12-31'
-    },
-    {
-      id: 3,
-      name: 'Fonds d\'urgence',
-      target: 5000,
-      current: 5000,
-      icon: '🛡️',
-      color: '#FFCE56',
-      deadline: '2024-06-01'
-    }
-  ]);
+  const { 
+    savings, 
+    addSavingsGoal, 
+    updateSavingsGoal, 
+    deleteSavingsGoal,
+    activeAccount 
+  } = useStore();
 
   const [addDialog, setAddDialog] = useState(false);
   const [editDialog, setEditDialog] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState(null);
-  const [newGoal, setNewGoal] = useState({ name: '', target: '', current: '', icon: '💰' });
+  const [newGoal, setNewGoal] = useState({ 
+    name: '', 
+    target: '', 
+    current: '', 
+    icon: '💰',
+    deadline: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+  });
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
+
+  // Filtrer les objectifs par compte actif
+  const goals = savings.filter(goal => !activeAccount || goal.accountId === activeAccount.id);
 
   // Données simulées pour les graphiques
   const monthlyData = {
@@ -93,9 +81,9 @@ const Savings = () => {
     data: [500, 800, 1200, 1500, 2000, 2500]
   };
 
-  const totalSaved = goals.reduce((sum, goal) => sum + goal.current, 0);
-  const totalTarget = goals.reduce((sum, goal) => sum + goal.target, 0);
-  const overallProgress = ((totalSaved / totalTarget) * 100).toFixed(1);
+  const totalSaved = goals.reduce((sum, goal) => sum + (goal.current || 0), 0);
+  const totalTarget = goals.reduce((sum, goal) => sum + (goal.target || 0), 0);
+  const overallProgress = totalTarget > 0 ? ((totalSaved / totalTarget) * 100).toFixed(1) : 0;
 
   const barData = {
     labels: monthlyData.labels,
@@ -111,8 +99,8 @@ const Savings = () => {
   const doughnutData = {
     labels: goals.map(goal => goal.name),
     datasets: [{
-      data: goals.map(goal => goal.current),
-      backgroundColor: goals.map(goal => goal.color),
+      data: goals.map(goal => goal.current || 0),
+      backgroundColor: goals.map(goal => goal.color || '#1976d2'),
       borderWidth: 2,
       borderColor: '#fff'
     }]
@@ -150,37 +138,51 @@ const Savings = () => {
 
   const handleAddGoal = () => {
     const goal = {
-      id: Date.now(),
       name: newGoal.name,
       target: parseFloat(newGoal.target),
       current: parseFloat(newGoal.current) || 0,
       icon: newGoal.icon,
       color: `hsl(${Math.random() * 360}, 70%, 50%)`,
-      deadline: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      deadline: newGoal.deadline,
+      accountId: activeAccount?.id
     };
-    setGoals([...goals, goal]);
+    addSavingsGoal(goal);
     setAddDialog(false);
-    setNewGoal({ name: '', target: '', current: '', icon: '💰' });
+    setNewGoal({ 
+      name: '', 
+      target: '', 
+      current: '', 
+      icon: '💰',
+      deadline: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    });
     setSnack({ open: true, message: 'Objectif d\'épargne ajouté', severity: 'success' });
   };
 
   const handleEditGoal = () => {
     if (selectedGoal) {
-      setGoals(goals.map(goal => 
-        goal.id === selectedGoal.id 
-          ? { ...goal, name: newGoal.name, target: parseFloat(newGoal.target), current: parseFloat(newGoal.current) }
-          : goal
-      ));
+      updateSavingsGoal(selectedGoal.id, {
+        name: newGoal.name,
+        target: parseFloat(newGoal.target),
+        current: parseFloat(newGoal.current) || 0,
+        icon: newGoal.icon,
+        deadline: newGoal.deadline
+      });
       setEditDialog(false);
       setSelectedGoal(null);
-      setNewGoal({ name: '', target: '', current: '', icon: '💰' });
+      setNewGoal({ 
+        name: '', 
+        target: '', 
+        current: '', 
+        icon: '💰',
+        deadline: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      });
       setSnack({ open: true, message: 'Objectif modifié', severity: 'success' });
     }
   };
 
   const handleDeleteGoal = () => {
     if (selectedGoal) {
-      setGoals(goals.filter(goal => goal.id !== selectedGoal.id));
+      deleteSavingsGoal(selectedGoal.id);
       setDeleteDialog(false);
       setSelectedGoal(null);
       setSnack({ open: true, message: 'Objectif supprimé', severity: 'info' });
@@ -188,11 +190,11 @@ const Savings = () => {
   };
 
   const handleUpdateProgress = (goalId, amount) => {
-    setGoals(goals.map(goal => 
-      goal.id === goalId 
-        ? { ...goal, current: Math.min(goal.current + amount, goal.target) }
-        : goal
-    ));
+    const goal = goals.find(g => g.id === goalId);
+    if (goal) {
+      const newCurrent = Math.min((goal.current || 0) + amount, goal.target);
+      updateSavingsGoal(goalId, { current: newCurrent });
+    }
   };
 
   const getProgressColor = (progress) => {
@@ -224,7 +226,7 @@ const Savings = () => {
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 {totalSaved.toLocaleString()}€
               </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.8 }}>
+              <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                 Sur {totalTarget.toLocaleString()}€
               </Typography>
             </CardContent>
@@ -260,7 +262,7 @@ const Savings = () => {
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 {goals.length}
               </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.8 }}>
+              <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                 {goals.filter(g => (g.current / g.target) >= 1).length} atteints
               </Typography>
             </CardContent>
@@ -277,7 +279,7 @@ const Savings = () => {
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 {Math.round(monthlyData.data[monthlyData.data.length - 1] / 6)}€
               </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.8 }}>
+              <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                 Ce mois
               </Typography>
             </CardContent>
@@ -312,7 +314,7 @@ const Savings = () => {
                         <Typography variant="h3" sx={{ mr: 1 }}>{goal.icon}</Typography>
                         <Box>
                           <Typography variant="h6">{goal.name}</Typography>
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography variant="body2" color="text.secondary" component="span">
                             {daysLeft} jours restants
                           </Typography>
                         </Box>
@@ -323,7 +325,7 @@ const Savings = () => {
                           size="small" 
                           onClick={() => {
                             setSelectedGoal(goal);
-                            setNewGoal({ name: goal.name, target: goal.target, current: goal.current, icon: goal.icon });
+                            setNewGoal({ name: goal.name, target: goal.target, current: goal.current, icon: goal.icon, deadline: goal.deadline });
                             setEditDialog(true);
                           }}
                         >
@@ -344,7 +346,7 @@ const Savings = () => {
                     
                     <Box sx={{ mb: 2 }}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body2">
+                        <Typography variant="body2" component="span">
                           {goal.current.toLocaleString()}€ / {goal.target.toLocaleString()}€
                         </Typography>
                         <Chip 
@@ -454,6 +456,17 @@ const Savings = () => {
             variant="outlined"
             value={newGoal.current}
             onChange={(e) => setNewGoal({ ...newGoal, current: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="Date limite"
+            type="date"
+            fullWidth
+            variant="outlined"
+            value={newGoal.deadline}
+            onChange={(e) => setNewGoal({ ...newGoal, deadline: e.target.value })}
+            InputLabelProps={{ shrink: true }}
           />
         </DialogContent>
         <DialogActions>
@@ -499,6 +512,17 @@ const Savings = () => {
             variant="outlined"
             value={newGoal.current}
             onChange={(e) => setNewGoal({ ...newGoal, current: e.target.value })}
+            sx={{ mb: 2 }}
+          />
+          <TextField
+            margin="dense"
+            label="Date limite"
+            type="date"
+            fullWidth
+            variant="outlined"
+            value={newGoal.deadline}
+            onChange={(e) => setNewGoal({ ...newGoal, deadline: e.target.value })}
+            InputLabelProps={{ shrink: true }}
           />
         </DialogContent>
         <DialogActions>

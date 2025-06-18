@@ -37,6 +37,7 @@ import {
   PointElement,
   Title
 } from 'chart.js';
+import { useStore } from '../store';
 
 ChartJS.register(
   ArcElement, 
@@ -50,83 +51,77 @@ ChartJS.register(
 );
 
 const Analytics = () => {
+  const { months, categories, incomeTransactions, expenses, savings, sideByMonth } = useStore();
   const [timeFilter, setTimeFilter] = useState('month');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  // Données simulées pour la démo
-  const mockData = {
-    months: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
-    categories: ['Alimentation', 'Transport', 'Loisirs', 'Logement', 'Santé'],
-    expenses: {
-      'Alimentation': [120, 150, 130, 140, 160, 145],
-      'Transport': [80, 90, 85, 95, 88, 92],
-      'Loisirs': [60, 70, 65, 75, 80, 70],
-      'Logement': [500, 500, 500, 500, 500, 500],
-      'Santé': [30, 40, 35, 45, 50, 42]
-    },
-    revenues: [1200, 1250, 1180, 1300, 1280, 1350],
-    savings: [410, 300, 365, 445, 302, 501]
+  // Regrouper les revenus et dépenses par mois et catégorie
+  const last6Months = months.slice(-6);
+  const getMonthIdx = (date) => {
+    const d = new Date(date);
+    return months.findIndex(m => d.toLocaleString('fr-FR', { month: 'long' }) === m);
   };
 
-  const currentData = useMemo(() => {
-    const currentMonth = mockData.months.length - 1;
-    const totalExpenses = Object.values(mockData.expenses).reduce((sum, cat) => sum + cat[currentMonth], 0);
-    const currentRevenue = mockData.revenues[currentMonth];
-    const currentSavings = mockData.savings[currentMonth];
-    
-    return {
-      totalExpenses,
-      currentRevenue,
-      currentSavings,
-      expenseByCategory: Object.entries(mockData.expenses).map(([cat, values]) => ({
-        category: cat,
-        amount: values[currentMonth]
-      }))
-    };
-  }, []);
+  // Revenus par mois
+  const revenuesByMonth = months.map((_, i) =>
+    incomeTransactions.filter(t => getMonthIdx(t.date) === i).reduce((sum, t) => sum + (t.amount || 0), 0)
+  );
+  // Dépenses par mois
+  const expensesByMonth = months.map((_, i) =>
+    expenses.filter(t => getMonthIdx(t.date) === i).reduce((sum, t) => sum + (t.amount || 0), 0)
+  );
+  // Économies par mois (si savings/sideByMonth)
+  const savingsByMonth = sideByMonth;
 
+  // Catégories de dépenses (pour le mois courant)
+  const idx = months.length - 1;
+  const expenseByCategory = categories.map(cat => ({
+    category: cat,
+    amount: expenses.filter(e => e.category === cat && getMonthIdx(e.date) === idx).reduce((sum, e) => sum + (e.amount || 0), 0)
+  }));
+
+  // KPIs
+  const currentRevenue = revenuesByMonth[idx] || 0;
+  const totalExpenses = expensesByMonth[idx] || 0;
+  const currentSavings = savingsByMonth[idx] || 0;
+  const savingsRate = currentRevenue ? ((currentSavings / currentRevenue) * 100).toFixed(1) : 0;
+  const expenseRate = currentRevenue ? ((totalExpenses / currentRevenue) * 100).toFixed(1) : 0;
+
+  // Graphiques
   const pieData = {
-    labels: currentData.expenseByCategory.map(item => item.category),
+    labels: expenseByCategory.map(item => item.category),
     datasets: [{
-      data: currentData.expenseByCategory.map(item => item.amount),
+      data: expenseByCategory.map(item => item.amount),
       backgroundColor: [
-        '#FF6384',
-        '#36A2EB', 
-        '#FFCE56',
-        '#4BC0C0',
-        '#9966FF'
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#2196F3', '#F44336'
       ],
       borderWidth: 2,
       borderColor: '#fff'
     }]
   };
-
   const barData = {
-    labels: mockData.months,
+    labels: last6Months,
     datasets: [{
       label: 'Économies',
-      data: mockData.savings,
+      data: savingsByMonth.slice(-6),
       backgroundColor: 'rgba(75, 192, 192, 0.8)',
       borderColor: 'rgba(75, 192, 192, 1)',
       borderWidth: 1
     }]
   };
-
   const lineData = {
-    labels: mockData.months,
+    labels: last6Months,
     datasets: [
       {
         label: 'Revenus',
-        data: mockData.revenues,
+        data: revenuesByMonth.slice(-6),
         borderColor: 'rgba(54, 162, 235, 1)',
         backgroundColor: 'rgba(54, 162, 235, 0.1)',
         tension: 0.4
       },
       {
         label: 'Dépenses',
-        data: mockData.months.map((_, i) => 
-          Object.values(mockData.expenses).reduce((sum, cat) => sum + cat[i], 0)
-        ),
+        data: expensesByMonth.slice(-6),
         borderColor: 'rgba(255, 99, 132, 1)',
         backgroundColor: 'rgba(255, 99, 132, 0.1)',
         tension: 0.4
@@ -182,9 +177,6 @@ const Analytics = () => {
     }
   };
 
-  const savingsRate = ((currentData.currentSavings / currentData.currentRevenue) * 100).toFixed(1);
-  const expenseRate = ((currentData.totalExpenses / currentData.currentRevenue) * 100).toFixed(1);
-
   return (
     <Box sx={{ p: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
@@ -224,9 +216,9 @@ const Analytics = () => {
                   <Typography variant="h6">Revenus</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {currentData.currentRevenue.toLocaleString()}€
+                  {currentRevenue.toLocaleString()}€
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                   Ce mois
                 </Typography>
               </CardContent>
@@ -243,9 +235,9 @@ const Analytics = () => {
                   <Typography variant="h6">Dépenses</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {currentData.totalExpenses.toLocaleString()}€
+                  {totalExpenses.toLocaleString()}€
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                   {expenseRate}% du revenu
                 </Typography>
               </CardContent>
@@ -262,9 +254,9 @@ const Analytics = () => {
                   <Typography variant="h6">Économies</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {currentData.currentSavings.toLocaleString()}€
+                  {currentSavings.toLocaleString()}€
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                   {savingsRate}% du revenu
                 </Typography>
               </CardContent>
@@ -363,11 +355,11 @@ const Analytics = () => {
           Détails par catégorie
         </Typography>
         <Grid container spacing={2}>
-          {currentData.expenseByCategory.map((item, index) => (
+          {expenseByCategory.map((item, index) => (
             <Grid item xs={12} sm={6} md={4} key={item.category}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 1 }}>
                 <Box>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" component="span">
                     {item.category}
                   </Typography>
                   <Typography variant="h6">
@@ -375,7 +367,7 @@ const Analytics = () => {
                   </Typography>
                 </Box>
                 <Chip 
-                  label={`${((item.amount / currentData.totalExpenses) * 100).toFixed(1)}%`}
+                  label={`${((item.amount / totalExpenses) * 100).toFixed(1)}%`}
                   size="small"
                   color="primary"
                   variant="outlined"

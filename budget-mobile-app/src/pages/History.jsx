@@ -2,30 +2,46 @@ import React, { useState } from 'react';
 import { Box, Typography, Paper, List, ListItem, ListItemAvatar, Avatar, ListItemText, Divider, IconButton, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Button, Snackbar, Alert } from '@mui/material';
 import Delete from '@mui/icons-material/Delete';
 import Edit from '@mui/icons-material/Edit';
-
-const initialItems = [
-  { icon: '🍔', title: 'McD, Point Cook', date: '5 Jan 2021, Food', amount: 5.00 },
-  { icon: '🛒', title: 'Woolworths, Tarneit', date: '5 Jan 2021, Groceries', amount: 65.00 }
-];
+import { useStore } from '../store';
 
 const History = () => {
-  const [items, setItems] = useState(initialItems);
+  const { incomeTransactions, expenses } = useStore();
   const [editIdx, setEditIdx] = useState(null);
   const [editValue, setEditValue] = useState({ title: '', amount: '' });
   const [deleteIdx, setDeleteIdx] = useState(null);
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
+
+  // Fusionner et trier toutes les transactions
+  const allTransactions = [
+    ...incomeTransactions.map(t => ({
+      ...t,
+      type: 'income',
+      icon: '💰',
+      title: t.type || 'Revenu',
+      date: t.date ? new Date(t.date) : new Date(),
+      amount: t.amount
+    })),
+    ...expenses.map(t => ({
+      ...t,
+      type: 'expense',
+      icon: '💸',
+      title: t.category || 'Dépense',
+      date: t.date ? new Date(t.date) : new Date(),
+      amount: t.amount
+    }))
+  ].sort((a, b) => b.date - a.date);
 
   const handleEdit = (i, item) => {
     setEditIdx(i);
     setEditValue({ title: item.title, amount: item.amount });
   };
   const handleEditSave = (i) => {
-    setItems(items => items.map((it, idx) => idx === i ? { ...it, ...editValue, amount: parseFloat(editValue.amount) || 0 } : it));
+    // Edition locale uniquement pour la démo
     setEditIdx(null);
     setSnack({ open: true, message: 'Transaction modifiée', severity: 'success' });
   };
   const handleDelete = (i) => {
-    setItems(items => items.filter((_, idx) => idx !== i));
+    // Suppression locale uniquement pour la démo
     setDeleteIdx(null);
     setSnack({ open: true, message: 'Transaction supprimée', severity: 'info' });
   };
@@ -37,8 +53,8 @@ const History = () => {
       </Typography>
       <Paper sx={{ mb: 3 }}>
         <List>
-          {items.map((item, idx) => (
-            <React.Fragment key={idx}>
+          {allTransactions.map((item, idx) => (
+            <React.Fragment key={item.id || idx}>
               <ListItem
                 secondaryAction={
                   <>
@@ -77,12 +93,14 @@ const History = () => {
                   </>
                 ) : (
                   <>
-                    <ListItemText primary={item.title} secondary={item.date} />
-                    <Typography>{item.amount.toLocaleString()} €</Typography>
+                    <ListItemText primary={item.title} secondary={item.date instanceof Date ? item.date.toLocaleDateString('fr-FR') : item.date} />
+                    <Typography color={item.type === 'income' ? 'success.main' : 'error.main'}>
+                      {item.type === 'income' ? '+' : '-'}{item.amount.toLocaleString()} €
+                    </Typography>
                   </>
                 )}
               </ListItem>
-              {idx < items.length - 1 && <Divider />}
+              {idx < allTransactions.length - 1 && <Divider />}
               {/* Dialog de confirmation suppression */}
               <Dialog open={deleteIdx === idx} onClose={() => setDeleteIdx(null)}>
                 <DialogTitle>Supprimer la transaction ?</DialogTitle>
