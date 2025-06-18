@@ -1,6 +1,7 @@
 import React from 'react';
 import { useStore } from '../store';
-import { Link } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
+import { Box, Typography, Avatar, Grid, Paper } from '@mui/material';
 
 const Home = () => {
   const { user, months, revenus, data, sideByMonth, budgetLimits } = useStore();
@@ -11,32 +12,62 @@ const Home = () => {
   const upcoming = Object.values(budgetLimits).reduce((sum, val) => sum + val, 0);
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Bonjour{user?.name ? `, ${user.name}` : ''}</h1>
-      <div className="flex justify-center mb-6">
-        <div className="bg-gradient-primary h-48 w-48 rounded-full flex items-center justify-center">
-          <span className="text-secondary text-xl font-bold">{saved}€</span>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <Link to="/income" className="bg-primary rounded p-4 flex flex-col items-center">
-          <span>Revenus</span>
-          <span className="font-bold mt-2">{income}€</span>
-        </Link>
-        <Link to="/expenses" className="bg-primary rounded p-4 flex flex-col items-center">
-          <span>Dépenses</span>
-          <span className="font-bold mt-2">{expense}€</span>
-        </Link>
-        <Link to="/savings" className="bg-primary rounded p-4 flex flex-col items-center">
-          <span>Économies</span>
-          <span className="font-bold mt-2">{saved}€</span>
-        </Link>
-        <Link to="/debts" className="bg-primary rounded p-4 flex flex-col items-center">
-          <span>Factures</span>
-          <span className="font-bold mt-2">{upcoming}€</span>
-        </Link>
-      </div>
-    </div>
+    <Box sx={{ p: 2 }}>
+      <Typography variant="h4" gutterBottom>
+        Bonjour{user?.name ? `, ${user.name}` : ''}
+      </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+        <Avatar sx={{ bgcolor: 'primary.main', width: 80, height: 80, fontSize: '1.5rem' }}>
+          {saved}€
+        </Avatar>
+      </Box>
+      <Grid container spacing={2}>
+        <Grid item xs={6}>
+          <Paper
+            component={RouterLink}
+            to="/income"
+            elevation={3}
+            sx={{ p: 2, textAlign: 'center', textDecoration: 'none', color: 'inherit' }}
+          >
+            <Typography variant="subtitle1">Revenus</Typography>
+            <Typography variant="h6">{income}€</Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={6}>
+          <Paper
+            component={RouterLink}
+            to="/expenses"
+            elevation={3}
+            sx={{ p: 2, textAlign: 'center', textDecoration: 'none', color: 'inherit' }}
+          >
+            <Typography variant="subtitle1">Dépenses</Typography>
+            <Typography variant="h6">{expense}€</Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={6}>
+          <Paper
+            component={RouterLink}
+            to="/savings"
+            elevation={3}
+            sx={{ p: 2, textAlign: 'center', textDecoration: 'none', color: 'inherit' }}
+          >
+            <Typography variant="subtitle1">Économies</Typography>
+            <Typography variant="h6">{saved}€</Typography>
+          </Paper>
+        </Grid>
+        <Grid item xs={6}>
+          <Paper
+            component={RouterLink}
+            to="/debts"
+            elevation={3}
+            sx={{ p: 2, textAlign: 'center', textDecoration: 'none', color: 'inherit' }}
+          >
+            <Typography variant="subtitle1">Factures</Typography>
+            <Typography variant="h6">{upcoming}€</Typography>
+          </Paper>
+        </Grid>
+      </Grid>
+    </Box>
   );
 };
 
