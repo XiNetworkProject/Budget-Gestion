@@ -168,14 +168,85 @@ const Income = () => {
     setSnack({ open: true, message: 'Revenu supprimé', severity: 'info' });
   };
 
-  // Calculs pour les graphiques
-  const totalIncome = Object.values(incomes).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
-  const monthlyIncome = Object.values(incomes).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
+  // Calculs pour les graphiques - Utiliser les transactions individuelles
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+  
+  // Fonction pour normaliser les dates (comme dans Home.jsx)
+  const parseDate = (dateString) => {
+    if (!dateString) return new Date();
+    
+    try {
+      const date = new Date(dateString);
+      
+      // Vérifier si la date est valide
+      if (isNaN(date.getTime())) {
+        console.warn('Date invalide détectée:', dateString, 'remplacée par la date actuelle');
+        return new Date();
+      }
+      
+      // Normaliser la date au début du jour pour éviter les problèmes de fuseau horaire
+      const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+      
+      return normalizedDate;
+    } catch (error) {
+      console.error('Erreur dans parseDate:', error);
+      return new Date();
+    }
+  };
 
+  // Fonction pour vérifier si une date correspond au mois actuel
+  const isDateInCurrentMonth = (dateString) => {
+    if (!dateString) return false;
+    
+    try {
+      const date = parseDate(dateString);
+      return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+    } catch (error) {
+      console.error('Erreur dans isDateInCurrentMonth:', error);
+      return false;
+    }
+  };
+
+  // Calculer les revenus du mois actuel basés sur les transactions individuelles
+  const currentMonthIncomeTransactions = incomeTransactions
+    .filter(t => isDateInCurrentMonth(t.date))
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
+  
+  // Calculer les revenus par type pour le mois actuel
+  const currentMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
+  
+  // Prioriser les transactions individuelles sur les données par type
+  const totalIncome = currentMonthIncomeTransactions + currentMonthIncomeByType;
+  const monthlyIncome = totalIncome;
+
+  // Calculer les totaux par type en combinant transactions individuelles et données par type
   const typeTotals = {};
   Object.keys(incomes).forEach(type => {
-    typeTotals[type] = incomes[type][idx] || 0;
+    // Calculer les transactions individuelles pour ce type ce mois
+    const typeTransactions = incomeTransactions
+      .filter(t => t.type === type && isDateInCurrentMonth(t.date))
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+    
+    // Si il y a des transactions individuelles, les prioriser
+    if (typeTransactions > 0) {
+      typeTotals[type] = typeTransactions;
+    } else {
+      // Sinon utiliser les données par type
+      typeTotals[type] = incomes[type][idx] || 0;
+    }
   });
+
+  // Ajouter les types qui n'existent que dans les transactions
+  incomeTransactions
+    .filter(t => isDateInCurrentMonth(t.date))
+    .forEach(t => {
+      if (!typeTotals[t.type]) {
+        typeTotals[t.type] = 0;
+      }
+      typeTotals[t.type] += t.amount || 0;
+    });
 
   const doughnutData = {
     labels: Object.keys(typeTotals),
@@ -202,7 +273,22 @@ const Income = () => {
       label: 'Revenus mensuels',
       data: months.slice(-6).map((_, i) => {
         const monthIndex = months.length - 6 + i;
-        return incomeTypes.reduce((sum, type) => sum + (incomes[type]?.[monthIndex] || 0), 0);
+        const targetDate = new Date();
+        targetDate.setMonth(targetDate.getMonth() - (5 - i));
+        
+        // Calculer les revenus par type pour ce mois
+        const monthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[monthIndex] || 0), 0);
+        
+        // Calculer les transactions individuelles pour ce mois
+        const monthIncomeTransactions = incomeTransactions
+          .filter(t => {
+            const date = parseDate(t.date);
+            return date.getMonth() === targetDate.getMonth() && 
+                   date.getFullYear() === targetDate.getFullYear();
+          })
+          .reduce((sum, t) => sum + (t.amount || 0), 0);
+        
+        return monthIncomeByType + monthIncomeTransactions;
       }),
       borderColor: 'rgba(76, 175, 80, 1)',
       backgroundColor: 'rgba(76, 175, 80, 0.1)',
@@ -347,12 +433,12 @@ const Income = () => {
         {activeTab === 0 && (
           <Paper>
             <List>
-              {incomeTypes.map((type, index) => (
+              {Object.keys(typeTotals).map((type, index) => (
                 <React.Fragment key={type}>
                   <ListItem
                     secondaryAction={
                       <>
-                        <IconButton edge="end" aria-label="edit" onClick={() => handleEdit(index, incomes[type]?.[idx] || 0)}>
+                        <IconButton edge="end" aria-label="edit" onClick={() => handleEdit(index, typeTotals[type] || 0)}>
                           <Edit />
                         </IconButton>
                         <IconButton edge="end" aria-label="delete" color="error" onClick={() => setDeleteIdx(index)}>
@@ -379,15 +465,15 @@ const Income = () => {
                       <>
                         <ListItemText 
                           primary={type} 
-                          secondary={`${(incomes[type]?.[idx] || 0).toLocaleString()}€ ce mois`}
+                          secondary={`${(typeTotals[type] || 0).toLocaleString()}€ ce mois`}
                         />
                         <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold' }}>
-                          {(incomes[type]?.[idx] || 0).toLocaleString()}€
+                          {(typeTotals[type] || 0).toLocaleString()}€
                         </Typography>
                       </>
                     )}
                   </ListItem>
-                  {index < incomeTypes.length - 1 && <Divider />}
+                  {index < Object.keys(typeTotals).length - 1 && <Divider />}
                   
                   {/* Dialog de confirmation suppression */}
                   <Dialog open={deleteIdx === index} onClose={() => setDeleteIdx(null)}>
@@ -419,29 +505,40 @@ const Income = () => {
               </Paper>
             ) : (
               <List>
-                {transactions.map((income, index) => (
-                  <React.Fragment key={income.id}>
-                    <ListItem>
-                      <ListItemText
-                        primary={income.type}
-                        secondary={`${income.date} • ${income.description}`}
-                      />
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold' }}>
-                          +{income.amount}€
-                        </Typography>
-                        <IconButton 
-                          size="small" 
-                          color="error" 
-                          onClick={() => handleDeleteIncome(income.id)}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Box>
-                    </ListItem>
-                    {index < transactions.length - 1 && <Divider />}
-                  </React.Fragment>
-                ))}
+                {transactions
+                  .sort((a, b) => new Date(b.date) - new Date(a.date)) // Trier par date décroissante
+                  .map((income, index) => {
+                    // Formater la date pour l'affichage
+                    const displayDate = new Date(income.date).toLocaleDateString('fr-FR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric'
+                    });
+                    
+                    return (
+                      <React.Fragment key={income.id}>
+                        <ListItem>
+                          <ListItemText
+                            primary={income.type}
+                            secondary={`${displayDate} • ${income.description || 'Aucune description'}`}
+                          />
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold' }}>
+                              +{income.amount.toLocaleString()}€
+                            </Typography>
+                            <IconButton 
+                              size="small" 
+                              color="error" 
+                              onClick={() => handleDeleteIncome(income.id)}
+                            >
+                              <Delete />
+                            </IconButton>
+                          </Box>
+                        </ListItem>
+                        {index < transactions.length - 1 && <Divider />}
+                      </React.Fragment>
+                    );
+                  })}
               </List>
             )}
           </Box>

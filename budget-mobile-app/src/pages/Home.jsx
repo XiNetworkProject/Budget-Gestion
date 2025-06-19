@@ -23,7 +23,10 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel
+  InputLabel,
+  Alert,
+  AlertTitle,
+  Collapse
 } from '@mui/material';
 import {
   TrendingUp,
@@ -37,7 +40,9 @@ import {
   Info,
   CalendarToday,
   ArrowBack,
-  ArrowForward
+  ArrowForward,
+  Lightbulb,
+  Analytics
 } from '@mui/icons-material';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { 
@@ -283,13 +288,337 @@ const Home = () => {
   // Calculer les économies du mois sélectionné
   const selectedMonthSaved = selectedMonthIncome - selectedMonthExpense;
 
-  // Calculer les prévisions pour le mois prochain
-  const nextMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[nextMonthIdx] || 0), 0);
+  // Système de prévisions intelligentes pour le mois prochain
+  const calculateIntelligentForecast = () => {
+    const currentDate = new Date();
+    const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+    const nextMonthYear = nextMonth.getFullYear();
+    const nextMonthIndex = nextMonth.getMonth();
+    
+    // 1. Prévisions de revenus intelligentes
+    const calculateIncomeForecast = () => {
+      // Revenus déjà planifiés pour le mois prochain
+      const plannedIncome = Object.values(incomes).reduce((sum, arr) => sum + (arr[nextMonthIdx] || 0), 0);
+      
+      // Revenus récurrents (basés sur les 3 derniers mois)
+      const recentMonths = [0, 1, 2].map(i => {
+        const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+        const monthIndex = months.findIndex((_, idx) => {
+          const monthDate2 = new Date();
+          monthDate2.setMonth(monthDate2.getMonth() - (months.length - 1 - idx));
+          return monthDate2.getMonth() === monthDate.getMonth() && 
+                 monthDate2.getFullYear() === monthDate.getFullYear();
+        });
+        
+        // Revenus par type pour ce mois
+        const monthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[monthIndex] || 0), 0);
+        
+        // Transactions individuelles pour ce mois
+        const monthIncomeTransactions = incomeTransactions
+          .filter(t => {
+            const date = parseDate(t.date);
+            return date.getMonth() === monthDate.getMonth() && 
+                   date.getFullYear() === monthDate.getFullYear();
+          })
+          .reduce((sum, t) => sum + (t.amount || 0), 0);
+        
+        return monthIncomeByType + monthIncomeTransactions;
+      });
+      
+      // Calculer la moyenne des revenus récents (pondérée)
+      const avgRecentIncome = recentMonths.reduce((sum, val, index) => {
+        // Pondération : mois le plus récent = 50%, deuxième = 30%, troisième = 20%
+        const weights = [0.5, 0.3, 0.2];
+        return sum + (val * weights[index]);
+      }, 0);
+      
+      // Combiner revenus planifiés et tendance historique
+      const intelligentIncome = Math.max(plannedIncome, avgRecentIncome * 0.8);
+      
+      console.log('Prévisions revenus:', {
+        planned: plannedIncome,
+        recentMonths,
+        avgRecent: avgRecentIncome,
+        intelligent: intelligentIncome
+      });
+      
+      return intelligentIncome;
+    };
+    
+    // 2. Prévisions de dépenses intelligentes
+    const calculateExpenseForecast = () => {
+      // Dépenses déjà planifiées pour le mois prochain
+      const plannedExpenses = Object.values(data).reduce((sum, arr) => sum + (arr[nextMonthIdx] || 0), 0);
+      
+      // Dépenses récentes (basées sur les 3 derniers mois)
+      const recentExpenses = [0, 1, 2].map(i => {
+        const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+        const monthIndex = months.findIndex((_, idx) => {
+          const monthDate2 = new Date();
+          monthDate2.setMonth(monthDate2.getMonth() - (months.length - 1 - idx));
+          return monthDate2.getMonth() === monthDate.getMonth() && 
+                 monthDate2.getFullYear() === monthDate.getFullYear();
+        });
+        
+        // Transactions individuelles pour ce mois
+        const monthExpenses = expenses
+          .filter(e => {
+            const date = parseDate(e.date);
+            return date.getMonth() === monthDate.getMonth() && 
+                   date.getFullYear() === monthDate.getFullYear();
+          })
+          .reduce((sum, e) => sum + (e.amount || 0), 0);
+        
+        // Dépenses par catégorie pour ce mois
+        const monthExpensesByCategory = Object.entries(data).reduce((sum, [category, arr]) => {
+          const hasIndividualTransactions = expenses.some(e => {
+            const date = parseDate(e.date);
+            return e.category === category && 
+                   date.getMonth() === monthDate.getMonth() && 
+                   date.getFullYear() === monthDate.getFullYear();
+          });
+          
+          if (!hasIndividualTransactions) {
+            return sum + (arr[monthIndex] || 0);
+          }
+          return sum;
+        }, 0);
+        
+        return monthExpenses + monthExpensesByCategory;
+      });
+      
+      // Calculer la moyenne des dépenses récentes (pondérée)
+      const avgRecentExpenses = recentExpenses.reduce((sum, val, index) => {
+        const weights = [0.5, 0.3, 0.2];
+        return sum + (val * weights[index]);
+      }, 0);
+      
+      // Analyser les tendances saisonnières (si on a assez de données)
+      let seasonalAdjustment = 1;
+      if (recentExpenses.length >= 3) {
+        const trend = recentExpenses[0] - recentExpenses[2]; // Tendance sur 3 mois
+        const trendPercentage = Math.abs(trend) / Math.max(avgRecentExpenses, 1);
+        
+        // Si la tendance est significative (>10%), l'appliquer
+        if (trendPercentage > 0.1) {
+          seasonalAdjustment = 1 + (trend / avgRecentExpenses) * 0.3; // Limiter l'impact
+        }
+      }
+      
+      // Analyse détaillée par catégorie
+      const categoryAnalysis = Object.entries(data).map(([category, arr]) => {
+        // Calculer les dépenses par catégorie pour les 3 derniers mois
+        const categoryExpenses = [0, 1, 2].map(i => {
+          const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+          const monthIndex = months.findIndex((_, idx) => {
+            const monthDate2 = new Date();
+            monthDate2.setMonth(monthDate2.getMonth() - (months.length - 1 - idx));
+            return monthDate2.getMonth() === monthDate.getMonth() && 
+                   monthDate2.getFullYear() === monthDate.getFullYear();
+          });
+          
+          // Transactions individuelles pour cette catégorie
+          const individualExpenses = expenses
+            .filter(e => {
+              const date = parseDate(e.date);
+              return e.category === category && 
+                     date.getMonth() === monthDate.getMonth() && 
+                     date.getFullYear() === monthDate.getFullYear();
+            })
+            .reduce((sum, e) => sum + (e.amount || 0), 0);
+          
+          // Si pas de transactions individuelles, utiliser les données par catégorie
+          if (individualExpenses === 0) {
+            return arr[monthIndex] || 0;
+          }
+          
+          return individualExpenses;
+        });
+        
+        // Calculer la tendance pour cette catégorie
+        const categoryTrend = categoryExpenses[0] - categoryExpenses[2];
+        const categoryAvg = categoryExpenses.reduce((sum, val, index) => {
+          const weights = [0.5, 0.3, 0.2];
+          return sum + (val * weights[index]);
+        }, 0);
+        
+        // Prévision pour cette catégorie
+        const plannedCategory = arr[nextMonthIdx] || 0;
+        const forecastCategory = Math.max(plannedCategory, categoryAvg * (1 + (categoryTrend / Math.max(categoryAvg, 1)) * 0.2));
+        
+        return {
+          category,
+          planned: plannedCategory,
+          forecast: forecastCategory,
+          trend: categoryTrend,
+          volatility: Math.abs(categoryTrend) / Math.max(categoryAvg, 1)
+        };
+      });
+      
+      // Calculer les dépenses totales basées sur l'analyse par catégorie
+      const categoryBasedForecast = categoryAnalysis.reduce((sum, cat) => sum + cat.forecast, 0);
+      
+      // Combiner les différentes approches
+      const intelligentExpenses = Math.max(
+        plannedExpenses, 
+        avgRecentExpenses * seasonalAdjustment,
+        categoryBasedForecast
+      );
+      
+      console.log('Prévisions dépenses détaillées:', {
+        planned: plannedExpenses,
+        recentExpenses,
+        avgRecent: avgRecentExpenses,
+        seasonalAdjustment,
+        categoryAnalysis,
+        categoryBasedForecast,
+        intelligent: intelligentExpenses
+      });
+      
+      return intelligentExpenses;
+    };
+    
+    const forecastIncome = calculateIncomeForecast();
+    const forecastExpenses = calculateExpenseForecast();
+    const forecastBalance = forecastIncome - forecastExpenses;
+    
+    return {
+      income: forecastIncome,
+      expenses: forecastExpenses,
+      balance: forecastBalance
+    };
+  };
   
-  // Pour les prévisions, utiliser principalement les données par catégorie (data)
-  // car les transactions individuelles futures ne sont pas encore connues
-  const nextMonthExpensesByCategory = Object.values(data).reduce((sum, arr) => sum + (arr[nextMonthIdx] || 0), 0);
-  const nextMonthProjected = nextMonthIncomeByType - nextMonthExpensesByCategory;
+  const forecast = calculateIntelligentForecast();
+  const nextMonthProjected = forecast.balance;
+
+  // Générer des recommandations intelligentes
+  const generateRecommendations = () => {
+    const recommendations = [];
+    
+    // Analyser le taux d'épargne
+    const savingsRate = forecast.income > 0 ? (forecast.balance / forecast.income) * 100 : 0;
+    if (savingsRate < 10) {
+      recommendations.push({
+        type: 'warning',
+        title: 'Taux d\'épargne faible',
+        message: `Votre taux d'épargne prévu est de ${Math.round(savingsRate)}%. Il est recommandé d'épargner au moins 20% de vos revenus.`,
+        action: 'Réviser vos dépenses'
+      });
+    } else if (savingsRate > 30) {
+      recommendations.push({
+        type: 'success',
+        title: 'Excellent taux d\'épargne',
+        message: `Félicitations ! Votre taux d'épargne prévu de ${Math.round(savingsRate)}% est excellent.`,
+        action: 'Continuer vos bonnes habitudes'
+      });
+    }
+    
+    // Analyser les tendances des dépenses
+    const currentMonthExpense = selectedMonthExpense;
+    const expenseChange = ((forecast.expenses - currentMonthExpense) / Math.max(currentMonthExpense, 1)) * 100;
+    
+    if (expenseChange > 20) {
+      recommendations.push({
+        type: 'error',
+        title: 'Augmentation des dépenses prévue',
+        message: `Vos dépenses pourraient augmenter de ${Math.round(expenseChange)}% le mois prochain.`,
+        action: 'Identifier les causes de cette hausse'
+      });
+    } else if (expenseChange < -10) {
+      recommendations.push({
+        type: 'info',
+        title: 'Diminution des dépenses prévue',
+        message: `Vos dépenses pourraient diminuer de ${Math.round(Math.abs(expenseChange))}% le mois prochain.`,
+        action: 'Maintenir cette tendance positive'
+      });
+    }
+    
+    // Analyser la stabilité des revenus
+    const currentMonthIncome = selectedMonthIncome;
+    const incomeChange = ((forecast.income - currentMonthIncome) / Math.max(currentMonthIncome, 1)) * 100;
+    
+    if (incomeChange < -15) {
+      recommendations.push({
+        type: 'warning',
+        title: 'Baisse des revenus prévue',
+        message: `Vos revenus pourraient diminuer de ${Math.round(Math.abs(incomeChange))}% le mois prochain.`,
+        action: 'Préparer un plan de contingence'
+      });
+    }
+    
+    // Recommandation générale si pas d'autres alertes
+    if (recommendations.length === 0) {
+      recommendations.push({
+        type: 'success',
+        title: 'Finances en bonne santé',
+        message: 'Vos prévisions montrent une situation financière stable.',
+        action: 'Continuer à suivre vos dépenses'
+      });
+    }
+    
+    return recommendations;
+  };
+  
+  const recommendations = generateRecommendations();
+
+  // Analyser les prévisions par catégorie
+  const getCategoryForecastAnalysis = () => {
+    const currentDate = new Date();
+    const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+    
+    return Object.entries(data).map(([category, arr]) => {
+      // Calculer les dépenses par catégorie pour les 3 derniers mois
+      const categoryExpenses = [0, 1, 2].map(i => {
+        const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+        const monthIndex = months.findIndex((_, idx) => {
+          const monthDate2 = new Date();
+          monthDate2.setMonth(monthDate2.getMonth() - (months.length - 1 - idx));
+          return monthDate2.getMonth() === monthDate.getMonth() && 
+                 monthDate2.getFullYear() === monthDate.getFullYear();
+        });
+        
+        // Transactions individuelles pour cette catégorie
+        const individualExpenses = expenses
+          .filter(e => {
+            const date = parseDate(e.date);
+            return e.category === category && 
+                   date.getMonth() === monthDate.getMonth() && 
+                   date.getFullYear() === monthDate.getFullYear();
+          })
+          .reduce((sum, e) => sum + (e.amount || 0), 0);
+        
+        // Si pas de transactions individuelles, utiliser les données par catégorie
+        if (individualExpenses === 0) {
+          return arr[monthIndex] || 0;
+        }
+        
+        return individualExpenses;
+      });
+      
+      // Calculer la tendance pour cette catégorie
+      const categoryTrend = categoryExpenses[0] - categoryExpenses[2];
+      const categoryAvg = categoryExpenses.reduce((sum, val, index) => {
+        const weights = [0.5, 0.3, 0.2];
+        return sum + (val * weights[index]);
+      }, 0);
+      
+      // Prévision pour cette catégorie
+      const plannedCategory = arr[nextMonthIdx] || 0;
+      const forecastCategory = Math.max(plannedCategory, categoryAvg * (1 + (categoryTrend / Math.max(categoryAvg, 1)) * 0.2));
+      
+      return {
+        category,
+        planned: plannedCategory,
+        forecast: forecastCategory,
+        trend: categoryTrend,
+        volatility: Math.abs(categoryTrend) / Math.max(categoryAvg, 1),
+        current: categoryExpenses[0]
+      };
+    });
+  };
+  
+  const categoryForecastAnalysis = getCategoryForecastAnalysis();
 
   // Factures à venir (limites de budget)
   const upcoming = Object.values(budgetLimits).reduce((sum, val) => sum + val, 0);
@@ -833,9 +1162,26 @@ const Home = () => {
 
       {/* Prévisions détaillées */}
       <Paper sx={{ p: 2, mb: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          Prévisions pour {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <AccountBalance sx={{ mr: 1, color: 'warning.main' }} />
+          <Typography variant="h6">
+            Prévisions intelligentes pour {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
+          </Typography>
+          <Chip 
+            label="IA" 
+            size="small" 
+            color="warning" 
+            variant="outlined"
+            sx={{ ml: 1 }}
+          />
+        </Box>
+        
+        <Alert severity="info" sx={{ mb: 2 }}>
+          <AlertTitle>Calcul intelligent</AlertTitle>
+          Les prévisions sont basées sur vos données historiques des 3 derniers mois, 
+          les tendances saisonnières et vos budgets planifiés.
+        </Alert>
+        
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6} md={3}>
             <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'success.light', borderRadius: 2 }}>
@@ -843,7 +1189,10 @@ const Home = () => {
                 Revenus prévus
               </Typography>
               <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.dark' }}>
-                {nextMonthIncomeByType.toLocaleString()}€
+                {forecast.income.toLocaleString()}€
+              </Typography>
+              <Typography variant="body2" color="success.dark" sx={{ mt: 1 }}>
+                Basé sur l'historique et les budgets
               </Typography>
             </Box>
           </Grid>
@@ -853,7 +1202,10 @@ const Home = () => {
                 Dépenses prévues
               </Typography>
               <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'error.dark' }}>
-                {nextMonthExpensesByCategory.toLocaleString()}€
+                {forecast.expenses.toLocaleString()}€
+              </Typography>
+              <Typography variant="body2" color="error.dark" sx={{ mt: 1 }}>
+                Inclut les tendances saisonnières
               </Typography>
             </Box>
           </Grid>
@@ -863,7 +1215,10 @@ const Home = () => {
                 Économies prévues
               </Typography>
               <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.dark' }}>
-                {nextMonthProjected.toLocaleString()}€
+                {forecast.balance.toLocaleString()}€
+              </Typography>
+              <Typography variant="body2" color="primary.dark" sx={{ mt: 1 }}>
+                {forecast.balance > 0 ? 'Prévision positive' : 'Attention nécessaire'}
               </Typography>
             </Box>
           </Grid>
@@ -873,10 +1228,163 @@ const Home = () => {
                 Taux d'épargne
               </Typography>
               <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'warning.dark' }}>
-                {nextMonthIncomeByType > 0 ? Math.round((nextMonthProjected / nextMonthIncomeByType) * 100) : 0}%
+                {forecast.income > 0 ? Math.round((forecast.balance / forecast.income) * 100) : 0}%
+              </Typography>
+              <Typography variant="body2" color="warning.dark" sx={{ mt: 1 }}>
+                Objectif recommandé: 20%
               </Typography>
             </Box>
           </Grid>
+        </Grid>
+        
+        {/* Détails du calcul */}
+        <Collapse in={true}>
+          <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+            <Typography variant="subtitle2" gutterBottom>
+              Détails du calcul intelligent:
+            </Typography>
+            <Grid container spacing={1}>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body2" color="text.secondary">
+                  • Revenus: Moyenne pondérée des 3 derniers mois + budgets planifiés
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body2" color="text.secondary">
+                  • Dépenses: Analyse des tendances + ajustements saisonniers
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body2" color="text.secondary">
+                  • Pondération: 50% mois récent, 30% avant-dernier, 20% troisième
+                </Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography variant="body2" color="text.secondary">
+                  • Précision: Améliore avec plus de données historiques
+                </Typography>
+              </Grid>
+            </Grid>
+          </Box>
+        </Collapse>
+      </Paper>
+
+      {/* Recommandations intelligentes */}
+      <Paper sx={{ p: 2, mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Lightbulb sx={{ mr: 1, color: 'info.main' }} />
+          <Typography variant="h6">
+            Recommandations intelligentes
+          </Typography>
+          <Chip 
+            label="IA" 
+            size="small" 
+            color="info" 
+            variant="outlined"
+            sx={{ ml: 1 }}
+          />
+        </Box>
+        
+        {recommendations.map((rec, index) => (
+          <Alert 
+            key={index}
+            severity={rec.type} 
+            sx={{ mb: 2 }}
+            action={
+              <Button color="inherit" size="small">
+                {rec.action}
+              </Button>
+            }
+          >
+            <AlertTitle>{rec.title}</AlertTitle>
+            {rec.message}
+          </Alert>
+        ))}
+      </Paper>
+
+      {/* Analyse détaillée par catégorie */}
+      <Paper sx={{ p: 2, mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Analytics sx={{ mr: 1, color: 'secondary.main' }} />
+          <Typography variant="h6">
+            Analyse des prévisions par catégorie
+          </Typography>
+          <Chip 
+            label="Détail" 
+            size="small" 
+            color="secondary" 
+            variant="outlined"
+            sx={{ ml: 1 }}
+          />
+        </Box>
+        
+        <Grid container spacing={2}>
+          {categoryForecastAnalysis.map((cat, index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <Card variant="outlined">
+                <CardContent>
+                  <Typography variant="h6" gutterBottom>
+                    {cat.category}
+                  </Typography>
+                  
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Actuel:
+                    </Typography>
+                    <Typography variant="body2" fontWeight="bold">
+                      {cat.current.toLocaleString()}€
+                    </Typography>
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Prévision:
+                    </Typography>
+                    <Typography variant="body2" fontWeight="bold" color="warning.main">
+                      {cat.forecast.toLocaleString()}€
+                    </Typography>
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Tendance:
+                    </Typography>
+                    <Typography 
+                      variant="body2" 
+                      fontWeight="bold"
+                      color={cat.trend > 0 ? 'error.main' : cat.trend < 0 ? 'success.main' : 'text.secondary'}
+                    >
+                      {cat.trend > 0 ? '+' : ''}{cat.trend.toLocaleString()}€
+                    </Typography>
+                  </Box>
+                  
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                    <Typography variant="body2" color="text.secondary">
+                      Volatilité:
+                    </Typography>
+                    <Typography variant="body2" fontWeight="bold">
+                      {Math.round(cat.volatility * 100)}%
+                    </Typography>
+                  </Box>
+                  
+                  <LinearProgress 
+                    variant="determinate" 
+                    value={Math.min((cat.forecast / Math.max(cat.current, 1)) * 100, 200)} 
+                    sx={{ 
+                      mt: 1,
+                      height: 6,
+                      borderRadius: 3,
+                      bgcolor: 'grey.200',
+                      '& .MuiLinearProgress-bar': { 
+                        bgcolor: cat.trend > 0 ? 'error.main' : cat.trend < 0 ? 'success.main' : 'warning.main',
+                        borderRadius: 3
+                      }
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
         </Grid>
       </Paper>
 
