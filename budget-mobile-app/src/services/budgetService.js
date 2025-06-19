@@ -33,11 +33,17 @@ const getFromLocalStorage = (userId) => {
 export const budgetService = {
   async saveBudget(userId, data) {
     try {
-      console.log('Tentative de sauvegarde des données pour userId:', userId);
+      console.log('=== TENTATIVE SAUVEGARDE SERVEUR ===');
+      console.log('userId:', userId);
+      console.log('API_URL:', API_URL);
       
       const token = useStore.getState().token;
+      console.log('Token présent:', !!token);
+      
       const headers = { 'Content-Type': 'application/json' };
       if (token) headers['Authorization'] = `Bearer ${token}`;
+      
+      console.log('Headers:', headers);
       
       const response = await fetch(`${API_URL}/api/budget`, {
         method: 'POST',
@@ -45,8 +51,15 @@ export const budgetService = {
         body: JSON.stringify({ userId, ...data }),
       });
 
+      console.log('Réponse serveur:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      });
+
       // Déconnexion automatique si session expirée ou non autorisée
       if (response.status === 401 || response.status === 403) {
+        console.error('Erreur d\'authentification:', response.status);
         useStore.getState().logout();
         throw new Error('Session expirée, reconnecte-toi');
       }
@@ -65,7 +78,10 @@ export const budgetService = {
       
       return result;
     } catch (error) {
-      console.warn('Erreur de connexion serveur, sauvegarde en local:', error.message);
+      console.error('=== ERREUR CONNEXION SERVEUR ===');
+      console.error('Type d\'erreur:', error.name);
+      console.error('Message:', error.message);
+      console.error('Stack:', error.stack);
       
       // En cas d'erreur de connexion, sauvegarder en local
       const localSuccess = saveToLocalStorage(userId, data);

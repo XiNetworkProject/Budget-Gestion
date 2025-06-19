@@ -42,7 +42,8 @@ import {
   ArrowBack,
   ArrowForward,
   Lightbulb,
-  Analytics
+  Analytics,
+  Logout
 } from '@mui/icons-material';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { 
@@ -82,7 +83,9 @@ const Home = () => {
     setSelectedMonth,
     getCurrentMonthIndex,
     getSelectedMonthIndex,
-    serverConnected
+    serverConnected,
+    logout,
+    isAuthenticated
   } = useStore();
   const [localData, setLocalData] = useState({
     income: [],
@@ -840,6 +843,29 @@ const Home = () => {
         `}
       </style>
       
+      {/* Alerte de connexion */}
+      {!isAuthenticated && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          <AlertTitle>Non connecté</AlertTitle>
+          Vous n'êtes pas connecté. Vos données sont sauvegardées localement uniquement.
+          <Button 
+            color="inherit" 
+            size="small" 
+            sx={{ ml: 1 }}
+            onClick={() => window.location.href = '/login'}
+          >
+            Se connecter
+          </Button>
+        </Alert>
+      )}
+      
+      {isAuthenticated && !serverConnected && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          <AlertTitle>Mode hors ligne</AlertTitle>
+          Pas de connexion au serveur. Vos données sont sauvegardées localement.
+        </Alert>
+      )}
+      
       {/* En-tête avec avatar et salutation */}
       <Fade in timeout={500}>
         <Box sx={{ mb: 3 }}>
@@ -885,6 +911,23 @@ const Home = () => {
                 ) : (
                   <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'currentColor', animation: 'pulse 2s infinite' }} />
                 )}
+              </IconButton>
+              {/* Bouton de déconnexion */}
+              <IconButton
+                onClick={() => {
+                  if (window.confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                    logout();
+                  }
+                }}
+                sx={{
+                  color: 'error.main',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255,255,255,0.1)'
+                  }
+                }}
+                title="Se déconnecter"
+              >
+                <Logout />
               </IconButton>
             </Box>
           </Box>

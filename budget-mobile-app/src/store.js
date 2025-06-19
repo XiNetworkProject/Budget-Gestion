@@ -80,9 +80,23 @@ const useStore = create(
         if (saveTimeout) clearTimeout(saveTimeout);
         saveTimeout = setTimeout(async () => {
           const state = get();
-          if (!state.user) return;
+          
+          // Diagnostic : vérifier l'état de l'authentification
+          console.log('=== DIAGNOSTIC SAUVEGARDE ===');
+          console.log('User:', state.user);
+          console.log('Token:', state.token ? 'Présent' : 'Manquant');
+          console.log('IsAuthenticated:', state.isAuthenticated);
+          console.log('ServerConnected:', state.serverConnected);
+          
+          if (!state.user) {
+            console.warn('Pas d\'utilisateur connecté - sauvegarde locale uniquement');
+            return;
+          }
+          
           set({ isSaving: true });
           try {
+            console.log('Tentative de sauvegarde pour userId:', state.user.id);
+            
             const result = await budgetService.saveBudget(state.user.id, {
               months: state.months,
               categories: state.categories,
@@ -113,11 +127,19 @@ const useStore = create(
               set({ serverConnected: false }); // Marquer comme déconnecté
               // Ne pas afficher de toast pour les sauvegardes locales silencieuses
             } else {
+              console.log('Sauvegarde serveur réussie');
               toast.success('Données sauvegardées');
               set({ serverConnected: true }); // Marquer comme connecté
             }
           } catch (error) {
-            console.warn('Erreur de sauvegarde (gérée automatiquement):', error.message);
+            console.error('Erreur de sauvegarde:', error);
+            console.error('Détails de l\'erreur:', {
+              message: error.message,
+              stack: error.stack,
+              user: state.user,
+              token: state.token ? 'Présent' : 'Manquant'
+            });
+            
             // Ne pas afficher d'erreur à l'utilisateur car la sauvegarde locale fonctionne
             // set({ error: error.message });
             // toast.error('Erreur de sauvegarde');
@@ -303,7 +325,7 @@ const useStore = create(
               });
               
               if (monthIndex !== -1) {
-                // Ne mettre à jour que si il n'y a pas déjà des données pour ce mois
+                // Ne mettre à jour que si il n'y a pas déjà des données
                 // ou si les données existantes sont 0 (pas de saisie manuelle)
                 const existingValue = newIncomes[type][monthIndex] || 0;
                 if (existingValue === 0) {
@@ -734,34 +756,22 @@ const useStore = create(
         },
 
         logout: () => {
-          set({
-            user: null,
-            token: null,
+          console.log('Déconnexion utilisateur');
+          set({ 
+            user: null, 
+            token: null, 
             isAuthenticated: false,
-            error: null,
-            months: defaultMonths,
-            categories: defaultCategories,
-            data: defaultData,
-            revenus: defaultRevenus,
-            incomeTypes: defaultIncomeTypes,
-            incomes: defaultIncomes,
-            persons: defaultPersons,
-            saved: defaultSaved,
-            sideByMonth: defaultSideByMonth,
-            expenses: [],
-            incomeTransactions: [],
-            savings: [],
-            debts: [],
-            bankAccounts: [],
-            transactions: [],
-            userProfile: defaultUserProfile,
-            appSettings: defaultAppSettings,
-            accounts: [],
-            activeAccount: null
+            serverConnected: false,
+            error: null
           });
           
-          // Rediriger vers la page de connexion
-          window.location.href = '/login';
+          // Nettoyer le localStorage pour les données utilisateur
+          try {
+            localStorage.removeItem('budget-storage');
+            console.log('Données utilisateur supprimées du localStorage');
+          } catch (error) {
+            console.error('Erreur lors du nettoyage localStorage:', error);
+          }
         },
 
         clearAllData: () => {
