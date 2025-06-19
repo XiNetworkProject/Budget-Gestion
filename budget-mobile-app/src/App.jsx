@@ -144,8 +144,7 @@ function parseOperation(input, current) {
 }
 
 function PieChartDépenses({ months, categories, data, moisIdx }) {
-  const month = months[moisIdx];
-  const values = categories.map(cat => data[cat]?.[month] || 0);
+  const values = categories.map(cat => data[cat]?.[moisIdx] || 0);
   return (
     <div className="h-40 w-full flex items-center justify-center">
       <Pie
@@ -165,24 +164,12 @@ function PieChartDépenses({ months, categories, data, moisIdx }) {
     </div>
   );
 }
-
 function BarChartEconomies({ months, economies }) {
-  // Fonction pour obtenir le nom du mois en français
-  const getMonthDisplayName = (month) => {
-    const [year, monthNum] = month.split('-');
-    const date = new Date(parseInt(year), parseInt(monthNum) - 1);
-    const monthNames = [
-      'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
-      'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'
-    ];
-    return `${monthNames[date.getMonth()]} ${year}`;
-  };
-
   return (
     <div className="h-40 w-full flex items-center justify-center">
       <Bar
         data={{
-          labels: months.map(getMonthDisplayName),
+          labels: months,
           datasets: [{
             label: 'Économies',
             data: economies,
@@ -210,14 +197,12 @@ function TableView({ isCompact, setIsCompact }) {
   const [highlightedCat, setHighlightedCat] = useState(null);
   const [editingLimitCat, setEditingLimitCat] = useState(null);
   const [limitInputValue, setLimitInputValue] = useState("");
-  
   const handleReorderCategories = (sourceIdx, destIdx) => {
     const catName = categories[sourceIdx];
     reorderCategories(sourceIdx, destIdx);
     setHighlightedCat(catName);
     setTimeout(() => setHighlightedCat(null), 800);
   };
-  
   const [editIncomeCell, setEditIncomeCell] = useState({ row: null, col: null });
   const [incomeInputValue, setIncomeInputValue] = useState("");
   const [editExpenseCell, setEditExpenseCell] = useState({ row: null, col: null });
@@ -235,24 +220,11 @@ function TableView({ isCompact, setIsCompact }) {
   const [editSaveCell, setEditSaveCell] = useState(null);
   const [saveInputValue, setSaveInputValue] = useState("");
 
-  // Fonction pour obtenir le nom du mois en français
-  const getMonthDisplayName = (month) => {
-    const [year, monthNum] = month.split('-');
-    const date = new Date(parseInt(year), parseInt(monthNum) - 1);
-    const monthNames = [
-      'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
-      'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'
-    ];
-    return `${monthNames[date.getMonth()]} ${year}`;
-  };
-
-  // Fonction pour obtenir le mois suivant
   const getNextMonth = () => {
-    if (months.length === 0) return '2024-01';
-    const lastMonth = months[months.length - 1];
-    const [year, month] = lastMonth.split('-');
-    const date = new Date(parseInt(year), parseInt(month));
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    const mois = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+    const last = months[months.length - 1];
+    const idx = mois.indexOf(last);
+    return mois[(idx + 1) % 12];
   };
 
   if (isLoading) {
@@ -271,9 +243,9 @@ function TableView({ isCompact, setIsCompact }) {
           <tr>
             <th>Catégories & Revenus</th>
             <th>Plafond</th>
-            {months.map((month) => (
+            {months.map((month, mi) => (
               <th key={month}>
-                {getMonthDisplayName(month)}
+                {month}
                 <button className="btn delete" onClick={() => removeMonth(month)}>×</button>
               </th>
             ))}
@@ -303,7 +275,7 @@ function TableView({ isCompact, setIsCompact }) {
                     type="text"
                     value={incomeEditValue}
                     onChange={e => setIncomeEditValue(e.target.value)}
-                    onBlur={() => { if (incomeEditValue.trim()) renameIncomeType(type, incomeEditValue.trim()); setEditIncomeIdx(null); }}
+                    onBlur={() => { if (incomeEditValue.trim()) renameIncomeType(incomeEditValue.trim(), ri); setEditIncomeIdx(null); }}
                     onKeyDown={e => e.key === 'Enter' && e.target.blur()}
                     autoFocus
                   />
@@ -317,8 +289,8 @@ function TableView({ isCompact, setIsCompact }) {
                 )}
               </td>
               <td></td>
-              {months.map((month, mi) => (
-                <td key={month} onClick={() => { setEditIncomeCell({ row: ri, col: mi }); setIncomeInputValue((incomes[type]?.[month] || 0).toString()); }}>
+              {months.map((_, mi) => (
+                <td key={mi} onClick={() => { setEditIncomeCell({ row: ri, col: mi }); setIncomeInputValue((incomes[type]?.[mi] || 0).toString()); }}>
                   {editIncomeCell.row === ri && editIncomeCell.col === mi ? (
                     <input
                       type="number"
@@ -329,8 +301,8 @@ function TableView({ isCompact, setIsCompact }) {
                       autoFocus
                     />
                   ) : (
-                    <span style={{ color: getCellColor(incomes[type]?.[month] || 0) }}>
-                      {`${incomes[type]?.[month] || 0} €`}
+                    <span style={{ color: getCellColor(incomes[type]?.[mi] || 0) }}>
+                      {`${incomes[type]?.[mi] || 0} €`}
                     </span>
                   )}
                 </td>
@@ -363,7 +335,7 @@ function TableView({ isCompact, setIsCompact }) {
                     type="text"
                     value={catEditValue}
                     onChange={e => setCatEditValue(e.target.value)}
-                    onBlur={() => { if (catEditValue.trim()) renameCategory(cat, catEditValue.trim()); setEditCatIdx(null); }}
+                    onBlur={() => { if (catEditValue.trim()) renameCategory(catEditValue.trim(), rc); setEditCatIdx(null); }}
                     onKeyDown={e => e.key === 'Enter' && e.target.blur()}
                     autoFocus
                   />
@@ -395,8 +367,8 @@ function TableView({ isCompact, setIsCompact }) {
                   <span style={{ color: budgetLimits[cat] < 0 ? '#e53e3e' : '#fff' }}>{`${(budgetLimits[cat]||0).toLocaleString('fr-FR')} €`}</span>
                 )}
               </td>
-              {months.map((month, mi) => (
-                <td key={month} onClick={() => { setEditExpenseCell({ row: rc, col: mi }); setExpenseInputValue((data[cat]?.[month] || 0).toString()); }}>
+              {months.map((_, mi) => (
+                <td key={mi} onClick={() => { setEditExpenseCell({ row: rc, col: mi }); setExpenseInputValue((data[cat]?.[mi] || 0).toString()); }}>
                   {editExpenseCell.row === rc && editExpenseCell.col === mi ? (
                     <input
                       type="number"
@@ -416,8 +388,8 @@ function TableView({ isCompact, setIsCompact }) {
                       autoFocus
                     />
                   ) : (
-                    <span style={{ color: getCellColor(-(data[cat]?.[month] || 0)) }}>
-                      {`${data[cat]?.[month] || 0} €`}
+                    <span style={{ color: getCellColor(-(data[cat]?.[mi] || 0)) }}>
+                      {`${data[cat]?.[mi] || 0} €`}
                     </span>
                   )}
                 </td>
@@ -441,28 +413,47 @@ function TableView({ isCompact, setIsCompact }) {
               </td>
             </tr>
           ))}
-          <tr><td colSpan={months.length + 3}>Mise de côté</td></tr>
           <tr>
             <td>Mise de côté</td>
             <td></td>
-            {months.map((month, mi) => (
-              <td key={month} onClick={() => { setEditSaveCell(mi); setSaveInputValue((sideByMonth[month] || 0).toString()); }}>
-                {editSaveCell === mi ? (
-                  <input
-                    type="number"
-                    value={saveInputValue}
-                    onChange={e => setSaveInputValue(e.target.value)}
-                    onBlur={() => { const val = parseFloat(saveInputValue) || 0; setSideByMonth(mi, val); setEditSaveCell(null); }}
-                    onKeyDown={e => e.key === 'Enter' && e.target.blur()}
-                    autoFocus
-                  />
-                ) : (
-                  <span style={{ color: getCellColor(sideByMonth[month] || 0) }}>
-                    {`${sideByMonth[month] || 0} €`}
-                  </span>
-                )}
-              </td>
-            ))}
+            {months.map((_, mi) => {
+              const totalInc = incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[mi] || 0), 0);
+              const totalDep = categories.reduce((acc, cat) => acc + (data[cat]?.[mi] || 0), 0);
+              const defaultSave = (totalInc - totalDep) / 2;
+              const saved = sideByMonth[mi] != null ? sideByMonth[mi] : defaultSave;
+              return (
+                <td key={mi} onClick={() => { setEditSaveCell(mi); setSaveInputValue(saved.toString()); }}>
+                  {editSaveCell === mi ? (
+                    <input
+                      type="number"
+                      value={saveInputValue}
+                      onChange={e => setSaveInputValue(e.target.value)}
+                      onBlur={() => { const val = parseFloat(saveInputValue) || 0; setSideByMonth(mi, val); setEditSaveCell(null); }}
+                      onKeyDown={e => e.key === 'Enter' && e.target.blur()}
+                      autoFocus
+                    />
+                  ) : (
+                    `${saved.toLocaleString('fr-FR')} €`
+                  )}
+                </td>
+              );
+            })}
+            <td></td>
+          </tr>
+          <tr>
+            <td>Économies</td>
+            <td></td>
+            {months.map((_, mi) => {
+              const totalInc = incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[mi] || 0), 0);
+              const totalDep = categories.reduce((acc, cat) => acc + (data[cat]?.[mi] || 0), 0);
+              const save = sideByMonth[mi] || 0;
+              const eco = totalInc - totalDep - save;
+              return (
+                <td key={mi} className={getEcoColor(eco)}>
+                  {eco.toLocaleString('fr-FR')} €
+                </td>
+              );
+            })}
             <td></td>
           </tr>
         </tbody>
@@ -497,31 +488,25 @@ function TrendIndicator({ value }) {
 }
 
 function Visualisation() {
-  const { months, categories, data, incomeTypes, incomes, sideByMonth, currentMonth } = useStore();
+  const { months, categories, data, incomeTypes, incomes, sideByMonth } = useStore();
   
-  if (months.length === 0) {
-    return <div style={{ color: '#e2e8f0', textAlign: 'center', padding: '40px' }}>Aucune donnée disponible</div>;
-  }
-
-  // Obtenir le mois actuel et le mois précédent
-  const currentMonthIndex = months.indexOf(currentMonth);
-  const previousMonthIndex = currentMonthIndex > 0 ? currentMonthIndex - 1 : months.length - 1;
-  
-  const currentMonthStr = months[currentMonthIndex];
-  const previousMonthStr = months[previousMonthIndex];
+  // Calculs pour le mois actuel et le mois précédent
+  const moisActuel = months[new Date().getMonth() % months.length] || months[0];
+  const idxMois = months.indexOf(moisActuel);
+  const idxMoisPrecedent = idxMois > 0 ? idxMois - 1 : months.length - 1;
   
   // Calculs des totaux pour le mois actuel
-  const totalRevenus = incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[currentMonthStr] || 0), 0);
-  const totalDepenses = categories.reduce((acc, cat) => acc + (data[cat]?.[currentMonthStr] || 0), 0);
+  const totalRevenus = incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[idxMois] || 0), 0);
+  const totalDepenses = categories.reduce((acc, cat) => acc + (data[cat]?.[idxMois] || 0), 0);
   const economie = totalRevenus - totalDepenses;
-  const miseDeCote = sideByMonth[currentMonthStr] || 0;
+  const miseDeCote = sideByMonth[idxMois] || 0;
   const reste = Math.max(economie - miseDeCote, 0);
   
   // Calculs des totaux pour le mois précédent
-  const totalRevenusPrecedent = incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[previousMonthStr] || 0), 0);
-  const totalDepensesPrecedent = categories.reduce((acc, cat) => acc + (data[cat]?.[previousMonthStr] || 0), 0);
+  const totalRevenusPrecedent = incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[idxMoisPrecedent] || 0), 0);
+  const totalDepensesPrecedent = categories.reduce((acc, cat) => acc + (data[cat]?.[idxMoisPrecedent] || 0), 0);
   const economiePrecedent = totalRevenusPrecedent - totalDepensesPrecedent;
-  const miseDeCotePrecedent = sideByMonth[previousMonthStr] || 0;
+  const miseDeCotePrecedent = sideByMonth[idxMoisPrecedent] || 0;
   
   // Calcul des variations
   const variationRevenus = calculateVariation(totalRevenus, totalRevenusPrecedent);
@@ -530,18 +515,7 @@ function Visualisation() {
   const variationMiseDeCote = calculateVariation(miseDeCote, miseDeCotePrecedent);
   
   // Calcul du total des mises de côté
-  const potentielMiseDeCoteTotal = Object.values(sideByMonth).reduce((acc, val) => acc + val, 0);
-
-  // Fonction pour obtenir le nom du mois en français
-  const getMonthDisplayName = (month) => {
-    const [year, monthNum] = month.split('-');
-    const date = new Date(parseInt(year), parseInt(monthNum) - 1);
-    const monthNames = [
-      'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
-    ];
-    return `${monthNames[date.getMonth()]} ${year}`;
-  };
+  const potentielMiseDeCoteTotal = sideByMonth.reduce((acc, val) => acc + val, 0);
 
   return (
     <div style={{
@@ -559,7 +533,7 @@ function Visualisation() {
         borderBottom: '2px solid #4a5568',
         paddingBottom: '12px'
       }}>
-        Résumé du mois de {getMonthDisplayName(currentMonthStr)}
+        Résumé du mois de {moisActuel}
       </h2>
 
       <div style={{
@@ -580,7 +554,7 @@ function Visualisation() {
             <TrendIndicator value={variationRevenus} />
           </p>
           <p style={{ color: '#a0aec0', fontSize: '12px', marginTop: '4px' }}>
-            vs {getMonthDisplayName(previousMonthStr)}: {totalRevenusPrecedent.toLocaleString()} €
+            vs {months[idxMoisPrecedent]}: {totalRevenusPrecedent.toLocaleString()} €
           </p>
         </div>
 
@@ -596,7 +570,7 @@ function Visualisation() {
             <TrendIndicator value={variationDepenses} />
           </p>
           <p style={{ color: '#a0aec0', fontSize: '12px', marginTop: '4px' }}>
-            vs {getMonthDisplayName(previousMonthStr)}: {totalDepensesPrecedent.toLocaleString()} €
+            vs {months[idxMoisPrecedent]}: {totalDepensesPrecedent.toLocaleString()} €
           </p>
         </div>
 
@@ -607,17 +581,24 @@ function Visualisation() {
           borderLeft: '4px solid #9f7aea'
         }}>
           <h3 style={{ color: '#e2e8f0', marginBottom: '8px', fontSize: '14px', textTransform: 'uppercase' }}>Économies</h3>
-          <p style={{ 
-            color: economie >= 0 ? '#48bb78' : '#f56565', 
-            fontSize: '24px', 
-            fontWeight: '600' 
+          <div style={{
+            background: '#1a202c',
+            borderRadius: '8px',
+            padding: '16px',
+            borderLeft: '4px solid #48bb78'
           }}>
-            {economie.toLocaleString()} €
-            <TrendIndicator value={variationEconomie} />
-          </p>
-          <p style={{ color: '#a0aec0', fontSize: '12px', marginTop: '4px' }}>
-            vs {getMonthDisplayName(previousMonthStr)}: {economiePrecedent.toLocaleString()} €
-          </p>
+            <p style={{ 
+              color: economie >= 0 ? '#48bb78' : '#f56565', 
+              fontSize: '24px', 
+              fontWeight: '600' 
+            }}>
+              {economie.toLocaleString()} €
+              <TrendIndicator value={variationEconomie} />
+            </p>
+            <p style={{ color: '#a0aec0', fontSize: '12px', marginTop: '4px' }}>
+              vs {months[idxMoisPrecedent]}: {economiePrecedent.toLocaleString()} €
+            </p>
+          </div>
         </div>
 
         <div style={{
@@ -632,7 +613,7 @@ function Visualisation() {
             <TrendIndicator value={variationMiseDeCote} />
           </p>
           <p style={{ color: '#a0aec0', fontSize: '12px', marginTop: '4px' }}>
-            vs {getMonthDisplayName(previousMonthStr)}: {miseDeCotePrecedent.toLocaleString()} €
+            vs {months[idxMoisPrecedent]}: {miseDeCotePrecedent.toLocaleString()} €
           </p>
         </div>
 
@@ -678,7 +659,7 @@ function Visualisation() {
           }}>
             Répartition des dépenses
           </h3>
-          <PieChartDépenses months={months} categories={categories} data={data} moisIdx={currentMonthIndex} />
+          <PieChartDépenses months={months} categories={categories} data={data} moisIdx={idxMois} />
         </div>
 
         <div style={{
@@ -698,9 +679,9 @@ function Visualisation() {
           </h3>
           <BarChartEconomies 
             months={months} 
-            economies={months.map((month) => {
-              const totalRev = incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[month] || 0), 0);
-              const totalDep = categories.reduce((acc, cat) => acc + (data[cat]?.[month] || 0), 0);
+            economies={months.map((_, i) => {
+              const totalRev = incomeTypes.reduce((acc, type) => acc + (incomes[type]?.[i] || 0), 0);
+              const totalDep = categories.reduce((acc, cat) => acc + (data[cat]?.[i] || 0), 0);
               return totalRev - totalDep;
             })} 
           />

@@ -14,24 +14,15 @@ import Expenses from './pages/Expenses';
 import Income from './pages/Income';
 import Savings from './pages/Savings';
 import Debts from './pages/Debts';
-import Archives from './pages/Archives';
 import { useStore } from './store';
 
 function SplashRedirect() {
-  const { isAuthenticated, onboardingCompleted } = useStore();
   const navigate = useNavigate();
-
-  React.useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    } else if (!onboardingCompleted) {
-      navigate('/onboarding');
-    } else {
-      navigate('/home');
-    }
-  }, [isAuthenticated, onboardingCompleted, navigate]);
-
-  return null;
+  useEffect(() => {
+    const timer = setTimeout(() => navigate('/login', { replace: true }), 2500);
+    return () => clearTimeout(timer);
+  }, [navigate]);
+  return <Splash />;
 }
 
 // Composant pour gérer la redirection vers l'onboarding
@@ -52,34 +43,22 @@ function OnboardingGuard({ children }) {
   return children;
 }
 
-// Garde pour protéger les routes authentifiées
-function ProtectedRoute({ children }) {
-  const { isAuthenticated, onboardingCompleted } = useStore();
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  
-  if (!onboardingCompleted) {
-    return <Navigate to="/onboarding" replace />;
-  }
-  
-  return children;
-}
-
 export default function AppRoutes() {
   return (
     <BrowserRouter
-      basename={import.meta.env.BASE_URL}
+      future={{
+        v7_startTransition: true,
+        v7_relativeSplatPath: true
+      }}
     >
       <Routes>
         <Route path="/" element={<SplashRedirect />} />
         <Route path="/login" element={<Login />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route element={
-          <ProtectedRoute>
+          <OnboardingGuard>
             <Layout />
-          </ProtectedRoute>
+          </OnboardingGuard>
         }>
           <Route path="/home" element={<Home />} />
           <Route path="/analytics" element={<Analytics />} />
@@ -90,7 +69,6 @@ export default function AppRoutes() {
           <Route path="/income" element={<Income />} />
           <Route path="/savings" element={<Savings />} />
           <Route path="/debts" element={<Debts />} />
-          <Route path="/archives" element={<Archives />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Route>
       </Routes>

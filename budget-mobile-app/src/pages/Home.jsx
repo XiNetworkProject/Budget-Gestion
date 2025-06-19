@@ -19,7 +19,11 @@ import {
   ListItemAvatar,
   Divider,
   Fade,
-  Zoom
+  Zoom,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
 } from '@mui/material';
 import {
   TrendingUp,
@@ -30,7 +34,10 @@ import {
   MoreVert,
   Notifications,
   Refresh,
-  Info
+  Info,
+  CalendarToday,
+  ArrowBack,
+  ArrowForward
 } from '@mui/icons-material';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { 
@@ -43,7 +50,6 @@ import {
   Legend,
   ArcElement
 } from 'chart.js';
-import MonthSelector from '../components/MonthSelector';
 
 ChartJS.register(
   CategoryScale, 
@@ -58,9 +64,6 @@ ChartJS.register(
 const Home = () => {
   const { 
     user, 
-    currentMonth,
-    getMonthStats,
-    getMonthData,
     months, 
     revenus, 
     data, 
@@ -68,9 +71,13 @@ const Home = () => {
     budgetLimits, 
     incomeTransactions, 
     expenses,
-    incomes
+    incomes,
+    selectedMonth,
+    selectedYear,
+    setSelectedMonth,
+    getCurrentMonthIndex,
+    getSelectedMonthIndex
   } = useStore();
-  
   const [localData, setLocalData] = useState({
     income: [],
     expenses: [],
@@ -98,18 +105,62 @@ const Home = () => {
     localStorage.setItem('budgetAppData', JSON.stringify(dataToSave));
   };
 
-  // Obtenir les statistiques du mois actuel
-  const currentStats = getMonthStats(currentMonth);
-  const monthData = getMonthData(currentMonth);
+  const currentMonthIdx = getCurrentMonthIndex();
+  const selectedMonthIdx = getSelectedMonthIndex();
+  const nextMonthIdx = selectedMonthIdx + 1 < months.length ? selectedMonthIdx + 1 : selectedMonthIdx;
 
-  // Calculer les revenus du mois courant
-  const income = currentStats.totalIncomes;
+  // Fonction pour obtenir le nom du mois
+  const getMonthName = (month, year) => {
+    const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+                       'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+    return `${monthNames[month]} ${year}`;
+  };
 
-  // Calculer les dépenses du mois courant
-  const expense = currentStats.totalExpenses;
+  // Fonction pour naviguer entre les mois
+  const navigateMonth = (direction) => {
+    let newMonth = selectedMonth;
+    let newYear = selectedYear;
+    
+    if (direction === 'next') {
+      newMonth = (newMonth + 1) % 12;
+      if (newMonth === 0) newYear++;
+    } else {
+      newMonth = (newMonth - 1 + 12) % 12;
+      if (newMonth === 11) newYear--;
+    }
+    
+    setSelectedMonth(newMonth, newYear);
+  };
 
-  // Calculer les économies (revenus - dépenses)
-  const saved = currentStats.balance;
+  // Calculer les revenus du mois sélectionné
+  const selectedMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[selectedMonthIdx] || 0), 0);
+  const selectedMonthIncomeTransactions = incomeTransactions
+    .filter(t => {
+      const transactionDate = new Date(t.date);
+      return transactionDate.getMonth() === selectedMonth && 
+             transactionDate.getFullYear() === selectedYear;
+    })
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
+  const selectedMonthIncome = selectedMonthIncomeByType + selectedMonthIncomeTransactions;
+
+  // Calculer les dépenses du mois sélectionné
+  const selectedMonthExpensesByCategory = Object.values(data).reduce((sum, arr) => sum + (arr[selectedMonthIdx] || 0), 0);
+  const selectedMonthExpenses = expenses
+    .filter(e => {
+      const expenseDate = new Date(e.date);
+      return expenseDate.getMonth() === selectedMonth && 
+             expenseDate.getFullYear() === selectedYear;
+    })
+    .reduce((sum, e) => sum + (e.amount || 0), 0);
+  const selectedMonthExpense = selectedMonthExpensesByCategory + selectedMonthExpenses;
+
+  // Calculer les économies du mois sélectionné
+  const selectedMonthSaved = selectedMonthIncome - selectedMonthExpense;
+
+  // Calculer les prévisions pour le mois prochain
+  const nextMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[nextMonthIdx] || 0), 0);
+  const nextMonthExpensesByCategory = Object.values(data).reduce((sum, arr) => sum + (arr[nextMonthIdx] || 0), 0);
+  const nextMonthProjected = nextMonthIncomeByType - nextMonthExpensesByCategory;
 
   // Factures à venir (limites de budget)
   const upcoming = Object.values(budgetLimits).reduce((sum, val) => sum + val, 0);
@@ -118,27 +169,39 @@ const Home = () => {
   const last6Months = months.slice(-6);
   
   // Revenus par mois pour les graphiques
-  const revenuesByMonth = last6Months.map(month => {
-    const monthStats = getMonthStats(month);
-    return monthStats.totalIncomes;
+  const revenuesByMonth = last6Months.map((_, i) => {
+    const monthIdx = months.length - 6 + i;
+    const monthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[monthIdx] || 0), 0);
+    const monthIncomeTransactions = incomeTransactions
+      .filter(t => {
+        const transactionDate = new Date(t.date);
+        const monthDate = new Date();
+        monthDate.setMonth(monthDate.getMonth() - (5 - i));
+        return transactionDate.getMonth() === monthDate.getMonth() && 
+               transactionDate.getFullYear() === monthDate.getFullYear();
+      })
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+    return monthIncomeByType + monthIncomeTransactions;
   });
 
   // Dépenses par mois pour les graphiques
-  const expensesByMonth = last6Months.map(month => {
-    const monthStats = getMonthStats(month);
-    return monthStats.totalExpenses;
+  const expensesByMonth = last6Months.map((_, i) => {
+    const monthIdx = months.length - 6 + i;
+    const monthExpensesByCategory = Object.values(data).reduce((sum, arr) => sum + (arr[monthIdx] || 0), 0);
+    const monthExpenses = expenses
+      .filter(e => {
+        const expenseDate = new Date(e.date);
+        const monthDate = new Date();
+        monthDate.setMonth(monthDate.getMonth() - (5 - i));
+        return expenseDate.getMonth() === monthDate.getMonth() && 
+               expenseDate.getFullYear() === monthDate.getFullYear();
+      })
+      .reduce((sum, e) => sum + (e.amount || 0), 0);
+    return monthExpensesByCategory + monthExpenses;
   });
 
   const lineData = {
-    labels: last6Months.map(month => {
-      const [year, monthNum] = month.split('-');
-      const date = new Date(parseInt(year), parseInt(monthNum) - 1);
-      const monthNames = [
-        'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
-        'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'
-      ];
-      return `${monthNames[date.getMonth()]} ${year}`;
-    }),
+    labels: last6Months,
     datasets: [
       {
         label: 'Revenus',
@@ -158,9 +221,9 @@ const Home = () => {
   };
 
   const doughnutData = {
-    labels: Object.keys(monthData.categories),
+    labels: Object.keys(data),
     datasets: [{
-      data: Object.values(monthData.categories),
+      data: Object.values(data).map(arr => arr[selectedMonthIdx] || 0),
       backgroundColor: [
         '#FF6384',
         '#36A2EB',
@@ -241,114 +304,129 @@ const Home = () => {
 
   return (
     <Box sx={{ p: 2 }}>
-      {/* En-tête avec salutation */}
+      {/* En-tête avec avatar et salutation */}
       <Fade in timeout={500}>
-        <Box sx={{ mb: 3, textAlign: 'center' }}>
-          <Typography 
-            variant="h4" 
-            gutterBottom 
-            sx={{ 
-              fontWeight: 'bold',
-              background: 'linear-gradient(45deg, #2196F3, #21CBF3)',
-              backgroundClip: 'text',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              mb: 1
-            }}
-          >
-            Bonjour, {user?.firstName || 'Utilisateur'} !
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Voici un aperçu de vos finances
-          </Typography>
-        </Box>
-      </Fade>
+        <Box sx={{ mb: 3 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Box>
+              <Typography 
+                variant="h4" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  fontSize: { xs: '1.8rem', sm: '2.1rem', md: '2.4rem' },
+                  color: '#ffffff',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  background: 'linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  letterSpacing: '0.5px',
+                  mb: 0.5
+                }}
+              >
+                Bonjour{user?.name ? `, ${user.name}` : ''}
+              </Typography>
+            </Box>
+            <Box>
+              <IconButton>
+                <Notifications />
+              </IconButton>
+              <IconButton>
+                <Refresh />
+              </IconButton>
+            </Box>
+          </Box>
 
-      {/* Sélecteur de mois */}
-      <MonthSelector />
+          {/* Sélecteur de mois */}
+          <Paper sx={{ p: 2, mb: 2, background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
+                {getMonthName(selectedMonth, selectedYear)}
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <IconButton 
+                  onClick={() => navigateMonth('prev')}
+                  sx={{ color: 'white' }}
+                >
+                  <ArrowBack />
+                </IconButton>
+                <IconButton 
+                  onClick={() => navigateMonth('next')}
+                  sx={{ color: 'white' }}
+                >
+                  <ArrowForward />
+                </IconButton>
+              </Box>
+            </Box>
+          </Paper>
 
-      {/* Solde principal avec cercle adaptatif */}
-      <Fade in timeout={600}>
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
-          mb: 3,
-          position: 'relative'
-        }}>
-          <Box
-            sx={{
-              width: {
-                xs: saved >= 1000000 ? 120 : saved >= 100000 ? 140 : 160,
-                sm: saved >= 1000000 ? 140 : saved >= 100000 ? 160 : 180,
-                md: saved >= 1000000 ? 160 : saved >= 100000 ? 180 : 200
-              },
-              height: {
-                xs: saved >= 1000000 ? 120 : saved >= 100000 ? 140 : 160,
-                sm: saved >= 1000000 ? 140 : saved >= 100000 ? 160 : 180,
-                md: saved >= 1000000 ? 160 : saved >= 100000 ? 180 : 200
-              },
-              borderRadius: '50%',
-              background: saved >= 0 
-                ? 'linear-gradient(135deg, #4CAF50, #66BB6A, #81C784)'
-                : 'linear-gradient(135deg, #F44336, #E57373, #EF5350)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-              transition: 'all 0.3s ease',
-              cursor: 'pointer',
-              position: 'relative',
-              '&:hover': {
-                transform: 'scale(1.05)',
-                boxShadow: '0 12px 40px rgba(0,0,0,0.4)'
-              }
-            }}
-          >
-            <Typography
-              variant="h3"
-              sx={{
-                fontWeight: 'bold',
-                color: 'white',
-                fontSize: {
-                  xs: saved >= 1000000 ? '1.5rem' : saved >= 100000 ? '1.8rem' : '2.2rem',
-                  sm: saved >= 1000000 ? '1.8rem' : saved >= 100000 ? '2.1rem' : '2.5rem',
-                  md: saved >= 1000000 ? '2.1rem' : saved >= 100000 ? '2.4rem' : '2.8rem'
-                },
-                lineHeight: 1.2,
-                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                wordBreak: 'break-word',
-                maxWidth: '90%'
-              }}
-            >
-              {saved.toLocaleString()}€
-            </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <Box
               sx={{
-                position: 'absolute',
-                top: -8,
-                right: -8,
-                width: 24,
-                height: 24,
-                borderRadius: '50%',
-                background: 'rgba(255,255,255,0.9)',
+                position: 'relative',
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
+                p: 3,
+                borderRadius: '50%',
+                background: `linear-gradient(135deg, ${getBalanceColor(selectedMonthSaved)} 0%, ${getBalanceColor(selectedMonthSaved)}dd 100%)`,
+                boxShadow: `0 8px 32px ${getBalanceColor(selectedMonthSaved)}40`,
+                minWidth: { xs: 140, sm: 160, md: 180 },
+                minHeight: { xs: 140, sm: 160, md: 180 },
                 justifyContent: 'center',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                textAlign: 'center',
+                border: `3px solid ${getBalanceColor(selectedMonthSaved)}30`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'scale(1.05)',
+                  boxShadow: `0 12px 40px ${getBalanceColor(selectedMonthSaved)}60`,
+                }
               }}
             >
               <Typography
-                variant="caption"
+                variant="h3"
                 sx={{
-                  fontSize: '0.7rem',
                   fontWeight: 'bold',
-                  color: getBalanceColor(saved)
+                  color: 'white',
+                  fontSize: {
+                    xs: selectedMonthSaved >= 1000000 ? '1.5rem' : selectedMonthSaved >= 100000 ? '1.8rem' : '2.2rem',
+                    sm: selectedMonthSaved >= 1000000 ? '1.8rem' : selectedMonthSaved >= 100000 ? '2.1rem' : '2.5rem',
+                    md: selectedMonthSaved >= 1000000 ? '2.1rem' : selectedMonthSaved >= 100000 ? '2.4rem' : '2.8rem'
+                  },
+                  lineHeight: 1.2,
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  wordBreak: 'break-word',
+                  maxWidth: '90%'
                 }}
               >
-                {saved >= 0 ? '✓' : '!'}
+                {selectedMonthSaved.toLocaleString()}€
               </Typography>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: -8,
+                  right: -8,
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.9)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: '0.7rem',
+                    fontWeight: 'bold',
+                    color: getBalanceColor(selectedMonthSaved)
+                  }}
+                >
+                  {selectedMonthSaved >= 0 ? '✓' : '!'}
+                </Typography>
+              </Box>
             </Box>
           </Box>
           <Typography 
@@ -365,7 +443,7 @@ const Home = () => {
             }} 
             component="span"
           >
-            Solde actuel
+            Solde {getMonthName(selectedMonth, selectedYear)}
           </Typography>
         </Box>
       </Fade>
@@ -381,10 +459,10 @@ const Home = () => {
                   <Typography variant="h6">Revenus</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {income.toLocaleString()}€
+                  {selectedMonthIncome.toLocaleString()}€
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                  Ce mois
+                  {getMonthName(selectedMonth, selectedYear)}
                 </Typography>
               </CardContent>
             </Card>
@@ -400,10 +478,10 @@ const Home = () => {
                   <Typography variant="h6">Dépenses</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {expense.toLocaleString()}€
+                  {selectedMonthExpense.toLocaleString()}€
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                  Ce mois
+                  {getMonthName(selectedMonth, selectedYear)}
                 </Typography>
               </CardContent>
             </Card>
@@ -419,11 +497,11 @@ const Home = () => {
                   <Typography variant="h6">Économies</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {saved.toLocaleString()}€
+                  {selectedMonthSaved.toLocaleString()}€
                 </Typography>
                 <LinearProgress 
                   variant="determinate" 
-                  value={getProgressValue(saved, income)} 
+                  value={getProgressValue(selectedMonthSaved, selectedMonthIncome)} 
                   sx={{ mt: 1, bgcolor: 'rgba(255,255,255,0.3)', '& .MuiLinearProgress-bar': { bgcolor: 'white' } }}
                 />
               </CardContent>
@@ -437,13 +515,13 @@ const Home = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <AccountBalance sx={{ mr: 1 }} />
-                  <Typography variant="h6">Factures</Typography>
+                  <Typography variant="h6">Prévisions</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {upcoming.toLocaleString()}€
+                  {nextMonthProjected.toLocaleString()}€
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                  À venir
+                  {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
                 </Typography>
               </CardContent>
             </Card>
@@ -529,6 +607,55 @@ const Home = () => {
           </Paper>
         </Grid>
       </Grid>
+
+      {/* Prévisions détaillées */}
+      <Paper sx={{ p: 2, mb: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          Prévisions pour {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'success.light', borderRadius: 2 }}>
+              <Typography variant="h6" color="success.dark">
+                Revenus prévus
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.dark' }}>
+                {nextMonthIncomeByType.toLocaleString()}€
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'error.light', borderRadius: 2 }}>
+              <Typography variant="h6" color="error.dark">
+                Dépenses prévues
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'error.dark' }}>
+                {nextMonthExpensesByCategory.toLocaleString()}€
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'primary.light', borderRadius: 2 }}>
+              <Typography variant="h6" color="primary.dark">
+                Économies prévues
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.dark' }}>
+                {nextMonthProjected.toLocaleString()}€
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'warning.light', borderRadius: 2 }}>
+              <Typography variant="h6" color="warning.dark">
+                Taux d'épargne
+              </Typography>
+              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'warning.dark' }}>
+                {nextMonthIncomeByType > 0 ? Math.round((nextMonthProjected / nextMonthIncomeByType) * 100) : 0}%
+              </Typography>
+            </Box>
+          </Grid>
+        </Grid>
+      </Paper>
 
       {/* Transactions récentes */}
       <Paper sx={{ p: 2 }}>
