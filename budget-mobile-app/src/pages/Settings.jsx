@@ -97,12 +97,14 @@ const Settings = () => {
     updateAppSettings,
     logout,
     clearAllData,
+    resetToDefaults,
     forceShowTutorial
   } = useStore();
 
   const [activeTab, setActiveTab] = useState(0);
   const [profileDialog, setProfileDialog] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
+  const [resetDialog, setResetDialog] = useState(false);
   const [feedbackDialog, setFeedbackDialog] = useState(false);
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
   
@@ -144,6 +146,13 @@ const Settings = () => {
     clearAllData();
     setDeleteDialog(false);
     setSnack({ open: true, message: 'Toutes les données ont été supprimées', severity: 'info' });
+  };
+
+  const handleResetToDefaults = () => {
+    // Réinitialiser avec les données par défaut
+    resetToDefaults();
+    setResetDialog(false);
+    setSnack({ open: true, message: 'Données réinitialisées avec succès', severity: 'success' });
   };
 
   const handleExport = () => {
@@ -563,6 +572,29 @@ const Settings = () => {
             </List>
           </Paper>
 
+          {/* Réinitialisation des données */}
+          <Paper sx={{ mb: 2 }}>
+            <List>
+              <ListItem>
+                <ListItemIcon>
+                  <Refresh color="warning" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Réinitialiser les données" 
+                  secondary="Remettre les données par défaut (garder le profil)"
+                />
+                <Button 
+                  variant="outlined" 
+                  color="warning" 
+                  size="small"
+                  onClick={() => setResetDialog(true)}
+                >
+                  Réinitialiser
+                </Button>
+              </ListItem>
+            </List>
+          </Paper>
+
           {/* Suppression des données */}
           <Paper sx={{ mb: 2 }}>
             <List>
@@ -764,6 +796,32 @@ const Settings = () => {
           <Button onClick={() => setProfileDialog(false)}>Annuler</Button>
           <Button onClick={handleProfileSave} variant="contained">
             Sauvegarder
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Dialog de réinitialisation */}
+      <Dialog open={resetDialog} onClose={() => setResetDialog(false)}>
+        <DialogTitle>Confirmer la réinitialisation</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Êtes-vous sûr de vouloir réinitialiser toutes les données ? 
+            Cette action remettra les données par défaut mais conservera votre profil utilisateur.
+          </Typography>
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            <Typography variant="body2">
+              <strong>Attention :</strong> Toutes vos dépenses, revenus, épargnes et objectifs seront supprimés.
+            </Typography>
+          </Alert>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setResetDialog(false)}>Annuler</Button>
+          <Button 
+            onClick={handleResetToDefaults} 
+            color="warning" 
+            variant="contained"
+          >
+            Réinitialiser
           </Button>
         </DialogActions>
       </Dialog>

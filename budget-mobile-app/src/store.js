@@ -676,6 +676,64 @@ const useStore = create(
           });
         },
 
+        // Réinitialiser avec des données par défaut (garder l'utilisateur connecté)
+        resetToDefaults: () => {
+          const state = get();
+          set({
+            months: defaultMonths,
+            categories: defaultCategories,
+            data: defaultData,
+            revenus: defaultRevenus,
+            incomeTypes: defaultIncomeTypes,
+            incomes: defaultIncomes,
+            persons: defaultPersons,
+            saved: defaultSaved,
+            sideByMonth: defaultSideByMonth,
+            expenses: [],
+            incomeTransactions: [],
+            savings: [],
+            debts: [],
+            bankAccounts: [],
+            transactions: [],
+            budgetLimits: defaultCategoryLimits,
+            selectedMonth: new Date().getMonth(),
+            selectedYear: new Date().getFullYear(),
+            tutorialCompleted: false,
+            onboardingCompleted: false,
+            forceTutorial: false
+          });
+          
+          // Sauvegarder les données par défaut
+          if (state.user) {
+            const defaultBudget = {
+              months: defaultMonths,
+              categories: defaultCategories,
+              data: defaultData,
+              revenus: defaultRevenus,
+              incomeTypes: defaultIncomeTypes,
+              incomes: defaultIncomes,
+              persons: defaultPersons,
+              saved: defaultSaved,
+              sideByMonth: defaultSideByMonth,
+              totalPotentialSavings: 0,
+              budgetLimits: defaultCategoryLimits,
+              expenses: [],
+              incomeTransactions: [],
+              savings: [],
+              debts: [],
+              bankAccounts: [],
+              transactions: [],
+              userProfile: state.userProfile,
+              appSettings: state.appSettings
+            };
+            
+            // Sauvegarder de manière synchrone pour s'assurer que c'est fait
+            budgetService.saveBudget(state.user.id, defaultBudget).catch(error => {
+              console.error('Erreur lors de la sauvegarde des données par défaut:', error);
+            });
+          }
+        },
+
         renameMonth: (oldMonth, newMonth) => {
           const state = get();
           const monthIdx = state.months.indexOf(oldMonth);
