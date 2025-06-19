@@ -386,6 +386,9 @@ const useStore = create(
           if (!month) return;
           
           const newData = { ...state.data };
+          if (!newData[cat]) {
+            newData[cat] = {};
+          }
           newData[cat] = { ...newData[cat] };
           newData[cat][month] = value;
           set({ data: newData });
@@ -398,7 +401,7 @@ const useStore = create(
 
           const newData = { ...state.data };
           newData[cat] = {};
-          defaultMonths.forEach(month => {
+          state.months.forEach(month => {
             newData[cat][month] = 0;
           });
           const newCategories = [...state.categories, cat];
@@ -412,9 +415,9 @@ const useStore = create(
           const state = get();
           const { [cat]: _, ...rest } = state.data;
           const newCategories = state.categories.filter((c) => c !== cat);
-          const { [cat]: __, ...newLimits } = state.budgetLimits;
+          const { [cat]: __, ...restLimits } = state.budgetLimits;
           
-          set({ categories: newCategories, data: rest, budgetLimits: newLimits });
+          set({ categories: newCategories, data: rest, budgetLimits: restLimits });
           scheduleSave();
         },
 
@@ -422,74 +425,65 @@ const useStore = create(
           const state = get();
           if (state.months.includes(month)) return;
 
-          const newData = { ...state.data };
           const lastIdx = state.months.length - 1;
+          const newData = { ...state.data };
           Object.keys(newData).forEach((cat) => {
-            const lastVal = lastIdx >= 0 ? newData[cat][lastIdx] : 0;
+            const lastVal = lastIdx >= 0 ? newData[cat][state.months[lastIdx]] : 0;
             newData[cat] = { ...newData[cat], [month]: lastVal };
           });
 
           const newIncomes = { ...state.incomes };
           Object.keys(newIncomes).forEach((type) => {
-            const lastVal = lastIdx >= 0 ? newIncomes[type][lastIdx] : 0;
+            const lastVal = lastIdx >= 0 ? newIncomes[type][state.months[lastIdx]] : 0;
             newIncomes[type] = { ...newIncomes[type], [month]: lastVal };
           });
 
           const newRevenus = { ...state.revenus };
-          const lastRev = lastIdx >= 0 ? newRevenus[lastIdx] : 0;
+          const lastRev = lastIdx >= 0 ? newRevenus[state.months[lastIdx]] : 0;
           newRevenus[month] = lastRev;
 
           const newSide = { ...state.sideByMonth };
-          const lastSide = newSide.length > 0 ? newSide[lastIdx] : 0;
+          const lastSide = lastIdx >= 0 ? newSide[state.months[lastIdx]] : 0;
           newSide[month] = lastSide;
 
           const newMonths = [...state.months, month];
-
-          set({
-            months: newMonths,
-            data: newData,
-            revenus: newRevenus,
-            incomes: newIncomes,
-            sideByMonth: newSide,
+          
+          set({ 
+            months: newMonths, 
+            data: newData, 
+            incomes: newIncomes, 
+            revenus: newRevenus, 
+            sideByMonth: newSide 
           });
           scheduleSave();
         },
 
         removeMonth: (month) => {
-          const currentMonth = new Date().toLocaleString('fr-FR', { month: 'long' });
-          if (month === currentMonth) {
-            alert("Impossible de supprimer le mois en cours");
-            return;
-          }
-
           const state = get();
-          const monthIdx = state.months.indexOf(month);
-          if (monthIdx === -1) return;
-
           const newData = { ...state.data };
           Object.keys(newData).forEach((cat) => {
             newData[cat] = { ...newData[cat] };
-            newData[cat][month] = undefined;
+            delete newData[cat][month];
           });
 
           const newIncomes = { ...state.incomes };
           Object.keys(newIncomes).forEach((type) => {
             newIncomes[type] = { ...newIncomes[type] };
-            newIncomes[type][month] = undefined;
+            delete newIncomes[type][month];
           });
 
           const newRevenus = { ...state.revenus };
-          newRevenus[month] = undefined;
+          delete newRevenus[month];
           const newSideByMonth = { ...state.sideByMonth };
-          newSideByMonth[month] = undefined;
+          delete newSideByMonth[month];
           const newMonths = state.months.filter((m) => m !== month);
 
-          set({
-            months: newMonths,
-            data: newData,
-            incomes: newIncomes,
-            revenus: newRevenus,
-            sideByMonth: newSideByMonth,
+          set({ 
+            months: newMonths, 
+            data: newData, 
+            incomes: newIncomes, 
+            revenus: newRevenus, 
+            sideByMonth: newSideByMonth 
           });
           scheduleSave();
         },
@@ -500,6 +494,9 @@ const useStore = create(
           if (!month) return;
           
           const newIncomes = { ...state.incomes };
+          if (!newIncomes[type]) {
+            newIncomes[type] = {};
+          }
           newIncomes[type] = { ...newIncomes[type] };
           newIncomes[type][month] = value;
           set({ incomes: newIncomes });
@@ -528,19 +525,19 @@ const useStore = create(
           scheduleSave();
         },
 
-        renameCategory: (oldName, newName) => {
+        renameCategory: (oldCat, newCat) => {
           const state = get();
+          if (state.categories.includes(newCat)) return;
+          
+          const newCategories = state.categories.map((c) => (c === oldCat ? newCat : c));
           const newData = { ...state.data };
-          const newCategories = [...state.categories];
-          const index = newCategories.indexOf(oldName);
+          newData[newCat] = newData[oldCat];
+          delete newData[oldCat];
+          const newLimits = { ...state.budgetLimits };
+          newLimits[newCat] = newLimits[oldCat];
+          delete newLimits[oldCat];
           
-          if (index !== -1) {
-            newCategories[index] = newName;
-            newData[newName] = newData[oldName];
-            delete newData[oldName];
-          }
-          
-          set({ categories: newCategories, data: newData });
+          set({ categories: newCategories, data: newData, budgetLimits: newLimits });
           scheduleSave();
         },
 
@@ -618,18 +615,20 @@ const useStore = create(
 
         reorderCategories: (sourceIdx, destIdx) => {
           const state = get();
-          const newCategories = Array.from(state.categories);
-          const [moved] = newCategories.splice(sourceIdx, 1);
-          newCategories.splice(destIdx, 0, moved);
+          const newCategories = [...state.categories];
+          const [removed] = newCategories.splice(sourceIdx, 1);
+          newCategories.splice(destIdx, 0, removed);
+          
           set({ categories: newCategories });
           scheduleSave();
         },
 
         reorderIncomeTypes: (sourceIdx, destIdx) => {
           const state = get();
-          const newIncomeTypes = Array.from(state.incomeTypes);
-          const [moved] = newIncomeTypes.splice(sourceIdx, 1);
-          newIncomeTypes.splice(destIdx, 0, moved);
+          const newIncomeTypes = [...state.incomeTypes];
+          const [removed] = newIncomeTypes.splice(sourceIdx, 1);
+          newIncomeTypes.splice(destIdx, 0, removed);
+          
           set({ incomeTypes: newIncomeTypes });
           scheduleSave();
         },

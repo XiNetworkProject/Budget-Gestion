@@ -6,22 +6,48 @@ import { PlusIcon, CrossIcon, TableIcon, ChartIcon } from '../icons';
 
 Chart.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
+// Fonction pour obtenir le mois actuel au format YYYY-MM
+const getCurrentMonth = () => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+};
+
 function Budget() {
-  const { months, categories, data, setValue, addCategory, removeCategory, addMonth, removeMonth, incomeTypes, incomes, setIncome, addIncomeType, removeIncomeType, renameIncomeType, renameCategory, sideByMonth, setSideByMonth } = useStore();
+  const { 
+    months, 
+    categories, 
+    data, 
+    setValue, 
+    addCategory, 
+    removeCategory, 
+    addMonth, 
+    removeMonth, 
+    incomeTypes, 
+    incomes, 
+    setIncome, 
+    addIncomeType, 
+    removeIncomeType, 
+    renameIncomeType, 
+    renameCategory, 
+    sideByMonth, 
+    setSideByMonth,
+    currentMonth,
+    setCurrentMonth
+  } = useStore();
 
   const resetMonths = () => {
     const currentDate = new Date();
-    const currentMonth = currentDate.toLocaleString('fr-FR', { month: 'long' });
+    const currentMonthStr = getCurrentMonth();
     
     // Ajouter le mois en cours
-    addMonth(currentMonth);
+    addMonth(currentMonthStr);
     
     // Ajouter les 5 mois précédents
     for (let i = 1; i <= 5; i++) {
       const date = new Date();
       date.setMonth(date.getMonth() - i);
-      const monthName = date.toLocaleString('fr-FR', { month: 'long' });
-      addMonth(monthName);
+      const monthStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      addMonth(monthStr);
     }
   };
 
