@@ -3,24 +3,77 @@ import { persist } from 'zustand/middleware';
 import { budgetService } from './services/budgetService';
 import toast from 'react-hot-toast';
 
-const defaultMonths = [
-  'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
-];
+// Fonction pour obtenir le mois actuel au format YYYY-MM
+const getCurrentMonth = () => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+};
+
+// Fonction pour obtenir le nom du mois en français
+const getMonthName = (yearMonth) => {
+  const [year, month] = yearMonth.split('-');
+  const date = new Date(parseInt(year), parseInt(month) - 1);
+  const monthNames = [
+    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+  ];
+  return `${monthNames[date.getMonth()]} ${year}`;
+};
+
+// Fonction pour obtenir le mois précédent
+const getPreviousMonth = (yearMonth) => {
+  const [year, month] = yearMonth.split('-');
+  const date = new Date(parseInt(year), parseInt(month) - 2);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+};
+
+// Fonction pour obtenir le mois suivant
+const getNextMonth = (yearMonth) => {
+  const [year, month] = yearMonth.split('-');
+  const date = new Date(parseInt(year), parseInt(month));
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+};
+
+// Générer les 12 derniers mois
+const generateRecentMonths = () => {
+  const months = [];
+  let currentMonth = getCurrentMonth();
+  
+  for (let i = 11; i >= 0; i--) {
+    const [year, month] = currentMonth.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1 - i);
+    const monthStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    months.push(monthStr);
+  }
+  
+  return months;
+};
+
+const defaultMonths = generateRecentMonths();
 const defaultCategories = [
   'Loyer', 'Électricité', 'Assurance', 'Banque', 'Nourriture', 'Loisirs', 'Voiture'
 ];
 
 const defaultData = {};
 defaultCategories.forEach((cat) => {
-  defaultData[cat] = defaultMonths.map(() => 0);
+  defaultData[cat] = {};
+  defaultMonths.forEach(month => {
+    defaultData[cat][month] = 0;
+  });
 });
 
-const defaultRevenus = defaultMonths.map(() => 300);
+const defaultRevenus = {};
+defaultMonths.forEach(month => {
+  defaultRevenus[month] = 300;
+});
 
 const defaultIncomeTypes = ["Salaire", "Aides"];
 const defaultIncomes = {};
 defaultIncomeTypes.forEach((type) => {
-  defaultIncomes[type] = defaultMonths.map(() => 0);
+  defaultIncomes[type] = {};
+  defaultMonths.forEach(month => {
+    defaultIncomes[type][month] = 0;
+  });
 });
 
 const defaultPersons = [
@@ -30,7 +83,11 @@ const defaultPersons = [
 const defaultSaved = {};
 defaultPersons.forEach((p) => { defaultSaved[p.name] = 0; });
 
-const defaultSideByMonth = defaultMonths.map(() => 0);
+const defaultSideByMonth = {};
+defaultMonths.forEach(month => {
+  defaultSideByMonth[month] = 0;
+});
+
 const defaultCategoryLimits = {};
 defaultCategories.forEach(cat => { defaultCategoryLimits[cat] = 0; });
 
@@ -325,9 +382,12 @@ const useStore = create(
         // Fonctions existantes avec sauvegarde améliorée
         setValue: (cat, monthIdx, value) => {
           const state = get();
+          const month = state.months[monthIdx];
+          if (!month) return;
+          
           const newData = { ...state.data };
-          newData[cat] = [...newData[cat]];
-          newData[cat][monthIdx] = value;
+          newData[cat] = { ...newData[cat] };
+          newData[cat][month] = value;
           set({ data: newData });
           scheduleSave();
         },
@@ -337,7 +397,10 @@ const useStore = create(
           if (state.categories.includes(cat)) return;
 
           const newData = { ...state.data };
-          newData[cat] = state.months.map(() => 0);
+          newData[cat] = {};
+          defaultMonths.forEach(month => {
+            newData[cat][month] = 0;
+          });
           const newCategories = [...state.categories, cat];
           const newLimits = { ...state.budgetLimits, [cat]: 0 };
           
@@ -363,22 +426,22 @@ const useStore = create(
           const lastIdx = state.months.length - 1;
           Object.keys(newData).forEach((cat) => {
             const lastVal = lastIdx >= 0 ? newData[cat][lastIdx] : 0;
-            newData[cat] = [...newData[cat], lastVal];
+            newData[cat] = { ...newData[cat], [month]: lastVal };
           });
 
           const newIncomes = { ...state.incomes };
           Object.keys(newIncomes).forEach((type) => {
             const lastVal = lastIdx >= 0 ? newIncomes[type][lastIdx] : 0;
-            newIncomes[type] = [...newIncomes[type], lastVal];
+            newIncomes[type] = { ...newIncomes[type], [month]: lastVal };
           });
 
-          const newRevenus = [...state.revenus];
+          const newRevenus = { ...state.revenus };
           const lastRev = lastIdx >= 0 ? newRevenus[lastIdx] : 0;
-          newRevenus.push(lastRev);
+          newRevenus[month] = lastRev;
 
-          const newSide = [...state.sideByMonth];
-          const lastSide = newSide.length > 0 ? newSide[newSide.length - 1] : 0;
-          newSide.push(lastSide);
+          const newSide = { ...state.sideByMonth };
+          const lastSide = newSide.length > 0 ? newSide[lastIdx] : 0;
+          newSide[month] = lastSide;
 
           const newMonths = [...state.months, month];
 
@@ -405,16 +468,20 @@ const useStore = create(
 
           const newData = { ...state.data };
           Object.keys(newData).forEach((cat) => {
-            newData[cat] = newData[cat].filter((_, idx) => idx !== monthIdx);
+            newData[cat] = { ...newData[cat] };
+            newData[cat][month] = undefined;
           });
 
           const newIncomes = { ...state.incomes };
           Object.keys(newIncomes).forEach((type) => {
-            newIncomes[type] = newIncomes[type].filter((_, idx) => idx !== monthIdx);
+            newIncomes[type] = { ...newIncomes[type] };
+            newIncomes[type][month] = undefined;
           });
 
-          const newRevenus = state.revenus.filter((_, idx) => idx !== monthIdx);
-          const newSideByMonth = state.sideByMonth.filter((_, idx) => idx !== monthIdx);
+          const newRevenus = { ...state.revenus };
+          newRevenus[month] = undefined;
+          const newSideByMonth = { ...state.sideByMonth };
+          newSideByMonth[month] = undefined;
           const newMonths = state.months.filter((m) => m !== month);
 
           set({
@@ -429,53 +496,34 @@ const useStore = create(
 
         setIncome: (type, monthIdx, value) => {
           const state = get();
+          const month = state.months[monthIdx];
+          if (!month) return;
+          
           const newIncomes = { ...state.incomes };
-          newIncomes[type] = [...newIncomes[type]];
-          newIncomes[type][monthIdx] = value;
-
+          newIncomes[type] = { ...newIncomes[type] };
+          newIncomes[type][month] = value;
           set({ incomes: newIncomes });
           scheduleSave();
         },
 
-        addIncomeType: (type) => {
+        setRevenus: (monthIdx, value) => {
           const state = get();
-          if (state.incomeTypes.includes(type)) return;
-
-          const newIncomes = { ...state.incomes };
-          newIncomes[type] = state.months.map(() => 0);
-          const newIncomeTypes = [...state.incomeTypes, type];
+          const month = state.months[monthIdx];
+          if (!month) return;
           
-          set({ incomeTypes: newIncomeTypes, incomes: newIncomes });
-          scheduleSave();
-        },
-
-        removeIncomeType: (type) => {
-          const state = get();
-          const { [type]: _, ...rest } = state.incomes;
-          const newIncomeTypes = state.incomeTypes.filter((t) => t !== type);
-          
-          set({ incomeTypes: newIncomeTypes, incomes: rest });
-          scheduleSave();
-        },
-
-        renameIncomeType: (oldType, newType) => {
-          const state = get();
-          if (state.incomeTypes.includes(newType)) return;
-
-          const newIncomeTypes = state.incomeTypes.map((t) => (t === oldType ? newType : t));
-          const newIncomes = { ...state.incomes };
-          newIncomes[newType] = newIncomes[oldType];
-          delete newIncomes[oldType];
-          
-          set({ incomeTypes: newIncomeTypes, incomes: newIncomes });
+          const newRevenus = { ...state.revenus };
+          newRevenus[month] = value;
+          set({ revenus: newRevenus });
           scheduleSave();
         },
 
         setSideByMonth: (monthIdx, value) => {
           const state = get();
-          const newSide = [...state.sideByMonth];
-          newSide[monthIdx] = value;
+          const month = state.months[monthIdx];
+          if (!month) return;
           
+          const newSide = { ...state.sideByMonth };
+          newSide[month] = value;
           set({ sideByMonth: newSide });
           scheduleSave();
         },
@@ -712,6 +760,180 @@ const useStore = create(
           set({ appSettings: updatedSettings });
           scheduleSave();
         },
+
+        // Gestion budgétaire temporelle
+        currentMonth: getCurrentMonth(),
+        
+        setCurrentMonth: (month) => {
+          set({ currentMonth: month });
+          scheduleSave();
+        },
+
+        // Obtenir les données d'un mois spécifique
+        getMonthData: (month) => {
+          const state = get();
+          const monthData = {
+            month,
+            monthName: getMonthName(month),
+            categories: {},
+            incomes: {},
+            revenus: state.revenus[month] || 0,
+            sideByMonth: state.sideByMonth[month] || 0
+          };
+
+          // Données des catégories
+          state.categories.forEach(cat => {
+            monthData.categories[cat] = state.data[cat]?.[month] || 0;
+          });
+
+          // Données des revenus
+          state.incomeTypes.forEach(type => {
+            monthData.incomes[type] = state.incomes[type]?.[month] || 0;
+          });
+
+          return monthData;
+        },
+
+        // Réutiliser les données d'un mois vers le mois suivant
+        copyMonthToNext: (sourceMonth, options = {}) => {
+          const state = get();
+          const nextMonth = getNextMonth(sourceMonth);
+          
+          // Ajouter le mois suivant s'il n'existe pas
+          if (!state.months.includes(nextMonth)) {
+            state.addMonth(nextMonth);
+          }
+
+          const updates = {
+            data: { ...state.data },
+            incomes: { ...state.incomes },
+            revenus: { ...state.revenus },
+            sideByMonth: { ...state.sideByMonth }
+          };
+
+          // Copier les catégories selon les options
+          state.categories.forEach(cat => {
+            if (options.categories === 'all' || (options.categories && options.categories.includes(cat))) {
+              updates.data[cat] = { ...updates.data[cat] };
+              updates.data[cat][nextMonth] = state.data[cat]?.[sourceMonth] || 0;
+            }
+          });
+
+          // Copier les revenus selon les options
+          state.incomeTypes.forEach(type => {
+            if (options.incomes === 'all' || (options.incomes && options.incomes.includes(type))) {
+              updates.incomes[type] = { ...updates.incomes[type] };
+              updates.incomes[type][nextMonth] = state.incomes[type]?.[sourceMonth] || 0;
+            }
+          });
+
+          // Copier le revenu total
+          if (options.revenus !== false) {
+            updates.revenus[nextMonth] = state.revenus[sourceMonth] || 0;
+          }
+
+          // Copier la mise de côté
+          if (options.sideByMonth !== false) {
+            updates.sideByMonth[nextMonth] = state.sideByMonth[sourceMonth] || 0;
+          }
+
+          set(updates);
+          scheduleSave();
+          toast.success(`Données copiées vers ${getMonthName(nextMonth)}`);
+        },
+
+        // Archiver un mois (marquer comme terminé)
+        archiveMonth: (month) => {
+          const state = get();
+          const archivedMonths = state.archivedMonths || {};
+          archivedMonths[month] = {
+            ...state.getMonthData(month),
+            archivedAt: new Date().toISOString(),
+            totalExpenses: Object.values(state.data).reduce((sum, catData) => 
+              sum + (catData[month] || 0), 0
+            ),
+            totalIncomes: Object.values(state.incomes).reduce((sum, typeData) => 
+              sum + (typeData[month] || 0), 0
+            )
+          };
+          
+          set({ archivedMonths });
+          scheduleSave();
+          toast.success(`${getMonthName(month)} archivé`);
+        },
+
+        // Obtenir les archives
+        getArchives: () => {
+          const state = get();
+          return state.archivedMonths || {};
+        },
+
+        // Générer automatiquement le mois suivant
+        generateNextMonth: (options = {}) => {
+          const state = get();
+          const currentMonth = state.currentMonth;
+          state.copyMonthToNext(currentMonth, options);
+          state.setCurrentMonth(getNextMonth(currentMonth));
+        },
+
+        // Obtenir les statistiques d'un mois
+        getMonthStats: (month) => {
+          const state = get();
+          const monthData = state.getMonthData(month);
+          
+          const totalExpenses = Object.values(monthData.categories).reduce((sum, val) => sum + val, 0);
+          const totalIncomes = Object.values(monthData.incomes).reduce((sum, val) => sum + val, 0);
+          const balance = totalIncomes - totalExpenses;
+          const savingsRate = totalIncomes > 0 ? (balance / totalIncomes) * 100 : 0;
+
+          return {
+            ...monthData,
+            totalExpenses,
+            totalIncomes,
+            balance,
+            savingsRate,
+            isCurrentMonth: month === getCurrentMonth(),
+            isPastMonth: month < getCurrentMonth(),
+            isFutureMonth: month > getCurrentMonth()
+          };
+        },
+
+        addIncomeType: (type) => {
+          const state = get();
+          if (state.incomeTypes.includes(type)) return;
+
+          const newIncomes = { ...state.incomes };
+          newIncomes[type] = {};
+          state.months.forEach(month => {
+            newIncomes[type][month] = 0;
+          });
+          const newIncomeTypes = [...state.incomeTypes, type];
+          
+          set({ incomeTypes: newIncomeTypes, incomes: newIncomes });
+          scheduleSave();
+        },
+
+        removeIncomeType: (type) => {
+          const state = get();
+          const { [type]: _, ...rest } = state.incomes;
+          const newIncomeTypes = state.incomeTypes.filter((t) => t !== type);
+          
+          set({ incomeTypes: newIncomeTypes, incomes: rest });
+          scheduleSave();
+        },
+
+        renameIncomeType: (oldType, newType) => {
+          const state = get();
+          if (state.incomeTypes.includes(newType)) return;
+          
+          const newIncomeTypes = state.incomeTypes.map((t) => (t === oldType ? newType : t));
+          const newIncomes = { ...state.incomes };
+          newIncomes[newType] = newIncomes[oldType];
+          delete newIncomes[oldType];
+          
+          set({ incomeTypes: newIncomeTypes, incomes: newIncomes });
+          scheduleSave();
+        },
       };
     },
     {
@@ -722,6 +944,8 @@ const useStore = create(
         token: state.token,
         userProfile: state.userProfile,
         appSettings: state.appSettings,
+        currentMonth: state.currentMonth,
+        archivedMonths: state.archivedMonths,
         tutorialCompleted: state.tutorialCompleted,
         onboardingCompleted: state.onboardingCompleted,
         forceTutorial: state.forceTutorial

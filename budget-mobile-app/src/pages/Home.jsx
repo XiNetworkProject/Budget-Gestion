@@ -43,6 +43,7 @@ import {
   Legend,
   ArcElement
 } from 'chart.js';
+import MonthSelector from '../components/MonthSelector';
 
 ChartJS.register(
   CategoryScale, 
@@ -57,6 +58,9 @@ ChartJS.register(
 const Home = () => {
   const { 
     user, 
+    currentMonth,
+    getMonthStats,
+    getMonthData,
     months, 
     revenus, 
     data, 
@@ -66,6 +70,7 @@ const Home = () => {
     expenses,
     incomes
   } = useStore();
+  
   const [localData, setLocalData] = useState({
     income: [],
     expenses: [],
@@ -93,34 +98,18 @@ const Home = () => {
     localStorage.setItem('budgetAppData', JSON.stringify(dataToSave));
   };
 
-  const idx = months.length - 1;
+  // Obtenir les statistiques du mois actuel
+  const currentStats = getMonthStats(currentMonth);
+  const monthData = getMonthData(currentMonth);
 
-  // Calculer les revenus du mois courant (revenus par type + transactions)
-  const currentMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
-  const currentMonthIncomeTransactions = incomeTransactions
-    .filter(t => {
-      const transactionDate = new Date(t.date);
-      const currentMonth = new Date();
-      return transactionDate.getMonth() === currentMonth.getMonth() && 
-             transactionDate.getFullYear() === currentMonth.getFullYear();
-    })
-    .reduce((sum, t) => sum + (t.amount || 0), 0);
-  const income = currentMonthIncomeByType + currentMonthIncomeTransactions;
+  // Calculer les revenus du mois courant
+  const income = currentStats.totalIncomes;
 
-  // Calculer les dépenses du mois courant (dépenses par catégorie + transactions)
-  const currentMonthExpensesByCategory = Object.values(data).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
-  const currentMonthExpenses = expenses
-    .filter(e => {
-      const expenseDate = new Date(e.date);
-      const currentMonth = new Date();
-      return expenseDate.getMonth() === currentMonth.getMonth() && 
-             expenseDate.getFullYear() === currentMonth.getFullYear();
-    })
-    .reduce((sum, e) => sum + (e.amount || 0), 0);
-  const expense = currentMonthExpensesByCategory + currentMonthExpenses;
+  // Calculer les dépenses du mois courant
+  const expense = currentStats.totalExpenses;
 
   // Calculer les économies (revenus - dépenses)
-  const saved = income - expense;
+  const saved = currentStats.balance;
 
   // Factures à venir (limites de budget)
   const upcoming = Object.values(budgetLimits).reduce((sum, val) => sum + val, 0);
@@ -129,39 +118,27 @@ const Home = () => {
   const last6Months = months.slice(-6);
   
   // Revenus par mois pour les graphiques
-  const revenuesByMonth = last6Months.map((_, i) => {
-    const monthIdx = months.length - 6 + i;
-    const monthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[monthIdx] || 0), 0);
-    const monthIncomeTransactions = incomeTransactions
-      .filter(t => {
-        const transactionDate = new Date(t.date);
-        const monthDate = new Date();
-        monthDate.setMonth(monthDate.getMonth() - (5 - i));
-        return transactionDate.getMonth() === monthDate.getMonth() && 
-               transactionDate.getFullYear() === monthDate.getFullYear();
-      })
-      .reduce((sum, t) => sum + (t.amount || 0), 0);
-    return monthIncomeByType + monthIncomeTransactions;
+  const revenuesByMonth = last6Months.map(month => {
+    const monthStats = getMonthStats(month);
+    return monthStats.totalIncomes;
   });
 
   // Dépenses par mois pour les graphiques
-  const expensesByMonth = last6Months.map((_, i) => {
-    const monthIdx = months.length - 6 + i;
-    const monthExpensesByCategory = Object.values(data).reduce((sum, arr) => sum + (arr[monthIdx] || 0), 0);
-    const monthExpenses = expenses
-      .filter(e => {
-        const expenseDate = new Date(e.date);
-        const monthDate = new Date();
-        monthDate.setMonth(monthDate.getMonth() - (5 - i));
-        return expenseDate.getMonth() === monthDate.getMonth() && 
-               expenseDate.getFullYear() === monthDate.getFullYear();
-      })
-      .reduce((sum, e) => sum + (e.amount || 0), 0);
-    return monthExpensesByCategory + monthExpenses;
+  const expensesByMonth = last6Months.map(month => {
+    const monthStats = getMonthStats(month);
+    return monthStats.totalExpenses;
   });
 
   const lineData = {
-    labels: last6Months,
+    labels: last6Months.map(month => {
+      const [year, monthNum] = month.split('-');
+      const date = new Date(parseInt(year), parseInt(monthNum) - 1);
+      const monthNames = [
+        'Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin',
+        'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'
+      ];
+      return `${monthNames[date.getMonth()]} ${year}`;
+    }),
     datasets: [
       {
         label: 'Revenus',
@@ -181,9 +158,9 @@ const Home = () => {
   };
 
   const doughnutData = {
-    labels: Object.keys(data),
+    labels: Object.keys(monthData.categories),
     datasets: [{
-      data: Object.values(data).map(arr => arr[idx] || 0),
+      data: Object.values(monthData.categories),
       backgroundColor: [
         '#FF6384',
         '#36A2EB',
@@ -264,105 +241,114 @@ const Home = () => {
 
   return (
     <Box sx={{ p: 2 }}>
-      {/* En-tête avec avatar et salutation */}
+      {/* En-tête avec salutation */}
       <Fade in timeout={500}>
-        <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Box>
-              <Typography 
-                variant="h4" 
-                sx={{ 
-                  fontWeight: 'bold',
-                  fontSize: { xs: '1.8rem', sm: '2.1rem', md: '2.4rem' },
-                  color: '#ffffff',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                  background: 'linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  letterSpacing: '0.5px',
-                  mb: 0.5
-                }}
-              >
-                Bonjour{user?.name ? `, ${user.name}` : ''}
-              </Typography>
-            </Box>
-            <Box>
-              <IconButton>
-                <Notifications />
-              </IconButton>
-              <IconButton>
-                <Refresh />
-              </IconButton>
-            </Box>
-          </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+        <Box sx={{ mb: 3, textAlign: 'center' }}>
+          <Typography 
+            variant="h4" 
+            gutterBottom 
+            sx={{ 
+              fontWeight: 'bold',
+              background: 'linear-gradient(45deg, #2196F3, #21CBF3)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              mb: 1
+            }}
+          >
+            Bonjour, {user?.firstName || 'Utilisateur'} !
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Voici un aperçu de vos finances
+          </Typography>
+        </Box>
+      </Fade>
+
+      {/* Sélecteur de mois */}
+      <MonthSelector />
+
+      {/* Solde principal avec cercle adaptatif */}
+      <Fade in timeout={600}>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          mb: 3,
+          position: 'relative'
+        }}>
+          <Box
+            sx={{
+              width: {
+                xs: saved >= 1000000 ? 120 : saved >= 100000 ? 140 : 160,
+                sm: saved >= 1000000 ? 140 : saved >= 100000 ? 160 : 180,
+                md: saved >= 1000000 ? 160 : saved >= 100000 ? 180 : 200
+              },
+              height: {
+                xs: saved >= 1000000 ? 120 : saved >= 100000 ? 140 : 160,
+                sm: saved >= 1000000 ? 140 : saved >= 100000 ? 160 : 180,
+                md: saved >= 1000000 ? 160 : saved >= 100000 ? 180 : 200
+              },
+              borderRadius: '50%',
+              background: saved >= 0 
+                ? 'linear-gradient(135deg, #4CAF50, #66BB6A, #81C784)'
+                : 'linear-gradient(135deg, #F44336, #E57373, #EF5350)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer',
+              position: 'relative',
+              '&:hover': {
+                transform: 'scale(1.05)',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.4)'
+              }
+            }}
+          >
+            <Typography
+              variant="h3"
+              sx={{
+                fontWeight: 'bold',
+                color: 'white',
+                fontSize: {
+                  xs: saved >= 1000000 ? '1.5rem' : saved >= 100000 ? '1.8rem' : '2.2rem',
+                  sm: saved >= 1000000 ? '1.8rem' : saved >= 100000 ? '2.1rem' : '2.5rem',
+                  md: saved >= 1000000 ? '2.1rem' : saved >= 100000 ? '2.4rem' : '2.8rem'
+                },
+                lineHeight: 1.2,
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                wordBreak: 'break-word',
+                maxWidth: '90%'
+              }}
+            >
+              {saved.toLocaleString()}€
+            </Typography>
             <Box
               sx={{
-                position: 'relative',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                p: 3,
+                position: 'absolute',
+                top: -8,
+                right: -8,
+                width: 24,
+                height: 24,
                 borderRadius: '50%',
-                background: `linear-gradient(135deg, ${getBalanceColor(saved)} 0%, ${getBalanceColor(saved)}dd 100%)`,
-                boxShadow: `0 8px 32px ${getBalanceColor(saved)}40`,
-                minWidth: { xs: 140, sm: 160, md: 180 },
-                minHeight: { xs: 140, sm: 160, md: 180 },
+                background: 'rgba(255,255,255,0.9)',
+                display: 'flex',
+                alignItems: 'center',
                 justifyContent: 'center',
-                textAlign: 'center',
-                border: `3px solid ${getBalanceColor(saved)}30`,
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'scale(1.05)',
-                  boxShadow: `0 12px 40px ${getBalanceColor(saved)}60`,
-                }
+                boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
               }}
             >
               <Typography
-                variant="h3"
+                variant="caption"
                 sx={{
+                  fontSize: '0.7rem',
                   fontWeight: 'bold',
-                  color: 'white',
-                  fontSize: {
-                    xs: saved >= 1000000 ? '1.5rem' : saved >= 100000 ? '1.8rem' : '2.2rem',
-                    sm: saved >= 1000000 ? '1.8rem' : saved >= 100000 ? '2.1rem' : '2.5rem',
-                    md: saved >= 1000000 ? '2.1rem' : saved >= 100000 ? '2.4rem' : '2.8rem'
-                  },
-                  lineHeight: 1.2,
-                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                  wordBreak: 'break-word',
-                  maxWidth: '90%'
+                  color: getBalanceColor(saved)
                 }}
               >
-                {saved.toLocaleString()}€
+                {saved >= 0 ? '✓' : '!'}
               </Typography>
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: -8,
-                  right: -8,
-                  width: 24,
-                  height: 24,
-                  borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.9)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-                }}
-              >
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontSize: '0.7rem',
-                    fontWeight: 'bold',
-                    color: getBalanceColor(saved)
-                  }}
-                >
-                  {saved >= 0 ? '✓' : '!'}
-                </Typography>
-              </Box>
             </Box>
           </Box>
           <Typography 

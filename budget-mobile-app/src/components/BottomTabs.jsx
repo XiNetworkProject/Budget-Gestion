@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 const tabs = [
   { to: '/home', label: 'Accueil' },
   { to: '/analytics', label: 'Analytics' },
+  { to: '/archives', label: 'Archives' },
   { to: '/quick-add', label: '+' },
   { to: '/history', label: 'Historique' },
   { to: '/bank', label: 'Banque' },
