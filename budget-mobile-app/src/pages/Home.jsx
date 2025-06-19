@@ -132,33 +132,57 @@ const Home = () => {
     setSelectedMonth(newMonth, newYear);
   };
 
+  // Fonction pour valider et parser une date
+  const parseDate = (dateString) => {
+    if (!dateString) return new Date();
+    
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? new Date() : date;
+  };
+
+  // Fonction pour vérifier si une date correspond au mois sélectionné
+  const isDateInSelectedMonth = (dateString) => {
+    const date = parseDate(dateString);
+    return date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
+  };
+
   // Calculer les revenus du mois sélectionné
   const selectedMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[selectedMonthIdx] || 0), 0);
   const selectedMonthIncomeTransactions = incomeTransactions
-    .filter(t => {
-      const transactionDate = new Date(t.date);
-      return transactionDate.getMonth() === selectedMonth && 
-             transactionDate.getFullYear() === selectedYear;
-    })
+    .filter(t => isDateInSelectedMonth(t.date))
     .reduce((sum, t) => sum + (t.amount || 0), 0);
   const selectedMonthIncome = selectedMonthIncomeByType + selectedMonthIncomeTransactions;
 
   // Calculer les dépenses du mois sélectionné
-  const selectedMonthExpensesByCategory = Object.values(data).reduce((sum, arr) => sum + (arr[selectedMonthIdx] || 0), 0);
+  // Prioriser les transactions individuelles (expenses) sur les données par catégorie (data)
   const selectedMonthExpenses = expenses
-    .filter(e => {
-      const expenseDate = new Date(e.date);
-      return expenseDate.getMonth() === selectedMonth && 
-             expenseDate.getFullYear() === selectedYear;
-    })
+    .filter(e => isDateInSelectedMonth(e.date))
     .reduce((sum, e) => sum + (e.amount || 0), 0);
-  const selectedMonthExpense = selectedMonthExpensesByCategory + selectedMonthExpenses;
+  
+  // Pour les catégories qui n'ont pas de transactions individuelles, utiliser les données par catégorie
+  const selectedMonthExpensesByCategory = Object.entries(data).reduce((sum, [category, arr]) => {
+    // Vérifier si cette catégorie a des transactions individuelles pour ce mois
+    const hasIndividualTransactions = expenses.some(e => 
+      e.category === category && isDateInSelectedMonth(e.date)
+    );
+    
+    // Si pas de transactions individuelles, utiliser la valeur par catégorie
+    if (!hasIndividualTransactions) {
+      return sum + (arr[selectedMonthIdx] || 0);
+    }
+    return sum;
+  }, 0);
+  
+  const selectedMonthExpense = selectedMonthExpenses + selectedMonthExpensesByCategory;
 
   // Calculer les économies du mois sélectionné
   const selectedMonthSaved = selectedMonthIncome - selectedMonthExpense;
 
   // Calculer les prévisions pour le mois prochain
   const nextMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[nextMonthIdx] || 0), 0);
+  
+  // Pour les prévisions, utiliser principalement les données par catégorie (data)
+  // car les transactions individuelles futures ne sont pas encore connues
   const nextMonthExpensesByCategory = Object.values(data).reduce((sum, arr) => sum + (arr[nextMonthIdx] || 0), 0);
   const nextMonthProjected = nextMonthIncomeByType - nextMonthExpensesByCategory;
 
@@ -174,11 +198,11 @@ const Home = () => {
     const monthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[monthIdx] || 0), 0);
     const monthIncomeTransactions = incomeTransactions
       .filter(t => {
-        const transactionDate = new Date(t.date);
+        const date = parseDate(t.date);
         const monthDate = new Date();
         monthDate.setMonth(monthDate.getMonth() - (5 - i));
-        return transactionDate.getMonth() === monthDate.getMonth() && 
-               transactionDate.getFullYear() === monthDate.getFullYear();
+        return date.getMonth() === monthDate.getMonth() && 
+               date.getFullYear() === monthDate.getFullYear();
       })
       .reduce((sum, t) => sum + (t.amount || 0), 0);
     return monthIncomeByType + monthIncomeTransactions;
@@ -187,17 +211,39 @@ const Home = () => {
   // Dépenses par mois pour les graphiques
   const expensesByMonth = last6Months.map((_, i) => {
     const monthIdx = months.length - 6 + i;
-    const monthExpensesByCategory = Object.values(data).reduce((sum, arr) => sum + (arr[monthIdx] || 0), 0);
+    
+    // Calculer les transactions individuelles pour ce mois
     const monthExpenses = expenses
       .filter(e => {
-        const expenseDate = new Date(e.date);
+        const date = parseDate(e.date);
         const monthDate = new Date();
         monthDate.setMonth(monthDate.getMonth() - (5 - i));
-        return expenseDate.getMonth() === monthDate.getMonth() && 
-               expenseDate.getFullYear() === monthDate.getFullYear();
+        return date.getMonth() === monthDate.getMonth() && 
+               date.getFullYear() === monthDate.getFullYear();
       })
       .reduce((sum, e) => sum + (e.amount || 0), 0);
-    return monthExpensesByCategory + monthExpenses;
+    
+    // Pour les catégories sans transactions individuelles, utiliser les données par catégorie
+    const monthExpensesByCategory = Object.entries(data).reduce((sum, [category, arr]) => {
+      const monthDate = new Date();
+      monthDate.setMonth(monthDate.getMonth() - (5 - i));
+      
+      // Vérifier si cette catégorie a des transactions individuelles pour ce mois
+      const hasIndividualTransactions = expenses.some(e => {
+        const date = parseDate(e.date);
+        return e.category === category && 
+               date.getMonth() === monthDate.getMonth() && 
+               date.getFullYear() === monthDate.getFullYear();
+      });
+      
+      // Si pas de transactions individuelles, utiliser la valeur par catégorie
+      if (!hasIndividualTransactions) {
+        return sum + (arr[monthIdx] || 0);
+      }
+      return sum;
+    }, 0);
+    
+    return monthExpenses + monthExpensesByCategory;
   });
 
   const lineData = {
@@ -223,7 +269,21 @@ const Home = () => {
   const doughnutData = {
     labels: Object.keys(data),
     datasets: [{
-      data: Object.values(data).map(arr => arr[selectedMonthIdx] || 0),
+      data: Object.entries(data).map(([category, arr]) => {
+        // Pour chaque catégorie, calculer le total des transactions individuelles + données par catégorie
+        const individualTransactions = expenses
+          .filter(e => e.category === category && isDateInSelectedMonth(e.date))
+          .reduce((sum, e) => sum + (e.amount || 0), 0);
+        
+        const categoryData = arr[selectedMonthIdx] || 0;
+        
+        // Si il y a des transactions individuelles, les prioriser
+        if (individualTransactions > 0) {
+          return individualTransactions;
+        }
+        
+        return categoryData;
+      }),
       backgroundColor: [
         '#FF6384',
         '#36A2EB',
@@ -274,14 +334,14 @@ const Home = () => {
       type: 'income',
       icon: '💰',
       category: t.type || 'Revenu',
-      date: t.date ? new Date(t.date) : new Date()
+      date: parseDate(t.date)
     })),
     ...expenses.map(t => ({
       ...t,
       type: 'expense',
       icon: '💸',
       category: t.category || 'Dépense',
-      date: t.date ? new Date(t.date) : new Date()
+      date: parseDate(t.date)
     }))
   ];
   const recentTransactions = allTransactions
@@ -289,7 +349,7 @@ const Home = () => {
     .slice(0, 5)
     .map(t => ({
       ...t,
-      date: t.date instanceof Date ? t.date.toLocaleDateString('fr-FR') : t.date
+      date: t.date.toLocaleDateString('fr-FR')
     }));
 
   const getBalanceColor = (amount) => {

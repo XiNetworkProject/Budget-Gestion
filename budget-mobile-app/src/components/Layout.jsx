@@ -3,11 +3,10 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { AppBar, Toolbar, Typography, Box, BottomNavigation, BottomNavigationAction } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import HistoryIcon from '@mui/icons-material/History';
 import SettingsIcon from '@mui/icons-material/Settings';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
 import SavingsIcon from '@mui/icons-material/Savings';
 import Tutorial from './Tutorial';
+import QuickAdd from '../pages/QuickAdd';
 import { useStore } from '../store';
 import toast from 'react-hot-toast';
 
@@ -19,13 +18,21 @@ const Layout = () => {
     onboardingCompleted,
     forceTutorial,
     setTutorialCompleted,
-    clearForceTutorial
+    clearForceTutorial,
+    validateAndCleanDates,
+    syncExpensesWithCategories
   } = useStore();
   
-  // map path to nav value
-  const paths = ['/home', '/analytics', '/quickadd', '/savings', '/settings'];
+  // map path to nav value (retiré /quickadd)
+  const paths = ['/home', '/analytics', '/savings', '/settings'];
   const [value, setValue] = useState(paths.indexOf(location.pathname) !== -1 ? paths.indexOf(location.pathname) : 0);
   const [showTutorial, setShowTutorial] = useState(false);
+
+  // Nettoyer les dates invalides et synchroniser les dépenses au chargement
+  useEffect(() => {
+    validateAndCleanDates();
+    syncExpensesWithCategories();
+  }, [validateAndCleanDates, syncExpensesWithCategories]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -81,6 +88,9 @@ const Layout = () => {
         <Outlet />
       </Box>
 
+      {/* QuickAdd global */}
+      <QuickAdd />
+
       <BottomNavigation
         value={value}
         onChange={handleChange}
@@ -89,7 +99,6 @@ const Layout = () => {
       >
         <BottomNavigationAction label="Accueil" icon={<HomeIcon />} />
         <BottomNavigationAction label="Analytics" icon={<BarChartIcon />} />
-        <BottomNavigationAction label="Ajouter" icon={<AddCircleIcon />} />
         <BottomNavigationAction label="Épargne" icon={<SavingsIcon />} />
         <BottomNavigationAction label="Paramètres" icon={<SettingsIcon />} />
       </BottomNavigation>

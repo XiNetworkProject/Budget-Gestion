@@ -16,7 +16,6 @@ import {
   LinearProgress, 
   Chip, 
   IconButton, 
-  Fab,
   List,
   ListItem,
   ListItemText,
@@ -56,7 +55,11 @@ const Savings = () => {
     addSavingsGoal, 
     updateSavingsGoal, 
     deleteSavingsGoal,
-    activeAccount 
+    activeAccount,
+    months,
+    sideByMonth,
+    selectedMonth,
+    selectedYear
   } = useStore();
 
   const [addDialog, setAddDialog] = useState(false);
@@ -75,20 +78,47 @@ const Savings = () => {
   // Filtrer les objectifs par compte actif
   const goals = savings.filter(goal => !activeAccount || goal.accountId === activeAccount.id);
 
-  // Données simulées pour les graphiques
-  const monthlyData = {
-    labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
-    data: [500, 800, 1200, 1500, 2000, 2500]
+  // Calculer les vraies données d'épargne mensuelle
+  const getMonthlySavingsData = () => {
+    // Utiliser les 6 derniers mois disponibles
+    const last6Months = months.slice(-6);
+    const last6MonthsSavings = sideByMonth.slice(-6);
+    
+    return {
+      labels: last6Months,
+      data: last6MonthsSavings
+    };
   };
 
+  const monthlyData = getMonthlySavingsData();
+
+  // Calculer l'épargne totale actuelle (objectifs + épargne mensuelle)
   const totalSaved = goals.reduce((sum, goal) => sum + (goal.current || 0), 0);
   const totalTarget = goals.reduce((sum, goal) => sum + (goal.target || 0), 0);
   const overallProgress = totalTarget > 0 ? ((totalSaved / totalTarget) * 100).toFixed(1) : 0;
 
+  // Calculer l'épargne du mois actuel
+  const currentMonthSavings = sideByMonth[sideByMonth.length - 1] || 0;
+  const averageMonthlySavings = sideByMonth.length > 0 
+    ? sideByMonth.reduce((sum, val) => sum + val, 0) / sideByMonth.length 
+    : 0;
+
+  // Calculer l'évolution de l'épargne
+  const getSavingsEvolution = () => {
+    if (sideByMonth.length < 2) return 0;
+    const current = sideByMonth[sideByMonth.length - 1] || 0;
+    const previous = sideByMonth[sideByMonth.length - 2] || 0;
+    if (previous === 0) return 0;
+    return ((current - previous) / previous * 100).toFixed(1);
+  };
+
+  const savingsEvolution = getSavingsEvolution();
+  const isEvolutionPositive = parseFloat(savingsEvolution) >= 0;
+
   const barData = {
     labels: monthlyData.labels,
     datasets: [{
-      label: 'Économies mensuelles',
+      label: 'Épargne mensuelle',
       data: monthlyData.data,
       backgroundColor: 'rgba(75, 192, 192, 0.8)',
       borderColor: 'rgba(75, 192, 192, 1)',
@@ -130,6 +160,19 @@ const Savings = () => {
         ticks: {
           callback: function(value) {
             return value + '€';
+          }
+        }
+      }
+    },
+    plugins: {
+      ...chartOptions.plugins,
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            return `Épargne: ${context.parsed}€`;
+          },
+          title: function(context) {
+            return `Mois: ${context[0].label}`;
           }
         }
       }
@@ -277,11 +320,24 @@ const Savings = () => {
                 <Typography variant="h6">Moyenne mensuelle</Typography>
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                {Math.round(monthlyData.data[monthlyData.data.length - 1] / 6)}€
+                {Math.round(averageMonthlySavings)}€
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                Ce mois
+                Ce mois: {Math.round(currentMonthSavings)}€
               </Typography>
+              {sideByMonth.length >= 2 && (
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    opacity: 0.8, 
+                    color: isEvolutionPositive ? '#4caf50' : '#f44336',
+                    fontWeight: 'bold'
+                  }} 
+                  component="span"
+                >
+                  {isEvolutionPositive ? '+' : ''}{savingsEvolution}% vs mois précédent
+                </Typography>
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -407,11 +463,19 @@ const Savings = () => {
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
-              Évolution mensuelle
+              Évolution mensuelle de l'épargne
             </Typography>
-            <Box sx={{ height: 300 }}>
-              <Bar data={barData} options={barOptions} />
-            </Box>
+            {sideByMonth.length === 0 ? (
+              <Box sx={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Typography variant="body1" color="text.secondary">
+                  Aucune donnée d'épargne disponible
+                </Typography>
+              </Box>
+            ) : (
+              <Box sx={{ height: 300 }}>
+                <Bar data={barData} options={barOptions} />
+              </Box>
+            )}
           </Paper>
         </Grid>
 
@@ -420,22 +484,20 @@ const Savings = () => {
             <Typography variant="h6" gutterBottom>
               Répartition par objectif
             </Typography>
-            <Box sx={{ height: 300 }}>
-              <Doughnut data={doughnutData} options={chartOptions} />
-            </Box>
+            {goals.length === 0 ? (
+              <Box sx={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Typography variant="body1" color="text.secondary">
+                  Aucun objectif d'épargne défini
+                </Typography>
+              </Box>
+            ) : (
+              <Box sx={{ height: 300 }}>
+                <Doughnut data={doughnutData} options={chartOptions} />
+              </Box>
+            )}
           </Paper>
         </Grid>
       </Grid>
-
-      {/* FAB */}
-      <Fab 
-        color="primary" 
-        aria-label="add" 
-        sx={{ position: 'fixed', bottom: 80, right: 16 }}
-        onClick={() => setAddDialog(true)}
-      >
-        <Add />
-      </Fab>
 
       {/* Dialogs */}
       <Dialog open={addDialog} onClose={() => setAddDialog(false)} maxWidth="sm" fullWidth>

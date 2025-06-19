@@ -9,7 +9,6 @@ import Home from './pages/Home';
 import Analytics from './pages/Analytics';
 import History from './pages/History';
 import Settings from './pages/Settings';
-import QuickAdd from './pages/QuickAdd';
 import Expenses from './pages/Expenses';
 import Income from './pages/Income';
 import Savings from './pages/Savings';
@@ -62,7 +61,6 @@ export default function AppRoutes() {
         }>
           <Route path="/home" element={<Home />} />
           <Route path="/analytics" element={<Analytics />} />
-          <Route path="/quickadd" element={<QuickAdd />} />
           <Route path="/history" element={<History />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/expenses" element={<Expenses />} />
