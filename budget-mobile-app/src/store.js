@@ -128,7 +128,7 @@ const useStore = create(
               // Ne pas afficher de toast pour les sauvegardes locales silencieuses
             } else {
               console.log('Sauvegarde serveur réussie');
-              toast.success('Données sauvegardées');
+            toast.success('Données sauvegardées');
               set({ serverConnected: true }); // Marquer comme connecté
             }
           } catch (error) {
@@ -213,7 +213,7 @@ const useStore = create(
               : new Date().toISOString()
           }));
           
-          set({ 
+                set({
             expenses: cleanedExpenses,
             incomeTransactions: cleanedIncomeTransactions,
             transactions: cleanedTransactions
@@ -257,8 +257,8 @@ const useStore = create(
               const newCategories = [...state.categories, category];
               const newLimits = { ...state.budgetLimits, [category]: 0 };
               set({ categories: newCategories, budgetLimits: newLimits });
-            }
-            
+          }
+          
             // Mettre à jour les valeurs par mois
             Object.keys(categoryTotals[category]).forEach(monthKey => {
               const [year, month] = monthKey.split('-').map(Number);
@@ -312,8 +312,8 @@ const useStore = create(
               newIncomes[type] = state.months.map(() => 0);
               const newIncomeTypes = [...state.incomeTypes, type];
               set({ incomeTypes: newIncomeTypes });
-            }
-            
+          }
+          
             // Mettre à jour les valeurs par mois SEULEMENT si il n'y a pas déjà des données
             Object.keys(typeTotals[type]).forEach(monthKey => {
               const [year, month] = monthKey.split('-').map(Number);
@@ -337,7 +337,7 @@ const useStore = create(
           });
           
           set({ incomes: newIncomes });
-          scheduleSave();
+            scheduleSave();
         },
 
         // Gestion des transactions

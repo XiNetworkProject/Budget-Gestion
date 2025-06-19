@@ -88,28 +88,10 @@ const Income = () => {
     updateIncome,
     deleteIncome,
     activeAccount,
-    incomeTransactions,
-    selectedMonth,
-    selectedYear
+    incomeTransactions
   } = useStore();
   
   const idx = months.length - 1;
-  
-  // Fonction pour vérifier si une date correspond au mois sélectionné
-  const isDateInSelectedMonth = (dateString) => {
-    if (!dateString) return false;
-    
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return false;
-      
-      return date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
-    } catch (error) {
-      console.error('Erreur dans isDateInSelectedMonth:', error);
-      return false;
-    }
-  };
-  
   const [editIdx, setEditIdx] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [deleteIdx, setDeleteIdx] = useState(null);
@@ -214,16 +196,29 @@ const Income = () => {
     }
   };
 
-  // Calculer les revenus du mois sélectionné basés sur les transactions individuelles - TEMPORAIREMENT TOUS LES REVENUS
-  const selectedMonthIncomeTransactions = incomeTransactions
-    // .filter(t => isDateInSelectedMonth(t.date)) // TEMPORAIREMENT DÉSACTIVÉ
+  // Fonction pour vérifier si une date correspond au mois actuel
+  const isDateInCurrentMonth = (dateString) => {
+    if (!dateString) return false;
+    
+    try {
+      const date = parseDate(dateString);
+      return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+    } catch (error) {
+      console.error('Erreur dans isDateInCurrentMonth:', error);
+      return false;
+    }
+  };
+
+  // Calculer les revenus du mois actuel basés sur les transactions individuelles
+  const currentMonthIncomeTransactions = incomeTransactions
+    .filter(t => isDateInCurrentMonth(t.date))
     .reduce((sum, t) => sum + (t.amount || 0), 0);
   
-  // Calculer les revenus par type pour le mois sélectionné (seulement si pas de transactions individuelles)
-  const selectedMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
-  
+  // Calculer les revenus par type pour le mois actuel (seulement si pas de transactions individuelles)
+  const currentMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
+
   // Prioriser les transactions individuelles, utiliser les données par type seulement si pas de transactions
-  const totalIncome = selectedMonthIncomeTransactions > 0 ? selectedMonthIncomeTransactions : selectedMonthIncomeByType;
+  const totalIncome = currentMonthIncomeTransactions > 0 ? currentMonthIncomeTransactions : currentMonthIncomeByType;
   const monthlyIncome = totalIncome;
 
   // Calculer les totaux par type en priorisant les transactions individuelles
@@ -231,7 +226,7 @@ const Income = () => {
   
   // D'abord, traiter les transactions individuelles
   incomeTransactions
-    // .filter(t => isDateInSelectedMonth(t.date)) // TEMPORAIREMENT DÉSACTIVÉ
+    .filter(t => isDateInCurrentMonth(t.date))
     .forEach(t => {
       if (!typeTotals[t.type]) {
         typeTotals[t.type] = 0;
@@ -242,7 +237,7 @@ const Income = () => {
   // Ensuite, ajouter les données par type seulement pour les types qui n'ont pas de transactions individuelles
   Object.keys(incomes).forEach(type => {
     if (!typeTotals[type] || typeTotals[type] === 0) {
-      typeTotals[type] = incomes[type][idx] || 0;
+    typeTotals[type] = incomes[type][idx] || 0;
     }
   });
 
@@ -515,27 +510,27 @@ const Income = () => {
                     });
                     
                     return (
-                      <React.Fragment key={income.id}>
-                        <ListItem>
-                          <ListItemText
-                            primary={income.type}
+                  <React.Fragment key={income.id}>
+                    <ListItem>
+                      <ListItemText
+                        primary={income.type}
                             secondary={`${displayDate} • ${income.description || 'Aucune description'}`}
-                          />
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold' }}>
+                      />
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold' }}>
                               +{income.amount.toLocaleString()}€
-                            </Typography>
-                            <IconButton 
-                              size="small" 
-                              color="error" 
-                              onClick={() => handleDeleteIncome(income.id)}
-                            >
-                              <Delete />
-                            </IconButton>
-                          </Box>
-                        </ListItem>
-                        {index < transactions.length - 1 && <Divider />}
-                      </React.Fragment>
+                        </Typography>
+                        <IconButton 
+                          size="small" 
+                          color="error" 
+                          onClick={() => handleDeleteIncome(income.id)}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Box>
+                    </ListItem>
+                    {index < transactions.length - 1 && <Divider />}
+                  </React.Fragment>
                     );
                   })}
               </List>
