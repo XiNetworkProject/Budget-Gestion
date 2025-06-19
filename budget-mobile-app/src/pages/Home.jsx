@@ -98,6 +98,12 @@ const Home = () => {
     }
   }, []);
 
+  // Nettoyer les dates invalides au chargement de la page
+  useEffect(() => {
+    const { validateAndCleanDates } = useStore.getState();
+    validateAndCleanDates();
+  }, []);
+
   // Sauvegarder les données dans localStorage
   const saveData = (newData) => {
     const dataToSave = { ...localData, ...newData };
@@ -132,12 +138,35 @@ const Home = () => {
     setSelectedMonth(newMonth, newYear);
   };
 
-  // Fonction pour valider et parser une date
+  // Fonction pour parser et valider une date
   const parseDate = (dateString) => {
     if (!dateString) return new Date();
     
+    // Essayer de parser la date
     const date = new Date(dateString);
-    return isNaN(date.getTime()) ? new Date() : date;
+    
+    // Vérifier si la date est valide
+    if (isNaN(date.getTime())) {
+      console.warn('Date invalide détectée:', dateString, 'remplacée par la date actuelle');
+      return new Date();
+    }
+    
+    // Vérifier que la date n'est pas dans le futur (plus de 1 an)
+    const now = new Date();
+    const oneYearFromNow = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+    if (date > oneYearFromNow) {
+      console.warn('Date dans le futur détectée:', dateString, 'remplacée par la date actuelle');
+      return new Date();
+    }
+    
+    // Vérifier que la date n'est pas trop ancienne (plus de 10 ans)
+    const tenYearsAgo = new Date(now.getFullYear() - 10, now.getMonth(), now.getDate());
+    if (date < tenYearsAgo) {
+      console.warn('Date trop ancienne détectée:', dateString, 'remplacée par la date actuelle');
+      return new Date();
+    }
+    
+    return date;
   };
 
   // Fonction pour vérifier si une date correspond au mois sélectionné
@@ -189,56 +218,87 @@ const Home = () => {
   // Factures à venir (limites de budget)
   const upcoming = Object.values(budgetLimits).reduce((sum, val) => sum + val, 0);
 
-  // Données pour les graphiques (6 derniers mois)
-  const last6Months = months.slice(-6);
+  // Données pour les graphiques (6 derniers mois à partir du mois actuel)
+  const getLast6Months = () => {
+    const currentDate = new Date();
+    const months = [];
+    const monthNames = [
+      'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+    ];
+    
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+      months.push(monthNames[date.getMonth()]);
+    }
+    
+    return months;
+  };
   
+  const last6Months = getLast6Months();
+
   // Revenus par mois pour les graphiques
   const revenuesByMonth = last6Months.map((_, i) => {
-    const monthIdx = months.length - 6 + i;
-    const monthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[monthIdx] || 0), 0);
+    const currentDate = new Date();
+    const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - (5 - i), 1);
+    
+    // Calculer les revenus par type pour ce mois
+    const monthIncomeByType = Object.values(incomes).reduce((sum, arr) => {
+      // Trouver l'index correspondant dans le tableau des revenus
+      const monthIndex = months.findIndex((_, idx) => {
+        const monthDate = new Date();
+        monthDate.setMonth(monthDate.getMonth() - (months.length - 1 - idx));
+        return monthDate.getMonth() === targetDate.getMonth() && 
+               monthDate.getFullYear() === targetDate.getFullYear();
+      });
+      return sum + (arr[monthIndex] || 0);
+    }, 0);
+    
+    // Calculer les transactions individuelles pour ce mois
     const monthIncomeTransactions = incomeTransactions
       .filter(t => {
         const date = parseDate(t.date);
-        const monthDate = new Date();
-        monthDate.setMonth(monthDate.getMonth() - (5 - i));
-        return date.getMonth() === monthDate.getMonth() && 
-               date.getFullYear() === monthDate.getFullYear();
+        return date.getMonth() === targetDate.getMonth() && 
+               date.getFullYear() === targetDate.getFullYear();
       })
       .reduce((sum, t) => sum + (t.amount || 0), 0);
+    
     return monthIncomeByType + monthIncomeTransactions;
   });
 
   // Dépenses par mois pour les graphiques
   const expensesByMonth = last6Months.map((_, i) => {
-    const monthIdx = months.length - 6 + i;
+    const currentDate = new Date();
+    const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - (5 - i), 1);
     
     // Calculer les transactions individuelles pour ce mois
     const monthExpenses = expenses
       .filter(e => {
         const date = parseDate(e.date);
-        const monthDate = new Date();
-        monthDate.setMonth(monthDate.getMonth() - (5 - i));
-        return date.getMonth() === monthDate.getMonth() && 
-               date.getFullYear() === monthDate.getFullYear();
+        return date.getMonth() === targetDate.getMonth() && 
+               date.getFullYear() === targetDate.getFullYear();
       })
       .reduce((sum, e) => sum + (e.amount || 0), 0);
     
-    // Pour les catégories sans transactions individuelles, utiliser les données par catégorie
+    // Calculer les dépenses par catégorie pour ce mois
     const monthExpensesByCategory = Object.entries(data).reduce((sum, [category, arr]) => {
-      const monthDate = new Date();
-      monthDate.setMonth(monthDate.getMonth() - (5 - i));
-      
       // Vérifier si cette catégorie a des transactions individuelles pour ce mois
       const hasIndividualTransactions = expenses.some(e => {
         const date = parseDate(e.date);
         return e.category === category && 
-               date.getMonth() === monthDate.getMonth() && 
-               date.getFullYear() === monthDate.getFullYear();
+               date.getMonth() === targetDate.getMonth() && 
+               date.getFullYear() === targetDate.getFullYear();
       });
       
       // Si pas de transactions individuelles, utiliser la valeur par catégorie
       if (!hasIndividualTransactions) {
-        return sum + (arr[monthIdx] || 0);
+        const monthIndex = months.findIndex((_, idx) => {
+          const monthDate = new Date();
+          monthDate.setMonth(monthDate.getMonth() - (months.length - 1 - idx));
+          return monthDate.getMonth() === targetDate.getMonth() && 
+                 monthDate.getFullYear() === targetDate.getFullYear();
+        });
+        return sum + (arr[monthIndex] || 0);
       }
       return sum;
     }, 0);

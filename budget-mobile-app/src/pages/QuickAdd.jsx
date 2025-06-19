@@ -33,10 +33,14 @@ const QuickAdd = () => {
     selectedYear
   } = useStore();
   
+  // Assurer que incomeTypes a des valeurs par défaut
+  const defaultIncomeTypes = ["Salaire", "Aides", "Freelance", "Investissements", "Autres"];
+  const availableIncomeTypes = incomeTypes && incomeTypes.length > 0 ? incomeTypes : defaultIncomeTypes;
+  
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(0); // 0 = dépense, 1 = revenu
   const [category, setCategory] = useState(categories[0] || '');
-  const [incomeType, setIncomeType] = useState(incomeTypes[0] || '');
+  const [incomeType, setIncomeType] = useState(availableIncomeTypes[0] || '');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
@@ -47,14 +51,14 @@ const QuickAdd = () => {
   useEffect(() => {
     if (open) {
       setCategory(categories[0] || '');
-      setIncomeType(incomeTypes[0] || '');
+      setIncomeType(availableIncomeTypes[0] || '');
       setAmount('');
       setDescription('');
       setTimeout(() => {
         amountRef.current?.focus();
       }, 300);
     }
-  }, [open, categories, incomeTypes]);
+  }, [open, categories, availableIncomeTypes]);
 
   const handleAdd = () => {
     const val = parseFloat(amount) || 0;
@@ -196,7 +200,7 @@ const QuickAdd = () => {
                   }
                 }}
               >
-                {(activeTab === 0 ? categories : incomeTypes).map(item => (
+                {(activeTab === 0 ? categories : availableIncomeTypes).map(item => (
                   <MenuItem key={item} value={item}>{item}</MenuItem>
                 ))}
               </Select>
