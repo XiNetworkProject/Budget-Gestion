@@ -277,14 +277,34 @@ const useStore = create(
         // Gestion des dépenses
         addExpense: (expense) => {
           const state = get();
+          
+          // Créer une date cohérente
+          let expenseDate;
+          if (expense.date && !isNaN(new Date(expense.date).getTime())) {
+            // Si une date est fournie, s'assurer qu'elle est au début du jour
+            const date = new Date(expense.date);
+            expenseDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).toISOString();
+          } else {
+            // Sinon, utiliser la date actuelle au début du jour
+            const now = new Date();
+            expenseDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+          }
+          
           const newExpense = {
             id: Date.now().toString(),
             ...expense,
-            date: expense.date && !isNaN(new Date(expense.date).getTime()) 
-              ? expense.date 
-              : new Date().toISOString(),
+            date: expenseDate,
             createdAt: new Date().toISOString()
           };
+          
+          console.log('Nouvelle dépense ajoutée:', {
+            category: newExpense.category,
+            amount: newExpense.amount,
+            date: newExpense.date,
+            parsedDate: new Date(newExpense.date).toISOString(),
+            month: new Date(newExpense.date).getMonth(),
+            year: new Date(newExpense.date).getFullYear()
+          });
           
           const updatedExpenses = [...state.expenses, newExpense];
           set({ expenses: updatedExpenses });
@@ -328,14 +348,34 @@ const useStore = create(
         // Gestion des revenus
         addIncome: (income) => {
           const state = get();
+          
+          // Créer une date cohérente
+          let incomeDate;
+          if (income.date && !isNaN(new Date(income.date).getTime())) {
+            // Si une date est fournie, s'assurer qu'elle est au début du jour
+            const date = new Date(income.date);
+            incomeDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).toISOString();
+          } else {
+            // Sinon, utiliser la date actuelle au début du jour
+            const now = new Date();
+            incomeDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+          }
+          
           const newIncome = {
             id: Date.now().toString(),
             ...income,
-            date: income.date && !isNaN(new Date(income.date).getTime()) 
-              ? income.date 
-              : new Date().toISOString(),
+            date: incomeDate,
             createdAt: new Date().toISOString()
           };
+          
+          console.log('Nouveau revenu ajouté:', {
+            type: newIncome.type,
+            amount: newIncome.amount,
+            date: newIncome.date,
+            parsedDate: new Date(newIncome.date).toISOString(),
+            month: new Date(newIncome.date).getMonth(),
+            year: new Date(newIncome.date).getFullYear()
+          });
           
           const updatedIncomeTransactions = [...state.incomeTransactions, newIncome];
           set({ incomeTransactions: updatedIncomeTransactions });

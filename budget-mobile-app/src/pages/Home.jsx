@@ -105,6 +105,40 @@ const Home = () => {
     validateAndCleanDates();
   }, []);
 
+  // Fonction de débogage pour tester les calculs de dates
+  const debugDateCalculations = () => {
+    console.log('=== DÉBOGAGE DES CALCULS DE DATES ===');
+    console.log('Mois sélectionné:', selectedMonth, 'Année sélectionnée:', selectedYear);
+    console.log('Index du mois sélectionné:', selectedMonthIdx);
+    
+    console.log('=== DÉPENSES ===');
+    expenses.forEach((expense, index) => {
+      const date = parseDate(expense.date);
+      const isInMonth = isDateInSelectedMonth(expense.date);
+      console.log(`Dépense ${index}: ${expense.category} - ${expense.amount}€ - Date: ${expense.date} -> Parsed: ${date.toISOString()} -> InMonth: ${isInMonth}`);
+    });
+    
+    console.log('=== REVENUS ===');
+    incomeTransactions.forEach((income, index) => {
+      const date = parseDate(income.date);
+      const isInMonth = isDateInSelectedMonth(income.date);
+      console.log(`Revenu ${index}: ${income.type} - ${income.amount}€ - Date: ${income.date} -> Parsed: ${date.toISOString()} -> InMonth: ${isInMonth}`);
+    });
+    
+    console.log('=== RÉSULTATS ===');
+    console.log('Dépenses du mois:', selectedMonthExpenses);
+    console.log('Revenus du mois:', selectedMonthIncomeTransactions);
+    console.log('Total dépenses:', selectedMonthExpense);
+    console.log('Total revenus:', selectedMonthIncome);
+  };
+
+  // Appeler le débogage en mode développement
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      debugDateCalculations();
+    }
+  }, [selectedMonth, selectedYear, expenses, incomeTransactions]);
+
   // Sauvegarder les données dans localStorage
   const saveData = (newData) => {
     const dataToSave = { ...localData, ...newData };
@@ -141,10 +175,19 @@ const Home = () => {
 
   // Fonction pour parser et valider une date
   const parseDate = (dateString) => {
-    if (!dateString) return new Date();
+    if (!dateString) {
+      console.warn('Date vide détectée, utilisation de la date actuelle');
+      return new Date();
+    }
     
     // Essayer de parser la date
-    const date = new Date(dateString);
+    let date;
+    try {
+      date = new Date(dateString);
+    } catch (error) {
+      console.warn('Erreur de parsing de date:', dateString, error);
+      return new Date();
+    }
     
     // Vérifier si la date est valide
     if (isNaN(date.getTime())) {
@@ -152,28 +195,43 @@ const Home = () => {
       return new Date();
     }
     
+    // Normaliser la date au début du jour pour éviter les problèmes de fuseau horaire
+    const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    
     // Vérifier que la date n'est pas dans le futur (plus de 1 an)
     const now = new Date();
     const oneYearFromNow = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
-    if (date > oneYearFromNow) {
+    if (normalizedDate > oneYearFromNow) {
       console.warn('Date dans le futur détectée:', dateString, 'remplacée par la date actuelle');
       return new Date();
     }
     
     // Vérifier que la date n'est pas trop ancienne (plus de 10 ans)
     const tenYearsAgo = new Date(now.getFullYear() - 10, now.getMonth(), now.getDate());
-    if (date < tenYearsAgo) {
+    if (normalizedDate < tenYearsAgo) {
       console.warn('Date trop ancienne détectée:', dateString, 'remplacée par la date actuelle');
       return new Date();
     }
     
-    return date;
+    // Log de débogage pour les dates valides
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Date valide parsée: ${dateString} -> ${normalizedDate.toISOString()} -> Month: ${normalizedDate.getMonth()}, Year: ${normalizedDate.getFullYear()}`);
+    }
+    
+    return normalizedDate;
   };
 
   // Fonction pour vérifier si une date correspond au mois sélectionné
   const isDateInSelectedMonth = (dateString) => {
     const date = parseDate(dateString);
-    return date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
+    const isInMonth = date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
+    
+    // Log de débogage pour identifier les problèmes
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Date: ${dateString} -> Parsed: ${date.toISOString()} -> Month: ${date.getMonth()}/${selectedMonth}, Year: ${date.getFullYear()}/${selectedYear} -> InMonth: ${isInMonth}`);
+    }
+    
+    return isInMonth;
   };
 
   // Calculer les revenus du mois sélectionné
