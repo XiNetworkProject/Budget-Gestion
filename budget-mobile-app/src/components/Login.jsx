@@ -2,11 +2,9 @@ import React from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useStore } from '../store';
 import { jwtDecode } from 'jwt-decode';
-import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const { setUser, setToken, onboardingCompleted } = useStore();
-  const navigate = useNavigate();
 
   const handleSuccess = (credentialResponse) => {
     const token = credentialResponse.credential;
@@ -19,12 +17,9 @@ const Login = () => {
       picture: decoded.picture
     });
     
-    // Rediriger vers l'onboarding seulement si ce n'est pas encore terminé
-    if (!onboardingCompleted) {
-      navigate('/onboarding', { replace: true });
-    } else {
-      navigate('/home', { replace: true });
-    }
+    // Pas besoin de navigate() car l'App.jsx gère automatiquement l'affichage
+    // basé sur isAuthenticated dans le store
+    console.log('Connexion réussie, redirection automatique...');
   };
 
   const handleError = () => {
