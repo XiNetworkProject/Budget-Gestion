@@ -420,62 +420,10 @@ const Home = () => {
   
   const recommendations = generateRecommendations();
 
-  // Analyser les prévisions par catégorie
+  // Analyser les prévisions par catégorie (désactivé car nextMonthIndex n'existe plus)
   const getCategoryForecastAnalysis = () => {
-    const currentDate = new Date();
-    const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-    
-    return Object.entries(data).map(([category, arr]) => {
-      // Calculer les dépenses par catégorie pour les 3 derniers mois
-      const categoryExpenses = [0, 1, 2].map(i => {
-        const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-        const monthIndex = months.findIndex((_, idx) => {
-          const monthDate2 = new Date();
-          monthDate2.setMonth(monthDate2.getMonth() - (months.length - 1 - idx));
-          return monthDate2.getMonth() === monthDate.getMonth() && 
-                 monthDate2.getFullYear() === monthDate.getFullYear();
-        });
-        
-        // Transactions individuelles pour cette catégorie
-        const individualExpenses = expenses
-          .filter(e => {
-            const date = parseDate(e.date);
-            return e.category === category && 
-                   date.getMonth() === monthDate.getMonth() && 
-                   date.getFullYear() === monthDate.getFullYear();
-          })
-          .reduce((sum, e) => sum + (e.amount || 0), 0);
-        
-        // Si pas de transactions individuelles, utiliser les données par catégorie
-        if (individualExpenses === 0) {
-          return arr[monthIndex] || 0;
-        }
-        
-        return individualExpenses;
-      });
-      
-      // Calculer la tendance pour cette catégorie
-      const categoryTrend = categoryExpenses[0] - categoryExpenses[2];
-      const categoryAvg = categoryExpenses.reduce((sum, val, index) => {
-        const weights = [0.5, 0.3, 0.2];
-        return sum + (val * weights[index]);
-      }, 0);
-      
-      // Prévision pour cette catégorie
-      const plannedCategory = arr[nextMonthIndex] || 0;
-      const forecastCategory = Math.max(plannedCategory, categoryAvg * (1 + (categoryTrend / Math.max(categoryAvg, 1)) * 0.2));
-      
-      return {
-        category,
-        planned: plannedCategory,
-        forecast: forecastCategory,
-        trend: categoryTrend,
-        volatility: Math.abs(categoryTrend) / Math.max(categoryAvg, 1),
-        current: categoryExpenses[0]
-      };
-    });
+    return [];
   };
-  
   const categoryForecastAnalysis = getCategoryForecastAnalysis();
 
   // Factures à venir (limites de budget)
