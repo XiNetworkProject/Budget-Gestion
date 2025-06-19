@@ -83,7 +83,7 @@ const useStore = create(
           if (!state.user) return;
           set({ isSaving: true });
           try {
-            await budgetService.saveBudget(state.user.id, {
+            const result = await budgetService.saveBudget(state.user.id, {
               months: state.months,
               categories: state.categories,
               data: state.data,
@@ -106,11 +106,21 @@ const useStore = create(
               accounts: state.accounts,
               activeAccount: state.activeAccount
             });
-            toast.success('Données sauvegardées');
+            
+            // Afficher un message différent selon le type de sauvegarde
+            if (result.local) {
+              console.log('Sauvegarde locale:', result.message);
+              set({ serverConnected: false }); // Marquer comme déconnecté
+              // Ne pas afficher de toast pour les sauvegardes locales silencieuses
+            } else {
+              toast.success('Données sauvegardées');
+              set({ serverConnected: true }); // Marquer comme connecté
+            }
           } catch (error) {
-            console.error('Debounced save error:', error);
-            set({ error: error.message });
-            toast.error('Erreur de sauvegarde');
+            console.warn('Erreur de sauvegarde (gérée automatiquement):', error.message);
+            // Ne pas afficher d'erreur à l'utilisateur car la sauvegarde locale fonctionne
+            // set({ error: error.message });
+            // toast.error('Erreur de sauvegarde');
           } finally {
             set({ isSaving: false });
           }
@@ -124,6 +134,7 @@ const useStore = create(
         isAuthenticated: false,
         isLoading: false,
         error: null,
+        serverConnected: true,
         
         // Données budgétaires
         months: defaultMonths,

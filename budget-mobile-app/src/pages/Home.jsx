@@ -76,7 +76,8 @@ const Home = () => {
     selectedYear,
     setSelectedMonth,
     getCurrentMonthIndex,
-    getSelectedMonthIndex
+    getSelectedMonthIndex,
+    serverConnected
   } = useStore();
   const [localData, setLocalData] = useState({
     income: [],
@@ -424,6 +425,17 @@ const Home = () => {
 
   return (
     <Box sx={{ p: 2 }}>
+      {/* Styles CSS pour l'animation pulse */}
+      <style>
+        {`
+          @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+          }
+        `}
+      </style>
+      
       {/* En-tête avec avatar et salutation */}
       <Fade in timeout={500}>
         <Box sx={{ mb: 3 }}>
@@ -453,6 +465,22 @@ const Home = () => {
               </IconButton>
               <IconButton>
                 <Refresh />
+              </IconButton>
+              {/* Indicateur de statut de connexion */}
+              <IconButton
+                sx={{
+                  color: serverConnected ? 'success.main' : 'warning.main',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255,255,255,0.1)'
+                  }
+                }}
+                title={serverConnected ? 'Connecté au serveur' : 'Mode hors ligne - Données locales'}
+              >
+                {serverConnected ? (
+                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'currentColor' }} />
+                ) : (
+                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'currentColor', animation: 'pulse 2s infinite' }} />
+                )}
               </IconButton>
             </Box>
           </Box>
