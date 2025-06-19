@@ -293,19 +293,88 @@ const Home = () => {
             </Box>
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Avatar 
-              sx={{ 
-                bgcolor: getBalanceColor(saved), 
-                width: 100, 
-                height: 100, 
-                fontSize: '1.8rem',
-                fontWeight: 'bold'
+            <Box
+              sx={{
+                position: 'relative',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                p: 3,
+                borderRadius: '50%',
+                background: `linear-gradient(135deg, ${getBalanceColor(saved)} 0%, ${getBalanceColor(saved)}dd 100%)`,
+                boxShadow: `0 8px 32px ${getBalanceColor(saved)}40`,
+                minWidth: { xs: 140, sm: 160, md: 180 },
+                minHeight: { xs: 140, sm: 160, md: 180 },
+                justifyContent: 'center',
+                textAlign: 'center',
+                border: `3px solid ${getBalanceColor(saved)}30`,
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'scale(1.05)',
+                  boxShadow: `0 12px 40px ${getBalanceColor(saved)}60`,
+                }
               }}
             >
-              {saved.toLocaleString()}€
-            </Avatar>
+              <Typography
+                variant="h3"
+                sx={{
+                  fontWeight: 'bold',
+                  color: 'white',
+                  fontSize: {
+                    xs: saved >= 1000000 ? '1.5rem' : saved >= 100000 ? '1.8rem' : '2.2rem',
+                    sm: saved >= 1000000 ? '1.8rem' : saved >= 100000 ? '2.1rem' : '2.5rem',
+                    md: saved >= 1000000 ? '2.1rem' : saved >= 100000 ? '2.4rem' : '2.8rem'
+                  },
+                  lineHeight: 1.2,
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  wordBreak: 'break-word',
+                  maxWidth: '90%'
+                }}
+              >
+                {saved.toLocaleString()}€
+              </Typography>
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: -8,
+                  right: -8,
+                  width: 24,
+                  height: 24,
+                  borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.9)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: '0.7rem',
+                    fontWeight: 'bold',
+                    color: getBalanceColor(saved)
+                  }}
+                >
+                  {saved >= 0 ? '✓' : '!'}
+                </Typography>
+              </Box>
+            </Box>
           </Box>
-          <Typography variant="body2" textAlign="center" color="text.secondary" sx={{ mt: 1 }} component="span">
+          <Typography 
+            variant="body2" 
+            textAlign="center" 
+            color="text.secondary" 
+            sx={{ 
+              mt: 2,
+              fontSize: '0.9rem',
+              fontWeight: '500',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              opacity: 0.8
+            }} 
+            component="span"
+          >
             Solde actuel
           </Typography>
         </Box>
