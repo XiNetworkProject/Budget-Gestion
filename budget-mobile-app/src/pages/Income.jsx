@@ -126,16 +126,28 @@ const Income = () => {
 
   const handleAddIncome = () => {
     if (newIncome.type && newIncome.amount) {
+      // Convertir la date au format ISO
+      const isoDate = new Date(newIncome.date + 'T12:00:00').toISOString();
+      
+      console.log('Income - Date sélectionnée:', {
+        selectedDate: newIncome.date,
+        isoDate,
+        parsedDate: new Date(isoDate),
+        month: new Date(isoDate).getMonth(),
+        year: new Date(isoDate).getFullYear()
+      });
+      
       const income = {
         type: newIncome.type,
         amount: parseFloat(newIncome.amount),
-        date: new Date(newIncome.date).toLocaleDateString('fr-FR'),
+        date: isoDate, // Utiliser la date ISO au lieu du format français
         description: newIncome.description,
         recurring: newIncome.recurring,
         source: newIncome.source,
         accountId: activeAccount?.id
       };
       
+      console.log('Income - Revenu à ajouter:', income);
       addIncome(income);
       
       setNewIncome({

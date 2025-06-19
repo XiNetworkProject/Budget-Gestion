@@ -133,15 +133,27 @@ const Expenses = () => {
 
   const handleAddExpense = () => {
     if (newExpense.category && newExpense.amount) {
+      // Convertir la date au format ISO
+      const isoDate = new Date(newExpense.date + 'T12:00:00').toISOString();
+      
+      console.log('Expenses - Date sélectionnée:', {
+        selectedDate: newExpense.date,
+        isoDate,
+        parsedDate: new Date(isoDate),
+        month: new Date(isoDate).getMonth(),
+        year: new Date(isoDate).getFullYear()
+      });
+      
       const expense = {
         category: newExpense.category,
         amount: parseFloat(newExpense.amount),
-        date: new Date(newExpense.date).toLocaleDateString('fr-FR'),
+        date: isoDate, // Utiliser la date ISO au lieu du format français
         description: newExpense.description,
         recurring: newExpense.recurring,
         accountId: activeAccount?.id
       };
       
+      console.log('Expenses - Dépense à ajouter:', expense);
       addExpense(expense);
       
       setNewExpense({

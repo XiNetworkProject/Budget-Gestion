@@ -65,14 +65,26 @@ const QuickAdd = () => {
   const handleAdd = () => {
     const val = parseFloat(amount) || 0;
     
+    // Convertir la date au format ISO
+    const isoDate = new Date(selectedDate + 'T12:00:00').toISOString();
+    
+    console.log('QuickAdd - Date sélectionnée:', {
+      selectedDate,
+      isoDate,
+      parsedDate: new Date(isoDate),
+      month: new Date(isoDate).getMonth(),
+      year: new Date(isoDate).getFullYear()
+    });
+    
     if (activeTab === 0) {
       // Ajouter une dépense
       const expense = {
         category: category,
         amount: val,
-        date: selectedDate,
+        date: isoDate,
         description: description || `${category} - ${new Date(selectedDate).toLocaleDateString('fr-FR')}`
       };
+      console.log('QuickAdd - Dépense à ajouter:', expense);
       addExpense(expense);
       setSuccessMessage('Dépense ajoutée !');
     } else {
@@ -80,9 +92,10 @@ const QuickAdd = () => {
       const income = {
         type: incomeType,
         amount: val,
-        date: selectedDate,
+        date: isoDate,
         description: description || `${incomeType} - ${new Date(selectedDate).toLocaleDateString('fr-FR')}`
       };
+      console.log('QuickAdd - Revenu à ajouter:', income);
       addIncome(income);
       setSuccessMessage('Revenu ajouté !');
     }

@@ -113,16 +113,14 @@ const Home = () => {
     
     console.log('=== DÉPENSES ===');
     expenses.forEach((expense, index) => {
-      const date = parseDate(expense.date);
       const isInMonth = isDateInSelectedMonth(expense.date);
-      console.log(`Dépense ${index}: ${expense.category} - ${expense.amount}€ - Date: ${expense.date} -> Parsed: ${date.toISOString()} -> InMonth: ${isInMonth}`);
+      console.log(`Dépense ${index}: ${expense.category} - ${expense.amount}€ - Date: ${expense.date} -> InMonth: ${isInMonth}`);
     });
     
     console.log('=== REVENUS ===');
     incomeTransactions.forEach((income, index) => {
-      const date = parseDate(income.date);
       const isInMonth = isDateInSelectedMonth(income.date);
-      console.log(`Revenu ${index}: ${income.type} - ${income.amount}€ - Date: ${income.date} -> Parsed: ${date.toISOString()} -> InMonth: ${isInMonth}`);
+      console.log(`Revenu ${index}: ${income.type} - ${income.amount}€ - Date: ${income.date} -> InMonth: ${isInMonth}`);
     });
     
     console.log('=== RÉSULTATS ===');
@@ -130,6 +128,17 @@ const Home = () => {
     console.log('Revenus du mois:', selectedMonthIncomeTransactions);
     console.log('Total dépenses:', selectedMonthExpense);
     console.log('Total revenus:', selectedMonthIncome);
+    
+    // Vérifier les dates problématiques
+    console.log('=== VÉRIFICATION DES DATES ===');
+    expenses.forEach((expense, index) => {
+      const date = new Date(expense.date);
+      console.log(`Dépense ${index} - Date originale: ${expense.date}`);
+      console.log(`  - Date parsée: ${date.toISOString()}`);
+      console.log(`  - Mois: ${date.getMonth()}, Année: ${date.getFullYear()}`);
+      console.log(`  - Mois attendu: ${selectedMonth}, Année attendue: ${selectedYear}`);
+      console.log(`  - Correspondance: ${date.getMonth() === selectedMonth && date.getFullYear() === selectedYear}`);
+    });
   };
 
   // Appeler le débogage en mode développement
@@ -224,15 +233,22 @@ const Home = () => {
 
   // Fonction pour vérifier si une date correspond au mois sélectionné
   const isDateInSelectedMonth = (dateString) => {
-    const date = parseDate(dateString);
-    const isInMonth = date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
+    if (!dateString) return false;
     
-    // Log de débogage pour identifier les problèmes
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Date: ${dateString} -> Parsed: ${date.toISOString()} -> Month: ${date.getMonth()}/${selectedMonth}, Year: ${date.getFullYear()}/${selectedYear} -> InMonth: ${isInMonth}`);
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return false;
+      
+      const isInMonth = date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
+      
+      // Log de débogage pour identifier les problèmes
+      console.log(`isDateInSelectedMonth: ${dateString} -> ${date.toISOString()} -> Month: ${date.getMonth()}/${selectedMonth}, Year: ${date.getFullYear()}/${selectedYear} -> InMonth: ${isInMonth}`);
+      
+      return isInMonth;
+    } catch (error) {
+      console.error('Erreur dans isDateInSelectedMonth:', error);
+      return false;
     }
-    
-    return isInMonth;
   };
 
   // Calculer les revenus du mois sélectionné

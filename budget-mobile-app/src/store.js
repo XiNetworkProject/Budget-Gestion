@@ -257,6 +257,61 @@ const useStore = create(
           scheduleSave();
         },
 
+        // Fonction pour synchroniser les revenus entre les deux systèmes
+        syncIncomesWithTypes: () => {
+          const state = get();
+          
+          // Créer un objet pour stocker les totaux par type et par mois
+          const typeTotals = {};
+          
+          // Calculer les totaux des transactions individuelles par type et par mois
+          state.incomeTransactions.forEach(income => {
+            if (income.date && !isNaN(new Date(income.date).getTime())) {
+              const date = new Date(income.date);
+              const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
+              
+              if (!typeTotals[income.type]) {
+                typeTotals[income.type] = {};
+              }
+              
+              if (!typeTotals[income.type][monthKey]) {
+                typeTotals[income.type][monthKey] = 0;
+              }
+              
+              typeTotals[income.type][monthKey] += income.amount || 0;
+            }
+          });
+          
+          // Mettre à jour les données par type avec les totaux des transactions
+          const newIncomes = { ...state.incomes };
+          Object.keys(typeTotals).forEach(type => {
+            if (!newIncomes[type]) {
+              // Si le type n'existe pas, l'ajouter
+              newIncomes[type] = state.months.map(() => 0);
+              const newIncomeTypes = [...state.incomeTypes, type];
+              set({ incomeTypes: newIncomeTypes });
+            }
+            
+            // Mettre à jour les valeurs par mois
+            Object.keys(typeTotals[type]).forEach(monthKey => {
+              const [year, month] = monthKey.split('-').map(Number);
+              const monthDate = new Date(year, month);
+              const monthIndex = state.months.findIndex((_, idx) => {
+                const monthDate2 = new Date();
+                monthDate2.setMonth(monthDate2.getMonth() - (state.months.length - 1 - idx));
+                return monthDate2.getMonth() === month && monthDate2.getFullYear() === year;
+              });
+              
+              if (monthIndex !== -1) {
+                newIncomes[type][monthIndex] = typeTotals[type][monthKey];
+              }
+            });
+          });
+          
+          set({ incomes: newIncomes });
+          scheduleSave();
+        },
+
         // Gestion des transactions
         addTransaction: (transaction) => {
           const state = get();
@@ -282,13 +337,10 @@ const useStore = create(
           let expenseDate;
           if (expense.date && !isNaN(new Date(expense.date).getTime())) {
             // Si une date est fournie, l'utiliser directement
-            const date = new Date(expense.date);
-            // S'assurer que la date est au début du jour dans le fuseau horaire local
-            expenseDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0).toISOString();
+            expenseDate = expense.date;
           } else {
-            // Sinon, utiliser la date actuelle au début du jour
-            const now = new Date();
-            expenseDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0).toISOString();
+            // Sinon, utiliser la date actuelle
+            expenseDate = new Date().toISOString();
           }
           
           const newExpense = {
@@ -355,13 +407,10 @@ const useStore = create(
           let incomeDate;
           if (income.date && !isNaN(new Date(income.date).getTime())) {
             // Si une date est fournie, l'utiliser directement
-            const date = new Date(income.date);
-            // S'assurer que la date est au début du jour dans le fuseau horaire local
-            incomeDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0).toISOString();
+            incomeDate = income.date;
           } else {
-            // Sinon, utiliser la date actuelle au début du jour
-            const now = new Date();
-            incomeDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0).toISOString();
+            // Sinon, utiliser la date actuelle
+            incomeDate = new Date().toISOString();
           }
           
           const newIncome = {
@@ -383,6 +432,12 @@ const useStore = create(
           
           const updatedIncomeTransactions = [...state.incomeTransactions, newIncome];
           set({ incomeTransactions: updatedIncomeTransactions });
+          
+          // Synchroniser avec les types de revenus après un délai
+          setTimeout(() => {
+            get().syncIncomesWithTypes();
+          }, 100);
+          
           scheduleSave();
         },
 
@@ -392,6 +447,12 @@ const useStore = create(
             inc.id === incomeId ? { ...inc, ...updates } : inc
           );
           set({ incomeTransactions: updatedIncomeTransactions });
+          
+          // Synchroniser avec les types de revenus après un délai
+          setTimeout(() => {
+            get().syncIncomesWithTypes();
+          }, 100);
+          
           scheduleSave();
         },
 
@@ -399,8 +460,12 @@ const useStore = create(
           const state = get();
           const updatedIncomeTransactions = state.incomeTransactions.filter(inc => inc.id !== incomeId);
           set({ incomeTransactions: updatedIncomeTransactions });
-          const updatedIncomes = state.incomes.filter(inc => inc.id !== incomeId);
-          set({ incomes: updatedIncomes });
+          
+          // Synchroniser avec les types de revenus après un délai
+          setTimeout(() => {
+            get().syncIncomesWithTypes();
+          }, 100);
+          
           scheduleSave();
         },
 
