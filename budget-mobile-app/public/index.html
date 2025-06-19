@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Application de gestion budgétaire personnelle"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>Budget Gestion</title>
+    
+    <!-- Script pour nettoyer les erreurs de tracking Google -->
+    <script>
+      (function() {
+        // Nettoyer les erreurs de tracking avant tout
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        const originalFetch = window.fetch;
+        
+        console.error = function(...args) {
+          const message = args.join(' ');
+          if (!message.includes('play.google.com/log') && 
+              !message.includes('ERR_BLOCKED_BY_CLIENT') &&
+              !message.includes('google-analytics.com') &&
+              !message.includes('googlesyndication.com')) {
+            originalError.apply(console, args);
+          }
+        };
+        
+        console.warn = function(...args) {
+          const message = args.join(' ');
+          if (!message.includes('play.google.com/log') && 
+              !message.includes('ERR_BLOCKED_BY_CLIENT') &&
+              !message.includes('google-analytics.com')) {
+            originalWarn.apply(console, args);
+          }
+        };
+        
+        // Intercepter les requêtes de tracking
+        window.fetch = function(...args) {
+          const url = args[0];
+          if (typeof url === 'string' && (
+              url.includes('play.google.com/log') ||
+              url.includes('google-analytics.com') ||
+              url.includes('googlesyndication.com') ||
+              url.includes('doubleclick.net')
+          )) {
+            return Promise.resolve(new Response('', { status: 200 }));
+          }
+          return originalFetch.apply(this, args);
+        };
+        
+        // Intercepter XMLHttpRequest aussi
+        const originalXHROpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function(method, url, ...args) {
+          if (typeof url === 'string' && (
+              url.includes('play.google.com/log') ||
+              url.includes('google-analytics.com') ||
+              url.includes('googlesyndication.com') ||
+              url.includes('doubleclick.net')
+          )) {
+            // Créer une requête factice
+            return originalXHROpen.call(this, 'GET', 'data:text/plain,', ...args);
+          }
+          return originalXHROpen.call(this, method, url, ...args);
+        };
+      })();
+    </script>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html> 

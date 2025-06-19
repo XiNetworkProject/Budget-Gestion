@@ -8,17 +8,48 @@ const Login = () => {
 
   // Nettoyer les erreurs de console au chargement
   useEffect(() => {
-    // Supprimer les erreurs de tracking Google
+    // Supprimer complètement les erreurs de tracking Google
     const originalError = console.error;
+    const originalWarn = console.warn;
+    
     console.error = (...args) => {
       const message = args.join(' ');
-      if (!message.includes('play.google.com/log') && !message.includes('ERR_BLOCKED_BY_CLIENT')) {
+      if (!message.includes('play.google.com/log') && 
+          !message.includes('ERR_BLOCKED_BY_CLIENT') &&
+          !message.includes('google-analytics.com') &&
+          !message.includes('googlesyndication.com')) {
         originalError.apply(console, args);
       }
+    };
+    
+    console.warn = (...args) => {
+      const message = args.join(' ');
+      if (!message.includes('play.google.com/log') && 
+          !message.includes('ERR_BLOCKED_BY_CLIENT') &&
+          !message.includes('google-analytics.com')) {
+        originalWarn.apply(console, args);
+      }
+    };
+
+    // Nettoyer les erreurs réseau dans la console
+    const originalFetch = window.fetch;
+    window.fetch = function(...args) {
+      const url = args[0];
+      if (typeof url === 'string' && (
+          url.includes('play.google.com/log') ||
+          url.includes('google-analytics.com') ||
+          url.includes('googlesyndication.com')
+      )) {
+        // Ignorer silencieusement les requêtes de tracking
+        return Promise.resolve(new Response('', { status: 200 }));
+      }
+      return originalFetch.apply(this, args);
     };
 
     return () => {
       console.error = originalError;
+      console.warn = originalWarn;
+      window.fetch = originalFetch;
     };
   }, []);
 
@@ -58,8 +89,8 @@ const Login = () => {
         <GoogleLogin
           onSuccess={handleSuccess}
           onError={handleError}
-          useOneTap={false} // Désactiver OneTap pour éviter les problèmes
-          auto_select={false} // Désactiver auto_select
+          useOneTap={false}
+          auto_select={false}
           cancel_on_tap_outside={false}
           context="signin"
           type="standard"
@@ -67,6 +98,7 @@ const Login = () => {
           size="large"
           text="signin_with"
           shape="rectangular"
+          prompt_parent_id="google-login-container"
         />
       </div>
       <span className="login-watermark">XimaMDev - 2025</span>
