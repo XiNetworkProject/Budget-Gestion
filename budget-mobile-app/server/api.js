@@ -87,9 +87,55 @@ async function verifyAuth(req, res, next) {
   }
 }
 
-// Health check endpoint
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok' });
+// Health check endpoint simple (pour Render)
+app.get('/health-simple', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'Application is running',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Endpoint racine pour health check
+app.get('/', (req, res) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'Budget Management API is running',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
+// Health check endpoint complet
+app.get('/health', async (req, res) => {
+  try {
+    // Vérifier la connexion MongoDB
+    if (!db) {
+      return res.status(503).json({ 
+        status: 'error', 
+        message: 'Database not connected',
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    // Test de connexion MongoDB
+    await db.admin().ping();
+    
+    res.status(200).json({ 
+      status: 'ok', 
+      message: 'Application is healthy',
+      timestamp: new Date().toISOString(),
+      database: 'connected'
+    });
+  } catch (error) {
+    console.error('Health check failed:', error);
+    res.status(503).json({ 
+      status: 'error', 
+      message: 'Database connection failed',
+      timestamp: new Date().toISOString(),
+      error: error.message
+    });
+  }
 });
 
 // Routes API
