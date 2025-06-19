@@ -93,14 +93,8 @@ const Settings = () => {
   const { 
     userProfile, 
     appSettings, 
-    accounts, 
-    activeAccount,
     updateUserProfile, 
     updateAppSettings,
-    addAccount,
-    updateAccount,
-    deleteAccount,
-    setActiveAccount,
     logout,
     clearAllData,
     forceShowTutorial
@@ -108,7 +102,6 @@ const Settings = () => {
 
   const [activeTab, setActiveTab] = useState(0);
   const [profileDialog, setProfileDialog] = useState(false);
-  const [accountDialog, setAccountDialog] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [feedbackDialog, setFeedbackDialog] = useState(false);
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
@@ -122,15 +115,6 @@ const Settings = () => {
     avatar: userProfile.avatar || ''
   });
 
-  const [accountForm, setAccountForm] = useState({
-    name: '',
-    type: 'personal',
-    balance: 0,
-    currency: 'EUR',
-    color: '#1976d2'
-  });
-
-  const [editingAccount, setEditingAccount] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
@@ -155,42 +139,6 @@ const Settings = () => {
     setSnack({ open: true, message: 'Profil mis à jour avec succès', severity: 'success' });
   };
 
-  const handleAccountSave = () => {
-    if (editingAccount) {
-      updateAccount(editingAccount.id, accountForm);
-      setSnack({ open: true, message: 'Compte mis à jour avec succès', severity: 'success' });
-    } else {
-      addAccount(accountForm);
-      setSnack({ open: true, message: 'Compte ajouté avec succès', severity: 'success' });
-    }
-    setAccountDialog(false);
-    setEditingAccount(null);
-    setAccountForm({ name: '', type: 'personal', balance: 0, currency: 'EUR', color: '#1976d2' });
-  };
-
-  const handleAccountEdit = (account) => {
-    setEditingAccount(account);
-    setAccountForm({
-      name: account.name,
-      type: account.type,
-      balance: account.balance,
-      currency: account.currency,
-      color: account.color
-    });
-    setAccountDialog(true);
-  };
-
-  const handleAccountDelete = (accountId) => {
-    deleteAccount(accountId);
-    setDeleteDialog(false);
-    setSnack({ open: true, message: 'Compte supprimé avec succès', severity: 'info' });
-  };
-
-  const handleChangeActiveAccount = (accountId) => {
-    setActiveAccount(accountId);
-    setSnack({ open: true, message: 'Compte actif changé avec succès', severity: 'success' });
-  };
-
   const handleDeleteData = () => {
     // Supprimer toutes les données du store
     clearAllData();
@@ -202,7 +150,6 @@ const Settings = () => {
     const data = {
       userProfile,
       appSettings,
-      accounts,
       timestamp: new Date().toISOString()
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -261,18 +208,6 @@ const Settings = () => {
     { code: 'CHF', name: 'Franc Suisse', symbol: 'CHF' }
   ];
 
-  const accountTypes = [
-    { value: 'personal', label: 'Personnel', icon: '👤' },
-    { value: 'business', label: 'Professionnel', icon: '💼' },
-    { value: 'savings', label: 'Épargne', icon: '💰' },
-    { value: 'investment', label: 'Investissement', icon: '📈' }
-  ];
-
-  const getAccountIcon = (type) => {
-    const accountType = accountTypes.find(t => t.value === type);
-    return accountType ? accountType.icon : '💳';
-  };
-
   return (
     <Box sx={{ pb: 8 }}>
       {/* En-tête */}
@@ -291,7 +226,6 @@ const Settings = () => {
       <Paper sx={{ mb: 2 }}>
         <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
           <Tab label="Profil" />
-          <Tab label="Comptes" />
           <Tab label="Apparence" />
           <Tab label="Sécurité" />
           <Tab label="Données" />
@@ -352,88 +286,6 @@ const Settings = () => {
       )}
 
       {activeTab === 1 && (
-        <Box>
-          {/* Compte actif */}
-          {activeAccount && (
-            <Paper sx={{ mb: 2, p: 2 }}>
-              <Typography variant="h6" gutterBottom>
-                Compte actif
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Avatar sx={{ bgcolor: activeAccount.color, width: 50, height: 50 }}>
-                  {getAccountIcon(activeAccount.type)}
-                </Avatar>
-                <Box>
-                  <Typography variant="subtitle1">{activeAccount.name}</Typography>
-                  <Typography variant="body2" color="text.secondary" component="span">
-                    {activeAccount.balance.toLocaleString()} {activeAccount.currency}
-                  </Typography>
-                </Box>
-              </Box>
-            </Paper>
-          )}
-
-          {/* Liste des comptes */}
-          <Paper sx={{ mb: 2 }}>
-            <List>
-              {accounts.map((account) => (
-                <React.Fragment key={account.id}>
-                  <ListItem>
-                    <ListItemAvatar>
-                      <Avatar sx={{ bgcolor: account.color }}>
-                        {getAccountIcon(account.type)}
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText 
-                      primary={account.name}
-                      secondary={`${account.balance.toLocaleString()} ${account.currency}`}
-                    />
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      {account.id === activeAccount?.id && (
-                        <Chip label="Actif" size="small" color="primary" />
-                      )}
-                      {account.id !== activeAccount?.id && (
-                        <Button 
-                          variant="outlined" 
-                          size="small"
-                          onClick={() => handleChangeActiveAccount(account.id)}
-                        >
-                          Activer
-                        </Button>
-                      )}
-                      <IconButton onClick={() => handleAccountEdit(account)}>
-                        <Edit />
-                      </IconButton>
-                      <IconButton 
-                        color="error" 
-                        onClick={() => {
-                          setEditingAccount(account);
-                          setDeleteDialog(true);
-                        }}
-                      >
-                        <Delete />
-                      </IconButton>
-                    </Box>
-                  </ListItem>
-                  <Divider />
-                </React.Fragment>
-              ))}
-            </List>
-          </Paper>
-
-          {/* Bouton d'ajout */}
-          <Fab
-            color="primary"
-            aria-label="add account"
-            sx={{ position: 'fixed', bottom: 80, right: 16 }}
-            onClick={() => setAccountDialog(true)}
-          >
-            <Add />
-          </Fab>
-        </Box>
-      )}
-
-      {activeTab === 2 && (
         <Box>
           {/* Thème */}
           <Paper sx={{ mb: 2 }}>
@@ -533,7 +385,7 @@ const Settings = () => {
         </Box>
       )}
 
-      {activeTab === 3 && (
+      {activeTab === 2 && (
         <Box>
           {/* Authentification */}
           <Paper sx={{ mb: 2 }}>
@@ -608,7 +460,7 @@ const Settings = () => {
         </Box>
       )}
 
-      {activeTab === 4 && (
+      {activeTab === 3 && (
         <Box>
           {/* Notifications */}
           <Paper sx={{ mb: 2 }}>
@@ -759,7 +611,7 @@ const Settings = () => {
         </Box>
       )}
 
-      {activeTab === 5 && (
+      {activeTab === 4 && (
         <Box>
           {/* Tutoriel */}
           <Paper sx={{ mb: 2 }}>
@@ -916,91 +768,19 @@ const Settings = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Dialog de compte */}
-      <Dialog open={accountDialog} onClose={() => setAccountDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{editingAccount ? 'Modifier le compte' : 'Ajouter un compte'}</DialogTitle>
-        <DialogContent>
-          <Box sx={{ pt: 1 }}>
-            <TextField
-              fullWidth
-              label="Nom du compte"
-              value={accountForm.name}
-              onChange={(e) => setAccountForm({ ...accountForm, name: e.target.value })}
-              sx={{ mb: 2 }}
-            />
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Type de compte</InputLabel>
-              <Select
-                value={accountForm.type}
-                onChange={(e) => setAccountForm({ ...accountForm, type: e.target.value })}
-                label="Type de compte"
-              >
-                {accountTypes.map(type => (
-                  <MenuItem key={type.value} value={type.value}>
-                    {type.icon} {type.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              fullWidth
-              label="Solde initial"
-              type="number"
-              value={accountForm.balance}
-              onChange={(e) => setAccountForm({ ...accountForm, balance: parseFloat(e.target.value) || 0 })}
-              sx={{ mb: 2 }}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">€</InputAdornment>,
-              }}
-            />
-            <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Devise</InputLabel>
-              <Select
-                value={accountForm.currency}
-                onChange={(e) => setAccountForm({ ...accountForm, currency: e.target.value })}
-                label="Devise"
-              >
-                {currencies.map(curr => (
-                  <MenuItem key={curr.code} value={curr.code}>
-                    {curr.symbol} {curr.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <TextField
-              fullWidth
-              label="Couleur du compte"
-              type="color"
-              value={accountForm.color}
-              onChange={(e) => setAccountForm({ ...accountForm, color: e.target.value })}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAccountDialog(false)}>Annuler</Button>
-          <Button 
-            onClick={handleAccountSave} 
-            variant="contained"
-            disabled={!accountForm.name}
-          >
-            {editingAccount ? 'Modifier' : 'Ajouter'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
       {/* Dialog de suppression */}
       <Dialog open={deleteDialog} onClose={() => setDeleteDialog(false)}>
         <DialogTitle>Confirmer la suppression</DialogTitle>
         <DialogContent>
           <Typography>
-            Êtes-vous sûr de vouloir supprimer {editingAccount ? `le compte "${editingAccount.name}"` : 'toutes les données'} ? 
+            Êtes-vous sûr de vouloir supprimer toutes les données ? 
             Cette action est irréversible.
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteDialog(false)}>Annuler</Button>
           <Button 
-            onClick={() => editingAccount ? handleAccountDelete(editingAccount.id) : handleDeleteData()} 
+            onClick={handleDeleteData} 
             color="error" 
             variant="contained"
           >

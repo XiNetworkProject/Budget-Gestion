@@ -149,154 +149,6 @@ const useStore = create(
         // Profil et paramètres utilisateur
         userProfile: defaultUserProfile,
         appSettings: defaultAppSettings,
-        currentAccountId: null,
-
-        // Gestion des comptes multiples
-        accounts: [],
-        activeAccount: null,
-
-        setUser: async (user) => {
-          set({ user, isAuthenticated: !!user });
-          if (user) {
-            try {
-              set({ isLoading: true });
-              const data = await budgetService.getBudget(user.id);
-              if (data) {
-                set({
-                  months: data.months || defaultMonths,
-                  categories: data.categories || defaultCategories,
-                  data: data.data || defaultData,
-                  revenus: data.revenus || defaultRevenus,
-                  incomeTypes: data.incomeTypes || defaultIncomeTypes,
-                  incomes: data.incomes || defaultIncomes,
-                  persons: data.persons || defaultPersons,
-                  saved: data.saved || defaultSaved,
-                  sideByMonth: data.sideByMonth || defaultSideByMonth,
-                  totalPotentialSavings: data.totalPotentialSavings || 0,
-                  budgetLimits: data.budgetLimits || defaultCategoryLimits,
-                  expenses: data.expenses || [],
-                  incomeTransactions: data.incomeTransactions || [],
-                  savings: data.savings || [],
-                  debts: data.debts || [],
-                  bankAccounts: data.bankAccounts || [],
-                  transactions: data.transactions || [],
-                  userProfile: data.userProfile || defaultUserProfile,
-                  appSettings: data.appSettings || defaultAppSettings,
-                  accounts: data.accounts || [],
-                  activeAccount: data.activeAccount || null,
-                  isLoading: false
-                });
-              } else {
-                const defaultBudget = {
-                  months: defaultMonths,
-                  categories: defaultCategories,
-                  data: defaultData,
-                  revenus: defaultRevenus,
-                  incomeTypes: defaultIncomeTypes,
-                  incomes: defaultIncomes,
-                  persons: defaultPersons,
-                  saved: defaultSaved,
-                  sideByMonth: defaultSideByMonth,
-                  totalPotentialSavings: 0,
-                  budgetLimits: defaultCategoryLimits,
-                  expenses: [],
-                  incomeTransactions: [],
-                  savings: [],
-                  debts: [],
-                  bankAccounts: [],
-                  transactions: [],
-                  userProfile: { ...defaultUserProfile, email: user.email },
-                  appSettings: defaultAppSettings,
-                  accounts: [],
-                  activeAccount: null
-                };
-                set({ ...defaultBudget, isLoading: false });
-                await budgetService.saveBudget(user.id, defaultBudget);
-              }
-            } catch (error) {
-              console.error('Error loading budget:', error);
-              set({ error: error.message, isLoading: false });
-            }
-          }
-        },
-
-        setLoading: (isLoading) => set({ isLoading }),
-        setError: (error) => set({ error }),
-        setToken: (token) => set({ token }),
-
-        // Gestion du profil utilisateur
-        updateUserProfile: (updates) => {
-          const state = get();
-          const updatedProfile = { ...state.userProfile, ...updates };
-          set({ userProfile: updatedProfile });
-          scheduleSave();
-        },
-
-        updateAppSettings: (updates) => {
-          const state = get();
-          const updatedSettings = { ...state.appSettings, ...updates };
-          set({ appSettings: updatedSettings });
-          scheduleSave();
-        },
-
-        // Gestion des comptes multiples
-        addAccount: (account) => {
-          const state = get();
-          const newAccount = {
-            id: Date.now().toString(),
-            name: account.name,
-            type: account.type || 'personal',
-            balance: account.balance || 0,
-            currency: account.currency || 'EUR',
-            color: account.color || '#1976d2',
-            isActive: account.isActive || false,
-            createdAt: new Date().toISOString()
-          };
-          
-          const updatedAccounts = [...state.accounts, newAccount];
-          set({ accounts: updatedAccounts });
-          
-          if (newAccount.isActive) {
-            set({ activeAccount: newAccount });
-          }
-          
-          scheduleSave();
-        },
-
-        updateAccount: (accountId, updates) => {
-          const state = get();
-          const updatedAccounts = state.accounts.map(acc => 
-            acc.id === accountId ? { ...acc, ...updates } : acc
-          );
-          set({ accounts: updatedAccounts });
-          
-          if (state.activeAccount?.id === accountId) {
-            set({ activeAccount: { ...state.activeAccount, ...updates } });
-          }
-          
-          scheduleSave();
-        },
-
-        deleteAccount: (accountId) => {
-          const state = get();
-          const updatedAccounts = state.accounts.filter(acc => acc.id !== accountId);
-          set({ accounts: updatedAccounts });
-          
-          if (state.activeAccount?.id === accountId) {
-            set({ activeAccount: null });
-          }
-          
-          scheduleSave();
-        },
-
-        setActiveAccount: (accountId) => {
-          const state = get();
-          const account = state.accounts.find(acc => acc.id === accountId);
-          if (account) {
-            set({ activeAccount: account });
-            scheduleSave();
-          }
-        },
 
         // Gestion des transactions
         addTransaction: (transaction) => {
@@ -304,28 +156,11 @@ const useStore = create(
           const newTransaction = {
             id: Date.now().toString(),
             ...transaction,
-            accountId: transaction.accountId || state.activeAccount?.id,
             date: transaction.date || new Date().toISOString(),
             createdAt: new Date().toISOString()
           };
           
           const updatedTransactions = [...state.transactions, newTransaction];
-          set({ transactions: updatedTransactions });
-          scheduleSave();
-        },
-
-        updateTransaction: (transactionId, updates) => {
-          const state = get();
-          const updatedTransactions = state.transactions.map(trans => 
-            trans.id === transactionId ? { ...trans, ...updates } : trans
-          );
-          set({ transactions: updatedTransactions });
-          scheduleSave();
-        },
-
-        deleteTransaction: (transactionId) => {
-          const state = get();
-          const updatedTransactions = state.transactions.filter(trans => trans.id !== transactionId);
           set({ transactions: updatedTransactions });
           scheduleSave();
         },
@@ -336,7 +171,6 @@ const useStore = create(
           const newExpense = {
             id: Date.now().toString(),
             ...expense,
-            accountId: expense.accountId || state.activeAccount?.id,
             date: expense.date || new Date().toISOString(),
             createdAt: new Date().toISOString()
           };
@@ -368,7 +202,6 @@ const useStore = create(
           const newIncome = {
             id: Date.now().toString(),
             ...income,
-            accountId: income.accountId || state.activeAccount?.id,
             date: income.date || new Date().toISOString(),
             createdAt: new Date().toISOString()
           };
@@ -402,7 +235,6 @@ const useStore = create(
           const newGoal = {
             id: Date.now().toString(),
             ...goal,
-            accountId: goal.accountId || state.activeAccount?.id,
             createdAt: new Date().toISOString(),
             progress: 0
           };
@@ -434,7 +266,6 @@ const useStore = create(
           const newDebt = {
             id: Date.now().toString(),
             ...debt,
-            accountId: debt.accountId || state.activeAccount?.id,
             createdAt: new Date().toISOString(),
             paidAmount: 0
           };
@@ -801,6 +632,86 @@ const useStore = create(
           set({ forceTutorial: false });
           scheduleSave();
         },
+
+        setUser: async (user) => {
+          set({ user, isAuthenticated: !!user });
+          if (user) {
+            try {
+              set({ isLoading: true });
+              const data = await budgetService.getBudget(user.id);
+              if (data) {
+                set({
+                  months: data.months || defaultMonths,
+                  categories: data.categories || defaultCategories,
+                  data: data.data || defaultData,
+                  revenus: data.revenus || defaultRevenus,
+                  incomeTypes: data.incomeTypes || defaultIncomeTypes,
+                  incomes: data.incomes || defaultIncomes,
+                  persons: data.persons || defaultPersons,
+                  saved: data.saved || defaultSaved,
+                  sideByMonth: data.sideByMonth || defaultSideByMonth,
+                  totalPotentialSavings: data.totalPotentialSavings || 0,
+                  budgetLimits: data.budgetLimits || defaultCategoryLimits,
+                  expenses: data.expenses || [],
+                  incomeTransactions: data.incomeTransactions || [],
+                  savings: data.savings || [],
+                  debts: data.debts || [],
+                  bankAccounts: data.bankAccounts || [],
+                  transactions: data.transactions || [],
+                  userProfile: data.userProfile || defaultUserProfile,
+                  appSettings: data.appSettings || defaultAppSettings,
+                  isLoading: false
+                });
+              } else {
+                const defaultBudget = {
+                  months: defaultMonths,
+                  categories: defaultCategories,
+                  data: defaultData,
+                  revenus: defaultRevenus,
+                  incomeTypes: defaultIncomeTypes,
+                  incomes: defaultIncomes,
+                  persons: defaultPersons,
+                  saved: defaultSaved,
+                  sideByMonth: defaultSideByMonth,
+                  totalPotentialSavings: 0,
+                  budgetLimits: defaultCategoryLimits,
+                  expenses: [],
+                  incomeTransactions: [],
+                  savings: [],
+                  debts: [],
+                  bankAccounts: [],
+                  transactions: [],
+                  userProfile: { ...defaultUserProfile, email: user.email },
+                  appSettings: defaultAppSettings
+                };
+                set({ ...defaultBudget, isLoading: false });
+                await budgetService.saveBudget(user.id, defaultBudget);
+              }
+            } catch (error) {
+              console.error('Error loading budget:', error);
+              set({ error: error.message, isLoading: false });
+            }
+          }
+        },
+
+        setLoading: (isLoading) => set({ isLoading }),
+        setError: (error) => set({ error }),
+        setToken: (token) => set({ token }),
+
+        // Gestion du profil utilisateur
+        updateUserProfile: (updates) => {
+          const state = get();
+          const updatedProfile = { ...state.userProfile, ...updates };
+          set({ userProfile: updatedProfile });
+          scheduleSave();
+        },
+
+        updateAppSettings: (updates) => {
+          const state = get();
+          const updatedSettings = { ...state.appSettings, ...updates };
+          set({ appSettings: updatedSettings });
+          scheduleSave();
+        },
       };
     },
     {
@@ -811,8 +722,6 @@ const useStore = create(
         token: state.token,
         userProfile: state.userProfile,
         appSettings: state.appSettings,
-        accounts: state.accounts,
-        activeAccount: state.activeAccount,
         tutorialCompleted: state.tutorialCompleted,
         onboardingCompleted: state.onboardingCompleted,
         forceTutorial: state.forceTutorial
