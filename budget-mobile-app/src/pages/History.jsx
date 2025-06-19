@@ -69,22 +69,26 @@ const History = () => {
 
   // Fusionner et trier toutes les transactions
   const allTransactions = [
-    ...incomeTransactions.map(t => ({
-      ...t,
-      type: 'income',
-      icon: '💰',
-      title: t.type || 'Revenu',
-      date: parseDate(t.date),
-      amount: t.amount
-    })),
-    ...expenses.map(t => ({
-      ...t,
-      type: 'expense',
-      icon: '💸',
-      title: t.category || 'Dépense',
-      date: parseDate(t.date),
-      amount: t.amount
-    }))
+    ...incomeTransactions
+      .filter(t => isDateInSelectedMonth(t.date))
+      .map(t => ({
+        ...t,
+        type: 'income',
+        icon: '💰',
+        title: t.type || 'Revenu',
+        date: parseDate(t.date),
+        amount: t.amount
+      })),
+    ...expenses
+      .filter(e => isDateInSelectedMonth(e.date))
+      .map(t => ({
+        ...t,
+        type: 'expense',
+        icon: '💸',
+        title: t.category || 'Dépense',
+        date: parseDate(t.date),
+        amount: t.amount
+      }))
   ].sort((a, b) => b.date - a.date);
 
   const handleEdit = (i, item) => {

@@ -62,44 +62,51 @@ const Analytics = () => {
     expenses, 
     savings, 
     sideByMonth,
-    activeAccount 
+    activeAccount,
+    selectedMonth,
+    selectedYear
   } = useStore();
   const [timeFilter, setTimeFilter] = useState('month');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
-  // Index du mois courant
+  // Index du mois sélectionné
   const idx = months.length - 1;
+  
+  // Fonction pour vérifier si une date correspond au mois sélectionné
+  const isDateInSelectedMonth = (dateString) => {
+    if (!dateString) return false;
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return false;
+      
+      return date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
+    } catch (error) {
+      console.error('Erreur dans isDateInSelectedMonth:', error);
+      return false;
+    }
+  };
 
   // Filtrer les données par compte actif
   const filteredIncomeTransactions = incomeTransactions.filter(t => !activeAccount || t.accountId === activeAccount?.id);
   const filteredExpenses = expenses.filter(e => !activeAccount || e.accountId === activeAccount?.id);
   const filteredSavings = savings.filter(s => !activeAccount || s.accountId === activeAccount?.id);
 
-  // Calculer les revenus du mois courant (transactions + revenus par type)
-  const currentMonthIncomeTransactions = filteredIncomeTransactions
-    .filter(t => {
-      const transactionDate = new Date(t.date);
-      const currentMonth = new Date();
-      return transactionDate.getMonth() === currentMonth.getMonth() && 
-             transactionDate.getFullYear() === currentMonth.getFullYear();
-    })
+  // Calculer les revenus du mois sélectionné (transactions + revenus par type)
+  const selectedMonthIncomeTransactions = filteredIncomeTransactions
+    .filter(t => isDateInSelectedMonth(t.date))
     .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-  const currentMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
-  const currentRevenue = currentMonthIncomeTransactions + currentMonthIncomeByType;
+  const selectedMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
+  const currentRevenue = selectedMonthIncomeTransactions + selectedMonthIncomeByType;
 
-  // Calculer les dépenses du mois courant (transactions + dépenses par catégorie)
-  const currentMonthExpenses = filteredExpenses
-    .filter(e => {
-      const expenseDate = new Date(e.date);
-      const currentMonth = new Date();
-      return expenseDate.getMonth() === currentMonth.getMonth() && 
-             expenseDate.getFullYear() === currentMonth.getFullYear();
-    })
+  // Calculer les dépenses du mois sélectionné (transactions + dépenses par catégorie)
+  const selectedMonthExpenses = filteredExpenses
+    .filter(e => isDateInSelectedMonth(e.date))
     .reduce((sum, e) => sum + (e.amount || 0), 0);
 
-  const currentMonthExpensesByCategory = Object.values(data).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
-  const totalExpenses = currentMonthExpenses + currentMonthExpensesByCategory;
+  const selectedMonthExpensesByCategory = Object.values(data).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
+  const totalExpenses = selectedMonthExpenses + selectedMonthExpensesByCategory;
 
   // Calculer les économies (revenus - dépenses)
   const currentSavings = currentRevenue - totalExpenses;
@@ -145,16 +152,10 @@ const Analytics = () => {
   // Économies par mois (revenus - dépenses)
   const savingsByMonth = revenuesByMonth.map((revenue, i) => revenue - expensesByMonth[i]);
 
-  // Catégories de dépenses pour le mois courant
+  // Catégories de dépenses pour le mois sélectionné
   const expenseByCategory = categories.map(cat => {
     const categoryExpenses = filteredExpenses
-      .filter(e => {
-        const expenseDate = new Date(e.date);
-        const currentMonth = new Date();
-        return e.category === cat && 
-               expenseDate.getMonth() === currentMonth.getMonth() && 
-               expenseDate.getFullYear() === currentMonth.getFullYear();
-      })
+      .filter(e => e.category === cat && isDateInSelectedMonth(e.date))
       .reduce((sum, e) => sum + (e.amount || 0), 0);
     
     const categoryData = data[cat] ? data[cat][idx] || 0 : 0;

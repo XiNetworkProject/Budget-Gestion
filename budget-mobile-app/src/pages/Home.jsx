@@ -797,20 +797,24 @@ const Home = () => {
 
   // Transactions récentes réelles (revenus et dépenses)
   const allTransactions = [
-    ...incomeTransactions.map(t => ({
-      ...t,
-      type: 'income',
-      icon: '💰',
-      category: t.type || 'Revenu',
-      date: parseDate(t.date)
-    })),
-    ...expenses.map(t => ({
-      ...t,
-      type: 'expense',
-      icon: '💸',
-      category: t.category || 'Dépense',
-      date: parseDate(t.date)
-    }))
+    ...incomeTransactions
+      .filter(t => isDateInSelectedMonth(t.date))
+      .map(t => ({
+        ...t,
+        type: 'income',
+        icon: '💰',
+        category: t.type || 'Revenu',
+        date: parseDate(t.date)
+      })),
+    ...expenses
+      .filter(e => isDateInSelectedMonth(e.date))
+      .map(t => ({
+        ...t,
+        type: 'expense',
+        icon: '💸',
+        category: t.category || 'Dépense',
+        date: parseDate(t.date)
+      }))
   ];
   const recentTransactions = allTransactions
     .sort((a, b) => b.date - a.date)

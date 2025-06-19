@@ -85,10 +85,28 @@ const Expenses = () => {
     addExpense,
     updateExpense,
     deleteExpense,
-    activeAccount
+    activeAccount,
+    selectedMonth,
+    selectedYear
   } = useStore();
   
   const idx = months.length - 1;
+  
+  // Fonction pour vérifier si une date correspond au mois sélectionné
+  const isDateInSelectedMonth = (dateString) => {
+    if (!dateString) return false;
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return false;
+      
+      return date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
+    } catch (error) {
+      console.error('Erreur dans isDateInSelectedMonth:', error);
+      return false;
+    }
+  };
+  
   const [editIdx, setEditIdx] = useState(null);
   const [editValue, setEditValue] = useState('');
   const [deleteIdx, setDeleteIdx] = useState(null);
@@ -175,19 +193,16 @@ const Expenses = () => {
 
   // Calculs pour les graphiques
   const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
-  const monthlyExpenses = expenses.reduce((sum, exp) => {
-    const month = new Date(exp.date).getMonth();
-    const currentMonth = new Date().getMonth();
-    if (month === currentMonth) {
-      return sum + exp.amount;
-    }
-    return sum;
-  }, 0);
+  const monthlyExpenses = expenses
+    .filter(exp => isDateInSelectedMonth(exp.date))
+    .reduce((sum, exp) => sum + exp.amount, 0);
 
   const categoryTotals = {};
-  expenses.forEach(exp => {
-    categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
-  });
+  expenses
+    .filter(exp => isDateInSelectedMonth(exp.date))
+    .forEach(exp => {
+      categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
+    });
 
   const doughnutData = {
     labels: Object.keys(categoryTotals),
