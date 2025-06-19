@@ -14,6 +14,7 @@ import Expenses from './pages/Expenses';
 import Income from './pages/Income';
 import Savings from './pages/Savings';
 import Debts from './pages/Debts';
+import { useStore } from './store';
 
 function SplashRedirect() {
   const navigate = useNavigate();
@@ -22,6 +23,24 @@ function SplashRedirect() {
     return () => clearTimeout(timer);
   }, [navigate]);
   return <Splash />;
+}
+
+// Composant pour gérer la redirection vers l'onboarding
+function OnboardingGuard({ children }) {
+  const { isAuthenticated, onboardingCompleted } = useStore();
+  
+  // Si l'utilisateur n'est pas connecté, on ne fait rien (Login s'en charge)
+  if (!isAuthenticated) {
+    return children;
+  }
+  
+  // Si l'onboarding n'est pas terminé, rediriger vers l'onboarding
+  if (!onboardingCompleted) {
+    return <Navigate to="/onboarding" replace />;
+  }
+  
+  // Sinon, afficher le contenu normal
+  return children;
 }
 
 export default function AppRoutes() {
@@ -36,7 +55,11 @@ export default function AppRoutes() {
         <Route path="/" element={<SplashRedirect />} />
         <Route path="/login" element={<Login />} />
         <Route path="/onboarding" element={<Onboarding />} />
-        <Route element={<Layout />}>
+        <Route element={
+          <OnboardingGuard>
+            <Layout />
+          </OnboardingGuard>
+        }>
           <Route path="/home" element={<Home />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/quickadd" element={<QuickAdd />} />

@@ -5,7 +5,7 @@ import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-  const { setUser, setToken } = useStore();
+  const { setUser, setToken, onboardingCompleted } = useStore();
   const navigate = useNavigate();
 
   const handleSuccess = (credentialResponse) => {
@@ -18,7 +18,13 @@ const Login = () => {
       name: decoded.name,
       picture: decoded.picture
     });
-    navigate('/onboarding', { replace: true });
+    
+    // Rediriger vers l'onboarding seulement si ce n'est pas encore terminé
+    if (!onboardingCompleted) {
+      navigate('/onboarding', { replace: true });
+    } else {
+      navigate('/home', { replace: true });
+    }
   };
 
   const handleError = () => {

@@ -16,10 +16,10 @@ const Layout = () => {
   const location = useLocation();
   const { 
     tutorialCompleted, 
+    onboardingCompleted,
     forceTutorial,
     setTutorialCompleted,
-    clearForceTutorial,
-    forceShowTutorial
+    clearForceTutorial
   } = useStore();
   
   // map path to nav value
@@ -33,10 +33,18 @@ const Layout = () => {
     navigate(path);
   };
 
-  // Gestion du tutoriel
+  // Gestion du tutoriel - ne se lance qu'une seule fois après l'onboarding
   useEffect(() => {
-    if (!tutorialCompleted || forceTutorial) {
-      console.log('Layout: Conditions tutoriel remplies, lancement dans 3 secondes...', { tutorialCompleted, forceTutorial });
+    // Le tutoriel ne se lance que si :
+    // 1. L'onboarding est terminé
+    // 2. Le tutoriel n'a pas encore été complété
+    // 3. Ou si on force le tutoriel depuis les paramètres
+    if ((onboardingCompleted && !tutorialCompleted) || forceTutorial) {
+      console.log('Layout: Conditions tutoriel remplies, lancement dans 3 secondes...', { 
+        onboardingCompleted, 
+        tutorialCompleted, 
+        forceTutorial 
+      });
       const timer = setTimeout(() => {
         console.log('Layout: Lancement du tutoriel maintenant');
         setShowTutorial(true);
@@ -47,7 +55,7 @@ const Layout = () => {
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [tutorialCompleted, forceTutorial, clearForceTutorial]);
+  }, [onboardingCompleted, tutorialCompleted, forceTutorial, clearForceTutorial]);
 
   return (
     <Box sx={{ pb: 7 }}>
@@ -66,44 +74,6 @@ const Layout = () => {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Budget Gestion
           </Typography>
-          {/* Bouton de test temporaire pour le tutoriel */}
-          <button
-            onClick={() => {
-              console.log('Test: Forcer l\'affichage du tutoriel');
-              setShowTutorial(true);
-            }}
-            style={{
-              background: '#1976d2',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '4px 8px',
-              cursor: 'pointer',
-              marginRight: '8px',
-              fontSize: '12px'
-            }}
-          >
-            Test Tutoriel
-          </button>
-          {/* Bouton de test pour forcer le relancement */}
-          <button
-            onClick={() => {
-              console.log('Test: Forcer le relancement du tutoriel');
-              forceShowTutorial();
-            }}
-            style={{
-              background: '#ed6c02',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '4px 8px',
-              cursor: 'pointer',
-              marginRight: '8px',
-              fontSize: '12px'
-            }}
-          >
-            Force Relance
-          </button>
         </Toolbar>
       </AppBar>
 

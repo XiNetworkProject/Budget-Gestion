@@ -762,12 +762,19 @@ const useStore = create(
           scheduleSave();
         },
 
-        // Gestion du tutoriel
+        // Gestion du tutoriel et onboarding
         tutorialCompleted: false,
+        onboardingCompleted: false,
         forceTutorial: false,
         setTutorialCompleted: (completed) => {
           console.log('Tutoriel: setTutorialCompleted appelé avec', completed);
           set({ tutorialCompleted: completed });
+          scheduleSave();
+        },
+
+        setOnboardingCompleted: (completed) => {
+          console.log('Onboarding: setOnboardingCompleted appelé avec', completed);
+          set({ onboardingCompleted: completed });
           scheduleSave();
         },
 
@@ -807,6 +814,7 @@ const useStore = create(
         accounts: state.accounts,
         activeAccount: state.activeAccount,
         tutorialCompleted: state.tutorialCompleted,
+        onboardingCompleted: state.onboardingCompleted,
         forceTutorial: state.forceTutorial
       })
     }

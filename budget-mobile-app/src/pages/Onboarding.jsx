@@ -37,6 +37,7 @@ import {
   Assessment,
   Settings
 } from '@mui/icons-material';
+import { useStore } from '../store';
 
 const steps = [
   {
@@ -93,11 +94,14 @@ const Onboarding = () => {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { setOnboardingCompleted } = useStore();
   const isLast = step === steps.length - 1;
 
   const next = async () => {
     if (isLast) {
       setLoading(true);
+      // Marquer l'onboarding comme terminé
+      setOnboardingCompleted(true);
       // Simuler un délai de chargement
       setTimeout(() => {
         navigate('/home', { replace: true });
@@ -112,6 +116,8 @@ const Onboarding = () => {
   };
 
   const skip = () => {
+    // Marquer l'onboarding comme terminé même si on le saute
+    setOnboardingCompleted(true);
     navigate('/home', { replace: true });
   };
 

@@ -274,11 +274,35 @@ const Home = () => {
         <Box sx={{ mb: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Box>
-              <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+              <Typography 
+                variant="h4" 
+                sx={{ 
+                  fontWeight: 'bold',
+                  fontSize: { xs: '1.8rem', sm: '2.1rem', md: '2.4rem' },
+                  color: '#ffffff',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  background: 'linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  letterSpacing: '0.5px',
+                  mb: 0.5
+                }}
+              >
                 Bonjour{user?.name ? `, ${user.name}` : ''}
               </Typography>
               {activeAccount && (
-                <Typography variant="body2" color="text.secondary" component="span">
+                <Typography 
+                  variant="body2" 
+                  color="text.secondary" 
+                  sx={{
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                    opacity: 0.9,
+                    textShadow: '0 1px 2px rgba(0,0,0,0.2)'
+                  }}
+                  component="span"
+                >
                   Compte : {activeAccount.name}
                 </Typography>
               )}
