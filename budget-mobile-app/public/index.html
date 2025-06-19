@@ -13,61 +13,159 @@
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>Budget Gestion</title>
     
-    <!-- Script pour nettoyer les erreurs de tracking Google -->
+    <!-- Script de nettoyage ultra-agressif pour éliminer ERR_BLOCKED_BY_CLIENT -->
     <script>
       (function() {
-        // Nettoyer les erreurs de tracking avant tout
+        'use strict';
+        
+        // Liste des domaines de tracking à bloquer
+        const blockedDomains = [
+          'play.google.com/log',
+          'google-analytics.com',
+          'googlesyndication.com',
+          'doubleclick.net',
+          'googleadservices.com',
+          'googletagmanager.com',
+          'google-analytics.com',
+          'analytics.google.com'
+        ];
+        
+        // Fonction pour vérifier si une URL doit être bloquée
+        function shouldBlockUrl(url) {
+          if (typeof url !== 'string') return false;
+          return blockedDomains.some(domain => url.includes(domain));
+        }
+        
+        // Bloquer console.error et console.warn pour les erreurs de tracking
         const originalError = console.error;
         const originalWarn = console.warn;
-        const originalFetch = window.fetch;
+        const originalLog = console.log;
         
         console.error = function(...args) {
           const message = args.join(' ');
-          if (!message.includes('play.google.com/log') && 
-              !message.includes('ERR_BLOCKED_BY_CLIENT') &&
-              !message.includes('google-analytics.com') &&
-              !message.includes('googlesyndication.com')) {
+          if (!shouldBlockUrl(message) && !message.includes('ERR_BLOCKED_BY_CLIENT')) {
             originalError.apply(console, args);
           }
         };
         
         console.warn = function(...args) {
           const message = args.join(' ');
-          if (!message.includes('play.google.com/log') && 
-              !message.includes('ERR_BLOCKED_BY_CLIENT') &&
-              !message.includes('google-analytics.com')) {
+          if (!shouldBlockUrl(message) && !message.includes('ERR_BLOCKED_BY_CLIENT')) {
             originalWarn.apply(console, args);
           }
         };
         
-        // Intercepter les requêtes de tracking
+        console.log = function(...args) {
+          const message = args.join(' ');
+          if (!shouldBlockUrl(message) && !message.includes('ERR_BLOCKED_BY_CLIENT')) {
+            originalLog.apply(console, args);
+          }
+        };
+        
+        // Intercepter fetch
+        const originalFetch = window.fetch;
         window.fetch = function(...args) {
           const url = args[0];
-          if (typeof url === 'string' && (
-              url.includes('play.google.com/log') ||
-              url.includes('google-analytics.com') ||
-              url.includes('googlesyndication.com') ||
-              url.includes('doubleclick.net')
-          )) {
-            return Promise.resolve(new Response('', { status: 200 }));
+          if (shouldBlockUrl(url)) {
+            console.log('Requête de tracking bloquée:', url);
+            return Promise.resolve(new Response('', { 
+              status: 200, 
+              statusText: 'OK',
+              headers: { 'Content-Type': 'text/plain' }
+            }));
           }
           return originalFetch.apply(this, args);
         };
         
-        // Intercepter XMLHttpRequest aussi
+        // Intercepter XMLHttpRequest
         const originalXHROpen = XMLHttpRequest.prototype.open;
+        const originalXHRSend = XMLHttpRequest.prototype.send;
+        
         XMLHttpRequest.prototype.open = function(method, url, ...args) {
-          if (typeof url === 'string' && (
-              url.includes('play.google.com/log') ||
-              url.includes('google-analytics.com') ||
-              url.includes('googlesyndication.com') ||
-              url.includes('doubleclick.net')
-          )) {
-            // Créer une requête factice
+          if (shouldBlockUrl(url)) {
+            this._blocked = true;
+            this._blockedUrl = url;
             return originalXHROpen.call(this, 'GET', 'data:text/plain,', ...args);
           }
+          this._blocked = false;
           return originalXHROpen.call(this, method, url, ...args);
         };
+        
+        XMLHttpRequest.prototype.send = function(...args) {
+          if (this._blocked) {
+            console.log('XHR de tracking bloqué:', this._blockedUrl);
+            // Simuler une réponse réussie
+            setTimeout(() => {
+              if (this.onload) this.onload();
+              if (this.onreadystatechange) this.onreadystatechange();
+            }, 0);
+            return;
+          }
+          return originalXHRSend.apply(this, args);
+        };
+        
+        // Intercepter les requêtes d'images
+        const originalImage = window.Image;
+        window.Image = function() {
+          const img = new originalImage();
+          const originalSrc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
+          
+          Object.defineProperty(img, 'src', {
+            set: function(value) {
+              if (shouldBlockUrl(value)) {
+                console.log('Image de tracking bloquée:', value);
+                return; // Ne pas définir la source
+              }
+              originalSrc.set.call(this, value);
+            },
+            get: originalSrc.get
+          });
+          
+          return img;
+        };
+        
+        // Intercepter les scripts
+        const originalCreateElement = document.createElement;
+        document.createElement = function(tagName) {
+          const element = originalCreateElement.call(document, tagName);
+          
+          if (tagName.toLowerCase() === 'script') {
+            const originalSrc = Object.getOwnPropertyDescriptor(HTMLScriptElement.prototype, 'src');
+            
+            Object.defineProperty(element, 'src', {
+              set: function(value) {
+                if (shouldBlockUrl(value)) {
+                  console.log('Script de tracking bloqué:', value);
+                  return; // Ne pas définir la source
+                }
+                originalSrc.set.call(this, value);
+              },
+              get: originalSrc.get
+            });
+          }
+          
+          return element;
+        };
+        
+        // Nettoyer les erreurs existantes
+        window.addEventListener('error', function(e) {
+          if (shouldBlockUrl(e.filename) || e.message.includes('ERR_BLOCKED_BY_CLIENT')) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+        }, true);
+        
+        // Nettoyer les erreurs de promesses
+        window.addEventListener('unhandledrejection', function(e) {
+          if (e.reason && typeof e.reason === 'string' && shouldBlockUrl(e.reason)) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+          }
+        });
+        
+        console.log('🛡️ Protection anti-tracking activée');
       })();
     </script>
   </head>
