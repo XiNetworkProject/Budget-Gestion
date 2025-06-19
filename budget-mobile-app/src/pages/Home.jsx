@@ -117,7 +117,6 @@ const Home = () => {
   const debugDateCalculations = () => {
     console.log('=== DÉBOGAGE DES CALCULS DE DATES ===');
     console.log('Mois sélectionné:', selectedMonth, 'Année sélectionnée:', selectedYear);
-    console.log('Index du mois sélectionné:', selectedMonthIdx);
     
     console.log('=== DÉPENSES ===');
     expenses.forEach((expense, index) => {
@@ -164,8 +163,9 @@ const Home = () => {
   };
 
   const currentMonthIdx = getCurrentMonthIndex();
-  const selectedMonthIdx = getSelectedMonthIndex();
-  const nextMonthIdx = selectedMonthIdx + 1 < months.length ? selectedMonthIdx + 1 : selectedMonthIdx;
+  // Calculer l'index du mois prochain pour les prévisions
+  const nextMonth = (selectedMonth + 1) % 12;
+  const nextMonthYear = selectedMonth === 11 ? selectedYear + 1 : selectedYear;
 
   // Fonction pour obtenir le nom du mois
   const getMonthName = (month, year) => {
@@ -259,135 +259,72 @@ const Home = () => {
     }
   };
 
-  // Calculer les revenus du mois sélectionné
-  const selectedMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[selectedMonthIdx] || 0), 0);
+  // Calculer les revenus du mois sélectionné - UTILISER SEULEMENT LES TRANSACTIONS INDIVIDUELLES
   const selectedMonthIncomeTransactions = incomeTransactions
     .filter(t => isDateInSelectedMonth(t.date))
     .reduce((sum, t) => sum + (t.amount || 0), 0);
-  const selectedMonthIncome = selectedMonthIncomeByType + selectedMonthIncomeTransactions;
+  const selectedMonthIncome = selectedMonthIncomeTransactions;
 
-  // Calculer les dépenses du mois sélectionné
-  // Prioriser les transactions individuelles (expenses) sur les données par catégorie (data)
+  // Calculer les dépenses du mois sélectionné - UTILISER SEULEMENT LES TRANSACTIONS INDIVIDUELLES
   const selectedMonthExpenses = expenses
     .filter(e => isDateInSelectedMonth(e.date))
     .reduce((sum, e) => sum + (e.amount || 0), 0);
   
-  // Pour les catégories qui n'ont pas de transactions individuelles, utiliser les données par catégorie
-  const selectedMonthExpensesByCategory = Object.entries(data).reduce((sum, [category, arr]) => {
-    // Vérifier si cette catégorie a des transactions individuelles pour ce mois
-    const hasIndividualTransactions = expenses.some(e => 
-      e.category === category && isDateInSelectedMonth(e.date)
-    );
-    
-    // Si pas de transactions individuelles, utiliser la valeur par catégorie
-    if (!hasIndividualTransactions) {
-      return sum + (arr[selectedMonthIdx] || 0);
-    }
-    return sum;
-  }, 0);
-  
-  const selectedMonthExpense = selectedMonthExpenses + selectedMonthExpensesByCategory;
+  const selectedMonthExpense = selectedMonthExpenses;
 
   // Calculer les économies du mois sélectionné
   const selectedMonthSaved = selectedMonthIncome - selectedMonthExpense;
 
-  // Système de prévisions intelligentes pour le mois prochain
+  // Système de prévisions intelligentes pour le mois prochain - SIMPLIFIÉ
   const calculateIntelligentForecast = () => {
     const currentDate = new Date();
     const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
     const nextMonthYear = nextMonth.getFullYear();
     const nextMonthIndex = nextMonth.getMonth();
     
-    // 1. Prévisions de revenus intelligentes
+    // 1. Prévisions de revenus basées sur les transactions récentes
     const calculateIncomeForecast = () => {
-      // Revenus déjà planifiés pour le mois prochain
-      const plannedIncome = Object.values(incomes).reduce((sum, arr) => sum + (arr[nextMonthIdx] || 0), 0);
-      
       // Revenus récurrents (basés sur les 3 derniers mois)
       const recentMonths = [0, 1, 2].map(i => {
         const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-        const monthIndex = months.findIndex((_, idx) => {
-          const monthDate2 = new Date();
-          monthDate2.setMonth(monthDate2.getMonth() - (months.length - 1 - idx));
-          return monthDate2.getMonth() === monthDate.getMonth() && 
-                 monthDate2.getFullYear() === monthDate.getFullYear();
-        });
-        
-        // Revenus par type pour ce mois
-        const monthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[monthIndex] || 0), 0);
         
         // Transactions individuelles pour ce mois
         const monthIncomeTransactions = incomeTransactions
-    .filter(t => {
+          .filter(t => {
             const date = parseDate(t.date);
             return date.getMonth() === monthDate.getMonth() && 
                    date.getFullYear() === monthDate.getFullYear();
-    })
-    .reduce((sum, t) => sum + (t.amount || 0), 0);
+          })
+          .reduce((sum, t) => sum + (t.amount || 0), 0);
         
-        return monthIncomeByType + monthIncomeTransactions;
+        return monthIncomeTransactions;
       });
       
       // Calculer la moyenne des revenus récents (pondérée)
       const avgRecentIncome = recentMonths.reduce((sum, val, index) => {
-        // Pondération : mois le plus récent = 50%, deuxième = 30%, troisième = 20%
         const weights = [0.5, 0.3, 0.2];
         return sum + (val * weights[index]);
       }, 0);
       
-      // Combiner revenus planifiés et tendance historique
-      const intelligentIncome = Math.max(plannedIncome, avgRecentIncome * 0.8);
-      
-      console.log('Prévisions revenus:', {
-        planned: plannedIncome,
-        recentMonths,
-        avgRecent: avgRecentIncome,
-        intelligent: intelligentIncome
-      });
-      
-      return intelligentIncome;
+      return avgRecentIncome;
     };
     
-    // 2. Prévisions de dépenses intelligentes
+    // 2. Prévisions de dépenses basées sur les transactions récentes
     const calculateExpenseForecast = () => {
-      // Dépenses déjà planifiées pour le mois prochain
-      const plannedExpenses = Object.values(data).reduce((sum, arr) => sum + (arr[nextMonthIdx] || 0), 0);
-      
       // Dépenses récentes (basées sur les 3 derniers mois)
       const recentExpenses = [0, 1, 2].map(i => {
         const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-        const monthIndex = months.findIndex((_, idx) => {
-          const monthDate2 = new Date();
-          monthDate2.setMonth(monthDate2.getMonth() - (months.length - 1 - idx));
-          return monthDate2.getMonth() === monthDate.getMonth() && 
-                 monthDate2.getFullYear() === monthDate.getFullYear();
-        });
         
         // Transactions individuelles pour ce mois
         const monthExpenses = expenses
-    .filter(e => {
+          .filter(e => {
             const date = parseDate(e.date);
             return date.getMonth() === monthDate.getMonth() && 
                    date.getFullYear() === monthDate.getFullYear();
-    })
-    .reduce((sum, e) => sum + (e.amount || 0), 0);
+          })
+          .reduce((sum, e) => sum + (e.amount || 0), 0);
         
-        // Dépenses par catégorie pour ce mois
-        const monthExpensesByCategory = Object.entries(data).reduce((sum, [category, arr]) => {
-          const hasIndividualTransactions = expenses.some(e => {
-            const date = parseDate(e.date);
-            return e.category === category && 
-                   date.getMonth() === monthDate.getMonth() && 
-                   date.getFullYear() === monthDate.getFullYear();
-          });
-          
-          if (!hasIndividualTransactions) {
-            return sum + (arr[monthIndex] || 0);
-          }
-          return sum;
-        }, 0);
-        
-        return monthExpenses + monthExpensesByCategory;
+        return monthExpenses;
       });
       
       // Calculer la moyenne des dépenses récentes (pondérée)
@@ -396,89 +333,7 @@ const Home = () => {
         return sum + (val * weights[index]);
       }, 0);
       
-      // Analyser les tendances saisonnières (si on a assez de données)
-      let seasonalAdjustment = 1;
-      if (recentExpenses.length >= 3) {
-        const trend = recentExpenses[0] - recentExpenses[2]; // Tendance sur 3 mois
-        const trendPercentage = Math.abs(trend) / Math.max(avgRecentExpenses, 1);
-        
-        // Si la tendance est significative (>10%), l'appliquer
-        if (trendPercentage > 0.1) {
-          seasonalAdjustment = 1 + (trend / avgRecentExpenses) * 0.3; // Limiter l'impact
-        }
-      }
-      
-      // Analyse détaillée par catégorie
-      const categoryAnalysis = Object.entries(data).map(([category, arr]) => {
-        // Calculer les dépenses par catégorie pour les 3 derniers mois
-        const categoryExpenses = [0, 1, 2].map(i => {
-          const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-          const monthIndex = months.findIndex((_, idx) => {
-            const monthDate2 = new Date();
-            monthDate2.setMonth(monthDate2.getMonth() - (months.length - 1 - idx));
-            return monthDate2.getMonth() === monthDate.getMonth() && 
-                   monthDate2.getFullYear() === monthDate.getFullYear();
-          });
-          
-          // Transactions individuelles pour cette catégorie
-          const individualExpenses = expenses
-            .filter(e => {
-              const date = parseDate(e.date);
-              return e.category === category && 
-                     date.getMonth() === monthDate.getMonth() && 
-                     date.getFullYear() === monthDate.getFullYear();
-            })
-            .reduce((sum, e) => sum + (e.amount || 0), 0);
-          
-          // Si pas de transactions individuelles, utiliser les données par catégorie
-          if (individualExpenses === 0) {
-            return arr[monthIndex] || 0;
-          }
-          
-          return individualExpenses;
-        });
-
-        // Calculer la tendance pour cette catégorie
-        const categoryTrend = categoryExpenses[0] - categoryExpenses[2];
-        const categoryAvg = categoryExpenses.reduce((sum, val, index) => {
-          const weights = [0.5, 0.3, 0.2];
-          return sum + (val * weights[index]);
-        }, 0);
-        
-        // Prévision pour cette catégorie
-        const plannedCategory = arr[nextMonthIdx] || 0;
-        const forecastCategory = Math.max(plannedCategory, categoryAvg * (1 + (categoryTrend / Math.max(categoryAvg, 1)) * 0.2));
-        
-        return {
-          category,
-          planned: plannedCategory,
-          forecast: forecastCategory,
-          trend: categoryTrend,
-          volatility: Math.abs(categoryTrend) / Math.max(categoryAvg, 1)
-        };
-      });
-      
-      // Calculer les dépenses totales basées sur l'analyse par catégorie
-      const categoryBasedForecast = categoryAnalysis.reduce((sum, cat) => sum + cat.forecast, 0);
-      
-      // Combiner les différentes approches
-      const intelligentExpenses = Math.max(
-        plannedExpenses, 
-        avgRecentExpenses * seasonalAdjustment,
-        categoryBasedForecast
-      );
-      
-      console.log('Prévisions dépenses détaillées:', {
-        planned: plannedExpenses,
-        recentExpenses,
-        avgRecent: avgRecentExpenses,
-        seasonalAdjustment,
-        categoryAnalysis,
-        categoryBasedForecast,
-        intelligent: intelligentExpenses
-      });
-      
-      return intelligentExpenses;
+      return avgRecentExpenses;
     };
     
     const forecastIncome = calculateIncomeForecast();
@@ -607,7 +462,7 @@ const Home = () => {
       }, 0);
       
       // Prévision pour cette catégorie
-      const plannedCategory = arr[nextMonthIdx] || 0;
+      const plannedCategory = arr[nextMonthIndex] || 0;
       const forecastCategory = Math.max(plannedCategory, categoryAvg * (1 + (categoryTrend / Math.max(categoryAvg, 1)) * 0.2));
       
       return {
@@ -738,19 +593,12 @@ const Home = () => {
     labels: Object.keys(data),
     datasets: [{
       data: Object.entries(data).map(([category, arr]) => {
-        // Pour chaque catégorie, calculer le total des transactions individuelles + données par catégorie
+        // Pour chaque catégorie, calculer le total des transactions individuelles du mois sélectionné
         const individualTransactions = expenses
           .filter(e => e.category === category && isDateInSelectedMonth(e.date))
           .reduce((sum, e) => sum + (e.amount || 0), 0);
         
-        const categoryData = arr[selectedMonthIdx] || 0;
-        
-        // Si il y a des transactions individuelles, les prioriser
-        if (individualTransactions > 0) {
-          return individualTransactions;
-        }
-        
-        return categoryData;
+        return individualTransactions;
       }),
       backgroundColor: [
         '#FF6384',

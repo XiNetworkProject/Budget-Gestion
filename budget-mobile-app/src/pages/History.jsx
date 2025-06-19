@@ -36,33 +36,19 @@ const History = () => {
     return date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
   };
 
-  // Calculer les vraies données du mois sélectionné
-  const selectedMonthIdx = months.length - 1; // Dernier mois par défaut
-
-  // Revenus du mois sélectionné
-  const selectedMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[selectedMonthIdx] || 0), 0);
+  // Calculer les vraies données du mois sélectionné - SIMPLIFIÉ
+  // Revenus du mois sélectionné - SEULEMENT LES TRANSACTIONS INDIVIDUELLES
   const selectedMonthIncomeTransactions = incomeTransactions
     .filter(t => isDateInSelectedMonth(t.date))
     .reduce((sum, t) => sum + (t.amount || 0), 0);
-  const totalIncome = selectedMonthIncomeByType + selectedMonthIncomeTransactions;
+  const totalIncome = selectedMonthIncomeTransactions;
 
-  // Dépenses du mois sélectionné
+  // Dépenses du mois sélectionné - SEULEMENT LES TRANSACTIONS INDIVIDUELLES
   const selectedMonthExpenses = expenses
     .filter(e => isDateInSelectedMonth(e.date))
     .reduce((sum, e) => sum + (e.amount || 0), 0);
   
-  const selectedMonthExpensesByCategory = Object.entries(data).reduce((sum, [category, arr]) => {
-    const hasIndividualTransactions = expenses.some(e => 
-      e.category === category && isDateInSelectedMonth(e.date)
-    );
-    
-    if (!hasIndividualTransactions) {
-      return sum + (arr[selectedMonthIdx] || 0);
-    }
-    return sum;
-  }, 0);
-  
-  const totalExpenses = selectedMonthExpenses + selectedMonthExpensesByCategory;
+  const totalExpenses = selectedMonthExpenses;
 
   // Économies du mois sélectionné
   const totalSavings = totalIncome - totalExpenses;
