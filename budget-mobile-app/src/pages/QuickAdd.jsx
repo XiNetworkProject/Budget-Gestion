@@ -19,7 +19,7 @@ import {
   InputAdornment,
   Chip
 } from '@mui/material';
-import { Close, Add, Remove } from '@mui/icons-material';
+import { Close, Add, Remove, CalendarToday } from '@mui/icons-material';
 
 const QuickAdd = () => {
   const { 
@@ -43,6 +43,7 @@ const QuickAdd = () => {
   const [incomeType, setIncomeType] = useState(availableIncomeTypes[0] || '');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]); // Date au format YYYY-MM-DD
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const amountRef = useRef();
@@ -54,6 +55,7 @@ const QuickAdd = () => {
       setIncomeType(availableIncomeTypes[0] || '');
       setAmount('');
       setDescription('');
+      setSelectedDate(new Date().toISOString().split('T')[0]);
       setTimeout(() => {
         amountRef.current?.focus();
       }, 300);
@@ -68,8 +70,8 @@ const QuickAdd = () => {
       const expense = {
         category: category,
         amount: val,
-        date: new Date().toISOString(),
-        description: description || `${category} - ${new Date().toLocaleDateString('fr-FR')}`
+        date: selectedDate,
+        description: description || `${category} - ${new Date(selectedDate).toLocaleDateString('fr-FR')}`
       };
       addExpense(expense);
       setSuccessMessage('Dépense ajoutée !');
@@ -78,8 +80,8 @@ const QuickAdd = () => {
       const income = {
         type: incomeType,
         amount: val,
-        date: new Date().toISOString(),
-        description: description || `${incomeType} - ${new Date().toLocaleDateString('fr-FR')}`
+        date: selectedDate,
+        description: description || `${incomeType} - ${new Date(selectedDate).toLocaleDateString('fr-FR')}`
       };
       addIncome(income);
       setSuccessMessage('Revenu ajouté !');
@@ -217,6 +219,24 @@ const QuickAdd = () => {
               inputRef={amountRef}
               InputProps={{
                 startAdornment: <InputAdornment position="start">€</InputAdornment>,
+              }}
+            />
+
+            {/* Date */}
+            <TextField
+              fullWidth
+              type="date"
+              label="Date"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              onKeyPress={handleKeyPress}
+              InputProps={{
+                startAdornment: <InputAdornment position="start">
+                  <CalendarToday fontSize="small" />
+                </InputAdornment>,
+              }}
+              inputProps={{
+                max: new Date().toISOString().split('T')[0] // Pas de dates futures
               }}
             />
 

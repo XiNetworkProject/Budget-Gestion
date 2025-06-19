@@ -281,13 +281,14 @@ const useStore = create(
           // Créer une date cohérente
           let expenseDate;
           if (expense.date && !isNaN(new Date(expense.date).getTime())) {
-            // Si une date est fournie, s'assurer qu'elle est au début du jour
+            // Si une date est fournie, l'utiliser directement
             const date = new Date(expense.date);
-            expenseDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).toISOString();
+            // S'assurer que la date est au début du jour dans le fuseau horaire local
+            expenseDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0).toISOString();
           } else {
             // Sinon, utiliser la date actuelle au début du jour
             const now = new Date();
-            expenseDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+            expenseDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0).toISOString();
           }
           
           const newExpense = {
@@ -303,7 +304,8 @@ const useStore = create(
             date: newExpense.date,
             parsedDate: new Date(newExpense.date).toISOString(),
             month: new Date(newExpense.date).getMonth(),
-            year: new Date(newExpense.date).getFullYear()
+            year: new Date(newExpense.date).getFullYear(),
+            originalDate: expense.date
           });
           
           const updatedExpenses = [...state.expenses, newExpense];
@@ -352,13 +354,14 @@ const useStore = create(
           // Créer une date cohérente
           let incomeDate;
           if (income.date && !isNaN(new Date(income.date).getTime())) {
-            // Si une date est fournie, s'assurer qu'elle est au début du jour
+            // Si une date est fournie, l'utiliser directement
             const date = new Date(income.date);
-            incomeDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).toISOString();
+            // S'assurer que la date est au début du jour dans le fuseau horaire local
+            incomeDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0).toISOString();
           } else {
             // Sinon, utiliser la date actuelle au début du jour
             const now = new Date();
-            incomeDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+            incomeDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 12, 0, 0).toISOString();
           }
           
           const newIncome = {
@@ -374,7 +377,8 @@ const useStore = create(
             date: newIncome.date,
             parsedDate: new Date(newIncome.date).toISOString(),
             month: new Date(newIncome.date).getMonth(),
-            year: new Date(newIncome.date).getFullYear()
+            year: new Date(newIncome.date).getFullYear(),
+            originalDate: income.date
           });
           
           const updatedIncomeTransactions = [...state.incomeTransactions, newIncome];

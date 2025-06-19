@@ -196,7 +196,8 @@ const Home = () => {
     }
     
     // Normaliser la date au début du jour pour éviter les problèmes de fuseau horaire
-    const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    // Utiliser 12h00 pour éviter les problèmes de décalage horaire
+    const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
     
     // Vérifier que la date n'est pas dans le futur (plus de 1 an)
     const now = new Date();
