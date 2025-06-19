@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { GoogleLogin } from '@react-oauth/google';
 import { useStore } from '../store';
 import { jwtDecode } from 'jwt-decode';
@@ -6,24 +6,42 @@ import { jwtDecode } from 'jwt-decode';
 const Login = () => {
   const { setUser, setToken, onboardingCompleted } = useStore();
 
+  // Nettoyer les erreurs de console au chargement
+  useEffect(() => {
+    // Supprimer les erreurs de tracking Google
+    const originalError = console.error;
+    console.error = (...args) => {
+      const message = args.join(' ');
+      if (!message.includes('play.google.com/log') && !message.includes('ERR_BLOCKED_BY_CLIENT')) {
+        originalError.apply(console, args);
+      }
+    };
+
+    return () => {
+      console.error = originalError;
+    };
+  }, []);
+
   const handleSuccess = (credentialResponse) => {
-    const token = credentialResponse.credential;
-    const decoded = jwtDecode(token);
-    setToken(token);
-    setUser({
-      id: decoded.sub,
-      email: decoded.email,
-      name: decoded.name,
-      picture: decoded.picture
-    });
-    
-    // Pas besoin de navigate() car l'App.jsx gère automatiquement l'affichage
-    // basé sur isAuthenticated dans le store
-    console.log('Connexion réussie, redirection automatique...');
+    try {
+      const token = credentialResponse.credential;
+      const decoded = jwtDecode(token);
+      setToken(token);
+      setUser({
+        id: decoded.sub,
+        email: decoded.email,
+        name: decoded.name,
+        picture: decoded.picture
+      });
+      
+      console.log('Connexion réussie, redirection automatique...');
+    } catch (error) {
+      console.error('Erreur lors du traitement de la connexion:', error);
+    }
   };
 
-  const handleError = () => {
-    console.error('Login Failed');
+  const handleError = (error) => {
+    console.error('Login Failed:', error);
   };
 
   // Détecter si on est dans une WebView mobile
@@ -40,10 +58,9 @@ const Login = () => {
         <GoogleLogin
           onSuccess={handleSuccess}
           onError={handleError}
-          useOneTap={!isMobileWebView()} // Désactiver OneTap dans WebView mobile
-          auto_select={isMobileWebView()} // Activer auto_select pour WebView
-          cancel_on_tap_outside={false} // Empêcher l'annulation
-          prompt_parent_id="google-login-container" // Container spécifique
+          useOneTap={false} // Désactiver OneTap pour éviter les problèmes
+          auto_select={false} // Désactiver auto_select
+          cancel_on_tap_outside={false}
           context="signin"
           type="standard"
           theme="filled_blue"
