@@ -292,7 +292,7 @@ const useStore = create(
               set({ incomeTypes: newIncomeTypes });
             }
             
-            // Mettre à jour les valeurs par mois
+            // Mettre à jour les valeurs par mois SEULEMENT si il n'y a pas déjà des données
             Object.keys(typeTotals[type]).forEach(monthKey => {
               const [year, month] = monthKey.split('-').map(Number);
               const monthDate = new Date(year, month);
@@ -303,7 +303,13 @@ const useStore = create(
               });
               
               if (monthIndex !== -1) {
-                newIncomes[type][monthIndex] = typeTotals[type][monthKey];
+                // Ne mettre à jour que si il n'y a pas déjà des données pour ce mois
+                // ou si les données existantes sont 0 (pas de saisie manuelle)
+                const existingValue = newIncomes[type][monthIndex] || 0;
+                if (existingValue === 0) {
+                  newIncomes[type][monthIndex] = typeTotals[type][monthKey];
+                }
+                // Si il y a déjà des données manuelles, ne pas les écraser
               }
             });
           });
@@ -433,10 +439,7 @@ const useStore = create(
           const updatedIncomeTransactions = [...state.incomeTransactions, newIncome];
           set({ incomeTransactions: updatedIncomeTransactions });
           
-          // Synchroniser avec les types de revenus après un délai
-          setTimeout(() => {
-            get().syncIncomesWithTypes();
-          }, 100);
+          // Ne pas synchroniser automatiquement pour éviter le double comptage
           
           scheduleSave();
         },
@@ -448,10 +451,7 @@ const useStore = create(
           );
           set({ incomeTransactions: updatedIncomeTransactions });
           
-          // Synchroniser avec les types de revenus après un délai
-          setTimeout(() => {
-            get().syncIncomesWithTypes();
-          }, 100);
+          // Ne pas synchroniser automatiquement pour éviter le double comptage
           
           scheduleSave();
         },
@@ -461,10 +461,7 @@ const useStore = create(
           const updatedIncomeTransactions = state.incomeTransactions.filter(inc => inc.id !== incomeId);
           set({ incomeTransactions: updatedIncomeTransactions });
           
-          // Synchroniser avec les types de revenus après un délai
-          setTimeout(() => {
-            get().syncIncomesWithTypes();
-          }, 100);
+          // Ne pas synchroniser automatiquement pour éviter le double comptage
           
           scheduleSave();
         },

@@ -214,31 +214,17 @@ const Income = () => {
     .filter(t => isDateInCurrentMonth(t.date))
     .reduce((sum, t) => sum + (t.amount || 0), 0);
   
-  // Calculer les revenus par type pour le mois actuel
+  // Calculer les revenus par type pour le mois actuel (seulement si pas de transactions individuelles)
   const currentMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
   
-  // Prioriser les transactions individuelles sur les données par type
-  const totalIncome = currentMonthIncomeTransactions + currentMonthIncomeByType;
+  // Prioriser les transactions individuelles, utiliser les données par type seulement si pas de transactions
+  const totalIncome = currentMonthIncomeTransactions > 0 ? currentMonthIncomeTransactions : currentMonthIncomeByType;
   const monthlyIncome = totalIncome;
 
-  // Calculer les totaux par type en combinant transactions individuelles et données par type
+  // Calculer les totaux par type en priorisant les transactions individuelles
   const typeTotals = {};
-  Object.keys(incomes).forEach(type => {
-    // Calculer les transactions individuelles pour ce type ce mois
-    const typeTransactions = incomeTransactions
-      .filter(t => t.type === type && isDateInCurrentMonth(t.date))
-      .reduce((sum, t) => sum + (t.amount || 0), 0);
-    
-    // Si il y a des transactions individuelles, les prioriser
-    if (typeTransactions > 0) {
-      typeTotals[type] = typeTransactions;
-    } else {
-      // Sinon utiliser les données par type
-      typeTotals[type] = incomes[type][idx] || 0;
-    }
-  });
-
-  // Ajouter les types qui n'existent que dans les transactions
+  
+  // D'abord, traiter les transactions individuelles
   incomeTransactions
     .filter(t => isDateInCurrentMonth(t.date))
     .forEach(t => {
@@ -247,6 +233,13 @@ const Income = () => {
       }
       typeTotals[t.type] += t.amount || 0;
     });
+  
+  // Ensuite, ajouter les données par type seulement pour les types qui n'ont pas de transactions individuelles
+  Object.keys(incomes).forEach(type => {
+    if (!typeTotals[type] || typeTotals[type] === 0) {
+      typeTotals[type] = incomes[type][idx] || 0;
+    }
+  });
 
   const doughnutData = {
     labels: Object.keys(typeTotals),
@@ -276,9 +269,6 @@ const Income = () => {
         const targetDate = new Date();
         targetDate.setMonth(targetDate.getMonth() - (5 - i));
         
-        // Calculer les revenus par type pour ce mois
-        const monthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[monthIndex] || 0), 0);
-        
         // Calculer les transactions individuelles pour ce mois
         const monthIncomeTransactions = incomeTransactions
           .filter(t => {
@@ -288,7 +278,11 @@ const Income = () => {
           })
           .reduce((sum, t) => sum + (t.amount || 0), 0);
         
-        return monthIncomeByType + monthIncomeTransactions;
+        // Calculer les revenus par type pour ce mois (seulement si pas de transactions individuelles)
+        const monthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[monthIndex] || 0), 0);
+        
+        // Prioriser les transactions individuelles
+        return monthIncomeTransactions > 0 ? monthIncomeTransactions : monthIncomeByType;
       }),
       borderColor: 'rgba(76, 175, 80, 1)',
       backgroundColor: 'rgba(76, 175, 80, 0.1)',
