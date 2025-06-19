@@ -18,8 +18,13 @@ app.use((req, res, next) => {
   next();
 });
 
-// Configuration CORS
-app.use(cors());
+// Configuration CORS améliorée pour WebViews mobiles
+app.use(cors({
+  origin: ['https://budget-mobile-app-pa2n.onrender.com', 'https://budget-mobile-app-pa2n.onrender.com:3000', 'https://budget-mobile-app-pa2n.onrender.com/app'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
+}));
 
 // Middleware pour parser le JSON
 app.use(express.json());
