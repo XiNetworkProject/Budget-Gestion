@@ -92,17 +92,17 @@ const Analytics = () => {
   const filteredExpenses = expenses.filter(e => !activeAccount || e.accountId === activeAccount?.id);
   const filteredSavings = savings.filter(s => !activeAccount || s.accountId === activeAccount?.id);
 
-  // Calculer les revenus du mois sélectionné (transactions + revenus par type)
+  // Calculer les revenus du mois sélectionné (transactions + revenus par type) - TEMPORAIREMENT TOUS LES REVENUS
   const selectedMonthIncomeTransactions = filteredIncomeTransactions
-    .filter(t => isDateInSelectedMonth(t.date))
+    // .filter(t => isDateInSelectedMonth(t.date)) // TEMPORAIREMENT DÉSACTIVÉ
     .reduce((sum, t) => sum + (t.amount || 0), 0);
 
   const selectedMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
   const currentRevenue = selectedMonthIncomeTransactions + selectedMonthIncomeByType;
 
-  // Calculer les dépenses du mois sélectionné (transactions + dépenses par catégorie)
+  // Calculer les dépenses du mois sélectionné (transactions + dépenses par catégorie) - TEMPORAIREMENT TOUTES LES DÉPENSES
   const selectedMonthExpenses = filteredExpenses
-    .filter(e => isDateInSelectedMonth(e.date))
+    // .filter(e => isDateInSelectedMonth(e.date)) // TEMPORAIREMENT DÉSACTIVÉ
     .reduce((sum, e) => sum + (e.amount || 0), 0);
 
   const selectedMonthExpensesByCategory = Object.values(data).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
@@ -152,10 +152,10 @@ const Analytics = () => {
   // Économies par mois (revenus - dépenses)
   const savingsByMonth = revenuesByMonth.map((revenue, i) => revenue - expensesByMonth[i]);
 
-  // Catégories de dépenses pour le mois sélectionné
+  // Catégories de dépenses pour le mois sélectionné - TEMPORAIREMENT TOUTES LES DÉPENSES
   const expenseByCategory = categories.map(cat => {
     const categoryExpenses = filteredExpenses
-      .filter(e => e.category === cat && isDateInSelectedMonth(e.date))
+      .filter(e => e.category === cat) // && isDateInSelectedMonth(e.date) // TEMPORAIREMENT DÉSACTIVÉ
       .reduce((sum, e) => sum + (e.amount || 0), 0);
     
     const categoryData = data[cat] ? data[cat][idx] || 0 : 0;

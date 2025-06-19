@@ -214,9 +214,9 @@ const Income = () => {
     }
   };
 
-  // Calculer les revenus du mois sélectionné basés sur les transactions individuelles
+  // Calculer les revenus du mois sélectionné basés sur les transactions individuelles - TEMPORAIREMENT TOUS LES REVENUS
   const selectedMonthIncomeTransactions = incomeTransactions
-    .filter(t => isDateInSelectedMonth(t.date))
+    // .filter(t => isDateInSelectedMonth(t.date)) // TEMPORAIREMENT DÉSACTIVÉ
     .reduce((sum, t) => sum + (t.amount || 0), 0);
   
   // Calculer les revenus par type pour le mois sélectionné (seulement si pas de transactions individuelles)
@@ -231,7 +231,7 @@ const Income = () => {
   
   // D'abord, traiter les transactions individuelles
   incomeTransactions
-    .filter(t => isDateInSelectedMonth(t.date))
+    // .filter(t => isDateInSelectedMonth(t.date)) // TEMPORAIREMENT DÉSACTIVÉ
     .forEach(t => {
       if (!typeTotals[t.type]) {
         typeTotals[t.type] = 0;

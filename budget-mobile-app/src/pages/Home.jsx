@@ -259,24 +259,24 @@ const Home = () => {
     }
   };
 
-  // Calculer les revenus du mois sélectionné
+  // Calculer les revenus du mois sélectionné - TEMPORAIREMENT TOUS LES REVENUS
   const selectedMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[selectedMonthIdx] || 0), 0);
   const selectedMonthIncomeTransactions = incomeTransactions
-    .filter(t => isDateInSelectedMonth(t.date))
+    // .filter(t => isDateInSelectedMonth(t.date)) // TEMPORAIREMENT DÉSACTIVÉ
     .reduce((sum, t) => sum + (t.amount || 0), 0);
   const selectedMonthIncome = selectedMonthIncomeByType + selectedMonthIncomeTransactions;
 
-  // Calculer les dépenses du mois sélectionné
+  // Calculer les dépenses du mois sélectionné - TEMPORAIREMENT TOUTES LES DÉPENSES
   // Prioriser les transactions individuelles (expenses) sur les données par catégorie (data)
   const selectedMonthExpenses = expenses
-    .filter(e => isDateInSelectedMonth(e.date))
+    // .filter(e => isDateInSelectedMonth(e.date)) // TEMPORAIREMENT DÉSACTIVÉ
     .reduce((sum, e) => sum + (e.amount || 0), 0);
   
   // Pour les catégories qui n'ont pas de transactions individuelles, utiliser les données par catégorie
   const selectedMonthExpensesByCategory = Object.entries(data).reduce((sum, [category, arr]) => {
     // Vérifier si cette catégorie a des transactions individuelles pour ce mois
     const hasIndividualTransactions = expenses.some(e => 
-      e.category === category && isDateInSelectedMonth(e.date)
+      e.category === category // && isDateInSelectedMonth(e.date) // TEMPORAIREMENT DÉSACTIVÉ
     );
     
     // Si pas de transactions individuelles, utiliser la valeur par catégorie
@@ -740,7 +740,7 @@ const Home = () => {
       data: Object.entries(data).map(([category, arr]) => {
         // Pour chaque catégorie, calculer le total des transactions individuelles + données par catégorie
         const individualTransactions = expenses
-          .filter(e => e.category === category && isDateInSelectedMonth(e.date))
+          .filter(e => e.category === category) // && isDateInSelectedMonth(e.date) // TEMPORAIREMENT DÉSACTIVÉ
           .reduce((sum, e) => sum + (e.amount || 0), 0);
         
         const categoryData = arr[selectedMonthIdx] || 0;
@@ -795,10 +795,10 @@ const Home = () => {
     }
   };
 
-  // Transactions récentes réelles (revenus et dépenses)
+  // Transactions récentes réelles (revenus et dépenses) - TEMPORAIREMENT SANS FILTRAGE
   const allTransactions = [
     ...incomeTransactions
-      .filter(t => isDateInSelectedMonth(t.date))
+      // .filter(t => isDateInSelectedMonth(t.date)) // TEMPORAIREMENT DÉSACTIVÉ
       .map(t => ({
         ...t,
         type: 'income',
@@ -807,7 +807,7 @@ const Home = () => {
         date: parseDate(t.date)
       })),
     ...expenses
-      .filter(e => isDateInSelectedMonth(e.date))
+      // .filter(e => isDateInSelectedMonth(e.date)) // TEMPORAIREMENT DÉSACTIVÉ
       .map(t => ({
         ...t,
         type: 'expense',

@@ -67,10 +67,10 @@ const History = () => {
   // Économies du mois sélectionné
   const totalSavings = totalIncome - totalExpenses;
 
-  // Fusionner et trier toutes les transactions
+  // Fusionner et trier toutes les transactions - TEMPORAIREMENT SANS FILTRAGE
   const allTransactions = [
     ...incomeTransactions
-      .filter(t => isDateInSelectedMonth(t.date))
+      // .filter(t => isDateInSelectedMonth(t.date)) // TEMPORAIREMENT DÉSACTIVÉ
       .map(t => ({
         ...t,
         type: 'income',
@@ -80,7 +80,7 @@ const History = () => {
         amount: t.amount
       })),
     ...expenses
-      .filter(e => isDateInSelectedMonth(e.date))
+      // .filter(e => isDateInSelectedMonth(e.date)) // TEMPORAIREMENT DÉSACTIVÉ
       .map(t => ({
         ...t,
         type: 'expense',

@@ -191,15 +191,15 @@ const Expenses = () => {
     setSnack({ open: true, message: 'Dépense supprimée', severity: 'info' });
   };
 
-  // Calculs pour les graphiques
+  // Calculs pour les graphiques - TEMPORAIREMENT TOUTES LES DÉPENSES
   const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
   const monthlyExpenses = expenses
-    .filter(exp => isDateInSelectedMonth(exp.date))
+    // .filter(exp => isDateInSelectedMonth(exp.date)) // TEMPORAIREMENT DÉSACTIVÉ
     .reduce((sum, exp) => sum + exp.amount, 0);
 
   const categoryTotals = {};
   expenses
-    .filter(exp => isDateInSelectedMonth(exp.date))
+    // .filter(exp => isDateInSelectedMonth(exp.date)) // TEMPORAIREMENT DÉSACTIVÉ
     .forEach(exp => {
       categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount;
     });
