@@ -1,6 +1,11 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { 
+  ThemeProvider, 
+  createTheme, 
+  CssBaseline
+} from '@mui/material';
 import Splash from './components/Splash';
 import Login from './components/Login';
 import Onboarding from './pages/Onboarding';
@@ -48,35 +53,95 @@ function OnboardingGuard({ children }) {
   return children;
 }
 
-export default function AppRoutes() {
+// Composant pour gérer le thème basé sur les paramètres
+function ThemedAppRoutes() {
+  const { appSettings } = useStore();
+  
+  console.log('ThemedAppRoutes: appSettings reçues:', appSettings);
+
+  // Créer le thème basé sur les paramètres
+  const theme = createTheme({
+    palette: {
+      mode: appSettings.theme || 'light',
+      primary: {
+        main: '#2563eb',
+      },
+      secondary: {
+        main: '#7c3aed',
+      },
+      background: {
+        default: appSettings.theme === 'dark' ? '#0f172a' : '#f8fafc',
+        paper: appSettings.theme === 'dark' ? '#1e293b' : '#ffffff',
+      },
+    },
+    spacing: appSettings.display?.compactMode ? 1 : 2,
+    typography: {
+      fontSize: appSettings.display?.compactMode ? 14 : 16,
+      fontFamily: "'Poppins', sans-serif",
+      fontWeightLight: 300,
+      fontWeightRegular: 400,
+      fontWeightBold: 700,
+    },
+    components: {
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            borderRadius: appSettings.display?.compactMode ? 4 : 8,
+          },
+        },
+      },
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            borderRadius: appSettings.display?.compactMode ? 4 : 8,
+          },
+        },
+      },
+    },
+  });
+
+  console.log('ThemedAppRoutes: Thème créé:', {
+    mode: theme.palette.mode,
+    spacing: theme.spacing(1),
+    fontSize: theme.typography.fontSize,
+    compactMode: appSettings.display?.compactMode
+  });
+
   return (
-    <BrowserRouter
-      future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true
-      }}
-    >
-      <Routes>
-        <Route path="/" element={<SplashRedirect />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route element={
-          <OnboardingGuard>
-            <Layout />
-          </OnboardingGuard>
-        }>
-          <Route path="/home" element={<Home />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/expenses" element={<Expenses />} />
-          <Route path="/income" element={<Income />} />
-          <Route path="/savings" element={<Savings />} />
-          <Route path="/debts" element={<Debts />} />
-          <Route path="/action-plans" element={<ActionPlans />} />
-          <Route path="*" element={<Navigate to="/home" replace />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
+        <Routes>
+          <Route path="/" element={<SplashRedirect />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/onboarding" element={<Onboarding />} />
+          <Route element={
+            <OnboardingGuard>
+              <Layout />
+            </OnboardingGuard>
+          }>
+            <Route path="/home" element={<Home />} />
+            <Route path="/analytics" element={<Analytics />} />
+            <Route path="/history" element={<History />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/expenses" element={<Expenses />} />
+            <Route path="/income" element={<Income />} />
+            <Route path="/savings" element={<Savings />} />
+            <Route path="/debts" element={<Debts />} />
+            <Route path="/action-plans" element={<ActionPlans />} />
+            <Route path="*" element={<Navigate to="/home" replace />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   );
+}
+
+export default function AppRoutes() {
+  return <ThemedAppRoutes />;
 } 
