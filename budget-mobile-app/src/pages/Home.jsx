@@ -1450,136 +1450,168 @@ const Home = () => {
       </Grid>
 
       {/* Prévisions intelligentes */}
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <AccountBalance sx={{ mr: 1, color: 'warning.main' }} />
-          <Typography variant="h6">
-            {t('home.intelligentForecasts')} {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
-          </Typography>
-          <Chip 
-            label={t('home.ai')} 
-            size="small" 
-            color="warning" 
-            variant="outlined"
-            sx={{ ml: 1 }}
-          />
-        </Box>
-        
-        <Alert severity="info" sx={{ mb: 2 }}>
-          <AlertTitle>{t('home.intelligentCalculation')}</AlertTitle>
-          {t('home.intelligentCalculationDescription')}
-        </Alert>
-        
-        <Grid container spacing={2} sx={{ mb: 2 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'success.light', borderRadius: 2 }}>
-              <Typography variant="h6" color="success.dark">
-                {t('home.forecastedIncome')}
-              </Typography>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.dark' }}>
-                {forecast.income.toLocaleString()}€
-              </Typography>
-              <Typography variant="body2" color="success.dark" sx={{ mt: 1 }}>
-                {forecast.incomeTrend > 0 ? '📈 +' : forecast.incomeTrend < 0 ? '📉 ' : '➡️ '}
-                {Math.abs(forecast.incomeTrend).toLocaleString()}€ {t('home.vsThisMonth')}
-              </Typography>
-              <Typography variant="caption" color="success.dark" sx={{ display: 'block', mt: 0.5 }}>
-                {t('home.confidence')}: {Math.round(forecast.incomeConfidence * 100)}%
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'error.light', borderRadius: 2 }}>
-              <Typography variant="h6" color="error.dark">
-                Dépenses prévues
-              </Typography>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'error.dark' }}>
-                {forecast.expenses.toLocaleString()}€
-              </Typography>
-              <Typography variant="body2" color="error.dark" sx={{ mt: 1 }}>
-                {forecast.expenseTrend > 0 ? '📈 +' : forecast.expenseTrend < 0 ? '📉 ' : '➡️ '}
-                {Math.abs(forecast.expenseTrend).toLocaleString()}€ vs ce mois
-              </Typography>
-              <Typography variant="caption" color="error.dark" sx={{ display: 'block', mt: 0.5 }}>
-                Confiance: {Math.round(forecast.expenseConfidence * 100)}%
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'primary.light', borderRadius: 2 }}>
-              <Typography variant="h6" color="primary.dark">
-                Économies prévues
-              </Typography>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.dark' }}>
-                {forecast.balance.toLocaleString()}€
-              </Typography>
-              <Typography variant="body2" color="primary.dark" sx={{ mt: 1 }}>
-                {forecast.balance > 0 ? '✅ Prévision positive' : '⚠️ Attention nécessaire'}
-              </Typography>
-              <Typography variant="caption" color="primary.dark" sx={{ display: 'block', mt: 0.5 }}>
-                Inclut les tendances saisonnières
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'warning.light', borderRadius: 2 }}>
-              <Typography variant="h6" color="warning.dark">
-                Taux d'épargne
-              </Typography>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'warning.dark' }}>
-                {forecast.income > 0 ? Math.round((forecast.balance / forecast.income) * 100) : 0}%
-              </Typography>
-              <Typography variant="body2" color="warning.dark" sx={{ mt: 1 }}>
-                Objectif recommandé: 20%
-              </Typography>
-              <Typography variant="caption" color="warning.dark" sx={{ display: 'block', mt: 0.5 }}>
-                Basé sur les prévisions IA
-              </Typography>
-            </Box>
-          </Grid>
-        </Grid>
-        
-        {/* Détails du calcul amélioré */}
-        <Collapse in={true}>
-          <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-            <Typography variant="subtitle2" gutterBottom>
-              🧠 Détails du calcul intelligent:
+      {isFeatureAvailable('aiAnalysis') && (
+        <Paper sx={{ p: 2, mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <AccountBalance sx={{ mr: 1, color: 'warning.main' }} />
+            <Typography variant="h6">
+              Prévisions intelligentes {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
             </Typography>
-            <Grid container spacing={1}>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">
-                  • Revenus: Moyenne pondérée des 3 derniers mois + ajustement tendance
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">
-                  • Dépenses: Analyse des tendances + ajustements saisonniers
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">
-                  • Pondération: 50% mois récent, 30% avant-dernier, 20% troisième
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">
-                  • Précision: Améliore avec plus de données historiques
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">
-                  • Volatilité: Mesure de la stabilité des données
-                </Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2" color="text.secondary">
-                  • Confiance: Indicateur de fiabilité des prévisions
-                </Typography>
-              </Grid>
-            </Grid>
+            <Chip 
+              label="IA" 
+              size="small" 
+              color="warning" 
+              variant="outlined"
+              sx={{ ml: 1 }}
+            />
           </Box>
-        </Collapse>
-      </Paper>
+          
+          <Alert severity="info" sx={{ mb: 2 }}>
+            <AlertTitle>Calcul intelligent</AlertTitle>
+            Ces prévisions utilisent l'IA pour analyser vos tendances et prédire vos finances du mois prochain.
+          </Alert>
+          
+          <Grid container spacing={2} sx={{ mb: 2 }}>
+            <Grid item xs={12} sm={6} md={3}>
+              <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'success.light', borderRadius: 2 }}>
+                <Typography variant="h6" color="success.dark">
+                  Revenus prévus
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.dark' }}>
+                  {forecast.income.toLocaleString()}€
+                </Typography>
+                <Typography variant="body2" color="success.dark" sx={{ mt: 1 }}>
+                  {forecast.incomeTrend > 0 ? '📈 +' : forecast.incomeTrend < 0 ? '📉 ' : '➡️ '}
+                  {Math.abs(forecast.incomeTrend).toLocaleString()}€ vs ce mois
+                </Typography>
+                <Typography variant="caption" color="success.dark" sx={{ display: 'block', mt: 0.5 }}>
+                  Confiance: {Math.round(forecast.incomeConfidence * 100)}%
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'error.light', borderRadius: 2 }}>
+                <Typography variant="h6" color="error.dark">
+                  Dépenses prévues
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'error.dark' }}>
+                  {forecast.expenses.toLocaleString()}€
+                </Typography>
+                <Typography variant="body2" color="error.dark" sx={{ mt: 1 }}>
+                  {forecast.expenseTrend > 0 ? '📈 +' : forecast.expenseTrend < 0 ? '📉 ' : '➡️ '}
+                  {Math.abs(forecast.expenseTrend).toLocaleString()}€ vs ce mois
+                </Typography>
+                <Typography variant="caption" color="error.dark" sx={{ display: 'block', mt: 0.5 }}>
+                  Confiance: {Math.round(forecast.expenseConfidence * 100)}%
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'primary.light', borderRadius: 2 }}>
+                <Typography variant="h6" color="primary.dark">
+                  Économies prévues
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.dark' }}>
+                  {forecast.balance.toLocaleString()}€
+                </Typography>
+                <Typography variant="body2" color="primary.dark" sx={{ mt: 1 }}>
+                  {forecast.balance > 0 ? '✅ Prévision positive' : '⚠️ Attention nécessaire'}
+                </Typography>
+                <Typography variant="caption" color="primary.dark" sx={{ display: 'block', mt: 0.5 }}>
+                  Inclut les tendances saisonnières
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+              <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'warning.light', borderRadius: 2 }}>
+                <Typography variant="h6" color="warning.dark">
+                  Taux d'épargne
+                </Typography>
+                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'warning.dark' }}>
+                  {forecast.income > 0 ? Math.round((forecast.balance / forecast.income) * 100) : 0}%
+                </Typography>
+                <Typography variant="body2" color="warning.dark" sx={{ mt: 1 }}>
+                  Objectif recommandé: 20%
+                </Typography>
+                <Typography variant="caption" color="warning.dark" sx={{ display: 'block', mt: 0.5 }}>
+                  Basé sur les prévisions IA
+                </Typography>
+              </Box>
+            </Grid>
+          </Grid>
+          
+          {/* Détails du calcul amélioré */}
+          <Collapse in={true}>
+            <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+              <Typography variant="subtitle2" gutterBottom>
+                🧠 Détails du calcul intelligent:
+              </Typography>
+              <Grid container spacing={1}>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    • Revenus: Moyenne pondérée des 3 derniers mois + ajustement tendance
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    • Dépenses: Analyse des tendances + ajustements saisonniers
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    • Pondération: 50% mois récent, 30% avant-dernier, 20% troisième
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    • Précision: Améliore avec plus de données historiques
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    • Volatilité: Mesure de la stabilité des données
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    • Confiance: Indicateur de fiabilité des prévisions
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Box>
+          </Collapse>
+        </Paper>
+      )}
+
+      {/* Message pour les utilisateurs gratuits - Prévisions intelligentes */}
+      {!isFeatureAvailable('aiAnalysis') && (
+        <Paper sx={{ p: 2, mb: 3, bgcolor: 'warning.light' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <AccountBalance sx={{ mr: 1, color: 'warning.main' }} />
+            <Typography variant="h6">
+              Débloquez les prévisions intelligentes
+            </Typography>
+            <Chip 
+              label="Premium" 
+              size="small" 
+              color="warning" 
+              variant="outlined"
+              sx={{ ml: 1 }}
+            />
+          </Box>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            Accédez aux prévisions IA du mois prochain basées sur l'analyse de vos tendances et données historiques.
+          </Typography>
+          <Button 
+            variant="contained" 
+            color="warning"
+            onClick={() => navigate('/subscription')}
+            startIcon={<AccountBalance />}
+          >
+            Passer à Premium
+          </Button>
+        </Paper>
+      )}
 
       {/* Recommandations intelligentes */}
       {isFeatureAvailable('aiAnalysis') && (
@@ -1587,17 +1619,17 @@ const Home = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Lightbulb sx={{ mr: 1, color: 'info.main' }} />
             <Typography variant="h6">
-              {t('home.intelligentRecommendations')}
+              Recommandations intelligentes
             </Typography>
             <Chip 
-              label={t('home.ai')} 
+              label="IA" 
               size="small" 
               color="info" 
               variant="outlined"
               sx={{ ml: 1 }}
             />
             <Chip 
-              label={`${recommendations.length} ${t('home.tips')}`}
+              label={`${recommendations.length} conseils`}
               size="small" 
               color="secondary" 
               variant="outlined"
@@ -1629,8 +1661,8 @@ const Home = () => {
             >
               <AlertTitle sx={{ display: 'flex', alignItems: 'center' }}>
                 {rec.title}
-                {rec.priority === 'high' && <Chip label={t('home.priority')} size="small" color="error" sx={{ ml: 1, height: 20 }} />}
-                {rec.priority === 'medium' && <Chip label={t('home.important')} size="small" color="warning" sx={{ ml: 1, height: 20 }} />}
+                {rec.priority === 'high' && <Chip label="Priorité" size="small" color="error" sx={{ ml: 1, height: 20 }} />}
+                {rec.priority === 'medium' && <Chip label="Important" size="small" color="warning" sx={{ ml: 1, height: 20 }} />}
               </AlertTitle>
               <Typography variant="body2">
                 {rec.message}
@@ -1640,42 +1672,29 @@ const Home = () => {
               {rec.suggestedPlan && (
                 <Box sx={{ mt: 1, p: 1, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 1 }}>
                   <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                    💡 {t('home.suggestedPlan')} : {rec.suggestedPlan.title}
+                    💡 Plan suggéré : {rec.suggestedPlan.title}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {rec.suggestedPlan.description}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
                     <Chip 
-                      label={`${t('home.objective')}: ${rec.suggestedPlan.targetAmount}€`}
-                      size="small"
+                      label={`Économie: ${rec.suggestedPlan.savings}€/mois`}
+                      size="small" 
+                      color="success"
                       variant="outlined"
                     />
                     <Chip 
-                      label={rec.suggestedPlan.category}
-                      size="small"
+                      label={`Effort: ${rec.suggestedPlan.effort}`}
+                      size="small" 
+                      color="info"
                       variant="outlined"
                     />
                   </Box>
                 </Box>
               )}
-              
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                💡 {t('home.clickToAct')}
-              </Typography>
             </Alert>
           ))}
-          
-          {recommendations.length === 0 && (
-            <Box sx={{ textAlign: 'center', py: 3 }}>
-              <Typography variant="body1" color="text.secondary">
-                {t('home.noRecommendations')}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {t('home.continueAddingTransactions')}
-              </Typography>
-            </Box>
-          )}
         </Paper>
       )}
 
@@ -1685,10 +1704,10 @@ const Home = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Lightbulb sx={{ mr: 1, color: 'info.main' }} />
             <Typography variant="h6">
-              {t('home.upgradeForAI')}
+              Débloquez l'IA pour des analyses intelligentes
             </Typography>
             <Chip 
-              label={t('home.premium')} 
+              label="Premium" 
               size="small" 
               color="primary" 
               variant="outlined"
@@ -1696,7 +1715,7 @@ const Home = () => {
             />
           </Box>
           <Typography variant="body2" sx={{ mb: 2 }}>
-            {t('home.aiFeaturesDescription')}
+            Accédez aux analyses prédictives, recommandations personnalisées et prévisions intelligentes pour optimiser votre budget.
           </Typography>
           <Button 
             variant="contained" 
@@ -1704,7 +1723,7 @@ const Home = () => {
             onClick={() => navigate('/subscription')}
             startIcon={<Star />}
           >
-            {t('home.upgradeNow')}
+            Passer à Premium
           </Button>
         </Paper>
       )}
@@ -1715,17 +1734,17 @@ const Home = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Analytics sx={{ mr: 1, color: 'secondary.main' }} />
             <Typography variant="h6">
-              {t('home.categoryAnalysis')}
+              Analyse des dépenses par catégorie
             </Typography>
             <Chip 
-              label={t('home.intelligent')} 
+              label="Intelligent" 
               size="small" 
               color="secondary" 
               variant="outlined"
               sx={{ ml: 1 }}
             />
             <Chip 
-              label={`${categoryForecastAnalysis.length} ${t('home.categories')}`}
+              label={`${categoryForecastAnalysis.length} catégories`}
               size="small" 
               color="info" 
               variant="outlined"
@@ -1759,7 +1778,7 @@ const Home = () => {
                         zIndex: 1
                       }}>
                         <Chip 
-                          label={t('home.important')} 
+                          label="Important" 
                           size="small" 
                           color={cat.statusColor}
                           sx={{ height: 20, fontSize: '0.7rem' }}
@@ -1781,7 +1800,7 @@ const Home = () => {
                       {/* Montant actuel */}
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant="body2" color="text.secondary">
-                          {t('home.thisMonth')}:
+                          Ce mois:
                         </Typography>
                         <Typography variant="body2" fontWeight="bold">
                           {(cat.current || 0).toLocaleString()}€
@@ -1791,7 +1810,7 @@ const Home = () => {
                       {/* Pourcentage du budget */}
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant="body2" color="text.secondary">
-                          {t('home.budgetPercentage')}:
+                          % du budget:
                         </Typography>
                         <Typography variant="body2" fontWeight="bold" color={(cat.budgetPercentage || 0) > 30 ? 'error.main' : 'text.primary'}>
                           {Math.round(cat.budgetPercentage || 0)}%
@@ -1801,7 +1820,7 @@ const Home = () => {
                       {/* Prévision */}
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant="body2" color="text.secondary">
-                          {t('home.forecast')}:
+                          Prévision:
                         </Typography>
                         <Typography variant="body2" fontWeight="bold" color="warning.main">
                           {(cat.forecast || 0).toLocaleString()}€
@@ -1811,7 +1830,7 @@ const Home = () => {
                       {/* Changement prévu */}
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                         <Typography variant="body2" color="text.secondary">
-                          {t('home.change')}:
+                          Changement:
                         </Typography>
                         <Typography variant="body2" fontWeight="bold" color={cat.trend > 0 ? 'error.main' : 'success.main'}>
                           {cat.trend > 0 ? '+' : ''}{(cat.trend || 0).toLocaleString()}€
@@ -1840,10 +1859,10 @@ const Home = () => {
           ) : (
             <Box sx={{ textAlign: 'center', py: 3 }}>
               <Typography variant="body1" color="text.secondary">
-                {t('home.noCategoryData')}
+                Aucune donnée de catégorie disponible
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {t('home.addExpensesToSeeAnalysis')}
+                Ajoutez des dépenses pour voir l'analyse
               </Typography>
             </Box>
           )}
@@ -1856,10 +1875,10 @@ const Home = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Analytics sx={{ mr: 1, color: 'secondary.main' }} />
             <Typography variant="h6">
-              {t('home.upgradeForAnalytics')}
+              Débloquez les analyses avancées
             </Typography>
             <Chip 
-              label={t('home.premium')} 
+              label="Premium" 
               size="small" 
               color="secondary" 
               variant="outlined"
@@ -1867,7 +1886,7 @@ const Home = () => {
             />
           </Box>
           <Typography variant="body2" sx={{ mb: 2 }}>
-            {t('home.analyticsFeaturesDescription')}
+            Accédez aux analyses détaillées par catégorie, prévisions intelligentes et recommandations personnalisées.
           </Typography>
           <Button 
             variant="contained" 
@@ -1875,7 +1894,7 @@ const Home = () => {
             onClick={() => navigate('/subscription')}
             startIcon={<Analytics />}
           >
-            {t('home.upgradeNow')}
+            Passer à Premium
           </Button>
         </Paper>
       )}

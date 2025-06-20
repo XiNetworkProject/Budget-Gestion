@@ -321,10 +321,10 @@ const Analytics = () => {
         <Box sx={{ textAlign: 'center', py: 8 }}>
           <Analytics sx={{ fontSize: 64, color: 'secondary.main', mb: 2 }} />
           <Typography variant="h4" sx={{ mb: 2, fontWeight: 'bold' }}>
-            {t('analytics.upgradeRequired')}
+            Mise à niveau requise
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
-            {t('analytics.upgradeDescription')}
+            Accédez aux analyses détaillées, graphiques interactifs et insights personnalisés pour mieux comprendre vos finances.
           </Typography>
           <Button 
             variant="contained" 
@@ -334,10 +334,10 @@ const Analytics = () => {
             startIcon={<Analytics />}
             sx={{ mb: 2 }}
           >
-            {t('analytics.upgradeNow')}
+            Passer à Premium
           </Button>
           <Typography variant="body2" color="text.secondary">
-            {t('analytics.currentPlan')}: {getSubscriptionText()}
+            Plan actuel: {getSubscriptionText()}
           </Typography>
         </Box>
       ) : (
@@ -345,29 +345,29 @@ const Analytics = () => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
             <Box>
               <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                {t('analytics.title')}
+                Analyses et Statistiques
               </Typography>
               {activeAccount && (
                 <Typography variant="body2" color="text.secondary" component="span">
-                  {t('analytics.account')} {activeAccount.name}
+                  Compte: {activeAccount.name}
                 </Typography>
               )}
             </Box>
             <Box sx={{ display: 'flex', gap: 1 }}>
               <FormControl size="small" sx={{ minWidth: 120 }}>
-                <InputLabel>{t('analytics.period')}</InputLabel>
+                <InputLabel>Période</InputLabel>
                 <Select
                   value={timeFilter}
-                  label={t('analytics.period')}
+                  label="Période"
                   onChange={(e) => setTimeFilter(e.target.value)}
                 >
-                  <MenuItem value="week">{t('analytics.week')}</MenuItem>
-                  <MenuItem value="month">{t('analytics.month')}</MenuItem>
-                  <MenuItem value="quarter">{t('analytics.quarter')}</MenuItem>
-                  <MenuItem value="year">{t('analytics.year')}</MenuItem>
+                  <MenuItem value="week">Semaine</MenuItem>
+                  <MenuItem value="month">Mois</MenuItem>
+                  <MenuItem value="quarter">Trimestre</MenuItem>
+                  <MenuItem value="year">Année</MenuItem>
                 </Select>
               </FormControl>
-              <Tooltip title={`${t('subscription.currentPlan')}: ${getSubscriptionText()}`}>
+              <Tooltip title={`Plan actuel: ${getSubscriptionText()}`}>
                 <IconButton
                   onClick={() => navigate('/subscription')}
                   sx={{
@@ -382,7 +382,7 @@ const Analytics = () => {
                   {getSubscriptionIcon()}
                 </IconButton>
               </Tooltip>
-              <Tooltip title={t('analytics.refresh')}>
+              <Tooltip title="Actualiser">
                 <IconButton>
                   <Refresh />
                 </IconButton>
@@ -398,13 +398,13 @@ const Analytics = () => {
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                       <AccountBalance sx={{ mr: 1 }} />
-                      <Typography variant="h6">{t('analytics.revenues')}</Typography>
+                      <Typography variant="h6">Revenus</Typography>
                     </Box>
                     <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                       {currentRevenue.toLocaleString()}€
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                      {t('analytics.thisMonth')}
+                      Ce mois
                     </Typography>
                   </CardContent>
                 </Card>
@@ -417,13 +417,13 @@ const Analytics = () => {
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                       <TrendingDown sx={{ mr: 1 }} />
-                      <Typography variant="h6">{t('analytics.expenses')}</Typography>
+                      <Typography variant="h6">Dépenses</Typography>
                     </Box>
                     <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                       {totalExpenses.toLocaleString()}€
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                      {expenseRate}% {t('analytics.ofRevenue')}
+                      {expenseRate}% des revenus
                     </Typography>
                   </CardContent>
                 </Card>
@@ -436,13 +436,13 @@ const Analytics = () => {
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                       <Savings sx={{ mr: 1 }} />
-                      <Typography variant="h6">{t('analytics.savings')}</Typography>
+                      <Typography variant="h6">Économies</Typography>
                     </Box>
                     <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                       {currentSavings.toLocaleString()}€
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                      {savingsRate}% {t('analytics.ofRevenue')}
+                      Taux: {savingsRate}%
                     </Typography>
                   </CardContent>
                 </Card>
