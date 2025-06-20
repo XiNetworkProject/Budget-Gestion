@@ -32,6 +32,16 @@ const Layout = () => {
   const [value, setValue] = useState(paths.indexOf(location.pathname) !== -1 ? paths.indexOf(location.pathname) : 0);
   const [showTutorial, setShowTutorial] = useState(false);
 
+  // Log des états initiaux
+  useEffect(() => {
+    console.log('Layout: États initiaux:', {
+      tutorialCompleted,
+      onboardingCompleted,
+      forceTutorial,
+      showUpdateDialog
+    });
+  }, []);
+
   // Nettoyer les dates invalides et synchroniser les dépenses au chargement
   useEffect(() => {
     validateAndCleanDates();
@@ -40,7 +50,15 @@ const Layout = () => {
 
   // Vérifier les mises à jour au chargement
   useEffect(() => {
-    checkForUpdates();
+    // Ne vérifier les mises à jour qu'au premier chargement de l'application
+    const hasCheckedUpdates = sessionStorage.getItem('hasCheckedUpdates');
+    if (!hasCheckedUpdates) {
+      console.log('Layout: Premier chargement, vérification des mises à jour');
+      checkForUpdates();
+      sessionStorage.setItem('hasCheckedUpdates', 'true');
+    } else {
+      console.log('Layout: Mises à jour déjà vérifiées dans cette session');
+    }
   }, [checkForUpdates]);
 
   const handleChange = (event, newValue) => {
@@ -51,6 +69,12 @@ const Layout = () => {
 
   // Gestion du tutoriel - ne se lance qu'une seule fois après l'onboarding
   useEffect(() => {
+    console.log('Layout: État des conditions tutoriel:', { 
+      onboardingCompleted, 
+      tutorialCompleted, 
+      forceTutorial 
+    });
+    
     // Le tutoriel ne se lance que si :
     // 1. L'onboarding est terminé
     // 2. Le tutoriel n'a pas encore été complété
@@ -70,6 +94,8 @@ const Layout = () => {
         }
       }, 3000);
       return () => clearTimeout(timer);
+    } else {
+      console.log('Layout: Conditions tutoriel non remplies, pas de lancement');
     }
   }, [onboardingCompleted, tutorialCompleted, forceTutorial, clearForceTutorial]);
 

@@ -205,8 +205,11 @@ const useStore = create(
           const currentVersion = "2.1.0";
           const lastShown = state.lastUpdateShown;
           
+          console.log('CheckForUpdates:', { currentVersion, lastShown, showUpdateDialog: state.showUpdateDialog });
+          
           // Vérifier si c'est la première fois ou si la version a changé
           if (!lastShown || lastShown.version !== currentVersion) {
+            console.log('Nouvelle version détectée, affichage du dialog');
             set({ 
               showUpdateDialog: true,
               lastUpdateShown: {
@@ -215,8 +218,9 @@ const useStore = create(
               }
             });
           } else {
-            // Si la version est la même mais qu'on veut forcer l'affichage
-            set({ showUpdateDialog: true });
+            console.log('Version déjà affichée, pas d\'affichage automatique');
+            // Ne pas afficher si la version a déjà été montrée
+            set({ showUpdateDialog: false });
           }
         },
 
@@ -231,6 +235,18 @@ const useStore = create(
             showUpdateDialog: true,
             lastUpdateShown: null // Réinitialiser pour forcer l'affichage
           });
+        },
+
+        // Fonction pour réinitialiser les états d'onboarding et tutoriel
+        resetOnboardingStates: () => {
+          console.log('Reset des états d\'onboarding et tutoriel');
+          set({ 
+            onboardingCompleted: false,
+            tutorialCompleted: false,
+            forceTutorial: false,
+            lastUpdateShown: null
+          });
+          scheduleSave();
         },
 
         // Fonction pour valider et nettoyer les dates
