@@ -118,7 +118,11 @@ const useStore = create(
               userProfile: state.userProfile,
               appSettings: state.appSettings,
               accounts: state.accounts,
-              activeAccount: state.activeAccount
+              activeAccount: state.activeAccount,
+              tutorialCompleted: state.tutorialCompleted,
+              onboardingCompleted: state.onboardingCompleted,
+              lastUpdateShown: state.lastUpdateShown,
+              appVersion: state.appVersion
             });
             
             // Afficher un message différent selon le type de sauvegarde
@@ -128,7 +132,7 @@ const useStore = create(
               // Ne pas afficher de toast pour les sauvegardes locales silencieuses
             } else {
               console.log('Sauvegarde serveur réussie');
-            toast.success('Données sauvegardées');
+              toast.success('Données sauvegardées');
               set({ serverConnected: true }); // Marquer comme connecté
             }
           } catch (error) {
@@ -189,6 +193,11 @@ const useStore = create(
         appVersion: "2.1.0",
         lastUpdateShown: null,
         showUpdateDialog: false,
+
+        // Gestion du tutoriel et onboarding
+        tutorialCompleted: false,
+        onboardingCompleted: false,
+        forceTutorial: false,
 
         // Fonction pour vérifier et afficher les mises à jour
         checkForUpdates: () => {
@@ -890,7 +899,11 @@ const useStore = create(
               bankAccounts: [],
               transactions: [],
               userProfile: state.userProfile,
-              appSettings: state.appSettings
+              appSettings: state.appSettings,
+              tutorialCompleted: false,
+              onboardingCompleted: false,
+              lastUpdateShown: null,
+              appVersion: "2.1.0"
             };
             
             // Sauvegarder de manière synchrone pour s'assurer que c'est fait
@@ -937,10 +950,6 @@ const useStore = create(
           scheduleSave();
         },
 
-        // Gestion du tutoriel et onboarding
-        tutorialCompleted: false,
-        onboardingCompleted: false,
-        forceTutorial: false,
         setTutorialCompleted: (completed) => {
           console.log('Tutoriel: setTutorialCompleted appelé avec', completed);
           set({ tutorialCompleted: completed });
@@ -1004,6 +1013,9 @@ const useStore = create(
                   transactions: data.transactions || [],
                   userProfile: data.userProfile || defaultUserProfile,
                   appSettings: data.appSettings || defaultAppSettings,
+                  tutorialCompleted: data.tutorialCompleted || false,
+                  onboardingCompleted: data.onboardingCompleted || false,
+                  lastUpdateShown: data.lastUpdateShown || null,
                   isLoading: false
                 });
               } else {
@@ -1026,7 +1038,11 @@ const useStore = create(
                   bankAccounts: [],
                   transactions: [],
                   userProfile: { ...defaultUserProfile, email: user.email },
-                  appSettings: defaultAppSettings
+                  appSettings: defaultAppSettings,
+                  tutorialCompleted: false,
+                  onboardingCompleted: false,
+                  lastUpdateShown: null,
+                  appVersion: "2.1.0"
                 };
                 set({ ...defaultBudget, isLoading: false });
                 await budgetService.saveBudget(user.id, defaultBudget);
@@ -1115,7 +1131,9 @@ const useStore = create(
         selectedYear: state.selectedYear,
         tutorialCompleted: state.tutorialCompleted,
         onboardingCompleted: state.onboardingCompleted,
-        forceTutorial: state.forceTutorial
+        forceTutorial: state.forceTutorial,
+        lastUpdateShown: state.lastUpdateShown,
+        appVersion: state.appVersion
       })
     }
   )
