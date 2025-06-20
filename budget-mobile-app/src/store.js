@@ -120,9 +120,9 @@ const specialAccessEmails = [
 
 // Codes promo pour les tests
 const promoCodes = {
-  'DEV2024': { discount: 100, type: 'percentage', validUntil: '2024-12-31' },
-  'TEST50': { discount: 50, type: 'percentage', validUntil: '2024-12-31' },
-  'FREEMONTH': { discount: 1, type: 'months', validUntil: '2024-12-31' }
+  'DEV2024': { discount: 100, type: 'percentage', validUntil: '2025-12-31' },
+  'TEST50': { discount: 50, type: 'percentage', validUntil: '2025-12-31' },
+  'FREEMONTH': { discount: 1, type: 'months', validUntil: '2025-12-31' }
 };
 
 // Profil utilisateur par défaut
