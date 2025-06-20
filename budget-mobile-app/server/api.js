@@ -34,60 +34,9 @@ const STRIPE_PLANS = {
   }
 };
 
-// Configuration Helmet avec CSP pour Stripe et Google
+// Configuration Helmet sans CSP restrictive pour tester Google Auth
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: [
-        "'self'",
-        "'unsafe-inline'",
-        "'unsafe-eval'",
-        "https://js.stripe.com",
-        "https://checkout.stripe.com",
-        "https://accounts.google.com",
-        "https://www.gstatic.com",
-        "https://www.googleapis.com",
-        "https://apis.google.com"
-      ],
-      styleSrc: [
-        "'self'",
-        "'unsafe-inline'",
-        "https://fonts.googleapis.com",
-        "https://www.gstatic.com",
-        "https://accounts.google.com"
-      ],
-      imgSrc: [
-        "'self'",
-        "data:",
-        "https:",
-        "https://js.stripe.com",
-        "https://checkout.stripe.com",
-        "https://accounts.google.com",
-        "https://www.gstatic.com"
-      ],
-      frameSrc: [
-        "'self'",
-        "https://js.stripe.com",
-        "https://checkout.stripe.com",
-        "https://accounts.google.com",
-        "https://www.gstatic.com"
-      ],
-      connectSrc: [
-        "'self'",
-        "https://api.stripe.com",
-        "https://checkout.stripe.com",
-        "https://accounts.google.com",
-        "https://www.googleapis.com",
-        "https://oauth2.googleapis.com"
-      ],
-      fontSrc: [
-        "'self'",
-        "https://fonts.gstatic.com",
-        "https://www.gstatic.com"
-      ]
-    }
-  }
+  contentSecurityPolicy: false
 }));
 
 // Log des requêtes entrantes
