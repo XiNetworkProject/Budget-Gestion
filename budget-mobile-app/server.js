@@ -22,7 +22,49 @@ const port = process.env.PORT || 10000;
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 
 // Middleware de sécurité
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        "'unsafe-eval'",
+        "https://accounts.google.com",
+        "https://js.stripe.com",
+        "https://checkout.stripe.com"
+      ],
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        "https://fonts.googleapis.com"
+      ],
+      fontSrc: [
+        "'self'",
+        "https://fonts.gstatic.com"
+      ],
+      imgSrc: [
+        "'self'",
+        "data:",
+        "https:"
+      ],
+      connectSrc: [
+        "'self'",
+        "https://accounts.google.com",
+        "https://api.stripe.com",
+        "https://checkout.stripe.com"
+      ],
+      frameSrc: [
+        "'self'",
+        "https://js.stripe.com",
+        "https://checkout.stripe.com",
+        "https://hooks.stripe.com"
+      ],
+      objectSrc: ["'none'"],
+      upgradeInsecureRequests: []
+    }
+  }
+}));
 app.use(compression());
 
 // Configuration CORS
