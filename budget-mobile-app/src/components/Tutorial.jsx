@@ -89,7 +89,7 @@ const tutorialSteps = [
     features: [
       'Accueil - Vue d\'ensemble',
       'Analytics - Graphiques et analyses',
-      'Ajouter - Transactions rapides',
+      'Plans d\'actions - Objectifs et suivi',
       'Épargne - Objectifs financiers',
       'Paramètres - Configuration'
     ]

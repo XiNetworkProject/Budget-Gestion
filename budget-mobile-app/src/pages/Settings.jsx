@@ -98,7 +98,9 @@ const Settings = () => {
     logout,
     clearAllData,
     resetToDefaults,
-    forceShowTutorial
+    forceShowTutorial,
+    appVersion,
+    checkForUpdates
   } = useStore();
 
   const [activeTab, setActiveTab] = useState(0);
@@ -198,9 +200,11 @@ const Settings = () => {
     forceShowTutorial();
     setSnack({ open: true, message: 'Tutoriel relancé ! Il se lancera automatiquement.', severity: 'success' });
     // Rediriger vers la page d'accueil pour déclencher le tutoriel
-    setTimeout(() => {
-      window.location.href = '/home';
-    }, 1000);
+  };
+
+  const handleShowUpdates = () => {
+    checkForUpdates();
+    setSnack({ open: true, message: 'Dialog de mise à jour relancé !', severity: 'success' });
   };
 
   const languages = [
@@ -711,8 +715,11 @@ const Settings = () => {
                 </ListItemIcon>
                 <ListItemText 
                   primary="Version de l'application" 
-                  secondary="Budget Gestion v1.0.0"
+                  secondary={`Budget Gestion v${appVersion}`}
                 />
+                <Button variant="outlined" size="small" onClick={handleShowUpdates}>
+                  Voir les nouveautés
+                </Button>
               </ListItem>
               <Divider />
               <ListItem>

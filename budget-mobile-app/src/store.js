@@ -185,6 +185,45 @@ const useStore = create(
         selectedMonth: new Date().getMonth(), // Mois actuel par défaut
         selectedYear: new Date().getFullYear(), // Année actuelle par défaut
 
+        // Gestion des mises à jour
+        appVersion: "2.1.0",
+        lastUpdateShown: null,
+        showUpdateDialog: false,
+
+        // Fonction pour vérifier et afficher les mises à jour
+        checkForUpdates: () => {
+          const state = get();
+          const currentVersion = "2.1.0";
+          const lastShown = state.lastUpdateShown;
+          
+          // Vérifier si c'est la première fois ou si la version a changé
+          if (!lastShown || lastShown.version !== currentVersion) {
+            set({ 
+              showUpdateDialog: true,
+              lastUpdateShown: {
+                version: currentVersion,
+                date: new Date().toISOString()
+              }
+            });
+          } else {
+            // Si la version est la même mais qu'on veut forcer l'affichage
+            set({ showUpdateDialog: true });
+          }
+        },
+
+        // Fonction pour fermer le dialog de mise à jour
+        closeUpdateDialog: () => {
+          set({ showUpdateDialog: false });
+        },
+
+        // Fonction pour forcer l'affichage du dialog de mise à jour (pour les tests)
+        forceShowUpdateDialog: () => {
+          set({ 
+            showUpdateDialog: true,
+            lastUpdateShown: null // Réinitialiser pour forcer l'affichage
+          });
+        },
+
         // Fonction pour valider et nettoyer les dates
         validateAndCleanDates: () => {
           const state = get();

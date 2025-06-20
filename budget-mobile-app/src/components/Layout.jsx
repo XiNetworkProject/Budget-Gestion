@@ -6,6 +6,7 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SavingsIcon from '@mui/icons-material/Savings';
 import Tutorial from './Tutorial';
+import UpdateDialog from './UpdateDialog';
 import QuickAdd from '../pages/QuickAdd';
 import { useStore } from '../store';
 import toast from 'react-hot-toast';
@@ -20,7 +21,10 @@ const Layout = () => {
     setTutorialCompleted,
     clearForceTutorial,
     validateAndCleanDates,
-    syncExpensesWithCategories
+    syncExpensesWithCategories,
+    showUpdateDialog,
+    closeUpdateDialog,
+    checkForUpdates
   } = useStore();
   
   // map path to nav value (retiré /quickadd)
@@ -33,6 +37,11 @@ const Layout = () => {
     validateAndCleanDates();
     syncExpensesWithCategories();
   }, [validateAndCleanDates, syncExpensesWithCategories]);
+
+  // Vérifier les mises à jour au chargement
+  useEffect(() => {
+    checkForUpdates();
+  }, [checkForUpdates]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -74,6 +83,11 @@ const Layout = () => {
           setShowTutorial(false);
           toast.success('Tutoriel terminé ! Vous pouvez le relancer depuis les paramètres.');
         }}
+      />
+
+      <UpdateDialog 
+        open={showUpdateDialog}
+        onClose={closeUpdateDialog}
       />
 
       <AppBar position="static">
