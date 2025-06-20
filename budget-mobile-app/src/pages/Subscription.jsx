@@ -58,7 +58,8 @@ const Subscription = () => {
     specialAccessEmails,
     user,
     updateSubscription,
-    hasSpecialAccess
+    hasSpecialAccess,
+    getCurrentPlan
   } = useStore();
 
   const [showCancelDialog, setShowCancelDialog] = useState(false);
@@ -66,7 +67,7 @@ const Subscription = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
 
-  const currentPlan = getCurrentPlan();
+  const currentPlan = getCurrentPlan() || subscriptionPlans.FREE;
   const isSpecialAccess = hasSpecialAccess();
 
   // Calculer l'utilisation actuelle
@@ -102,7 +103,7 @@ const Subscription = () => {
       setIsProcessing(true);
       
       // Si on passe d'un plan payant au gratuit, annuler l'abonnement
-      if (currentPlan.price > 0 && selectedPlan === 'FREE') {
+      if (currentPlan && currentPlan.price > 0 && selectedPlan === 'FREE') {
         // Ici tu devrais appeler l'API pour annuler l'abonnement Stripe
         await stripeService.cancelSubscription('current_subscription_id');
       }
@@ -196,9 +197,9 @@ const Subscription = () => {
   };
 
   const renderPlanCard = (planKey, plan) => {
-    const isCurrentPlan = currentPlan.id === plan.id;
-    const isUpgrade = plan.price > currentPlan.price;
-    const isDowngrade = plan.price < currentPlan.price;
+    const isCurrentPlan = currentPlan && currentPlan.id === plan.id;
+    const isUpgrade = currentPlan && plan.price > currentPlan.price;
+    const isDowngrade = currentPlan && plan.price < currentPlan.price;
     const isFreePlan = plan.price === 0;
 
     return (
