@@ -298,7 +298,7 @@ const Subscription = () => {
                 startIcon={isUpgrade ? (isProcessing ? <CircularProgress size={20} /> : <Payment />) : <Edit />}
                 disabled={isProcessing}
               >
-                {isProcessing ? t('subscription.processing') : (isUpgrade ? t('subscription.upgrade') : t('subscription.downgrade'))}
+                {isProcessing ? t('subscription.processing') : (isUpgrade ? t('subscription.upgrade', { plan: t(plan.name) }) : t('subscription.downgrade', { plan: t(plan.name) }))}
               </Button>
             )}
           </CardActions>

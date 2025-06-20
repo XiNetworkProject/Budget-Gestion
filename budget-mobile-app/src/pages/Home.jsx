@@ -462,14 +462,14 @@ const Home = () => {
     if (savingsRate < 10) {
       recommendations.push({
         type: 'warning',
-        title: t('lowSavingsRate'),
-        message: t('lowSavingsRateMessage', { savingsRate: Math.round(savingsRate) }),
+        title: t('ai.lowSavingsRate'),
+        message: t('ai.lowSavingsRateMessage', { savingsRate: Math.round(savingsRate) }),
         action: t('createSavingsPlan'),
         actionType: 'create_savings_plan',
         priority: 'high',
         suggestedPlan: {
-          title: t('emergencySavingsPlan'),
-          description: t('emergencySavingsPlanDescription'),
+          title: t('ai.emergencySavingsPlan'),
+          description: t('ai.emergencySavingsPlanDescription'),
           category: 'Épargne',
           targetAmount: Math.round(selectedMonthExpense * 3),
           priority: 'high'
