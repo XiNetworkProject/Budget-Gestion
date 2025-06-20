@@ -478,14 +478,14 @@ const Home = () => {
     } else if (savingsRate > 30) {
       recommendations.push({
         type: 'success',
-        title: t('excellentSavingsRate'),
-        message: t('excellentSavingsRateMessage', { savingsRate: Math.round(savingsRate) }),
+        title: t('ai.excellentSavingsRate'),
+        message: t('ai.excellentSavingsRateMessage', { savingsRate: Math.round(savingsRate) }),
         action: t('optimizeInvestment'),
         actionType: 'optimize_investment',
         priority: 'low',
         suggestedPlan: {
-          title: t('investmentPlan'),
-          description: t('diversifyInvestments'),
+          title: t('ai.investmentPlan'),
+          description: t('ai.diversifyInvestments'),
           category: 'Investissement',
           targetAmount: Math.round(forecast.balance * 0.5),
           priority: 'medium'
@@ -531,14 +531,14 @@ const Home = () => {
     if (incomeChange < -15) {
       recommendations.push({
         type: 'warning',
-        title: t('expectedIncomeDecrease'),
-        message: t('expectedIncomeDecreaseMessage', { decrease: Math.round(Math.abs(incomeChange)) }),
+        title: t('ai.expectedIncomeDecrease'),
+        message: t('ai.expectedIncomeDecreaseMessage', { decrease: Math.round(Math.abs(incomeChange)) }),
         action: t('prepareContingencyPlan'),
         actionType: 'prepare_contingency_plan',
         priority: 'high',
         suggestedPlan: {
-          title: t('financialContingencyPlan'),
-          description: t('financialContingencyPlanDescription'),
+          title: t('ai.financialContingencyPlan'),
+          description: t('ai.financialContingencyPlanDescription'),
           category: 'Budget',
           targetAmount: Math.round(currentMonthIncome * (Math.abs(incomeChange) / 100)),
           priority: 'high'
