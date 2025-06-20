@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
-import { Box, BottomNavigation, BottomNavigationAction, Chip, Tooltip } from '@mui/material';
-import { Home as HomeIcon, BarChart as BarChartIcon, Savings as SavingsIcon, Settings as SettingsIcon, Star as StarIcon, Diamond as DiamondIcon } from '@mui/icons-material';
+import { Box, Chip, Tooltip } from '@mui/material';
+import { Star as StarIcon, Diamond as DiamondIcon } from '@mui/icons-material';
 import Tutorial from './Tutorial';
 import UpdateDialog from './UpdateDialog';
 import BottomTabs from './BottomTabs';
@@ -11,7 +11,6 @@ import toast from 'react-hot-toast';
 
 const Layout = () => {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const location = useLocation();
   const { 
     tutorialCompleted, 
@@ -36,9 +35,6 @@ const Layout = () => {
     getCurrentPlan
   } = useStore();
   
-  // map path to nav value (retiré /quickadd)
-  const paths = ['/home', '/analytics', '/savings', '/settings'];
-  const [value, setValue] = useState(paths.indexOf(location.pathname) !== -1 ? paths.indexOf(location.pathname) : 0);
   const [showTutorial, setShowTutorial] = useState(false);
 
   // Log des états initiaux
@@ -79,36 +75,6 @@ const Layout = () => {
     }
   }, [checkForUpdates]);
 
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-    const path = paths[newValue];
-    navigate(path);
-  };
-
-  // Fonction pour obtenir l'icône d'abonnement
-  const getSubscriptionIcon = () => {
-    const currentPlan = getCurrentPlan();
-    
-    if (currentPlan.id === 'premium') {
-      return <StarIcon sx={{ color: '#FFD700' }} />;
-    } else if (currentPlan.id === 'pro') {
-      return <DiamondIcon sx={{ color: '#00D4FF' }} />;
-    }
-    return null;
-  };
-
-  // Fonction pour obtenir le texte de l'abonnement
-  const getSubscriptionText = () => {
-    const currentPlan = getCurrentPlan();
-    
-    if (currentPlan.id === 'premium') {
-      return t('subscription.premium');
-    } else if (currentPlan.id === 'pro') {
-      return t('subscription.pro');
-    }
-    return '';
-  };
-
   // Gestion du tutoriel - ne se lance qu'une seule fois après l'onboarding
   useEffect(() => {
     console.log('Layout: État des conditions tutoriel:', { 
@@ -141,8 +107,32 @@ const Layout = () => {
     }
   }, [onboardingCompleted, tutorialCompleted, forceTutorial, clearForceTutorial]);
 
+  // Fonction pour obtenir l'icône d'abonnement
+  const getSubscriptionIcon = () => {
+    const currentPlan = getCurrentPlan();
+    
+    if (currentPlan.id === 'premium') {
+      return <StarIcon sx={{ color: '#FFD700' }} />;
+    } else if (currentPlan.id === 'pro') {
+      return <DiamondIcon sx={{ color: '#00D4FF' }} />;
+    }
+    return null;
+  };
+
+  // Fonction pour obtenir le texte de l'abonnement
+  const getSubscriptionText = () => {
+    const currentPlan = getCurrentPlan();
+    
+    if (currentPlan.id === 'premium') {
+      return t('subscription.premium');
+    } else if (currentPlan.id === 'pro') {
+      return t('subscription.pro');
+    }
+    return '';
+  };
+
   return (
-    <Box sx={{ pb: 7 }}>
+    <Box>
       <Tutorial 
         open={showTutorial}
         onClose={() => setShowTutorial(false)}
@@ -162,17 +152,7 @@ const Layout = () => {
         <Outlet />
       </Box>
 
-      <BottomNavigation
-        value={value}
-        onChange={handleChange}
-        showLabels
-        sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }}
-      >
-        <BottomNavigationAction label={t('navigation.home')} icon={<HomeIcon />} />
-        <BottomNavigationAction label={t('navigation.analytics')} icon={<BarChartIcon />} />
-        <BottomNavigationAction label={t('navigation.savings')} icon={<SavingsIcon />} />
-        <BottomNavigationAction label={t('navigation.settings')} icon={<SettingsIcon />} />
-      </BottomNavigation>
+      <BottomTabs />
 
       {/* Indicateur d'abonnement discret */}
       {getSubscriptionIcon() && (
