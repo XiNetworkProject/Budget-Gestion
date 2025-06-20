@@ -315,7 +315,7 @@ const Analytics = () => {
   };
 
   return (
-    <Box sx={{ p: 2, pb: 10 }}>
+    <Box sx={{ p: 2 }}>
       {/* Vérifier l'accès aux analytics */}
       {!isFeatureAvailable('basicAnalytics') ? (
         <Box sx={{ textAlign: 'center', py: 8 }}>

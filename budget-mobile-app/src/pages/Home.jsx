@@ -1062,7 +1062,7 @@ const Home = () => {
   };
 
   return (
-    <Box sx={{ p: 2, pb: 10 }}>
+    <Box sx={{ p: 2 }}>
       {/* Styles CSS pour l'animation pulse */}
       <style>
         {`

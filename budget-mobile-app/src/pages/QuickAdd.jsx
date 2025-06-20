@@ -145,7 +145,7 @@ const QuickAdd = () => {
   };
 
   return (
-    <Box sx={{ p: 2, pb: 10 }}>
+    <Box sx={{ p: 2 }}>
       <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
         {t('quickAdd.quickAddTitle')}
       </Typography>
