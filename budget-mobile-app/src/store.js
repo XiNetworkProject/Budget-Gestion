@@ -990,39 +990,11 @@ const useStore = create(
                   appSettings: defaultAppSettings
                 };
                 set({ ...defaultBudget, isLoading: false });
-                try {
-                  await budgetService.saveBudget(user.id, defaultBudget);
-                } catch (saveError) {
-                  console.warn('Erreur lors de la sauvegarde initiale, mais utilisateur connecté:', saveError);
-                  // L'utilisateur reste connecté même si la sauvegarde échoue
-                }
+                await budgetService.saveBudget(user.id, defaultBudget);
               }
             } catch (error) {
               console.error('Error loading budget:', error);
-              // En cas d'erreur, utiliser les données par défaut mais garder l'utilisateur connecté
-              set({
-                months: defaultMonths,
-                categories: defaultCategories,
-                data: defaultData,
-                revenus: defaultRevenus,
-                incomeTypes: defaultIncomeTypes,
-                incomes: defaultIncomes,
-                persons: defaultPersons,
-                saved: defaultSaved,
-                sideByMonth: defaultSideByMonth,
-                totalPotentialSavings: 0,
-                budgetLimits: defaultCategoryLimits,
-                expenses: [],
-                incomeTransactions: [],
-                savings: [],
-                debts: [],
-                bankAccounts: [],
-                transactions: [],
-                userProfile: { ...defaultUserProfile, email: user.email },
-                appSettings: defaultAppSettings,
-                isLoading: false,
-                error: null // Réinitialiser l'erreur
-              });
+              set({ error: error.message, isLoading: false });
             }
           }
         },
