@@ -31,31 +31,38 @@ app.use(helmet({
         "'unsafe-inline'",
         "'unsafe-eval'",
         "https://accounts.google.com",
+        "https://www.gstatic.com",
         "https://js.stripe.com",
         "https://checkout.stripe.com"
       ],
       styleSrc: [
         "'self'",
         "'unsafe-inline'",
-        "https://fonts.googleapis.com"
+        "https://fonts.googleapis.com",
+        "https://accounts.google.com"
       ],
       fontSrc: [
         "'self'",
-        "https://fonts.gstatic.com"
+        "https://fonts.gstatic.com",
+        "https://www.gstatic.com"
       ],
       imgSrc: [
         "'self'",
         "data:",
-        "https:"
+        "https:",
+        "https://accounts.google.com",
+        "https://www.gstatic.com"
       ],
       connectSrc: [
         "'self'",
         "https://accounts.google.com",
+        "https://www.googleapis.com",
         "https://api.stripe.com",
         "https://checkout.stripe.com"
       ],
       frameSrc: [
         "'self'",
+        "https://accounts.google.com",
         "https://js.stripe.com",
         "https://checkout.stripe.com",
         "https://hooks.stripe.com"
