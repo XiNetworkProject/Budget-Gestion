@@ -1589,10 +1589,10 @@ const Home = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <AccountBalance sx={{ mr: 1, color: 'warning.main' }} />
             <Typography variant="h6">
-              Débloquez les prévisions intelligentes
+              {t('home.upgradeForIntelligentForecasts')}
             </Typography>
             <Chip 
-              label="Premium" 
+              label={t('home.premium')} 
               size="small" 
               color="warning" 
               variant="outlined"
@@ -1600,7 +1600,7 @@ const Home = () => {
             />
           </Box>
           <Typography variant="body2" sx={{ mb: 2 }}>
-            Accédez aux prévisions IA du mois prochain basées sur l'analyse de vos tendances et données historiques.
+            {t('home.intelligentForecastsDescription')}
           </Typography>
           <Button 
             variant="contained" 
@@ -1608,7 +1608,7 @@ const Home = () => {
             onClick={() => navigate('/subscription')}
             startIcon={<AccountBalance />}
           >
-            Passer à Premium
+            {t('home.upgradeNow')}
           </Button>
         </Paper>
       )}
@@ -1704,10 +1704,10 @@ const Home = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Lightbulb sx={{ mr: 1, color: 'info.main' }} />
             <Typography variant="h6">
-              Débloquez l'IA pour des analyses intelligentes
+              {t('home.upgradeForAI')}
             </Typography>
             <Chip 
-              label="Premium" 
+              label={t('home.premium')} 
               size="small" 
               color="primary" 
               variant="outlined"
@@ -1715,7 +1715,7 @@ const Home = () => {
             />
           </Box>
           <Typography variant="body2" sx={{ mb: 2 }}>
-            Accédez aux analyses prédictives, recommandations personnalisées et prévisions intelligentes pour optimiser votre budget.
+            {t('home.aiFeaturesDescription')}
           </Typography>
           <Button 
             variant="contained" 
@@ -1723,7 +1723,7 @@ const Home = () => {
             onClick={() => navigate('/subscription')}
             startIcon={<Star />}
           >
-            Passer à Premium
+            {t('home.upgradeNow')}
           </Button>
         </Paper>
       )}
@@ -1734,17 +1734,17 @@ const Home = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Analytics sx={{ mr: 1, color: 'secondary.main' }} />
             <Typography variant="h6">
-              Analyse des dépenses par catégorie
+              {t('home.categoryAnalysis')}
             </Typography>
             <Chip 
-              label="Intelligent" 
+              label={t('home.intelligent')} 
               size="small" 
               color="secondary" 
               variant="outlined"
               sx={{ ml: 1 }}
             />
             <Chip 
-              label={`${categoryForecastAnalysis.length} catégories`}
+              label={`${categoryForecastAnalysis.length} ${t('home.categories')}`}
               size="small" 
               color="info" 
               variant="outlined"
@@ -1778,7 +1778,7 @@ const Home = () => {
                         zIndex: 1
                       }}>
                         <Chip 
-                          label="Important" 
+                          label={t('home.important')} 
                           size="small" 
                           color={cat.statusColor}
                           sx={{ height: 20, fontSize: '0.7rem' }}
@@ -1800,7 +1800,7 @@ const Home = () => {
                       {/* Montant actuel */}
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant="body2" color="text.secondary">
-                          Ce mois:
+                          {t('home.thisMonth')}:
                         </Typography>
                         <Typography variant="body2" fontWeight="bold">
                           {(cat.current || 0).toLocaleString()}€
@@ -1810,7 +1810,7 @@ const Home = () => {
                       {/* Pourcentage du budget */}
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant="body2" color="text.secondary">
-                          % du budget:
+                          {t('home.budgetPercentage')}:
                         </Typography>
                         <Typography variant="body2" fontWeight="bold" color={(cat.budgetPercentage || 0) > 30 ? 'error.main' : 'text.primary'}>
                           {Math.round(cat.budgetPercentage || 0)}%
@@ -1820,7 +1820,7 @@ const Home = () => {
                       {/* Prévision */}
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                         <Typography variant="body2" color="text.secondary">
-                          Prévision:
+                          {t('home.forecast')}:
                         </Typography>
                         <Typography variant="body2" fontWeight="bold" color="warning.main">
                           {(cat.forecast || 0).toLocaleString()}€
@@ -1859,10 +1859,10 @@ const Home = () => {
           ) : (
             <Box sx={{ textAlign: 'center', py: 3 }}>
               <Typography variant="body1" color="text.secondary">
-                Aucune donnée de catégorie disponible
+                {t('home.noCategoryData')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Ajoutez des dépenses pour voir l'analyse
+                {t('home.addExpensesToSeeAnalysis')}
               </Typography>
             </Box>
           )}
@@ -1875,10 +1875,10 @@ const Home = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Analytics sx={{ mr: 1, color: 'secondary.main' }} />
             <Typography variant="h6">
-              Débloquez les analyses avancées
+              {t('home.upgradeForAnalytics')}
             </Typography>
             <Chip 
-              label="Premium" 
+              label={t('home.premium')} 
               size="small" 
               color="secondary" 
               variant="outlined"
@@ -1886,7 +1886,7 @@ const Home = () => {
             />
           </Box>
           <Typography variant="body2" sx={{ mb: 2 }}>
-            Accédez aux analyses détaillées par catégorie, prévisions intelligentes et recommandations personnalisées.
+            {t('home.analyticsFeaturesDescription')}
           </Typography>
           <Button 
             variant="contained" 
@@ -1894,7 +1894,7 @@ const Home = () => {
             onClick={() => navigate('/subscription')}
             startIcon={<Analytics />}
           >
-            Passer à Premium
+            {t('home.upgradeNow')}
           </Button>
         </Paper>
       )}
