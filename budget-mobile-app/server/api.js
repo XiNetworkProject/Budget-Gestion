@@ -382,33 +382,138 @@ app.get('/api/stripe/test', (req, res) => {
   });
 });
 
+// Route de test pour vérifier la configuration Stripe
+app.get('/api/stripe/debug', async (req, res) => {
+  try {
+    console.log('=== TEST CONFIGURATION STRIPE ===');
+    
+    // Vérifier si Stripe est configuré
+    if (!stripe) {
+      console.error('Stripe n\'est pas configuré !');
+      return res.json({
+        success: false,
+        error: 'Stripe n\'est pas configuré',
+        hasStripe: false
+      });
+    }
+    
+    console.log('Stripe est configuré');
+    
+    // Tester la connexion Stripe
+    try {
+      const account = await stripe.accounts.retrieve();
+      console.log('Connexion Stripe réussie');
+      
+      // Lister quelques clients pour tester
+      const customers = await stripe.customers.list({ limit: 5 });
+      console.log('Clients trouvés:', customers.data.length);
+      
+      // Lister quelques abonnements pour tester
+      const subscriptions = await stripe.subscriptions.list({ limit: 5 });
+      console.log('Abonnements trouvés:', subscriptions.data.length);
+      
+      // Lister quelques prix pour tester
+      const prices = await stripe.prices.list({ limit: 10 });
+      console.log('Prix trouvés:', prices.data.length);
+      
+      res.json({
+        success: true,
+        hasStripe: true,
+        account: {
+          id: account.id,
+          business_type: account.business_type,
+          country: account.country
+        },
+        stats: {
+          customers: customers.data.length,
+          subscriptions: subscriptions.data.length,
+          prices: prices.data.length
+        },
+        prices: prices.data.map(price => ({
+          id: price.id,
+          nickname: price.nickname,
+          unit_amount: price.unit_amount,
+          currency: price.currency,
+          recurring: price.recurring
+        }))
+      });
+      
+    } catch (stripeError) {
+      console.error('Erreur de connexion Stripe:', stripeError);
+      res.json({
+        success: false,
+        hasStripe: true,
+        error: stripeError.message,
+        type: stripeError.type,
+        code: stripeError.code
+      });
+    }
+    
+  } catch (error) {
+    console.error('Erreur lors du test Stripe:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
 // Route pour récupérer les informations d'abonnement depuis Stripe
 app.get('/api/stripe/subscription-info', verifyAuth, async (req, res) => {
   try {
     const userId = req.user.id;
     const userEmail = req.user.email;
     
+    console.log('=== DÉBUT RECHERCHE ABONNEMENT ===');
     console.log('Recherche d\'abonnement pour:', { userId, userEmail });
+    
+    // Vérifier si Stripe est configuré
+    if (!stripe) {
+      console.error('Stripe n\'est pas configuré !');
+      return res.status(500).json({ 
+        success: false,
+        error: 'Stripe n\'est pas configuré' 
+      });
+    }
     
     // Rechercher le client Stripe par email
     let customer = null;
     try {
+      console.log('Recherche du client Stripe avec email:', userEmail);
       const customers = await stripe.customers.list({
         email: userEmail,
-        limit: 1
+        limit: 10 // Augmenter la limite pour voir tous les clients
+      });
+      
+      console.log('Clients Stripe trouvés:', customers.data.length);
+      customers.data.forEach((cust, index) => {
+        console.log(`Client ${index + 1}:`, {
+          id: cust.id,
+          email: cust.email,
+          name: cust.name,
+          created: new Date(cust.created * 1000)
+        });
       });
       
       if (customers.data.length > 0) {
         customer = customers.data[0];
-        console.log('Client Stripe trouvé:', customer.id);
+        console.log('Client Stripe sélectionné:', customer.id);
+      } else {
+        console.log('Aucun client Stripe trouvé avec cet email');
       }
     } catch (stripeError) {
-      console.warn('Erreur lors de la recherche du client Stripe:', stripeError);
+      console.error('Erreur lors de la recherche du client Stripe:', stripeError);
+      console.error('Détails de l\'erreur:', {
+        message: stripeError.message,
+        type: stripeError.type,
+        code: stripeError.code
+      });
     }
     
     // Si on a trouvé un client, chercher ses abonnements
     if (customer) {
       try {
+        console.log('Recherche des abonnements pour le client:', customer.id);
         const subscriptions = await stripe.subscriptions.list({
           customer: customer.id,
           status: 'all', // Inclure les abonnements actifs, annulés, etc.
@@ -416,6 +521,17 @@ app.get('/api/stripe/subscription-info', verifyAuth, async (req, res) => {
         });
         
         console.log('Abonnements trouvés:', subscriptions.data.length);
+        subscriptions.data.forEach((sub, index) => {
+          console.log(`Abonnement ${index + 1}:`, {
+            id: sub.id,
+            status: sub.status,
+            currentPeriodEnd: new Date(sub.current_period_end * 1000),
+            trialEnd: sub.trial_end ? new Date(sub.trial_end * 1000) : null,
+            priceId: sub.items.data[0]?.price?.id,
+            priceAmount: sub.items.data[0]?.price?.unit_amount,
+            priceCurrency: sub.items.data[0]?.price?.currency
+          });
+        });
         
         // Chercher l'abonnement actif ou en période d'essai
         const activeSubscription = subscriptions.data.find(sub => 
@@ -427,18 +543,27 @@ app.get('/api/stripe/subscription-info', verifyAuth, async (req, res) => {
             id: activeSubscription.id,
             status: activeSubscription.status,
             currentPeriodEnd: activeSubscription.current_period_end,
-            trialEnd: activeSubscription.trial_end
+            trialEnd: activeSubscription.trial_end,
+            priceId: activeSubscription.items.data[0]?.price?.id
           });
           
           // Déterminer le plan basé sur le prix
           let planId = 'FREE';
           const priceId = activeSubscription.items.data[0].price.id;
+          console.log('Price ID de l\'abonnement:', priceId);
           
           // Mapper les Price IDs vers les plans
           if (priceId === 'price_1RcAEjGb8GKvvz2G9mn9OlJs') {
             planId = 'PREMIUM';
+            console.log('Plan détecté: PREMIUM');
           } else if (priceId === 'price_1RcAERGb8GKvvz2GAyajrGFo') {
             planId = 'PRO';
+            console.log('Plan détecté: PRO');
+          } else {
+            console.log('Price ID non reconnu, plan par défaut: FREE');
+            console.log('Price IDs attendus:');
+            console.log('- Premium: price_1RcAEjGb8GKvvz2G9mn9OlJs');
+            console.log('- Pro: price_1RcAERGb8GKvvz2GAyajrGFo');
           }
           
           // Calculer si l'abonnement est en période d'essai
@@ -458,6 +583,8 @@ app.get('/api/stripe/subscription-info', verifyAuth, async (req, res) => {
             createdAt: new Date(activeSubscription.created * 1000)
           };
           
+          console.log('Informations d\'abonnement finales:', subscriptionInfo);
+          
           // Sauvegarder les informations dans la base de données
           try {
             await db.collection('user_subscriptions').updateOne(
@@ -470,21 +597,33 @@ app.get('/api/stripe/subscription-info', verifyAuth, async (req, res) => {
               },
               { upsert: true }
             );
+            console.log('Informations d\'abonnement sauvegardées dans MongoDB');
           } catch (dbError) {
             console.warn('Erreur lors de la sauvegarde des infos d\'abonnement:', dbError);
           }
           
+          console.log('=== FIN RECHERCHE ABONNEMENT - SUCCÈS ===');
           return res.json({
             success: true,
             subscription: subscriptionInfo
           });
+        } else {
+          console.log('Aucun abonnement actif ou en période d\'essai trouvé');
         }
       } catch (subscriptionError) {
         console.error('Erreur lors de la récupération des abonnements:', subscriptionError);
+        console.error('Détails de l\'erreur:', {
+          message: subscriptionError.message,
+          type: subscriptionError.type,
+          code: subscriptionError.code
+        });
       }
+    } else {
+      console.log('Aucun client Stripe trouvé, impossible de récupérer les abonnements');
     }
     
     // Si aucun abonnement trouvé, retourner le plan gratuit
+    console.log('=== FIN RECHERCHE ABONNEMENT - PLAN GRATUIT ===');
     res.json({
       success: true,
       subscription: {
