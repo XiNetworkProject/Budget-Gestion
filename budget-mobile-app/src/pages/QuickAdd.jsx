@@ -64,7 +64,20 @@ const QuickAdd = () => {
         }
       }, 500);
     }
-  }, [open, categories, availableIncomeTypes]);
+  }, [open]); // Seulement quand open change, pas quand categories ou availableIncomeTypes changent
+
+  // Gérer les changements de catégories sans affecter le montant
+  useEffect(() => {
+    if (open && categories.length > 0 && !category) {
+      setCategory(categories[0]);
+    }
+  }, [categories, open, category]);
+
+  useEffect(() => {
+    if (open && availableIncomeTypes.length > 0 && !incomeType) {
+      setIncomeType(availableIncomeTypes[0]);
+    }
+  }, [availableIncomeTypes, open, incomeType]);
 
   const handleAdd = () => {
     const val = parseFloat(amount) || 0;
