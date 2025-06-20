@@ -56,6 +56,75 @@ const defaultAppSettings = {
   }
 };
 
+// Plans d'abonnement
+const subscriptionPlans = {
+  FREE: {
+    id: 'free',
+    name: 'Gratuit',
+    price: 0,
+    currency: 'EUR',
+    features: {
+      maxTransactions: 100,
+      unlimitedCategories: true,
+      maxSavingsGoals: 2,
+      basicAnalytics: true,
+      aiAnalysis: false,
+      maxActionPlans: 0,
+      multipleAccounts: false,
+      prioritySupport: false,
+      advancedReports: false
+    }
+  },
+  PREMIUM: {
+    id: 'premium',
+    name: 'Premium',
+    price: 1.99,
+    currency: 'EUR',
+    features: {
+      maxTransactions: -1, // Illimité
+      unlimitedCategories: true,
+      maxSavingsGoals: -1, // Illimité
+      basicAnalytics: true,
+      aiAnalysis: 'partial',
+      maxActionPlans: 1,
+      multipleAccounts: false,
+      prioritySupport: false,
+      advancedReports: false
+    }
+  },
+  PRO: {
+    id: 'pro',
+    name: 'Pro',
+    price: 5.99,
+    currency: 'EUR',
+    features: {
+      maxTransactions: -1, // Illimité
+      unlimitedCategories: true,
+      maxSavingsGoals: -1, // Illimité
+      basicAnalytics: true,
+      aiAnalysis: 'full',
+      maxActionPlans: -1, // Illimité
+      multipleAccounts: true,
+      prioritySupport: true,
+      advancedReports: true
+    }
+  }
+};
+
+// Liste des emails autorisés pour l'accès spécial (développeur/testeurs)
+const specialAccessEmails = [
+  'mvadn@example.com', // Remplacez par votre email
+  'test@example.com',
+  'dev@example.com'
+];
+
+// Codes promo pour les tests
+const promoCodes = {
+  'DEV2024': { discount: 100, type: 'percentage', validUntil: '2024-12-31' },
+  'TEST50': { discount: 50, type: 'percentage', validUntil: '2024-12-31' },
+  'FREEMONTH': { discount: 1, type: 'months', validUntil: '2024-12-31' }
+};
+
 // Profil utilisateur par défaut
 const defaultUserProfile = {
   firstName: '',
@@ -196,6 +265,21 @@ const useStore = create(
       tutorialCompleted: false,
       onboardingCompleted: false,
       forceTutorial: false,
+
+      // Gestion des abonnements
+      subscription: {
+        currentPlan: 'FREE',
+        status: 'active', // active, expired, cancelled
+        startDate: null,
+        endDate: null,
+        stripeCustomerId: null,
+        stripeSubscriptionId: null
+      },
+      subscriptionPlans,
+      specialAccessEmails,
+      promoCodes,
+      appliedPromoCode: null,
+      promoCodeDiscount: 0,
 
       // Fonction pour vérifier et afficher les mises à jour
       checkForUpdates: () => {
@@ -1182,6 +1266,130 @@ const useStore = create(
         
         // Si le mois sélectionné n'est pas trouvé, retourner le dernier mois
         return state.months.length - 1;
+      },
+
+      // === GESTION DES ABONNEMENTS ===
+      
+      // Vérifier si l'utilisateur a un accès spécial
+      hasSpecialAccess: () => {
+        const state = get();
+        if (!state.user?.email) return false;
+        return state.specialAccessEmails.includes(state.user.email);
+      },
+
+      // Obtenir le plan actuel de l'utilisateur
+      getCurrentPlan: () => {
+        const state = get();
+        if (state.hasSpecialAccess()) {
+          return { ...state.subscriptionPlans.PRO, name: 'Développeur' };
+        }
+        return state.subscriptionPlans[state.subscription.currentPlan];
+      },
+
+      // Vérifier si une fonctionnalité est disponible
+      isFeatureAvailable: (feature) => {
+        const state = get();
+        const currentPlan = state.getCurrentPlan();
+        return currentPlan.features[feature] !== false && currentPlan.features[feature] !== 0;
+      },
+
+      // Vérifier les limites d'utilisation
+      checkUsageLimit: (feature, currentUsage) => {
+        const state = get();
+        const currentPlan = state.getCurrentPlan();
+        const limit = currentPlan.features[feature];
+        
+        if (limit === -1) return { allowed: true, remaining: -1 }; // Illimité
+        if (limit === false || limit === 0) return { allowed: false, remaining: 0 };
+        
+        const remaining = Math.max(0, limit - currentUsage);
+        return { allowed: remaining > 0, remaining };
+      },
+
+      // Appliquer un code promo
+      applyPromoCode: (code) => {
+        const state = get();
+        const promoCode = state.promoCodes[code.toUpperCase()];
+        
+        if (!promoCode) {
+          toast.error('Code promo invalide');
+          return false;
+        }
+        
+        const now = new Date();
+        const validUntil = new Date(promoCode.validUntil);
+        
+        if (now > validUntil) {
+          toast.error('Code promo expiré');
+          return false;
+        }
+        
+        set({ 
+          appliedPromoCode: code.toUpperCase(),
+          promoCodeDiscount: promoCode.discount
+        });
+        
+        toast.success(`Code promo appliqué ! ${promoCode.discount}${promoCode.type === 'percentage' ? '%' : ' mois'} de réduction`);
+        return true;
+      },
+
+      // Supprimer le code promo appliqué
+      removePromoCode: () => {
+        set({ appliedPromoCode: null, promoCodeDiscount: 0 });
+        toast.success('Code promo supprimé');
+      },
+
+      // Mettre à jour l'abonnement
+      updateSubscription: (planId, stripeData = null) => {
+        const state = get();
+        const newSubscription = {
+          currentPlan: planId,
+          status: 'active',
+          startDate: new Date().toISOString(),
+          endDate: null,
+          ...(stripeData && {
+            stripeCustomerId: stripeData.customerId,
+            stripeSubscriptionId: stripeData.subscriptionId
+          })
+        };
+        
+        set({ subscription: newSubscription });
+        scheduleSave();
+        
+        const plan = state.subscriptionPlans[planId];
+        toast.success(`Abonnement ${plan.name} activé !`);
+      },
+
+      // Annuler l'abonnement
+      cancelSubscription: () => {
+        const state = get();
+        set({ 
+          subscription: {
+            ...state.subscription,
+            status: 'cancelled',
+            endDate: new Date().toISOString()
+          }
+        });
+        scheduleSave();
+        toast.success('Abonnement annulé');
+      },
+
+      // Réinitialiser l'abonnement (pour les tests)
+      resetSubscription: () => {
+        set({ 
+          subscription: {
+            currentPlan: 'FREE',
+            status: 'active',
+            startDate: null,
+            endDate: null,
+            stripeCustomerId: null,
+            stripeSubscriptionId: null
+          },
+          appliedPromoCode: null,
+          promoCodeDiscount: 0
+        });
+        scheduleSave();
+        toast.success('Abonnement réinitialisé');
       },
     };
   }

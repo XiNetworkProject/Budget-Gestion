@@ -88,8 +88,10 @@ import {
   Analytics,
   Timeline,
   Assessment,
-  School
+  School,
+  CardMembership
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
   const { 
@@ -102,7 +104,9 @@ const Settings = () => {
     resetToDefaults,
     forceShowTutorial,
     appVersion,
-    checkForUpdates
+    checkForUpdates,
+    getCurrentPlan,
+    hasSpecialAccess
   } = useStore();
 
   const {
@@ -119,6 +123,8 @@ const Settings = () => {
   } = useAppSettings();
 
   const { t } = useTranslation();
+
+  const navigate = useNavigate();
 
   // Listes de langues et devises
   const languages = [
@@ -583,6 +589,44 @@ const Settings = () => {
                   <input type="file" hidden accept=".json" onChange={handleImport} />
                 </Button>
               </ListItem>
+            </List>
+          </Paper>
+
+          {/* Abonnement */}
+          <Paper sx={{ mb: 2 }}>
+            <List>
+              <ListItem>
+                <ListItemIcon>
+                  <CardMembership color="primary" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary={t('settings.subscription')} 
+                  secondary={`${t('settings.currentPlan')}: ${getCurrentPlan().name}`}
+                />
+                <Button 
+                  variant="contained" 
+                  size="small" 
+                  onClick={() => navigate('/subscription')}
+                  startIcon={<Star />}
+                >
+                  {t('settings.manageSubscription')}
+                </Button>
+              </ListItem>
+              {hasSpecialAccess() && (
+                <>
+                  <Divider />
+                  <ListItem>
+                    <ListItemIcon>
+                      <CheckCircle color="success" />
+                    </ListItemIcon>
+                    <ListItemText 
+                      primary={t('settings.specialAccess')} 
+                      secondary={t('settings.specialAccessDescription')}
+                    />
+                    <Chip label={t('settings.developer')} color="success" size="small" />
+                  </ListItem>
+                </>
+              )}
             </List>
           </Paper>
 

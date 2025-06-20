@@ -775,5 +775,48 @@
       "explore": "Don't hesitate to explore all features to get the most out of the app!",
       "default": "Explore the app to discover all features!"
     }
+  },
+  "subscription": {
+    "title": "Choose your plan",
+    "subtitle": "Unlock all features to optimize your budget management",
+    "currentPlan": "Current plan",
+    "free": "Free",
+    "forever": "Forever",
+    "perMonth": "per month",
+    "unlimited": "Unlimited",
+    "notAvailable": "Not available",
+    "partial": "Partial",
+    "full": "Full",
+    "currentUsage": "Current usage",
+    "transactionsUsed": "Transactions used",
+    "savingsGoalsUsed": "Savings goals used",
+    "actionPlansUsed": "Action plans used",
+    "promoCode": "Promo code",
+    "applyPromoCode": "Apply promo code",
+    "enterPromoCode": "Enter your promo code",
+    "apply": "Apply",
+    "upgrade": "Upgrade",
+    "downgrade": "Downgrade",
+    "cancel": "Cancel",
+    "cancelSubscription": "Cancel subscription",
+    "cancelConfirmation": "Are you sure you want to cancel your subscription? You will lose access to premium features.",
+    "confirmCancel": "Confirm cancellation",
+    "resetSubscription": "Reset subscription",
+    "resetConfirmation": "Are you sure you want to reset the subscription? This will revert to the free plan.",
+    "confirmReset": "Confirm reset",
+    "specialAccess": "Special access",
+    "specialAccessDescription": "You have developer access with all features",
+    "developer": "Developer",
+    "features": {
+      "transactions": "Transactions",
+      "categories": "Categories",
+      "savingsGoals": "Savings goals",
+      "analytics": "Analytics",
+      "aiAnalysis": "AI Analysis",
+      "actionPlans": "Action plans",
+      "multipleAccounts": "Multiple accounts",
+      "prioritySupport": "Priority support",
+      "advancedReports": "Advanced reports"
+    }
   }
 } 

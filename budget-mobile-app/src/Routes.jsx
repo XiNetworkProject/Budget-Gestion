@@ -19,6 +19,7 @@ import Income from './pages/Income';
 import Savings from './pages/Savings';
 import Debts from './pages/Debts';
 import ActionPlans from './pages/ActionPlans';
+import Subscription from './pages/Subscription';
 import { useStore } from './store';
 
 function SplashRedirect() {
@@ -134,6 +135,7 @@ function ThemedAppRoutes() {
             <Route path="/savings" element={<Savings />} />
             <Route path="/debts" element={<Debts />} />
             <Route path="/action-plans" element={<ActionPlans />} />
+            <Route path="/subscription" element={<Subscription />} />
             <Route path="*" element={<Navigate to="/home" replace />} />
           </Route>
         </Routes>
