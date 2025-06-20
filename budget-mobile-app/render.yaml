@@ -3,7 +3,7 @@ services:
     name: budget-mobile-app
     runtime: node
     buildCommand: cd budget-mobile-app && npm install --include=dev && npm run build
-    startCommand: cd budget-mobile-app && node server.js
+    startCommand: cd budget-mobile-app && node server/api.js
     envVars:
       - key: NODE_VERSION
         value: 18.0.0

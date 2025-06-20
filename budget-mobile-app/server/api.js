@@ -4,12 +4,90 @@ import cors from 'cors';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { OAuth2Client } from 'google-auth-library';
+import Stripe from 'stripe';
+import dotenv from 'dotenv';
+import helmet from 'helmet';
+
+// Charger les variables d'environnement
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 10000;
+
+// Initialiser Stripe
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
+
+// Configuration Stripe avec les vrais Price IDs
+const STRIPE_PLANS = {
+  PREMIUM: {
+    priceId: 'price_1RcAEjGb8GKvvz2G9mn9OlJs',
+    name: 'Premium',
+    price: 1.99
+  },
+  PRO: {
+    priceId: 'price_1RcAERGb8GKvvz2GAyajrGFo',
+    name: 'Pro',
+    price: 5.99
+  }
+};
+
+// Configuration Helmet avec CSP pour Stripe et Google
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        "'unsafe-eval'",
+        "https://js.stripe.com",
+        "https://checkout.stripe.com",
+        "https://accounts.google.com",
+        "https://www.gstatic.com",
+        "https://www.googleapis.com",
+        "https://apis.google.com"
+      ],
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        "https://fonts.googleapis.com",
+        "https://www.gstatic.com"
+      ],
+      imgSrc: [
+        "'self'",
+        "data:",
+        "https:",
+        "https://js.stripe.com",
+        "https://checkout.stripe.com",
+        "https://accounts.google.com",
+        "https://www.gstatic.com"
+      ],
+      frameSrc: [
+        "'self'",
+        "https://js.stripe.com",
+        "https://checkout.stripe.com",
+        "https://accounts.google.com",
+        "https://www.gstatic.com"
+      ],
+      connectSrc: [
+        "'self'",
+        "https://api.stripe.com",
+        "https://checkout.stripe.com",
+        "https://accounts.google.com",
+        "https://www.googleapis.com",
+        "https://oauth2.googleapis.com"
+      ],
+      fontSrc: [
+        "'self'",
+        "https://fonts.gstatic.com",
+        "https://www.gstatic.com"
+      ]
+    }
+  }
+}));
 
 // Log des requêtes entrantes
 app.use((req, res, next) => {
@@ -21,8 +99,14 @@ app.use((req, res, next) => {
 // Configuration CORS
 app.use(cors());
 
-// Middleware pour parser le JSON
-app.use(express.json());
+// Middleware pour parser le JSON (sauf pour les webhooks Stripe)
+app.use((req, res, next) => {
+  if (req.path === '/api/stripe/webhook') {
+    express.raw({ type: 'application/json' })(req, res, next);
+  } else {
+    express.json()(req, res, next);
+  }
+});
 
 // Configuration MongoDB
 const uri = process.env.VITE_MONGODB_URI;
@@ -208,6 +292,252 @@ app.delete('/api/budget/:userId', verifyAuth, async (req, res) => {
     res.status(500).json({ error: 'Failed to delete budget' });
   }
 });
+
+// ===== ROUTES STRIPE =====
+
+// Créer une session de paiement
+app.post('/api/stripe/create-checkout-session', verifyAuth, async (req, res) => {
+  try {
+    const { planType } = req.body;
+    const userId = req.user.id;
+    const userEmail = req.user.email;
+
+    if (!STRIPE_PLANS[planType]) {
+      return res.status(400).json({ error: 'Plan invalide' });
+    }
+
+    const plan = STRIPE_PLANS[planType];
+    const successUrl = `${req.protocol}://${req.get('host')}/subscription?success=true&session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${req.protocol}://${req.get('host')}/subscription?canceled=true`;
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: plan.priceId,
+          quantity: 1,
+        },
+      ],
+      mode: 'subscription',
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      customer_email: userEmail,
+      metadata: {
+        userId: userId,
+        planType: planType
+      }
+    });
+
+    res.json({ sessionId: session.id, url: session.url });
+  } catch (error) {
+    console.error('Erreur création session Stripe:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Webhook Stripe
+app.post('/api/stripe/webhook', async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err) {
+    console.error('Erreur webhook:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed':
+        const session = event.data.object;
+        await handleSubscriptionCreated(session);
+        break;
+      
+      case 'customer.subscription.updated':
+        const subscription = event.data.object;
+        await handleSubscriptionUpdated(subscription);
+        break;
+      
+      case 'customer.subscription.deleted':
+        const deletedSubscription = event.data.object;
+        await handleSubscriptionDeleted(deletedSubscription);
+        break;
+      
+      case 'invoice.payment_succeeded':
+        const invoice = event.data.object;
+        await handlePaymentSucceeded(invoice);
+        break;
+      
+      case 'invoice.payment_failed':
+        const failedInvoice = event.data.object;
+        await handlePaymentFailed(failedInvoice);
+        break;
+    }
+
+    res.json({ received: true });
+  } catch (error) {
+    console.error('Erreur traitement webhook:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Récupérer l'historique des paiements
+app.get('/api/stripe/payment-history', verifyAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Récupérer les paiements depuis MongoDB
+    const payments = await db.collection('payments').find({ 
+      userId: userId 
+    }).sort({ created: -1 }).toArray();
+
+    res.json(payments);
+  } catch (error) {
+    console.error('Erreur récupération historique:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Annuler un abonnement
+app.post('/api/stripe/cancel-subscription', verifyAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    
+    // Récupérer l'abonnement actuel
+    const subscription = await db.collection('subscriptions').findOne({ 
+      userId: userId,
+      status: { $in: ['active', 'trialing'] }
+    });
+
+    if (!subscription) {
+      return res.status(404).json({ error: 'Aucun abonnement actif trouvé' });
+    }
+
+    // Annuler l'abonnement dans Stripe
+    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+      cancel_at_period_end: true
+    });
+
+    // Mettre à jour en base
+    await db.collection('subscriptions').updateOne(
+      { _id: subscription._id },
+      { 
+        $set: { 
+          status: 'canceled',
+          canceledAt: new Date(),
+          cancelAtPeriodEnd: true
+        }
+      }
+    );
+
+    res.json({ success: true, message: 'Abonnement annulé avec succès' });
+  } catch (error) {
+    console.error('Erreur annulation abonnement:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Fonctions de gestion des webhooks
+async function handleSubscriptionCreated(session) {
+  const userId = session.metadata.userId;
+  const planType = session.metadata.planType;
+  
+  await db.collection('subscriptions').updateOne(
+    { userId: userId },
+    {
+      $set: {
+        userId: userId,
+        stripeCustomerId: session.customer,
+        stripeSubscriptionId: session.subscription,
+        planType: planType,
+        status: 'active',
+        createdAt: new Date(),
+        currentPeriodStart: new Date(session.subscription_data.subscription.current_period_start * 1000),
+        currentPeriodEnd: new Date(session.subscription_data.subscription.current_period_end * 1000)
+      }
+    },
+    { upsert: true }
+  );
+
+  // Enregistrer le paiement
+  await db.collection('payments').insertOne({
+    userId: userId,
+    stripePaymentIntentId: session.payment_intent,
+    amount: session.amount_total / 100,
+    currency: session.currency,
+    status: 'succeeded',
+    created: new Date(),
+    planType: planType
+  });
+}
+
+async function handleSubscriptionUpdated(subscription) {
+  const userId = subscription.metadata?.userId;
+  if (!userId) return;
+
+  await db.collection('subscriptions').updateOne(
+    { userId: userId },
+    {
+      $set: {
+        status: subscription.status,
+        currentPeriodStart: new Date(subscription.current_period_start * 1000),
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        updatedAt: new Date()
+      }
+    }
+  );
+}
+
+async function handleSubscriptionDeleted(subscription) {
+  const userId = subscription.metadata?.userId;
+  if (!userId) return;
+
+  await db.collection('subscriptions').updateOne(
+    { userId: userId },
+    {
+      $set: {
+        status: 'canceled',
+        canceledAt: new Date(),
+        updatedAt: new Date()
+      }
+    }
+  );
+}
+
+async function handlePaymentSucceeded(invoice) {
+  const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
+  const userId = subscription.metadata?.userId;
+  if (!userId) return;
+
+  await db.collection('payments').insertOne({
+    userId: userId,
+    stripeInvoiceId: invoice.id,
+    amount: invoice.amount_paid / 100,
+    currency: invoice.currency,
+    status: 'succeeded',
+    created: new Date(),
+    planType: subscription.metadata?.planType
+  });
+}
+
+async function handlePaymentFailed(invoice) {
+  const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
+  const userId = subscription.metadata?.userId;
+  if (!userId) return;
+
+  await db.collection('payments').insertOne({
+    userId: userId,
+    stripeInvoiceId: invoice.id,
+    amount: invoice.amount_due / 100,
+    currency: invoice.currency,
+    status: 'failed',
+    created: new Date(),
+    planType: subscription.metadata?.planType
+  });
+}
 
 // Servir les fichiers statiques
 const distPath = join(__dirname, '..', 'dist');
