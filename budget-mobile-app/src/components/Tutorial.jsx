@@ -50,7 +50,7 @@ const Tutorial = ({ open, onClose, onComplete }) => {
       icon: <School sx={{ fontSize: 40 }} />,
       color: '#1976d2',
       action: t('tutorial.welcome.action'),
-      features: t('tutorial.welcome.features')
+      features: t('tutorial.welcome.features', { returnObjects: true })
     },
     {
       id: 'home-overview',
@@ -60,7 +60,7 @@ const Tutorial = ({ open, onClose, onComplete }) => {
       icon: <Home sx={{ fontSize: 40 }} />,
       color: '#2e7d32',
       action: t('tutorial.homeOverview.action'),
-      features: t('tutorial.homeOverview.features')
+      features: t('tutorial.homeOverview.features', { returnObjects: true })
     },
     {
       id: 'quick-add-button',
@@ -70,7 +70,7 @@ const Tutorial = ({ open, onClose, onComplete }) => {
       icon: <Add sx={{ fontSize: 40 }} />,
       color: '#ed6c02',
       action: t('tutorial.quickAddButton.action'),
-      features: t('tutorial.quickAddButton.features')
+      features: t('tutorial.quickAddButton.features', { returnObjects: true })
     },
     {
       id: 'navigation',
@@ -80,7 +80,7 @@ const Tutorial = ({ open, onClose, onComplete }) => {
       icon: <TouchApp sx={{ fontSize: 40 }} />,
       color: '#d32f2f',
       action: t('tutorial.navigation.action'),
-      features: t('tutorial.navigation.features')
+      features: t('tutorial.navigation.features', { returnObjects: true })
     },
     {
       id: 'analytics-page',
@@ -90,7 +90,7 @@ const Tutorial = ({ open, onClose, onComplete }) => {
       icon: <Analytics sx={{ fontSize: 40 }} />,
       color: '#1976d2',
       action: t('tutorial.analyticsPage.action'),
-      features: t('tutorial.analyticsPage.features')
+      features: t('tutorial.analyticsPage.features', { returnObjects: true })
     },
     {
       id: 'expenses-page',
@@ -100,7 +100,7 @@ const Tutorial = ({ open, onClose, onComplete }) => {
       icon: <TrendingUp sx={{ fontSize: 40 }} />,
       color: '#d32f2f',
       action: t('tutorial.expensesPage.action'),
-      features: t('tutorial.expensesPage.features')
+      features: t('tutorial.expensesPage.features', { returnObjects: true })
     },
     {
       id: 'income-page',
@@ -110,7 +110,7 @@ const Tutorial = ({ open, onClose, onComplete }) => {
       icon: <AccountBalance sx={{ fontSize: 40 }} />,
       color: '#388e3c',
       action: t('tutorial.incomePage.action'),
-      features: t('tutorial.incomePage.features')
+      features: t('tutorial.incomePage.features', { returnObjects: true })
     },
     {
       id: 'savings-page',
@@ -120,7 +120,7 @@ const Tutorial = ({ open, onClose, onComplete }) => {
       icon: <Savings sx={{ fontSize: 40 }} />,
       color: '#7b1fa2',
       action: t('tutorial.savingsPage.action'),
-      features: t('tutorial.savingsPage.features')
+      features: t('tutorial.savingsPage.features', { returnObjects: true })
     },
     {
       id: 'settings-page',
@@ -130,7 +130,7 @@ const Tutorial = ({ open, onClose, onComplete }) => {
       icon: <Settings sx={{ fontSize: 40 }} />,
       color: '#5d4037',
       action: t('tutorial.settingsPage.action'),
-      features: t('tutorial.settingsPage.features')
+      features: t('tutorial.settingsPage.features', { returnObjects: true })
     },
     {
       id: 'complete',
@@ -140,7 +140,7 @@ const Tutorial = ({ open, onClose, onComplete }) => {
       icon: <CheckCircle sx={{ fontSize: 40 }} />,
       color: '#2e7d32',
       action: t('tutorial.complete.action'),
-      features: t('tutorial.complete.features')
+      features: t('tutorial.complete.features', { returnObjects: true })
     }
   ];
 
