@@ -206,7 +206,7 @@ const Home = () => {
     localStorage.setItem('budgetAppData', JSON.stringify(dataToSave));
   };
 
-  const currentMonthIdx = getCurrentMonthIndex();
+  const currentMonthIdx = new Date().getMonth();
   // Calculer l'index du mois prochain pour les prévisions
   const nextMonth = (selectedMonth + 1) % 12;
   const nextMonthYear = selectedMonth === 11 ? selectedYear + 1 : selectedYear;
