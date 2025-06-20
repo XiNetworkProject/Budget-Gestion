@@ -60,7 +60,7 @@ const defaultAppSettings = {
 const subscriptionPlans = {
   FREE: {
     id: 'free',
-    name: 'Gratuit',
+    name: 'subscription.free',
     price: 0,
     currency: 'EUR',
     features: {
@@ -77,7 +77,7 @@ const subscriptionPlans = {
   },
   PREMIUM: {
     id: 'premium',
-    name: 'Premium',
+    name: 'subscription.premium',
     price: 1.99,
     currency: 'EUR',
     stripePriceId: 'price_1RcAEjGb8GKvvz2G9mn9OlJs',
@@ -95,7 +95,7 @@ const subscriptionPlans = {
   },
   PRO: {
     id: 'pro',
-    name: 'Pro',
+    name: 'subscription.pro',
     price: 5.99,
     currency: 'EUR',
     stripePriceId: 'price_1RcAERGb8GKvvz2GAyajrGFo',
@@ -1337,7 +1337,7 @@ const useStore = create(
         scheduleSave();
         
         const plan = state.subscriptionPlans[planId];
-        toast.success(`Abonnement ${plan.name} activé !`);
+        toast.success(`Abonnement ${planId === 'FREE' ? 'Gratuit' : planId === 'PREMIUM' ? 'Premium' : 'Pro'} activé !`);
       },
 
       // Annuler l'abonnement
@@ -1501,9 +1501,9 @@ const useStore = create(
             
             const plan = state.subscriptionPlans[subscriptionInfo.planId];
             if (subscriptionInfo.isTrialing) {
-              toast.success(`Période d'essai ${plan.name} activée !`);
+              toast.success(`Période d'essai ${subscriptionInfo.planId === 'FREE' ? 'Gratuit' : subscriptionInfo.planId === 'PREMIUM' ? 'Premium' : 'Pro'} activée !`);
             } else if (subscriptionInfo.planId !== 'FREE') {
-              toast.success(`Abonnement ${plan.name} détecté !`);
+              toast.success(`Abonnement ${subscriptionInfo.planId === 'PREMIUM' ? 'Premium' : 'Pro'} détecté !`);
             }
             
             return subscriptionInfo;

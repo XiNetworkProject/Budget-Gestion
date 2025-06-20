@@ -66,23 +66,23 @@ const History = () => {
     ...incomeTransactions
       .filter(t => isDateInSelectedMonth(t.date))
       .map(t => ({
-        ...t,
-        type: 'income',
-        icon: '💰',
-        title: t.type || 'Revenu',
+      ...t,
+      type: 'income',
+      icon: '💰',
+      title: t.type || 'Revenu',
         date: parseDate(t.date),
-        amount: t.amount
-      })),
+      amount: t.amount
+    })),
     ...expenses
       .filter(e => isDateInSelectedMonth(e.date))
       .map(t => ({
-        ...t,
-        type: 'expense',
-        icon: '💸',
-        title: t.category || 'Dépense',
+      ...t,
+      type: 'expense',
+      icon: '💸',
+      title: t.category || 'Dépense',
         date: parseDate(t.date),
-        amount: t.amount
-      }))
+      amount: t.amount
+    }))
   ].sort((a, b) => b.date - a.date);
 
   const handleEdit = (i, item) => {
@@ -116,65 +116,65 @@ const History = () => {
             </ListItem>
           ) : (
             allTransactions.map((item, idx) => (
-              <React.Fragment key={item.id || idx}>
-                <ListItem
-                  secondaryAction={
-                    <>
-                      <IconButton edge="end" aria-label="edit" onClick={() => handleEdit(idx, item)}>
-                        <Edit />
-                      </IconButton>
-                      <IconButton edge="end" aria-label="delete" color="error" onClick={() => setDeleteIdx(idx)}>
-                        <Delete />
-                      </IconButton>
-                    </>
-                  }
-                >
-                  <ListItemAvatar>
-                    <Avatar>{item.icon}</Avatar>
-                  </ListItemAvatar>
-                  {editIdx === idx ? (
-                    <>
-                      <TextField
-                        value={editValue.title}
-                        onChange={e => setEditValue(v => ({ ...v, title: e.target.value }))}
-                        size="small"
-                        sx={{ mr: 2, width: 180 }}
-                        onBlur={() => handleEditSave(idx)}
-                        onKeyDown={e => { if (e.key === 'Enter') handleEditSave(idx); }}
-                        autoFocus
-                      />
-                      <TextField
-                        type="number"
-                        value={editValue.amount}
-                        onChange={e => setEditValue(v => ({ ...v, amount: e.target.value }))}
-                        size="small"
-                        sx={{ width: 80 }}
-                        onBlur={() => handleEditSave(idx)}
-                        onKeyDown={e => { if (e.key === 'Enter') handleEditSave(idx); }}
-                      />
-                    </>
-                  ) : (
-                    <>
-                      <ListItemText primary={item.title} secondary={item.date instanceof Date ? item.date.toLocaleDateString('fr-FR') : item.date} />
-                      <Typography color={item.type === 'income' ? 'success.main' : 'error.main'}>
-                        {item.type === 'income' ? '+' : '-'}{item.amount.toLocaleString()} €
-                      </Typography>
-                    </>
-                  )}
-                </ListItem>
-                {idx < allTransactions.length - 1 && <Divider />}
-                {/* Dialog de confirmation suppression */}
-                <Dialog open={deleteIdx === idx} onClose={() => setDeleteIdx(null)}>
+            <React.Fragment key={item.id || idx}>
+              <ListItem
+                secondaryAction={
+                  <>
+                    <IconButton edge="end" aria-label="edit" onClick={() => handleEdit(idx, item)}>
+                      <Edit />
+                    </IconButton>
+                    <IconButton edge="end" aria-label="delete" color="error" onClick={() => setDeleteIdx(idx)}>
+                      <Delete />
+                    </IconButton>
+                  </>
+                }
+              >
+                <ListItemAvatar>
+                  <Avatar>{item.icon}</Avatar>
+                </ListItemAvatar>
+                {editIdx === idx ? (
+                  <>
+                    <TextField
+                      value={editValue.title}
+                      onChange={e => setEditValue(v => ({ ...v, title: e.target.value }))}
+                      size="small"
+                      sx={{ mr: 2, width: 180 }}
+                      onBlur={() => handleEditSave(idx)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleEditSave(idx); }}
+                      autoFocus
+                    />
+                    <TextField
+                      type="number"
+                      value={editValue.amount}
+                      onChange={e => setEditValue(v => ({ ...v, amount: e.target.value }))}
+                      size="small"
+                      sx={{ width: 80 }}
+                      onBlur={() => handleEditSave(idx)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleEditSave(idx); }}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <ListItemText primary={item.title} secondary={item.date instanceof Date ? item.date.toLocaleDateString('fr-FR') : item.date} />
+                    <Typography color={item.type === 'income' ? 'success.main' : 'error.main'}>
+                      {item.type === 'income' ? '+' : '-'}{item.amount.toLocaleString()} €
+                    </Typography>
+                  </>
+                )}
+              </ListItem>
+              {idx < allTransactions.length - 1 && <Divider />}
+              {/* Dialog de confirmation suppression */}
+              <Dialog open={deleteIdx === idx} onClose={() => setDeleteIdx(null)}>
                   <DialogTitle>{t('history.confirmDelete')}</DialogTitle>
-                  <DialogContent>
-                    Cette action supprimera la transaction <b>{item.title}</b>.
-                  </DialogContent>
-                  <DialogActions>
+                <DialogContent>
+                  Cette action supprimera la transaction <b>{item.title}</b>.
+                </DialogContent>
+                <DialogActions>
                     <Button onClick={() => setDeleteIdx(null)}>{t('common.cancel')}</Button>
                     <Button color="error" onClick={() => handleDelete(idx)}>{t('common.delete')}</Button>
-                  </DialogActions>
-                </Dialog>
-              </React.Fragment>
+                </DialogActions>
+              </Dialog>
+            </React.Fragment>
             ))
           )}
         </List>

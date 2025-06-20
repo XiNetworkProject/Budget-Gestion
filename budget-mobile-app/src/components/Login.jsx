@@ -39,7 +39,7 @@ const Login = () => {
     // Rediriger vers l'onboarding seulement si ce n'est pas encore terminé
     if (!currentState.onboardingCompleted) {
       console.log('Login: Redirection vers onboarding');
-      navigate('/onboarding', { replace: true });
+    navigate('/onboarding', { replace: true });
     } else {
       console.log('Login: Redirection vers home');
       navigate('/home', { replace: true });

@@ -491,9 +491,9 @@ const Savings = () => {
                 </Typography>
               </Box>
             ) : (
-              <Box sx={{ height: 300 }}>
-                <Bar data={barData} options={barOptions} />
-              </Box>
+            <Box sx={{ height: 300 }}>
+              <Bar data={barData} options={barOptions} />
+            </Box>
             )}
           </Paper>
         </Grid>
@@ -510,9 +510,9 @@ const Savings = () => {
                 </Typography>
               </Box>
             ) : (
-              <Box sx={{ height: 300 }}>
-                <Doughnut data={doughnutData} options={chartOptions} />
-              </Box>
+            <Box sx={{ height: 300 }}>
+              <Doughnut data={doughnutData} options={chartOptions} />
+            </Box>
             )}
           </Paper>
         </Grid>

@@ -342,31 +342,31 @@ const Analytics = () => {
         </Box>
       ) : (
         <>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
                 Analyses et Statistiques
-              </Typography>
-              {activeAccount && (
-                <Typography variant="body2" color="text.secondary" component="span">
+          </Typography>
+          {activeAccount && (
+            <Typography variant="body2" color="text.secondary" component="span">
                   Compte: {activeAccount.name}
-                </Typography>
-              )}
-            </Box>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <FormControl size="small" sx={{ minWidth: 120 }}>
-                <InputLabel>Période</InputLabel>
-                <Select
-                  value={timeFilter}
-                  label="Période"
-                  onChange={(e) => setTimeFilter(e.target.value)}
-                >
-                  <MenuItem value="week">Semaine</MenuItem>
-                  <MenuItem value="month">Mois</MenuItem>
-                  <MenuItem value="quarter">Trimestre</MenuItem>
-                  <MenuItem value="year">Année</MenuItem>
-                </Select>
-              </FormControl>
+            </Typography>
+          )}
+        </Box>
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <FormControl size="small" sx={{ minWidth: 120 }}>
+            <InputLabel>Période</InputLabel>
+            <Select
+              value={timeFilter}
+              label="Période"
+              onChange={(e) => setTimeFilter(e.target.value)}
+            >
+              <MenuItem value="week">Semaine</MenuItem>
+              <MenuItem value="month">Mois</MenuItem>
+              <MenuItem value="quarter">Trimestre</MenuItem>
+              <MenuItem value="year">Année</MenuItem>
+            </Select>
+          </FormControl>
               <Tooltip title={`Plan actuel: ${getSubscriptionText()}`}>
                 <IconButton
                   onClick={() => navigate('/subscription')}
@@ -383,200 +383,200 @@ const Analytics = () => {
                 </IconButton>
               </Tooltip>
               <Tooltip title="Actualiser">
-                <IconButton>
-                  <Refresh />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          </Box>
+            <IconButton>
+              <Refresh />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      </Box>
 
-          {/* KPIs */}
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} sm={6} md={3}>
-              <Fade in timeout={500}>
-                <Card sx={{ bgcolor: 'primary.main', color: 'white' }}>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <AccountBalance sx={{ mr: 1 }} />
-                      <Typography variant="h6">Revenus</Typography>
-                    </Box>
-                    <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                      {currentRevenue.toLocaleString()}€
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                      Ce mois
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Fade>
-            </Grid>
+      {/* KPIs */}
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <Fade in timeout={500}>
+            <Card sx={{ bgcolor: 'primary.main', color: 'white' }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <AccountBalance sx={{ mr: 1 }} />
+                  <Typography variant="h6">Revenus</Typography>
+                </Box>
+                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                  {currentRevenue.toLocaleString()}€
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
+                  Ce mois
+                </Typography>
+              </CardContent>
+            </Card>
+          </Fade>
+        </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
-              <Fade in timeout={700}>
-                <Card sx={{ bgcolor: 'error.main', color: 'white' }}>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <TrendingDown sx={{ mr: 1 }} />
-                      <Typography variant="h6">Dépenses</Typography>
-                    </Box>
-                    <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                      {totalExpenses.toLocaleString()}€
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
+        <Grid item xs={12} sm={6} md={3}>
+          <Fade in timeout={700}>
+            <Card sx={{ bgcolor: 'error.main', color: 'white' }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <TrendingDown sx={{ mr: 1 }} />
+                  <Typography variant="h6">Dépenses</Typography>
+                </Box>
+                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                  {totalExpenses.toLocaleString()}€
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                       {expenseRate}% des revenus
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Fade>
-            </Grid>
+                </Typography>
+              </CardContent>
+            </Card>
+          </Fade>
+        </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
-              <Fade in timeout={900}>
-                <Card sx={{ bgcolor: 'success.main', color: 'white' }}>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <Savings sx={{ mr: 1 }} />
-                      <Typography variant="h6">Économies</Typography>
-                    </Box>
-                    <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                      {currentSavings.toLocaleString()}€
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
+        <Grid item xs={12} sm={6} md={3}>
+          <Fade in timeout={900}>
+            <Card sx={{ bgcolor: 'success.main', color: 'white' }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <Savings sx={{ mr: 1 }} />
+                  <Typography variant="h6">Économies</Typography>
+                </Box>
+                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                  {currentSavings.toLocaleString()}€
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                       Taux: {savingsRate}%
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Fade>
-            </Grid>
+                </Typography>
+              </CardContent>
+            </Card>
+          </Fade>
+        </Grid>
 
-            <Grid item xs={12} sm={6} md={3}>
-              <Fade in timeout={1100}>
-                <Card sx={{ bgcolor: 'warning.main', color: 'white' }}>
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <TrendingUp sx={{ mr: 1 }} />
+        <Grid item xs={12} sm={6} md={3}>
+          <Fade in timeout={1100}>
+            <Card sx={{ bgcolor: 'warning.main', color: 'white' }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <TrendingUp sx={{ mr: 1 }} />
                       <Typography variant="h6">{t('analytics.savingsRate')}</Typography>
-                    </Box>
-                    <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                      {savingsRate}%
-                    </Typography>
-                    <LinearProgress 
-                      variant="determinate" 
-                      value={parseFloat(savingsRate)} 
-                      sx={{ mt: 1, bgcolor: 'rgba(255,255,255,0.3)', '& .MuiLinearProgress-bar': { bgcolor: 'white' } }}
-                    />
-                  </CardContent>
-                </Card>
-              </Fade>
-            </Grid>
-          </Grid>
+                </Box>
+                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                  {savingsRate}%
+                </Typography>
+                <LinearProgress 
+                  variant="determinate" 
+                  value={parseFloat(savingsRate)} 
+                  sx={{ mt: 1, bgcolor: 'rgba(255,255,255,0.3)', '& .MuiLinearProgress-bar': { bgcolor: 'white' } }}
+                />
+              </CardContent>
+            </Card>
+          </Fade>
+        </Grid>
+      </Grid>
 
-          {/* Graphiques */}
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <Zoom in timeout={600}>
-                <Paper sx={{ p: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="h6" sx={{ flexGrow: 1 }}>
+      {/* Graphiques */}
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <Zoom in timeout={600}>
+            <Paper sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6" sx={{ flexGrow: 1 }}>
                       {t('analytics.expenseDistribution')}
-                    </Typography>
+                </Typography>
                     <Tooltip title={t('analytics.expenseDistributionTooltip')}>
-                      <IconButton size="small">
-                        <Info />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                  <Box sx={{ height: 300 }}>
-                    <Pie data={pieData} options={chartOptions} />
-                  </Box>
-                </Paper>
-              </Zoom>
-            </Grid>
+                  <IconButton size="small">
+                    <Info />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              <Box sx={{ height: 300 }}>
+                <Pie data={pieData} options={chartOptions} />
+              </Box>
+            </Paper>
+          </Zoom>
+        </Grid>
 
-            <Grid item xs={12} md={6}>
-              <Zoom in timeout={800}>
-                <Paper sx={{ p: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="h6" sx={{ flexGrow: 1 }}>
+        <Grid item xs={12} md={6}>
+          <Zoom in timeout={800}>
+            <Paper sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6" sx={{ flexGrow: 1 }}>
                       {t('analytics.savingsEvolution')}
-                    </Typography>
+                </Typography>
                     <Tooltip title={t('analytics.savingsEvolutionTooltip')}>
-                      <IconButton size="small">
-                        <Info />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                  <Box sx={{ height: 300 }}>
-                    <Bar data={barData} options={barOptions} />
-                  </Box>
-                </Paper>
-              </Zoom>
-            </Grid>
+                  <IconButton size="small">
+                    <Info />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              <Box sx={{ height: 300 }}>
+                <Bar data={barData} options={barOptions} />
+              </Box>
+            </Paper>
+          </Zoom>
+        </Grid>
 
-            <Grid item xs={12}>
-              <Zoom in timeout={1000}>
-                <Paper sx={{ p: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Typography variant="h6" sx={{ flexGrow: 1 }}>
+        <Grid item xs={12}>
+          <Zoom in timeout={1000}>
+            <Paper sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6" sx={{ flexGrow: 1 }}>
                       {t('analytics.revenuesVsExpenses')}
-                    </Typography>
+                </Typography>
                     <Tooltip title={t('analytics.revenuesVsExpensesTooltip')}>
-                      <IconButton size="small">
-                        <Info />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                  <Box sx={{ height: 300 }}>
-                    <Line data={lineData} options={lineOptions} />
-                  </Box>
-                </Paper>
-              </Zoom>
-            </Grid>
-          </Grid>
+                  <IconButton size="small">
+                    <Info />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+              <Box sx={{ height: 300 }}>
+                <Line data={lineData} options={lineOptions} />
+              </Box>
+            </Paper>
+          </Zoom>
+        </Grid>
+      </Grid>
 
-          {/* Détails par catégorie */}
-          <Paper sx={{ p: 2, mt: 3 }}>
-            <Typography variant="h6" gutterBottom>
+      {/* Détails par catégorie */}
+      <Paper sx={{ p: 2, mt: 3 }}>
+        <Typography variant="h6" gutterBottom>
               {t('analytics.expenseDetails')}
-            </Typography>
-            {expenseByCategory.length === 0 ? (
-              <Typography variant="body2" color="text.secondary" textAlign="center" component="span">
+        </Typography>
+        {expenseByCategory.length === 0 ? (
+          <Typography variant="body2" color="text.secondary" textAlign="center" component="span">
                 {t('analytics.noExpenseRecordedThisMonth')}
-              </Typography>
-            ) : (
-              <Grid container spacing={2}>
-                {expenseByCategory.map((item, index) => (
-                  <Grid item xs={12} sm={6} md={4} key={item.category}>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center', 
-                      p: 2,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: 1,
-                      bgcolor: 'background.paper'
-                    }}>
-                      <Box>
-                        <Typography variant="body2" color="text.secondary" component="span">
-                          {item.category}
-                        </Typography>
-                        <Typography variant="h6">
-                          {item.amount.toLocaleString()}€
-                        </Typography>
-                      </Box>
-                      <Chip 
-                        label={`${totalExpenses > 0 ? ((item.amount / totalExpenses) * 100).toFixed(1) : 0}%`}
-                        size="small"
-                        color="primary"
-                        variant="outlined"
-                      />
-                    </Box>
-                  </Grid>
-                ))}
+          </Typography>
+        ) : (
+          <Grid container spacing={2}>
+            {expenseByCategory.map((item, index) => (
+              <Grid item xs={12} sm={6} md={4} key={item.category}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  p: 2,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  borderRadius: 1,
+                  bgcolor: 'background.paper'
+                }}>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" component="span">
+                      {item.category}
+                    </Typography>
+                    <Typography variant="h6">
+                      {item.amount.toLocaleString()}€
+                    </Typography>
+                  </Box>
+                  <Chip 
+                    label={`${totalExpenses > 0 ? ((item.amount / totalExpenses) * 100).toFixed(1) : 0}%`}
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                  />
+                </Box>
               </Grid>
-            )}
-          </Paper>
+            ))}
+          </Grid>
+        )}
+      </Paper>
         </>
       )}
     </Box>
