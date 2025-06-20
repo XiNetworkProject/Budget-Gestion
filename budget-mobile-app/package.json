@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "test": "vitest",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "start": "node server/api.js"
+    "start": "react-scripts start",
+    "eject": "react-scripts eject",
+    "setup-stripe": "node setup-stripe.js"
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",
@@ -17,6 +19,7 @@
     "@mui/icons-material": "^5.15.13",
     "@mui/material": "^5.15.13",
     "@react-oauth/google": "^0.12.2",
+    "@stripe/stripe-js": "^7.3.1",
     "@tailwindcss/postcss": "^4.1.8",
     "autoprefixer": "^10.4.21",
     "chart.js": "^4.5.0",

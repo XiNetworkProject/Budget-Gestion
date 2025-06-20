@@ -37,7 +37,10 @@ import {
   Select,
   MenuItem,
   InputAdornment,
-  Tooltip
+  Tooltip,
+  Container,
+  Fade,
+  Zoom
 } from '@mui/material';
 import {
   Delete,
@@ -52,7 +55,20 @@ import {
   Cancel,
   Warning,
   CheckCircle,
-  Info
+  Info,
+  TrendingUp,
+  MoreVert,
+  AttachMoney,
+  Receipt,
+  ShoppingCart,
+  Restaurant,
+  DirectionsCar,
+  Home,
+  LocalHospital,
+  School,
+  SportsEsports,
+  Flight,
+  Hotel
 } from '@mui/icons-material';
 import { Doughnut, Bar } from 'react-chartjs-2';
 import { 
@@ -64,6 +80,8 @@ import {
   Legend,
   ArcElement
 } from 'chart.js';
+import FeatureRestriction, { useFeatureRestriction } from '../components/FeatureRestriction';
+import notificationService from '../services/notificationService';
 
 ChartJS.register(
   CategoryScale, 
@@ -86,7 +104,9 @@ const Expenses = () => {
     addExpense,
     updateExpense,
     deleteExpense,
-    activeAccount
+    activeAccount,
+    getCurrentPlan,
+    checkUsageLimit
   } = useStore();
   
   const { t } = useTranslation();
@@ -107,6 +127,16 @@ const Expenses = () => {
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   const [newCategory, setNewCategory] = useState('');
+
+  // Vérifier les restrictions pour les dépenses
+  const expenseRestriction = useFeatureRestriction('maxExpenses', expenses?.length || 0);
+  const categoryRestriction = useFeatureRestriction('maxCategories', categories?.length || 0);
+
+  // Notifier les limites d'utilisation
+  useEffect(() => {
+    notificationService.checkAndNotifyLimits('maxExpenses', expenses?.length || 0);
+    notificationService.checkAndNotifyLimits('maxCategories', categories?.length || 0);
+  }, [expenses?.length, categories?.length]);
 
   const handleEdit = (i, val) => {
     setEditIdx(i);
@@ -262,6 +292,37 @@ const Expenses = () => {
       'Shopping': '#FF9F40'
     };
     return colors[category] || '#C9CBCF';
+  };
+
+  const handleAdd = () => {
+    if (!newExpense.category || !newExpense.amount) {
+      return;
+    }
+
+    // Vérifier les restrictions avant d'ajouter
+    if (!expenseRestriction.canUse) {
+      notificationService.notifyApproachingLimit('maxExpenses', expenses?.length || 0, getCurrentPlan().features.maxExpenses);
+      return;
+    }
+
+    const newExpense = {
+      category: newExpense.category,
+      amount: parseFloat(newExpense.amount),
+      date: newExpense.date,
+      description: newExpense.description,
+      recurring: newExpense.recurring,
+      accountId: activeAccount?.id
+    };
+
+    addExpense(newExpense);
+    setNewExpense({
+      category: '',
+      amount: '',
+      date: new Date().toISOString().split('T')[0],
+      description: '',
+      recurring: false
+    });
+    setShowAddDialog(false);
   };
 
   return (
@@ -470,14 +531,20 @@ const Expenses = () => {
       </Box>
 
       {/* FAB pour ajouter */}
-      <Fab
-        color="primary"
-        aria-label="add"
-        sx={{ position: 'fixed', bottom: 80, right: 16 }}
-        onClick={() => setShowAddDialog(true)}
-      >
-        <Add />
-      </Fab>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h4" component="h1">
+          {t('expenses.title')}
+        </Typography>
+        <FeatureRestriction feature="maxExpenses" currentUsage={expenses?.length || 0}>
+          <Button
+            variant="contained"
+            startIcon={<Add />}
+            onClick={() => setShowAddDialog(true)}
+          >
+            {t('expenses.addExpense')}
+          </Button>
+        </FeatureRestriction>
+      </Box>
 
       {/* Dialog d'ajout de dépense */}
       <Dialog open={showAddDialog} onClose={() => setShowAddDialog(false)} maxWidth="sm" fullWidth>

@@ -1,0 +1,26 @@
+# Configuration Stripe - Variables d'environnement
+# Copiez ce fichier vers .env.local et remplissez vos vraies valeurs
+
+# Clé publique Stripe (côté client)
+REACT_APP_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_public_key_here
+
+# Clé secrète Stripe (côté serveur uniquement)
+STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key_here
+
+# Webhook secret Stripe (optionnel)
+STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
+
+# Mode Stripe (test ou live)
+REACT_APP_STRIPE_MODE=test
+
+# Emails d'accès spécial (séparés par des virgules)
+REACT_APP_SPECIAL_ACCESS_EMAILS=dev@example.com,test@example.com
+
+# Configuration de la base de données (optionnel)
+DATABASE_URL=your_database_url_here
+
+# Instructions :
+# 1. Copiez ce fichier vers .env.local
+# 2. Remplacez les valeurs par vos vraies clés
+# 3. Ne commitez jamais .env.local
+# 4. Pour Render, ajoutez ces variables dans les paramètres du projet 

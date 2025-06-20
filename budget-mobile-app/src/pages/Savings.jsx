@@ -25,7 +25,11 @@ import {
   Divider,
   Snackbar,
   Alert,
-  Tooltip
+  Tooltip,
+  Container,
+  MenuItem,
+  Fade,
+  Zoom
 } from '@mui/material';
 import {
   Add,
@@ -36,7 +40,12 @@ import {
   Flag,
   CheckCircle,
   Warning,
-  Info
+  Info,
+  Target,
+  CalendarToday,
+  Euro,
+  MoreVert,
+  Star
 } from '@mui/icons-material';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { 
@@ -47,6 +56,8 @@ import {
   Legend,
   ArcElement
 } from 'chart.js';
+import FeatureRestriction, { useFeatureRestriction } from '../components/FeatureRestriction';
+import notificationService from '../services/notificationService';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Legend, ArcElement);
 
@@ -60,10 +71,20 @@ const Savings = () => {
     months,
     sideByMonth,
     selectedMonth,
-    selectedYear
+    selectedYear,
+    getCurrentPlan,
+    checkUsageLimit
   } = useStore();
 
   const { t } = useTranslation();
+
+  // Vérifier les restrictions pour les objectifs d'épargne
+  const savingsRestriction = useFeatureRestriction('maxSavingsGoals', savings?.length || 0);
+
+  // Notifier les limites d'utilisation
+  useEffect(() => {
+    notificationService.checkAndNotifyLimits('maxSavingsGoals', savings?.length || 0);
+  }, [savings?.length]);
 
   const [addDialog, setAddDialog] = useState(false);
   const [editDialog, setEditDialog] = useState(false);
@@ -183,6 +204,16 @@ const Savings = () => {
   };
 
   const handleAddGoal = () => {
+    if (!newGoal.name || !newGoal.target) {
+      return;
+    }
+
+    // Vérifier les restrictions avant d'ajouter
+    if (!savingsRestriction.canUse) {
+      notificationService.notifyApproachingLimit('maxSavingsGoals', savings?.length || 0, getCurrentPlan().features.maxSavingsGoals);
+      return;
+    }
+
     const goal = {
       name: newGoal.name,
       target: parseFloat(newGoal.target),
