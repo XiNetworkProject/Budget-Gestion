@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import Stripe from 'stripe';
 
 // Charger les variables d'environnement
 dotenv.config();
@@ -16,6 +17,9 @@ const __dirname = dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 10000;
+
+// Initialiser Stripe
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
 
 // Middleware de sécurité
 app.use(helmet());
@@ -150,13 +154,12 @@ app.post('/api/stripe/create-checkout-session', authenticateToken, async (req, r
       }
     }
 
-    // Simulation de la session (à remplacer par la vraie intégration Stripe)
-    const sessionId = `cs_test_${Date.now()}`;
-    const sessionUrl = `https://checkout.stripe.com/pay/${sessionId}`;
+    // Créer la vraie session Stripe Checkout
+    const session = await stripe.checkout.sessions.create(sessionParams);
     
     res.json({
-      sessionId,
-      sessionUrl
+      sessionId: session.id,
+      sessionUrl: session.url
     });
 
   } catch (error) {
@@ -224,6 +227,87 @@ app.post('/api/stripe/update-payment-method', authenticateToken, (req, res) => {
     res.status(500).json({ message: 'Erreur lors de la mise à jour de la méthode de paiement' });
   }
 });
+
+// Webhook Stripe pour gérer les événements
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err) {
+    console.error('Erreur webhook:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed':
+        await handleCheckoutSessionCompleted(event.data.object);
+        break;
+      
+      case 'customer.subscription.created':
+        await handleSubscriptionCreated(event.data.object);
+        break;
+      
+      case 'customer.subscription.updated':
+        await handleSubscriptionUpdated(event.data.object);
+        break;
+      
+      case 'customer.subscription.deleted':
+        await handleSubscriptionDeleted(event.data.object);
+        break;
+      
+      case 'invoice.payment_succeeded':
+        await handlePaymentSucceeded(event.data.object);
+        break;
+      
+      case 'invoice.payment_failed':
+        await handlePaymentFailed(event.data.object);
+        break;
+      
+      default:
+        console.log(`Événement non géré: ${event.type}`);
+    }
+
+    res.json({ received: true });
+  } catch (error) {
+    console.error('Erreur traitement webhook:', error);
+    res.status(500).json({ message: 'Erreur lors du traitement du webhook' });
+  }
+});
+
+// Fonctions de gestion des webhooks
+async function handleCheckoutSessionCompleted(session) {
+  const { userId, planId } = session.metadata;
+  console.log(`Paiement réussi pour l'utilisateur ${userId}, plan ${planId}`);
+  // Ici tu peux mettre à jour ta base de données
+}
+
+async function handleSubscriptionCreated(subscription) {
+  const { userId, planId } = subscription.metadata;
+  console.log(`Abonnement créé pour l'utilisateur ${userId}, plan ${planId}`);
+}
+
+async function handleSubscriptionUpdated(subscription) {
+  const { userId } = subscription.metadata;
+  console.log(`Abonnement mis à jour pour l'utilisateur ${userId}`);
+}
+
+async function handleSubscriptionDeleted(subscription) {
+  const { userId } = subscription.metadata;
+  console.log(`Abonnement supprimé pour l'utilisateur ${userId}`);
+}
+
+async function handlePaymentSucceeded(invoice) {
+  console.log('Paiement réussi:', invoice.id);
+}
+
+async function handlePaymentFailed(invoice) {
+  console.log('Échec de paiement:', invoice.id);
+}
 
 // Route de santé
 app.get('/health', (req, res) => {
