@@ -5,5 +5,39 @@
   "nav": { "table": "Table", "chart": "Visualization" },
   "login": { "title": "Login to Budget Management" },
   "dashboard": { "title": "Dashboard", "tableTitle": "Budget Table" },
-  "budget": { "title": "Budget" }
+  "budget": { "title": "Budget" },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "appearance": "Appearance",
+    "security": "Security",
+    "data": "Data",
+    "help": "Help",
+    "language": "Language",
+    "currency": "Currency",
+    "darkMode": "Dark mode",
+    "compactMode": "Compact mode",
+    "showPercentages": "Show percentages"
+  },
+  "pages": {
+    "home": "Home",
+    "analytics": "Analytics",
+    "history": "History",
+    "expenses": "Expenses",
+    "income": "Income",
+    "savings": "Savings",
+    "debts": "Debts",
+    "actionPlans": "Action Plans"
+  },
+  "common": {
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  }
 } 

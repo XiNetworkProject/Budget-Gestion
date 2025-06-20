@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import CurrencyFormatter from '../components/CurrencyFormatter';
 import { 
   Box, 
   Typography, 
@@ -1178,7 +1179,7 @@ const Home = () => {
                   maxWidth: '90%'
               }}
             >
-                {selectedMonthSaved.toLocaleString()}€
+                <CurrencyFormatter amount={selectedMonthSaved} />
               </Typography>
               <Box
                 sx={{
@@ -1238,7 +1239,7 @@ const Home = () => {
                   <Typography variant="h6">Revenus</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {selectedMonthIncome.toLocaleString()}€
+                  <CurrencyFormatter amount={selectedMonthIncome} />
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                   {getMonthName(selectedMonth, selectedYear)}
@@ -1257,7 +1258,7 @@ const Home = () => {
                   <Typography variant="h6">Dépenses</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {selectedMonthExpense.toLocaleString()}€
+                  <CurrencyFormatter amount={selectedMonthExpense} />
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                   {getMonthName(selectedMonth, selectedYear)}
@@ -1276,7 +1277,7 @@ const Home = () => {
                   <Typography variant="h6">Économies</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {selectedMonthSaved.toLocaleString()}€
+                  <CurrencyFormatter amount={selectedMonthSaved} />
                 </Typography>
                 <LinearProgress 
                   variant="determinate" 
@@ -1297,7 +1298,7 @@ const Home = () => {
                   <Typography variant="h6">Prévisions</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {nextMonthProjected.toLocaleString()}€
+                  <CurrencyFormatter amount={nextMonthProjected} />
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
                   {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}

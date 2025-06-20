@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
 import { useAppSettings } from '../hooks/useAppSettings';
+import { useTranslation } from 'react-i18next';
 import { 
   Box, 
   Typography, 
@@ -116,6 +117,8 @@ const Settings = () => {
     currentCurrency,
     showPercentages
   } = useAppSettings();
+
+  const { t } = useTranslation();
 
   // Listes de langues et devises
   const languages = [
@@ -244,7 +247,7 @@ const Settings = () => {
       <Paper sx={{ p: 2, mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-            Paramètres
+            {t('settings.title')}
           </Typography>
           <IconButton color="primary">
             <Info />
@@ -255,11 +258,11 @@ const Settings = () => {
       {/* Tabs principales */}
       <Paper sx={{ mb: 2 }}>
         <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
-          <Tab label="Profil" />
-          <Tab label="Apparence" />
-          <Tab label="Sécurité" />
-          <Tab label="Données" />
-          <Tab label="Aide" />
+          <Tab label={t('settings.tabs.profile')} />
+          <Tab label={t('settings.tabs.appearance')} />
+          <Tab label={t('settings.tabs.security')} />
+          <Tab label={t('settings.tabs.data')} />
+          <Tab label={t('settings.tabs.help')} />
         </Tabs>
       </Paper>
 
@@ -297,7 +300,7 @@ const Settings = () => {
                   <AccountCircle color="primary" />
                 </ListItemIcon>
                 <ListItemText 
-                  primary="Compte créé le" 
+                  primary={t('settings.accountCreated')} 
                   secondary={userProfile.createdAt ? new Date(userProfile.createdAt).toLocaleDateString('fr-FR') : 'Non disponible'}
                 />
               </ListItem>
@@ -306,7 +309,7 @@ const Settings = () => {
                   <Timeline color="primary" />
                 </ListItemIcon>
                 <ListItemText 
-                  primary="Dernière connexion" 
+                  primary={t('settings.lastLogin')} 
                   secondary={userProfile.lastLogin ? new Date(userProfile.lastLogin).toLocaleDateString('fr-FR') : 'Non disponible'}
                 />
               </ListItem>
@@ -322,8 +325,8 @@ const Settings = () => {
             <List>
               <ListItem>
                 <ListItemText 
-                  primary="Mode sombre" 
-                  secondary="Activer le thème sombre pour l'application"
+                  primary={t('settings.darkMode')} 
+                  secondary={t('settings.darkModeDescription')}
                 />
                 <Switch 
                   checked={currentTheme === 'dark'} 
@@ -333,8 +336,8 @@ const Settings = () => {
               <Divider />
               <ListItem>
                 <ListItemText 
-                  primary="Mode compact" 
-                  secondary="Réduire l'espacement des éléments"
+                  primary={t('settings.compactMode')} 
+                  secondary={t('settings.compactModeDescription')}
                 />
                 <Switch 
                   checked={isCompactMode} 
@@ -349,8 +352,8 @@ const Settings = () => {
             <List>
               <ListItem>
                 <ListItemText 
-                  primary="Langue" 
-                  secondary="Choisir la langue de l'application"
+                  primary={t('settings.language')} 
+                  secondary={t('settings.languageDescription')}
                 />
                 <FormControl size="small" sx={{ minWidth: 120 }}>
                   <Select
@@ -368,8 +371,8 @@ const Settings = () => {
               <Divider />
               <ListItem>
                 <ListItemText 
-                  primary="Devise" 
-                  secondary="Choisir la devise d'affichage"
+                  primary={t('settings.currency')} 
+                  secondary={t('settings.currencyDescription')}
                 />
                 <FormControl size="small" sx={{ minWidth: 120 }}>
                   <Select
@@ -392,8 +395,8 @@ const Settings = () => {
             <List>
               <ListItem>
                 <ListItemText 
-                  primary="Afficher les pourcentages" 
-                  secondary="Montrer les pourcentages dans les graphiques"
+                  primary={t('settings.showPercentages')} 
+                  secondary={t('settings.showPercentagesDescription')}
                 />
                 <Switch 
                   checked={showPercentages} 
@@ -412,8 +415,8 @@ const Settings = () => {
             <List>
               <ListItem>
                 <ListItemText 
-                  primary="Verrouillage automatique" 
-                  secondary="Verrouiller l'app après inactivité"
+                  primary={t('settings.autoLock')} 
+                  secondary={t('settings.autoLockDescription')}
                 />
                 <Switch 
                   checked={appSettings.privacy?.autoLock || true} 
@@ -428,8 +431,8 @@ const Settings = () => {
               <Divider />
               <ListItem>
                 <ListItemText 
-                  primary="Authentification biométrique" 
-                  secondary="Utiliser l'empreinte digitale ou Face ID"
+                  primary={t('settings.biometricAuth')} 
+                  secondary={t('settings.biometricAuthDescription')}
                 />
                 <Switch 
                   checked={appSettings.privacy?.biometricAuth || false} 
@@ -444,8 +447,8 @@ const Settings = () => {
               <Divider />
               <ListItem>
                 <ListItemText 
-                  primary="Partage de données" 
-                  secondary="Autoriser le partage de données anonymes"
+                  primary={t('settings.dataSharing')} 
+                  secondary={t('settings.dataSharingDescription')}
                 />
                 <Switch 
                   checked={appSettings.privacy?.dataSharing || false} 
@@ -468,11 +471,11 @@ const Settings = () => {
                   <VpnKey color="primary" />
                 </ListItemIcon>
                 <ListItemText 
-                  primary="Changer le mot de passe" 
-                  secondary="Modifier votre mot de passe de sécurité"
+                  primary={t('settings.changePassword')} 
+                  secondary={t('settings.changePasswordDescription')}
                 />
                 <Button variant="outlined" size="small">
-                  Modifier
+                  {t('settings.modify')}
                 </Button>
               </ListItem>
             </List>
@@ -487,8 +490,8 @@ const Settings = () => {
             <List>
               <ListItem>
                 <ListItemText 
-                  primary="Alertes de budget" 
-                  secondary="Recevoir des alertes quand vous dépassez votre budget"
+                  primary={t('settings.budgetAlerts')} 
+                  secondary={t('settings.budgetAlertsDescription')}
                 />
                 <Switch 
                   checked={appSettings.notifications?.budgetAlerts || true} 
@@ -503,8 +506,8 @@ const Settings = () => {
               <Divider />
               <ListItem>
                 <ListItemText 
-                  primary="Rappels de factures" 
-                  secondary="Rappels pour les factures à venir"
+                  primary={t('settings.billReminders')} 
+                  secondary={t('settings.billRemindersDescription')}
                 />
                 <Switch 
                   checked={appSettings.notifications?.billReminders || true} 
@@ -519,8 +522,8 @@ const Settings = () => {
               <Divider />
               <ListItem>
                 <ListItemText 
-                  primary="Objectifs d'épargne" 
-                  secondary="Notifications pour les objectifs d'épargne"
+                  primary={t('settings.savingsGoals')} 
+                  secondary={t('settings.savingsGoalsDescription')}
                 />
                 <Switch 
                   checked={appSettings.notifications?.savingsGoals || true} 
@@ -535,8 +538,8 @@ const Settings = () => {
               <Divider />
               <ListItem>
                 <ListItemText 
-                  primary="Rapports hebdomadaires" 
-                  secondary="Recevoir un résumé hebdomadaire"
+                  primary={t('settings.weeklyReports')} 
+                  secondary={t('settings.weeklyReportsDescription')}
                 />
                 <Switch 
                   checked={appSettings.notifications?.weeklyReports || true} 
@@ -559,11 +562,11 @@ const Settings = () => {
                   <CloudDownload color="primary" />
                 </ListItemIcon>
                 <ListItemText 
-                  primary="Exporter les données" 
-                  secondary="Sauvegarder toutes vos données"
+                  primary={t('settings.exportData')} 
+                  secondary={t('settings.exportDataDescription')}
                 />
                 <Button variant="outlined" size="small" onClick={handleExport}>
-                  Exporter
+                  {t('settings.export')}
                 </Button>
               </ListItem>
               <Divider />
@@ -572,11 +575,11 @@ const Settings = () => {
                   <CloudUpload color="primary" />
                 </ListItemIcon>
                 <ListItemText 
-                  primary="Importer les données" 
-                  secondary="Restaurer vos données depuis un fichier"
+                  primary={t('settings.importData')} 
+                  secondary={t('settings.importDataDescription')}
                 />
                 <Button variant="outlined" size="small" component="label">
-                  Importer
+                  {t('settings.import')}
                   <input type="file" hidden accept=".json" onChange={handleImport} />
                 </Button>
               </ListItem>
@@ -591,8 +594,8 @@ const Settings = () => {
                   <Refresh color="warning" />
                 </ListItemIcon>
                 <ListItemText 
-                  primary="Réinitialiser les données" 
-                  secondary="Remettre les données par défaut (garder le profil)"
+                  primary={t('settings.resetData')} 
+                  secondary={t('settings.resetDataDescription')}
                 />
                 <Button 
                   variant="outlined" 
@@ -600,7 +603,7 @@ const Settings = () => {
                   size="small"
                   onClick={() => setResetDialog(true)}
                 >
-                  Réinitialiser
+                  {t('settings.reset')}
                 </Button>
               </ListItem>
             </List>
@@ -614,8 +617,8 @@ const Settings = () => {
                   <Delete color="error" />
                 </ListItemIcon>
                 <ListItemText 
-                  primary="Supprimer toutes les données" 
-                  secondary="Cette action est irréversible"
+                  primary={t('settings.deleteData')} 
+                  secondary={t('settings.deleteDataDescription')}
                 />
                 <Button 
                   variant="outlined" 
@@ -623,7 +626,7 @@ const Settings = () => {
                   size="small"
                   onClick={() => setDeleteDialog(true)}
                 >
-                  Supprimer
+                  {t('settings.delete')}
                 </Button>
               </ListItem>
             </List>
@@ -637,8 +640,8 @@ const Settings = () => {
                   <Logout color="primary" />
                 </ListItemIcon>
                 <ListItemText 
-                  primary="Se déconnecter" 
-                  secondary="Fermer votre session"
+                  primary={t('settings.logout')} 
+                  secondary={t('settings.logoutDescription')}
                 />
                 <Button 
                   variant="outlined" 
@@ -646,7 +649,7 @@ const Settings = () => {
                   size="small"
                   onClick={logout}
                 >
-                  Déconnexion
+                  {t('settings.logout')}
                 </Button>
               </ListItem>
             </List>
@@ -664,11 +667,11 @@ const Settings = () => {
                   <School color="primary" />
                 </ListItemIcon>
                 <ListItemText 
-                  primary="Tutoriel interactif" 
-                  secondary="Relancer le guide d'introduction pour découvrir toutes les fonctionnalités"
+                  primary={t('settings.tutorial')} 
+                  secondary={t('settings.tutorialDescription')}
                 />
                 <Button variant="outlined" size="small" onClick={handleRestartTutorial}>
-                  Relancer
+                  {t('settings.restart')}
                 </Button>
               </ListItem>
               <Divider />
@@ -677,11 +680,11 @@ const Settings = () => {
                   <Help color="primary" />
                 </ListItemIcon>
                 <ListItemText 
-                  primary="Centre d'aide" 
-                  secondary="Consulter la documentation et les FAQ"
+                  primary={t('settings.helpCenter')} 
+                  secondary={t('settings.helpCenterDescription')}
                 />
                 <Button variant="outlined" size="small">
-                  Consulter
+                  {t('settings.visit')}
                 </Button>
               </ListItem>
               <Divider />
@@ -690,11 +693,11 @@ const Settings = () => {
                   <Feedback color="primary" />
                 </ListItemIcon>
                 <ListItemText 
-                  primary="Envoyer un feedback" 
-                  secondary="Partager vos suggestions et signaler des problèmes"
+                  primary={t('settings.giveFeedback')} 
+                  secondary={t('settings.giveFeedbackDescription')}
                 />
                 <Button variant="outlined" size="small" onClick={() => setFeedbackDialog(true)}>
-                  Feedback
+                  {t('settings.feedback')}
                 </Button>
               </ListItem>
               <Divider />
@@ -703,11 +706,11 @@ const Settings = () => {
                   <BugReport color="primary" />
                 </ListItemIcon>
                 <ListItemText 
-                  primary="Signaler un bug" 
-                  secondary="Signaler un problème technique"
+                  primary={t('settings.reportBug')} 
+                  secondary={t('settings.reportBugDescription')}
                 />
                 <Button variant="outlined" size="small">
-                  Signaler
+                  {t('settings.report')}
                 </Button>
               </ListItem>
             </List>
@@ -721,11 +724,11 @@ const Settings = () => {
                   <Info color="primary" />
                 </ListItemIcon>
                 <ListItemText 
-                  primary="Version de l'application" 
+                  primary={t('settings.appVersion')} 
                   secondary={`Budget Gestion v${appVersion}`}
                 />
                 <Button variant="outlined" size="small" onClick={handleShowUpdates}>
-                  Voir les nouveautés
+                  {t('settings.seeUpdates')}
                 </Button>
               </ListItem>
               <Divider />
@@ -734,11 +737,11 @@ const Settings = () => {
                   <Star color="primary" />
                 </ListItemIcon>
                 <ListItemText 
-                  primary="Évaluer l'application" 
-                  secondary="Donner votre avis sur l'App Store"
+                  primary={t('settings.rateApp')} 
+                  secondary={t('settings.rateAppDescription')}
                 />
                 <Button variant="outlined" size="small">
-                  Évaluer
+                  {t('settings.rate')}
                 </Button>
               </ListItem>
             </List>
@@ -752,11 +755,11 @@ const Settings = () => {
                   <AccountCircle color="primary" />
                 </ListItemIcon>
                 <ListItemText 
-                  primary="Support client" 
-                  secondary="Contacter notre équipe support"
+                  primary={t('settings.clientSupport')} 
+                  secondary={t('settings.clientSupportDescription')}
                 />
                 <Button variant="outlined" size="small">
-                  Contacter
+                  {t('settings.contact')}
                 </Button>
               </ListItem>
             </List>
@@ -766,26 +769,26 @@ const Settings = () => {
 
       {/* Dialog de profil */}
       <Dialog open={profileDialog} onClose={() => setProfileDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Modifier le profil</DialogTitle>
+        <DialogTitle>{t('settings.editProfile')}</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 1 }}>
             <TextField
               fullWidth
-              label="Prénom"
+              label={t('settings.firstName')}
               value={profileForm.firstName}
               onChange={(e) => setProfileForm({ ...profileForm, firstName: e.target.value })}
               sx={{ mb: 2 }}
             />
             <TextField
               fullWidth
-              label="Nom"
+              label={t('settings.lastName')}
               value={profileForm.lastName}
               onChange={(e) => setProfileForm({ ...profileForm, lastName: e.target.value })}
               sx={{ mb: 2 }}
             />
             <TextField
               fullWidth
-              label="Email"
+              label={t('settings.email')}
               type="email"
               value={profileForm.email}
               onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
@@ -793,70 +796,68 @@ const Settings = () => {
             />
             <TextField
               fullWidth
-              label="Téléphone"
+              label={t('settings.phone')}
               value={profileForm.phone}
               onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
               sx={{ mb: 2 }}
             />
             <TextField
               fullWidth
-              label="URL de l'avatar (optionnel)"
+              label={t('settings.avatarURL')}
               value={profileForm.avatar}
               onChange={(e) => setProfileForm({ ...profileForm, avatar: e.target.value })}
             />
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setProfileDialog(false)}>Annuler</Button>
+          <Button onClick={() => setProfileDialog(false)}>{t('settings.cancel')}</Button>
           <Button onClick={handleProfileSave} variant="contained">
-            Sauvegarder
+            {t('settings.save')}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Dialog de réinitialisation */}
       <Dialog open={resetDialog} onClose={() => setResetDialog(false)}>
-        <DialogTitle>Confirmer la réinitialisation</DialogTitle>
+        <DialogTitle>{t('settings.resetConfirmTitle')}</DialogTitle>
         <DialogContent>
           <Typography>
-            Êtes-vous sûr de vouloir réinitialiser toutes les données ? 
-            Cette action remettra les données par défaut mais conservera votre profil utilisateur.
+            {t('settings.resetConfirmDescription')}
           </Typography>
           <Alert severity="warning" sx={{ mt: 2 }}>
             <Typography variant="body2">
-              <strong>Attention :</strong> Toutes vos dépenses, revenus, épargnes et objectifs seront supprimés.
+              <strong>{t('settings.resetWarning')}</strong>
             </Typography>
           </Alert>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setResetDialog(false)}>Annuler</Button>
+          <Button onClick={() => setResetDialog(false)}>{t('settings.cancel')}</Button>
           <Button 
             onClick={handleResetToDefaults} 
             color="warning" 
             variant="contained"
           >
-            Réinitialiser
+            {t('settings.reset')}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Dialog de suppression */}
       <Dialog open={deleteDialog} onClose={() => setDeleteDialog(false)}>
-        <DialogTitle>Confirmer la suppression</DialogTitle>
+        <DialogTitle>{t('settings.deleteConfirmTitle')}</DialogTitle>
         <DialogContent>
           <Typography>
-            Êtes-vous sûr de vouloir supprimer toutes les données ? 
-            Cette action est irréversible.
+            {t('settings.deleteConfirmDescription')}
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialog(false)}>Annuler</Button>
+          <Button onClick={() => setDeleteDialog(false)}>{t('settings.cancel')}</Button>
           <Button 
             onClick={handleDeleteData} 
             color="error" 
             variant="contained"
           >
-            Supprimer
+            {t('settings.delete')}
           </Button>
         </DialogActions>
       </Dialog>
