@@ -24,7 +24,8 @@ const Layout = () => {
     syncExpensesWithCategories,
     showUpdateDialog,
     closeUpdateDialog,
-    checkForUpdates
+    checkForUpdates,
+    checkAndFixOnboardingState
   } = useStore();
   
   // map path to nav value (retiré /quickadd)
@@ -47,6 +48,15 @@ const Layout = () => {
     validateAndCleanDates();
     syncExpensesWithCategories();
   }, [validateAndCleanDates, syncExpensesWithCategories]);
+
+  // Vérifier et corriger l'état onboarding au chargement
+  useEffect(() => {
+    console.log('Layout: Vérification de l\'état onboarding');
+    const wasFixed = checkAndFixOnboardingState();
+    if (wasFixed) {
+      console.log('Layout: État onboarding corrigé automatiquement');
+    }
+  }, [checkAndFixOnboardingState]);
 
   // Vérifier les mises à jour au chargement
   useEffect(() => {

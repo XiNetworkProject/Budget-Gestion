@@ -256,6 +256,38 @@ const useStore = create(
           scheduleSave();
         },
 
+        // Fonction pour vérifier et corriger automatiquement l'état onboarding
+        checkAndFixOnboardingState: () => {
+          const state = get();
+          console.log('CheckAndFixOnboardingState: Vérification de l\'état');
+          
+          // Vérifier si l'utilisateur a des données réelles
+          const hasRealData = (
+            state.expenses && state.expenses.length > 0 ||
+            state.incomeTransactions && state.incomeTransactions.length > 0 ||
+            state.transactions && state.transactions.length > 0 ||
+            (state.data && Object.values(state.data).some(cat => cat.some(val => val > 0))) ||
+            (state.revenus && state.revenus.some(val => val > 0))
+          );
+          
+          console.log('CheckAndFixOnboardingState:', { 
+            hasRealData, 
+            currentOnboardingCompleted: state.onboardingCompleted,
+            expensesCount: state.expenses?.length || 0,
+            transactionsCount: state.transactions?.length || 0
+          });
+          
+          // Si l'utilisateur a des données mais que l'onboarding n'est pas marqué comme terminé
+          if (hasRealData && !state.onboardingCompleted) {
+            console.log('CheckAndFixOnboardingState: Correction automatique - l\'utilisateur a des données');
+            set({ onboardingCompleted: true });
+            scheduleSave();
+            return true; // Indique qu'une correction a été faite
+          }
+          
+          return false; // Aucune correction nécessaire
+        },
+
         // Fonction pour valider et nettoyer les dates
         validateAndCleanDates: () => {
           const state = get();
@@ -1188,7 +1220,21 @@ const useStore = create(
         transactions: state.transactions,
         accounts: state.accounts,
         activeAccount: state.activeAccount
-      })
+      }),
+      // Options pour améliorer la persistance sur mobile
+      version: 1,
+      migrate: (persistedState, version) => {
+        console.log('Migration du store:', { version, persistedState });
+        return persistedState;
+      },
+      onRehydrateStorage: () => (state) => {
+        console.log('Store réhydraté:', { 
+          hasUser: !!state?.user, 
+          onboardingCompleted: state?.onboardingCompleted,
+          tutorialCompleted: state?.tutorialCompleted,
+          expensesCount: state?.expenses?.length || 0
+        });
+      }
     }
   )
 );

@@ -5,7 +5,7 @@ import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-  const { setUser, setToken, onboardingCompleted } = useStore();
+  const { setUser, setToken, onboardingCompleted, checkAndFixOnboardingState } = useStore();
   const navigate = useNavigate();
 
   console.log('Login: État actuel onboardingCompleted:', onboardingCompleted);
@@ -24,11 +24,16 @@ const Login = () => {
     // Attendre un peu pour que l'état soit restauré depuis la persistance locale
     await new Promise(resolve => setTimeout(resolve, 100));
     
+    // Vérifier et corriger l'état onboarding
+    console.log('Login: Vérification de l\'état onboarding après connexion');
+    const wasFixed = checkAndFixOnboardingState();
+    
     // Récupérer l'état mis à jour
     const currentState = useStore.getState();
     console.log('Login: État après setUser:', { 
       onboardingCompleted: currentState.onboardingCompleted,
-      isAuthenticated: currentState.isAuthenticated 
+      isAuthenticated: currentState.isAuthenticated,
+      wasFixed
     });
     
     // Rediriger vers l'onboarding seulement si ce n'est pas encore terminé
