@@ -127,7 +127,10 @@ const Home = () => {
     isFeatureAvailable,
     hasFullAI,
     hasPartialAI,
-    getAILevel
+    getAILevel,
+    isAuthenticated,
+    user,
+    logout
   } = useStore();
   const navigate = useNavigate();
   const [localData, setLocalData] = useState({
