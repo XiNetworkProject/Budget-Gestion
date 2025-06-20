@@ -29,17 +29,22 @@ function SplashRedirect() {
 function OnboardingGuard({ children }) {
   const { isAuthenticated, onboardingCompleted } = useStore();
   
+  console.log('OnboardingGuard:', { isAuthenticated, onboardingCompleted });
+  
   // Si l'utilisateur n'est pas connecté, on ne fait rien (Login s'en charge)
   if (!isAuthenticated) {
+    console.log('OnboardingGuard: Utilisateur non connecté');
     return children;
   }
   
   // Si l'onboarding n'est pas terminé, rediriger vers l'onboarding
   if (!onboardingCompleted) {
+    console.log('OnboardingGuard: Onboarding non terminé, redirection vers /onboarding');
     return <Navigate to="/onboarding" replace />;
   }
   
   // Sinon, afficher le contenu normal
+  console.log('OnboardingGuard: Onboarding terminé, affichage du contenu normal');
   return children;
 }
 

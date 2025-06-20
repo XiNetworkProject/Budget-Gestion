@@ -249,6 +249,13 @@ const useStore = create(
           scheduleSave();
         },
 
+        // Fonction pour forcer l'état onboardingCompleted à true
+        forceOnboardingCompleted: () => {
+          console.log('Force onboardingCompleted à true');
+          set({ onboardingCompleted: true });
+          scheduleSave();
+        },
+
         // Fonction pour valider et nettoyer les dates
         validateAndCleanDates: () => {
           const state = get();
@@ -1009,6 +1016,9 @@ const useStore = create(
               set({ isLoading: true });
               const data = await budgetService.getBudget(user.id);
               if (data) {
+                // Si l'utilisateur a des données, l'onboarding est forcément terminé
+                const shouldCompleteOnboarding = data.onboardingCompleted !== undefined ? data.onboardingCompleted : true;
+                
                 set({
                   months: data.months || defaultMonths,
                   categories: data.categories || defaultCategories,
@@ -1030,11 +1040,14 @@ const useStore = create(
                   userProfile: data.userProfile || defaultUserProfile,
                   appSettings: data.appSettings || defaultAppSettings,
                   tutorialCompleted: data.tutorialCompleted || false,
-                  onboardingCompleted: data.onboardingCompleted || false,
+                  onboardingCompleted: shouldCompleteOnboarding,
                   lastUpdateShown: data.lastUpdateShown || null,
                   isLoading: false
                 });
+                
+                console.log('setUser: Données chargées, onboardingCompleted:', shouldCompleteOnboarding);
               } else {
+                // Nouvel utilisateur, onboarding non terminé
                 const defaultBudget = {
                   months: defaultMonths,
                   categories: defaultCategories,
@@ -1062,6 +1075,7 @@ const useStore = create(
                 };
                 set({ ...defaultBudget, isLoading: false });
                 await budgetService.saveBudget(user.id, defaultBudget);
+                console.log('setUser: Nouvel utilisateur, onboardingCompleted: false');
               }
             } catch (error) {
               console.error('Error loading budget:', error);

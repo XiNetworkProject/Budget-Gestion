@@ -8,7 +8,9 @@ const Login = () => {
   const { setUser, setToken, onboardingCompleted } = useStore();
   const navigate = useNavigate();
 
-  const handleSuccess = (credentialResponse) => {
+  console.log('Login: État actuel onboardingCompleted:', onboardingCompleted);
+
+  const handleSuccess = async (credentialResponse) => {
     const token = credentialResponse.credential;
     const decoded = jwtDecode(token);
     setToken(token);
@@ -19,10 +21,22 @@ const Login = () => {
       picture: decoded.picture
     });
     
+    // Attendre un peu pour que l'état soit restauré depuis la persistance locale
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Récupérer l'état mis à jour
+    const currentState = useStore.getState();
+    console.log('Login: État après setUser:', { 
+      onboardingCompleted: currentState.onboardingCompleted,
+      isAuthenticated: currentState.isAuthenticated 
+    });
+    
     // Rediriger vers l'onboarding seulement si ce n'est pas encore terminé
-    if (!onboardingCompleted) {
+    if (!currentState.onboardingCompleted) {
+      console.log('Login: Redirection vers onboarding');
       navigate('/onboarding', { replace: true });
     } else {
+      console.log('Login: Redirection vers home');
       navigate('/home', { replace: true });
     }
   };
