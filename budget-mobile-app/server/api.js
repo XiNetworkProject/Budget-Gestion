@@ -47,7 +47,7 @@ const STRIPE_CONFIG = {
       name: 'Premium',
       price: 1.99,
       currency: 'EUR',
-      checkoutUrl: 'https://buy.stripe.com/bJe28rbgpduTbbgcDBfAc00', // URL Pro
+      checkoutUrl: 'https://buy.stripe.com/dRm5kDfwF0I7frw331fAc01', // URL Premium
       features: {
         maxTransactions: -1, // Illimité
         unlimitedCategories: true,
@@ -65,7 +65,7 @@ const STRIPE_CONFIG = {
       name: 'Pro',
       price: 5.99,
       currency: 'EUR',
-      checkoutUrl: 'https://buy.stripe.com/dRm5kDfwF0I7frw331fAc01', // URL Premium
+      checkoutUrl: 'https://buy.stripe.com/bJe28rbgpduTbbgcDBfAc00', // URL Pro
       features: {
         maxTransactions: -1, // Illimité
         unlimitedCategories: true,
@@ -554,16 +554,16 @@ app.get('/api/stripe/subscription-info', verifyAuth, async (req, res) => {
           
           // Mapper les Price IDs vers les plans
           if (priceId === 'price_1RcAEjGb8GKvvz2G9mn9OlJs') {
-            planId = 'PREMIUM';
-            console.log('Plan détecté: PREMIUM');
-          } else if (priceId === 'price_1RcAERGb8GKvvz2GAyajrGFo') {
             planId = 'PRO';
             console.log('Plan détecté: PRO');
+          } else if (priceId === 'price_1RcAERGb8GKvvz2GAyajrGFo') {
+            planId = 'PREMIUM';
+            console.log('Plan détecté: PREMIUM');
           } else {
             console.log('Price ID non reconnu, plan par défaut: FREE');
             console.log('Price IDs attendus:');
-            console.log('- Premium: price_1RcAEjGb8GKvvz2G9mn9OlJs');
-            console.log('- Pro: price_1RcAERGb8GKvvz2GAyajrGFo');
+            console.log('- Pro: price_1RcAEjGb8GKvvz2G9mn9OlJs');
+            console.log('- Premium: price_1RcAERGb8GKvvz2GAyajrGFo');
           }
           
           // Calculer si l'abonnement est en période d'essai
