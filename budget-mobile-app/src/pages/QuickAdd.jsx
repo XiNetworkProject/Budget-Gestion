@@ -56,9 +56,13 @@ const QuickAdd = () => {
       setAmount('');
       setDescription('');
       setSelectedDate(new Date().toISOString().split('T')[0]);
+      // Améliorer le focus avec un délai plus long
       setTimeout(() => {
-        amountRef.current?.focus();
-      }, 300);
+        if (amountRef.current) {
+          amountRef.current.focus();
+          amountRef.current.select();
+        }
+      }, 500);
     }
   }, [open, categories, availableIncomeTypes]);
 
@@ -124,11 +128,10 @@ const QuickAdd = () => {
 
   return (
     <>
-      {/* Bouton pour ouvrir la popup */}
+      {/* Bouton pour ouvrir la popup - CORRIGÉ : une seule icône */}
       <Button
         variant="contained"
         color="primary"
-        startIcon={<Add />}
         onClick={() => setOpen(true)}
         sx={{ 
           position: 'fixed', 
@@ -221,7 +224,7 @@ const QuickAdd = () => {
               </Select>
             </FormControl>
 
-            {/* Montant */}
+            {/* Montant - AMÉLIORÉ */}
             <TextField
               fullWidth
               type="number"
@@ -230,8 +233,13 @@ const QuickAdd = () => {
               onChange={(e) => setAmount(e.target.value)}
               onKeyPress={handleKeyPress}
               inputRef={amountRef}
+              autoFocus
               InputProps={{
                 startAdornment: <InputAdornment position="start">€</InputAdornment>,
+              }}
+              inputProps={{
+                step: "0.01",
+                min: "0"
               }}
             />
 
