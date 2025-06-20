@@ -1,28 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { 
-  AppBar, 
-  Toolbar, 
-  Typography, 
-  Box, 
-  BottomNavigation, 
-  BottomNavigationAction,
-  Chip,
-  IconButton,
-  Tooltip
-} from '@mui/material';
-import HomeIcon from '@mui/icons-material/Home';
-import BarChartIcon from '@mui/icons-material/BarChart';
-import SettingsIcon from '@mui/icons-material/Settings';
-import SavingsIcon from '@mui/icons-material/Savings';
-import StarIcon from '@mui/icons-material/Star';
-import DiamondIcon from '@mui/icons-material/Diamond';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useStore } from '../store';
+import { Box, BottomNavigation, BottomNavigationAction, Chip, Tooltip } from '@mui/material';
+import { Home as HomeIcon, BarChart as BarChartIcon, Savings as SavingsIcon, Settings as SettingsIcon, Star as StarIcon, Diamond as DiamondIcon } from '@mui/icons-material';
 import Tutorial from './Tutorial';
 import UpdateDialog from './UpdateDialog';
-import QuickAdd from '../pages/QuickAdd';
-import { useStore } from '../store';
+import BottomTabs from './BottomTabs';
 import toast from 'react-hot-toast';
-import { useTranslation } from 'react-i18next';
 
 const Layout = () => {
   const { t } = useTranslation();
@@ -176,9 +161,6 @@ const Layout = () => {
       <Box sx={{ p: 2 }}>
         <Outlet />
       </Box>
-
-      {/* QuickAdd global */}
-      <QuickAdd />
 
       <BottomNavigation
         value={value}
