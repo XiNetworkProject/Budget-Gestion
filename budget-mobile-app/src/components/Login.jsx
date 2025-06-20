@@ -21,8 +21,8 @@ const Login = () => {
       picture: decoded.picture
     });
     
-    // Attendre un peu pour que l'état soit restauré depuis la persistance locale
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // L'état est maintenant chargé directement depuis le serveur dans setUser
+    // Pas besoin d'attendre la persistance locale
     
     // Vérifier et corriger l'état onboarding
     console.log('Login: Vérification de l\'état onboarding après connexion');
