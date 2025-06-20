@@ -15,6 +15,18 @@ import { DragDropContext } from 'react-beautiful-dnd';
 import { Draggable, Droppable } from 'react-beautiful-dnd';
 import Splash from './components/Splash';
 import toast from 'react-hot-toast';
+import { 
+  ThemeProvider, 
+  createTheme, 
+  CssBaseline,
+  Box,
+  Container
+} from '@mui/material';
+import { 
+  Table as TableIconMui, 
+  BarChart as ChartIconMui 
+} from '@mui/icons-material';
+import AppRoutes from './Routes';
 
 Chart.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
@@ -693,138 +705,66 @@ function Visualisation() {
 
 const App = () => {
   const { t } = useTranslation();
-  // Splash screen
+  const { appSettings } = useStore();
   const [showSplash, setShowSplash] = useState(true);
+  
+  // Splash screen
   useEffect(() => {
     const timer = setTimeout(() => setShowSplash(false), 2500);
     return () => clearTimeout(timer);
   }, []);
-  
-  // App state hooks (toujours appelés)
-  const [page, setPage] = useState("tableau");
-  const { 
-    isAuthenticated, 
-    user, 
-    logout, 
-    isSaving, 
-    isLoading
-  } = useStore();
-  const [isCompact, setIsCompact] = useState(false);
-  const [theme, setTheme] = useState(
-    localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-  );
-  
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark-mode', theme === 'dark');
-    localStorage.setItem('theme', theme);
-  }, [theme]);
-  
-  useEffect(() => {
-    if (isLoading || isSaving) {
-      NProgress.start();
-    } else {
-      NProgress.done();
-    }
-  }, [isLoading, isSaving]);
-  
-  // Conditional rendering après tous les hooks
-  if (showSplash) return <Splash />;
-  if (!isAuthenticated) return <Login />;
+
+  // Créer le thème basé sur les paramètres
+  const theme = createTheme({
+    palette: {
+      mode: appSettings.theme || 'light',
+      primary: {
+        main: '#2563eb',
+      },
+      secondary: {
+        main: '#7c3aed',
+      },
+      background: {
+        default: appSettings.theme === 'dark' ? '#0f172a' : '#f8fafc',
+        paper: appSettings.theme === 'dark' ? '#1e293b' : '#ffffff',
+      },
+    },
+    spacing: appSettings.display?.compactMode ? 1 : 2,
+    typography: {
+      fontSize: appSettings.display?.compactMode ? 14 : 16,
+    },
+    components: {
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            borderRadius: appSettings.display?.compactMode ? 4 : 8,
+          },
+        },
+      },
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            borderRadius: appSettings.display?.compactMode ? 4 : 8,
+          },
+        },
+      },
+    },
+  });
+
+  if (showSplash) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Splash />
+      </ThemeProvider>
+    );
+  }
 
   return (
-    <>
-      <div style={{ 
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-        color: '#e2e8f0',
-        paddingBottom: '72px'
-      }}>
-        <div style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '16px'
-        }}>
-          <header className="app-header">
-            <h1 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '600' }}>{t('app.title')}</h1>
-            <div className="header-controls">
-              <button
-                onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
-                style={{
-                  background: 'transparent',
-                  color: '#94a3b8',
-                  border: '1px solid #94a3b8',
-                  borderRadius: '8px',
-                  padding: '4px 8px',
-                  cursor: 'pointer'
-                }}
-              >
-                {theme === 'dark' ? t('theme.light') : t('theme.dark')}
-              </button>
-              <img src={user?.picture} alt={user?.name} className="avatar" />
-              <button
-                onClick={logout}
-                style={{
-                  background: '#ef4444',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '8px 16px',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s ease'
-                }}
-              >
-                {t('logout')}
-              </button>
-            </div>
-          </header>
-
-          {isSaving && (
-            <div role="status" aria-live="polite" aria-busy="true" style={{
-              backgroundColor: '#2563eb',
-              color: 'white',
-              textAlign: 'center',
-              padding: '4px 0',
-              fontSize: '0.9rem',
-              marginBottom: '16px',
-              borderRadius: '4px'
-            }}>
-              Enregistrement en cours...
-            </div>
-          )}
-
-          <main>
-            {page === "tableau" ? (
-              <TableView isCompact={isCompact} setIsCompact={setIsCompact} />
-            ) : (
-              <Visualisation />
-            )}
-          </main>
-        </div>
-
-        <nav style={styles.nav}>
-          <button
-            onClick={() => setPage("tableau")}
-            style={{
-              ...styles.navButton,
-              ...(page === "tableau" ? styles.activeNavButton : {})
-            }}
-          >
-            <TableIcon />
-            <span>{t('nav.table')}</span>
-          </button>
-          <button
-            onClick={() => setPage("visualisation")}
-            style={{
-              ...styles.navButton,
-              ...(page === "visualisation" ? styles.activeNavButton : {})
-            }}
-          >
-            <ChartIcon />
-            <span>{t('nav.chart')}</span>
-          </button>
-        </nav>
-      </div>
-    </>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AppRoutes />
+    </ThemeProvider>
   );
 };
 

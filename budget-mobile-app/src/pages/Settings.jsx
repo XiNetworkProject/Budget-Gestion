@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
+import { useAppSettings } from '../hooks/useAppSettings';
 import { 
   Box, 
   Typography, 
@@ -102,6 +103,36 @@ const Settings = () => {
     appVersion,
     checkForUpdates
   } = useStore();
+
+  const {
+    changeLanguage,
+    changeTheme,
+    changeCompactMode,
+    changeCurrency,
+    changeShowPercentages,
+    currentLanguage,
+    currentTheme,
+    isCompactMode,
+    currentCurrency,
+    showPercentages
+  } = useAppSettings();
+
+  // Listes de langues et devises
+  const languages = [
+    { code: 'fr', name: 'Français', flag: '🇫🇷' },
+    { code: 'en', name: 'English', flag: '🇬🇧' },
+    { code: 'es', name: 'Español', flag: '🇪🇸' },
+    { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+    { code: 'it', name: 'Italiano', flag: '🇮🇹' }
+  ];
+
+  const currencies = [
+    { code: 'EUR', name: 'Euro', symbol: '€' },
+    { code: 'USD', name: 'Dollar US', symbol: '$' },
+    { code: 'GBP', name: 'Livre Sterling', symbol: '£' },
+    { code: 'CHF', name: 'Franc Suisse', symbol: 'CHF' },
+    { code: 'CAD', name: 'Dollar Canadien', symbol: 'C$' }
+  ];
 
   const [activeTab, setActiveTab] = useState(0);
   const [profileDialog, setProfileDialog] = useState(false);
@@ -207,20 +238,6 @@ const Settings = () => {
     setSnack({ open: true, message: 'Dialog de mise à jour relancé !', severity: 'success' });
   };
 
-  const languages = [
-    { code: 'fr', name: 'Français', flag: '🇫🇷' },
-    { code: 'en', name: 'English', flag: '🇬🇧' },
-    { code: 'es', name: 'Español', flag: '🇪🇸' },
-    { code: 'de', name: 'Deutsch', flag: '🇩🇪' }
-  ];
-
-  const currencies = [
-    { code: 'EUR', name: 'Euro', symbol: '€' },
-    { code: 'USD', name: 'Dollar US', symbol: '$' },
-    { code: 'GBP', name: 'Livre Sterling', symbol: '£' },
-    { code: 'CHF', name: 'Franc Suisse', symbol: 'CHF' }
-  ];
-
   return (
     <Box sx={{ pb: 8 }}>
       {/* En-tête */}
@@ -309,8 +326,8 @@ const Settings = () => {
                   secondary="Activer le thème sombre pour l'application"
                 />
                 <Switch 
-                  checked={appSettings.theme === 'dark'} 
-                  onChange={e => updateAppSettings({ theme: e.target.checked ? 'dark' : 'light' })} 
+                  checked={currentTheme === 'dark'} 
+                  onChange={(e) => changeTheme(e.target.checked ? 'dark' : 'light')} 
                 />
               </ListItem>
               <Divider />
@@ -320,13 +337,8 @@ const Settings = () => {
                   secondary="Réduire l'espacement des éléments"
                 />
                 <Switch 
-                  checked={appSettings.display?.compactMode || false} 
-                  onChange={e => updateAppSettings({ 
-                    display: { 
-                      ...appSettings.display, 
-                      compactMode: e.target.checked 
-                    } 
-                  })} 
+                  checked={isCompactMode} 
+                  onChange={(e) => changeCompactMode(e.target.checked)} 
                 />
               </ListItem>
             </List>
@@ -342,8 +354,8 @@ const Settings = () => {
                 />
                 <FormControl size="small" sx={{ minWidth: 120 }}>
                   <Select
-                    value={appSettings.language || 'fr'}
-                    onChange={(e) => updateAppSettings({ language: e.target.value })}
+                    value={currentLanguage}
+                    onChange={(e) => changeLanguage(e.target.value)}
                   >
                     {languages.map(lang => (
                       <MenuItem key={lang.code} value={lang.code}>
@@ -361,8 +373,8 @@ const Settings = () => {
                 />
                 <FormControl size="small" sx={{ minWidth: 120 }}>
                   <Select
-                    value={appSettings.currency || 'EUR'}
-                    onChange={(e) => updateAppSettings({ currency: e.target.value })}
+                    value={currentCurrency}
+                    onChange={(e) => changeCurrency(e.target.value)}
                   >
                     {currencies.map(curr => (
                       <MenuItem key={curr.code} value={curr.code}>
@@ -384,13 +396,8 @@ const Settings = () => {
                   secondary="Montrer les pourcentages dans les graphiques"
                 />
                 <Switch 
-                  checked={appSettings.display?.showPercentages || true} 
-                  onChange={e => updateAppSettings({ 
-                    display: { 
-                      ...appSettings.display, 
-                      showPercentages: e.target.checked 
-                    } 
-                  })} 
+                  checked={showPercentages} 
+                  onChange={(e) => changeShowPercentages(e.target.checked)} 
                 />
               </ListItem>
             </List>
