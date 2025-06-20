@@ -54,7 +54,8 @@ app.use(helmet({
         "'self'",
         "'unsafe-inline'",
         "https://fonts.googleapis.com",
-        "https://www.gstatic.com"
+        "https://www.gstatic.com",
+        "https://accounts.google.com"
       ],
       imgSrc: [
         "'self'",
