@@ -81,14 +81,8 @@ const Layout = () => {
 
   // Récupérer l'abonnement depuis Stripe au chargement
   useEffect(() => {
-    const hasCheckedSubscription = sessionStorage.getItem('hasCheckedSubscription');
-    if (!hasCheckedSubscription) {
-      console.log('Layout: Premier chargement, vérification de l\'abonnement Stripe');
-      fetchSubscriptionFromStripe();
-      sessionStorage.setItem('hasCheckedSubscription', 'true');
-    } else {
-      console.log('Layout: Abonnement déjà vérifié dans cette session');
-    }
+    console.log('Layout: Vérification de l\'abonnement Stripe à chaque connexion');
+    fetchSubscriptionFromStripe();
   }, [fetchSubscriptionFromStripe]);
 
   // Gestion du tutoriel - ne se lance qu'une seule fois après l'onboarding

@@ -1351,6 +1351,88 @@ const useStore = create(
         toast.success('Abonnement réinitialisé');
       },
 
+      // Forcer le rechargement des données de budget
+      reloadBudgetData: async () => {
+        const state = get();
+        if (!state.user?.id) {
+          console.log('Aucun utilisateur connecté, impossible de recharger les données');
+          return;
+        }
+
+        try {
+          console.log('Rechargement forcé des données de budget...');
+          set({ isLoading: true });
+          
+          const data = await budgetService.getBudget(state.user.id);
+          console.log('Données rechargées:', data);
+          
+          if (data) {
+            set({
+              months: data.months || defaultMonths,
+              categories: data.categories || defaultCategories,
+              data: data.data || defaultData,
+              revenus: data.revenus || defaultRevenus,
+              incomeTypes: data.incomeTypes || defaultIncomeTypes,
+              incomes: data.incomes || defaultIncomes,
+              persons: data.persons || defaultPersons,
+              saved: data.saved || defaultSaved,
+              sideByMonth: data.sideByMonth || defaultSideByMonth,
+              totalPotentialSavings: data.totalPotentialSavings || 0,
+              budgetLimits: data.budgetLimits || defaultCategoryLimits,
+              expenses: data.expenses || [],
+              incomeTransactions: data.incomeTransactions || [],
+              savings: data.savings || [],
+              debts: data.debts || [],
+              bankAccounts: data.bankAccounts || [],
+              transactions: data.transactions || [],
+              userProfile: data.userProfile || defaultUserProfile,
+              appSettings: data.appSettings || defaultAppSettings,
+              tutorialCompleted: data.tutorialCompleted || false,
+              onboardingCompleted: data.onboardingCompleted !== undefined ? data.onboardingCompleted : true,
+              lastUpdateShown: data.lastUpdateShown || null,
+              appVersion: data.appVersion || "2.1.0",
+              isLoading: false
+            });
+            
+            toast.success('Données rechargées avec succès');
+          } else {
+            console.log('Aucune donnée trouvée, création d\'un nouveau budget');
+            const defaultBudget = {
+              months: defaultMonths,
+              categories: defaultCategories,
+              data: defaultData,
+              revenus: defaultRevenus,
+              incomeTypes: defaultIncomeTypes,
+              incomes: defaultIncomes,
+              persons: defaultPersons,
+              saved: defaultSaved,
+              sideByMonth: defaultSideByMonth,
+              totalPotentialSavings: 0,
+              budgetLimits: defaultCategoryLimits,
+              expenses: [],
+              incomeTransactions: [],
+              savings: [],
+              debts: [],
+              bankAccounts: [],
+              transactions: [],
+              userProfile: { ...defaultUserProfile, email: state.user.email },
+              appSettings: defaultAppSettings,
+              tutorialCompleted: false,
+              onboardingCompleted: false,
+              lastUpdateShown: null,
+              appVersion: "2.1.0"
+            };
+            set({ ...defaultBudget, isLoading: false });
+            await budgetService.saveBudget(state.user.id, defaultBudget);
+            toast.success('Nouveau budget créé');
+          }
+        } catch (error) {
+          console.error('Erreur lors du rechargement des données:', error);
+          set({ isLoading: false });
+          toast.error('Erreur lors du rechargement des données');
+        }
+      },
+
       // Récupérer les informations d'abonnement depuis Stripe
       fetchSubscriptionFromStripe: async () => {
         const state = get();

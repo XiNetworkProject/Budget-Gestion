@@ -107,7 +107,8 @@ const Settings = () => {
     checkForUpdates,
     getCurrentPlan,
     hasSpecialAccess,
-    fetchSubscriptionFromStripe
+    fetchSubscriptionFromStripe,
+    reloadBudgetData
   } = useStore();
 
   const {
@@ -645,6 +646,33 @@ const Settings = () => {
                   </ListItem>
                 </>
               )}
+            </List>
+          </Paper>
+
+          {/* Rechargement des données */}
+          <Paper sx={{ mb: 2 }}>
+            <List>
+              <ListItem>
+                <ListItemIcon>
+                  <CloudDownload color="info" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary="Recharger les données" 
+                  secondary="Récupérer les données depuis le serveur"
+                />
+                <Button 
+                  variant="outlined" 
+                  color="info" 
+                  size="small"
+                  onClick={async () => {
+                    await reloadBudgetData();
+                    setSnack({ open: true, message: 'Données rechargées', severity: 'info' });
+                  }}
+                  startIcon={<CloudDownload />}
+                >
+                  Recharger
+                </Button>
+              </ListItem>
             </List>
           </Paper>
 
