@@ -55,12 +55,102 @@ const authenticateToken = (req, res, next) => {
   }
 };
 
-// Routes Stripe (simulées pour l'instant)
-app.post('/api/stripe/create-checkout-session', authenticateToken, (req, res) => {
+// Routes Stripe (avec les vrais Price IDs)
+const STRIPE_PLANS = {
+  PREMIUM: {
+    priceId: 'price_1RcAEjGb8GKvvz2G9mn9OlJs',
+    name: 'Premium',
+    price: 1.99
+  },
+  PRO: {
+    priceId: 'price_1RcAERGb8GKvvz2GAyajrGFo',
+    name: 'Pro',
+    price: 5.99
+  }
+};
+
+app.post('/api/stripe/create-checkout-session', authenticateToken, async (req, res) => {
   try {
     const { planId, promoCode, userId, userEmail } = req.body;
     
-    // Simulation d'une session Stripe (à remplacer par la vraie intégration)
+    // Vérifier le plan
+    const plan = STRIPE_PLANS[planId];
+    if (!plan) {
+      return res.status(400).json({ message: 'Plan invalide' });
+    }
+
+    // Appliquer le code promo si fourni
+    let discount = null;
+    if (promoCode) {
+      const promoCodes = {
+        'DEV2024': { discount: 100, type: 'percentage' },
+        'TEST50': { discount: 50, type: 'percentage' },
+        'FREEMONTH': { discount: 1, type: 'months' }
+      };
+      
+      const promo = promoCodes[promoCode.toUpperCase()];
+      if (promo) {
+        if (promo.type === 'percentage') {
+          discount = {
+            type: 'percentage',
+            amount_off: Math.round(plan.price * 100 * promo.discount / 100)
+          };
+        } else if (promo.type === 'months') {
+          discount = {
+            type: 'coupon',
+            coupon: 'FREEMONTH'
+          };
+        }
+      }
+    }
+
+    // Créer la session Stripe Checkout
+    const sessionParams = {
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: plan.priceId,
+          quantity: 1,
+        },
+      ],
+      mode: 'subscription',
+      success_url: `${process.env.FRONTEND_URL || 'https://budget-mobile-app-pa2n.onrender.com'}/subscription?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_URL || 'https://budget-mobile-app-pa2n.onrender.com'}/subscription?canceled=true`,
+      customer_email: userEmail,
+      metadata: {
+        userId: userId,
+        planId: planId,
+        promoCode: promoCode || ''
+      },
+      subscription_data: {
+        metadata: {
+          userId: userId,
+          planId: planId
+        }
+      }
+    };
+
+    // Ajouter la réduction si applicable
+    if (discount) {
+      if (discount.type === 'percentage') {
+        sessionParams.line_items[0].price_data = {
+          currency: 'eur',
+          product_data: {
+            name: plan.name,
+          },
+          unit_amount: Math.round(plan.price * 100 * (100 - discount.amount_off) / 100),
+        };
+        delete sessionParams.line_items[0].price;
+      } else if (discount.type === 'coupon') {
+        sessionParams.discounts = [
+          {
+            coupon: discount.coupon,
+          },
+        ];
+      }
+    }
+
+    // Simulation de la session (à remplacer par la vraie intégration Stripe)
     const sessionId = `cs_test_${Date.now()}`;
     const sessionUrl = `https://checkout.stripe.com/pay/${sessionId}`;
     
@@ -68,6 +158,7 @@ app.post('/api/stripe/create-checkout-session', authenticateToken, (req, res) =>
       sessionId,
       sessionUrl
     });
+
   } catch (error) {
     console.error('Erreur création session Stripe:', error);
     res.status(500).json({ message: 'Erreur lors de la création de la session de paiement' });

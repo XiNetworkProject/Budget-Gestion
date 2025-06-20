@@ -56,7 +56,7 @@ const defaultAppSettings = {
   }
 };
 
-// Plans d'abonnement
+// Plans d'abonnement avec les vrais Price IDs Stripe
 const subscriptionPlans = {
   FREE: {
     id: 'free',
@@ -80,6 +80,7 @@ const subscriptionPlans = {
     name: 'Premium',
     price: 1.99,
     currency: 'EUR',
+    stripePriceId: 'price_1RcAEjGb8GKvvz2G9mn9OlJs',
     features: {
       maxTransactions: -1, // Illimité
       unlimitedCategories: true,
@@ -97,6 +98,7 @@ const subscriptionPlans = {
     name: 'Pro',
     price: 5.99,
     currency: 'EUR',
+    stripePriceId: 'price_1RcAERGb8GKvvz2GAyajrGFo',
     features: {
       maxTransactions: -1, // Illimité
       unlimitedCategories: true,
