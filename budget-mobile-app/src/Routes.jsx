@@ -13,6 +13,7 @@ import Expenses from './pages/Expenses';
 import Income from './pages/Income';
 import Savings from './pages/Savings';
 import Debts from './pages/Debts';
+import ActionPlans from './pages/ActionPlans';
 import { useStore } from './store';
 
 function SplashRedirect() {
@@ -67,6 +68,7 @@ export default function AppRoutes() {
           <Route path="/income" element={<Income />} />
           <Route path="/savings" element={<Savings />} />
           <Route path="/debts" element={<Debts />} />
+          <Route path="/action-plans" element={<ActionPlans />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Route>
       </Routes>

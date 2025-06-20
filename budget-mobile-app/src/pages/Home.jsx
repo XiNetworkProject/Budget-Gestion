@@ -276,18 +276,19 @@ const Home = () => {
   // Calculer les économies du mois sélectionné
   const selectedMonthSaved = selectedMonthIncome - selectedMonthExpense;
 
-  // Système de prévisions intelligentes pour le mois prochain - AMÉLIORÉ
+  // Système de prévisions intelligentes pour le mois prochain - CORRIGÉ
   const calculateIntelligentForecast = () => {
-    const currentDate = new Date();
-    const nextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+    // Utiliser le mois sélectionné comme référence au lieu de la date actuelle
+    const currentDate = new Date(selectedYear, selectedMonth, 1);
+    const nextMonth = new Date(selectedYear, selectedMonth + 1, 1);
     const nextMonthYear = nextMonth.getFullYear();
     const nextMonthIndex = nextMonth.getMonth();
     
-    // 1. Prévisions de revenus basées sur les transactions récentes - AMÉLIORÉ
+    // 1. Prévisions de revenus basées sur les transactions récentes - CORRIGÉ
     const calculateIncomeForecast = () => {
-      // Revenus récurrents (basés sur les 3 derniers mois)
+      // Revenus récurrents (basés sur les 3 derniers mois par rapport au mois sélectionné)
       const recentMonths = [0, 1, 2].map(i => {
-        const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+        const monthDate = new Date(selectedYear, selectedMonth - i, 1);
         
         // Transactions individuelles pour ce mois
         const monthIncomeTransactions = incomeTransactions
@@ -329,11 +330,11 @@ const Home = () => {
       };
     };
     
-    // 2. Prévisions de dépenses basées sur les transactions récentes - AMÉLIORÉ
+    // 2. Prévisions de dépenses basées sur les transactions récentes - CORRIGÉ
     const calculateExpenseForecast = () => {
-      // Dépenses récentes (basées sur les 3 derniers mois)
+      // Dépenses récentes (basées sur les 3 derniers mois par rapport au mois sélectionné)
       const recentExpenses = [0, 1, 2].map(i => {
-        const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+        const monthDate = new Date(selectedYear, selectedMonth - i, 1);
         
         // Transactions individuelles pour ce mois
         const monthExpenses = expenses
@@ -406,7 +407,7 @@ const Home = () => {
   const forecast = calculateIntelligentForecast();
   const nextMonthProjected = forecast.balance;
 
-  // Générer des recommandations intelligentes
+  // Générer des recommandations intelligentes - AMÉLIORÉ
   const generateRecommendations = () => {
     const recommendations = [];
     
@@ -417,18 +418,32 @@ const Home = () => {
         type: 'warning',
         title: 'Taux d\'épargne faible',
         message: `Votre taux d'épargne prévu est de ${Math.round(savingsRate)}%. Il est recommandé d'épargner au moins 20% de vos revenus.`,
-        action: 'Réviser vos dépenses',
-        actionType: 'review_expenses',
-        priority: 'high'
+        action: 'Créer un plan d\'épargne',
+        actionType: 'create_savings_plan',
+        priority: 'high',
+        suggestedPlan: {
+          title: 'Plan d\'épargne d\'urgence',
+          description: 'Créer un fonds d\'urgence équivalent à 3 mois de dépenses',
+          category: 'Épargne',
+          targetAmount: Math.round(selectedMonthExpense * 3),
+          priority: 'high'
+        }
       });
     } else if (savingsRate > 30) {
       recommendations.push({
         type: 'success',
         title: 'Excellent taux d\'épargne',
         message: `Félicitations ! Votre taux d'épargne prévu de ${Math.round(savingsRate)}% est excellent.`,
-        action: 'Continuer vos bonnes habitudes',
-        actionType: 'continue_good_habits',
-        priority: 'low'
+        action: 'Optimiser l\'investissement',
+        actionType: 'optimize_investment',
+        priority: 'low',
+        suggestedPlan: {
+          title: 'Plan d\'investissement',
+          description: 'Diversifier vos placements pour optimiser vos rendements',
+          category: 'Investissement',
+          targetAmount: Math.round(forecast.balance * 0.5),
+          priority: 'medium'
+        }
       });
     }
     
@@ -441,9 +456,16 @@ const Home = () => {
         type: 'error',
         title: 'Augmentation des dépenses prévue',
         message: `Vos dépenses pourraient augmenter de ${Math.round(expenseChange)}% le mois prochain.`,
-        action: 'Identifier les causes',
-        actionType: 'analyze_expenses',
-        priority: 'high'
+        action: 'Créer un plan de réduction',
+        actionType: 'create_reduction_plan',
+        priority: 'high',
+        suggestedPlan: {
+          title: 'Plan de réduction des dépenses',
+          description: `Réduire les dépenses de ${Math.round(expenseChange)}% le mois prochain`,
+          category: 'Réduction des dépenses',
+          targetAmount: Math.round(currentMonthExpense * (expenseChange / 100)),
+          priority: 'high'
+        }
       });
     } else if (expenseChange < -10) {
       recommendations.push({
@@ -465,9 +487,16 @@ const Home = () => {
         type: 'warning',
         title: 'Baisse des revenus prévue',
         message: `Vos revenus pourraient diminuer de ${Math.round(Math.abs(incomeChange))}% le mois prochain.`,
-        action: 'Préparer un plan',
-        actionType: 'prepare_plan',
-        priority: 'high'
+        action: 'Préparer un plan de contingence',
+        actionType: 'prepare_contingency_plan',
+        priority: 'high',
+        suggestedPlan: {
+          title: 'Plan de contingence financière',
+          description: 'Préparer un plan B en cas de baisse des revenus',
+          category: 'Budget',
+          targetAmount: Math.round(currentMonthIncome * (Math.abs(incomeChange) / 100)),
+          priority: 'high'
+        }
       });
     }
     
@@ -492,7 +521,14 @@ const Home = () => {
           message: `${topCategory.category} représente ${Math.round(topCategoryPercentage)}% de vos dépenses.`,
           action: 'Diversifier vos dépenses',
           actionType: 'diversify_expenses',
-          priority: 'medium'
+          priority: 'medium',
+          suggestedPlan: {
+            title: `Réduction des dépenses ${topCategory.category}`,
+            description: `Réduire les dépenses dans la catégorie ${topCategory.category}`,
+            category: 'Réduction des dépenses',
+            targetAmount: Math.round(topCategory.amount * 0.2),
+            priority: 'medium'
+          }
         });
       }
     }
@@ -514,7 +550,14 @@ const Home = () => {
           message: `${smallTransactions} petites dépenses (<10€) sur ${recentTransactions.length} transactions.`,
           action: 'Consolider les petites dépenses',
           actionType: 'consolidate_expenses',
-          priority: 'medium'
+          priority: 'medium',
+          suggestedPlan: {
+            title: 'Plan de consolidation des dépenses',
+            description: 'Regrouper les petites dépenses en transactions mensuelles',
+            category: 'Budget',
+            targetAmount: Math.round(avgAmount * smallTransactions * 0.3),
+            priority: 'medium'
+          }
         });
       }
     }
@@ -538,7 +581,7 @@ const Home = () => {
   
   const recommendations = generateRecommendations();
 
-  // Fonctions pour gérer les actions des recommandations
+  // Fonctions pour gérer les actions des recommandations - AMÉLIORÉ
   const handleRecommendationAction = (actionType, recommendation) => {
     switch (actionType) {
       case 'review_expenses':
@@ -554,8 +597,8 @@ const Home = () => {
         alert('Continuez vos bonnes habitudes ! Votre tendance est positive.');
         break;
       case 'prepare_plan':
-        // Ouvrir la page Budget pour ajuster les limites
-        navigate('/budget');
+        // Ouvrir la page des plans d'actions
+        navigate('/action-plans');
         break;
       case 'diversify_expenses':
         // Ouvrir la page Analytics pour voir la répartition
@@ -573,9 +616,44 @@ const Home = () => {
         // Message de confirmation
         alert('Vos finances sont en bonne santé. Continuez à surveiller régulièrement.');
         break;
+      case 'create_savings_plan':
+      case 'optimize_investment':
+      case 'create_reduction_plan':
+      case 'prepare_contingency_plan':
+        // Créer automatiquement un plan suggéré et naviguer vers la page des plans
+        if (recommendation.suggestedPlan) {
+          createSuggestedPlan(recommendation.suggestedPlan);
+        }
+        navigate('/action-plans');
+        break;
       default:
         console.log('Action non reconnue:', actionType);
     }
+  };
+
+  // Fonction pour créer automatiquement un plan suggéré
+  const createSuggestedPlan = (suggestedPlan) => {
+    const existingPlans = JSON.parse(localStorage.getItem('actionPlans') || '[]');
+    
+    const newPlan = {
+      id: Date.now(),
+      title: suggestedPlan.title,
+      description: suggestedPlan.description,
+      category: suggestedPlan.category,
+      targetAmount: suggestedPlan.targetAmount,
+      deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // +30 jours
+      priority: suggestedPlan.priority,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      progress: 0,
+      isSuggested: true
+    };
+    
+    const updatedPlans = [...existingPlans, newPlan];
+    localStorage.setItem('actionPlans', JSON.stringify(updatedPlans));
+    
+    alert(`Plan "${suggestedPlan.title}" créé automatiquement ! Vous pouvez le modifier dans la page des plans d'actions.`);
   };
 
   // Fonction pour obtenir l'icône de tendance
@@ -1426,6 +1504,31 @@ const Home = () => {
             <Typography variant="body2">
               {rec.message}
             </Typography>
+            
+            {/* Afficher le plan suggéré s'il existe */}
+            {rec.suggestedPlan && (
+              <Box sx={{ mt: 1, p: 1, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 1 }}>
+                <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                  💡 Plan suggéré : {rec.suggestedPlan.title}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {rec.suggestedPlan.description}
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+                  <Chip 
+                    label={`Objectif: ${rec.suggestedPlan.targetAmount}€`}
+                    size="small"
+                    variant="outlined"
+                  />
+                  <Chip 
+                    label={rec.suggestedPlan.category}
+                    size="small"
+                    variant="outlined"
+                  />
+                </Box>
+              </Box>
+            )}
+            
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
               💡 Cliquez sur le bouton pour agir
             </Typography>
