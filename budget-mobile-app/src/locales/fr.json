@@ -859,7 +859,7 @@
       "advancedReports": "Rapports avancés"
     },
     "upgrade": "Passer à {{plan}}",
-    "downgrade": "Passer à {{plan}}",
+    "downgrade": "Rétrograder vers {{plan}}",
     "cancel": "Annuler l'abonnement",
     "cancelConfirmation": "Êtes-vous sûr de vouloir annuler votre abonnement ? Vous perdrez l'accès aux fonctionnalités premium.",
     "downgradeConfirmation": "Êtes-vous sûr de vouloir passer au plan {{plan}} ?",
