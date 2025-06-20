@@ -252,7 +252,7 @@ const ActionPlans = () => {
                 {pendingPlans.length}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                En attente
+                {t('actionPlans.pending')}
               </Typography>
             </CardContent>
           </Card>
@@ -264,7 +264,7 @@ const ActionPlans = () => {
                 {inProgressPlans.length}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                En cours
+                {t('actionPlans.inProgress')}
               </Typography>
             </CardContent>
           </Card>
@@ -276,7 +276,7 @@ const ActionPlans = () => {
                 {completedPlans.length}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Terminés
+                {t('actionPlans.completed')}
               </Typography>
             </CardContent>
           </Card>
@@ -288,7 +288,7 @@ const ActionPlans = () => {
         <Paper sx={{ p: 2, mb: 3 }}>
           <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
             <Schedule sx={{ mr: 1 }} />
-            Plans en attente ({pendingPlans.length})
+            {t('actionPlans.pendingPlans')} ({pendingPlans.length})
           </Typography>
           <List>
             {pendingPlans.map((plan) => (
@@ -311,8 +311,8 @@ const ActionPlans = () => {
                     <Box>
                       <Typography variant="body2">{plan.description}</Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Catégorie: {plan.category} | Objectif: {plan.targetAmount}€ | 
-                        Échéance: {new Date(plan.deadline).toLocaleDateString()}
+                        {t('actionPlans.category')}: {plan.category} | {t('actionPlans.targetAmount')}€ | 
+                        {t('actionPlans.deadline')}: {new Date(plan.deadline).toLocaleDateString()}
                       </Typography>
                     </Box>
                   }
@@ -321,21 +321,21 @@ const ActionPlans = () => {
                   <IconButton 
                     onClick={() => handleStatusChange(plan.id, 'in_progress')}
                     color="info"
-                    title="Commencer"
+                    title={t('actionPlans.start')}
                   >
                     <TrendingUp />
                   </IconButton>
                   <IconButton 
                     onClick={() => handleOpenDialog(plan)}
                     color="primary"
-                    title="Modifier"
+                    title={t('actionPlans.edit')}
                   >
                     <Edit />
                   </IconButton>
                   <IconButton 
                     onClick={() => handleDelete(plan.id)}
                     color="error"
-                    title="Supprimer"
+                    title={t('actionPlans.delete')}
                   >
                     <Delete />
                   </IconButton>
@@ -351,7 +351,7 @@ const ActionPlans = () => {
         <Paper sx={{ p: 2, mb: 3 }}>
           <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
             <TrendingUp sx={{ mr: 1 }} />
-            Plans en cours ({inProgressPlans.length})
+            {t('actionPlans.inProgressPlans')} ({inProgressPlans.length})
           </Typography>
           <List>
             {inProgressPlans.map((plan) => (
@@ -379,7 +379,7 @@ const ActionPlans = () => {
                         sx={{ mt: 1, mb: 1 }}
                       />
                       <Typography variant="caption" color="text.secondary">
-                        Objectif: {plan.targetAmount}€ | Échéance: {new Date(plan.deadline).toLocaleDateString()}
+                        {t('actionPlans.targetAmount')}€ | {t('actionPlans.deadline')}: {new Date(plan.deadline).toLocaleDateString()}
                       </Typography>
                     </Box>
                   }
@@ -388,21 +388,21 @@ const ActionPlans = () => {
                   <IconButton 
                     onClick={() => handleProgressChange(plan.id, plan.progress + 10)}
                     color="success"
-                    title="Avancer"
+                    title={t('actionPlans.advance')}
                   >
                     <TrendingUp />
                   </IconButton>
                   <IconButton 
                     onClick={() => handleStatusChange(plan.id, 'completed')}
                     color="success"
-                    title="Terminer"
+                    title={t('actionPlans.complete')}
                   >
                     <CheckCircle />
                   </IconButton>
                   <IconButton 
                     onClick={() => handleOpenDialog(plan)}
                     color="primary"
-                    title="Modifier"
+                    title={t('actionPlans.edit')}
                   >
                     <Edit />
                   </IconButton>
@@ -418,7 +418,7 @@ const ActionPlans = () => {
         <Paper sx={{ p: 2, mb: 3 }}>
           <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
             <CheckCircle sx={{ mr: 1 }} />
-            Plans terminés ({completedPlans.length})
+            {t('actionPlans.completedPlans')} ({completedPlans.length})
           </Typography>
           <List>
             {completedPlans.map((plan) => (
@@ -432,7 +432,7 @@ const ActionPlans = () => {
                     <Box>
                       <Typography variant="body2">{plan.description}</Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Terminé le: {new Date(plan.updatedAt).toLocaleDateString()}
+                        {t('actionPlans.completedDate')}: {new Date(plan.updatedAt).toLocaleDateString()}
                       </Typography>
                     </Box>
                   }
@@ -441,14 +441,14 @@ const ActionPlans = () => {
                   <IconButton 
                     onClick={() => handleStatusChange(plan.id, 'in_progress')}
                     color="info"
-                    title="Remettre en cours"
+                    title={t('actionPlans.revert')}
                   >
                     <TrendingUp />
                   </IconButton>
                   <IconButton 
                     onClick={() => handleDelete(plan.id)}
                     color="error"
-                    title="Supprimer"
+                    title={t('actionPlans.delete')}
                   >
                     <Delete />
                   </IconButton>
@@ -462,21 +462,21 @@ const ActionPlans = () => {
       {/* Message si aucun plan */}
       {plans.length === 0 && (
         <Alert severity="info" sx={{ mb: 3 }}>
-          <AlertTitle>Aucun plan d'action</AlertTitle>
-          Créez votre premier plan d'action pour améliorer votre situation financière.
+          <AlertTitle>{t('actionPlans.noPlan')}</AlertTitle>
+          {t('actionPlans.createFirst')}
         </Alert>
       )}
 
       {/* Dialog pour créer/modifier un plan */}
       <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
         <DialogTitle>
-          {editingPlan ? 'Modifier le plan' : 'Créer un nouveau plan'}
+          {editingPlan ? t('actionPlans.editPlan') : t('actionPlans.createNewPlan')}
         </DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 1 }}>
             <TextField
               fullWidth
-              label="Titre du plan"
+              label={t('actionPlans.title')}
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               sx={{ mb: 2 }}
@@ -484,7 +484,7 @@ const ActionPlans = () => {
             />
             <TextField
               fullWidth
-              label="Description"
+              label={t('actionPlans.description')}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               multiline
@@ -492,11 +492,11 @@ const ActionPlans = () => {
               sx={{ mb: 2 }}
             />
             <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Catégorie</InputLabel>
+              <InputLabel>{t('actionPlans.category')}</InputLabel>
               <Select
                 value={formData.category}
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                label="Catégorie"
+                label={t('actionPlans.category')}
               >
                 {categories.map((cat) => (
                   <MenuItem key={cat} value={cat}>{cat}</MenuItem>
@@ -505,7 +505,7 @@ const ActionPlans = () => {
             </FormControl>
             <TextField
               fullWidth
-              label="Objectif (montant en €)"
+              label={t('actionPlans.targetAmount')}
               type="number"
               value={formData.targetAmount}
               onChange={(e) => setFormData({ ...formData, targetAmount: e.target.value })}
@@ -513,7 +513,7 @@ const ActionPlans = () => {
             />
             <TextField
               fullWidth
-              label="Échéance"
+              label={t('actionPlans.deadline')}
               type="date"
               value={formData.deadline}
               onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
@@ -521,23 +521,23 @@ const ActionPlans = () => {
               sx={{ mb: 2 }}
             />
             <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Priorité</InputLabel>
+              <InputLabel>{t('actionPlans.priority')}</InputLabel>
               <Select
                 value={formData.priority}
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                label="Priorité"
+                label={t('actionPlans.priority')}
               >
-                <MenuItem value="high">Haute</MenuItem>
-                <MenuItem value="medium">Moyenne</MenuItem>
-                <MenuItem value="low">Faible</MenuItem>
+                <MenuItem value="high">{t('actionPlans.high')}</MenuItem>
+                <MenuItem value="medium">{t('actionPlans.medium')}</MenuItem>
+                <MenuItem value="low">{t('actionPlans.low')}</MenuItem>
               </Select>
             </FormControl>
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog}>Annuler</Button>
+          <Button onClick={handleCloseDialog}>{t('actionPlans.cancel')}</Button>
           <Button onClick={handleSubmit} variant="contained">
-            {editingPlan ? 'Modifier' : 'Créer'}
+            {editingPlan ? t('actionPlans.edit') : t('actionPlans.create')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -545,7 +545,7 @@ const ActionPlans = () => {
       {/* Bouton flottant pour ajouter */}
       <Fab
         color="primary"
-        aria-label="add"
+        aria-label={t('actionPlans.add')}
         onClick={() => handleOpenDialog()}
         sx={{ position: 'fixed', bottom: 16, right: 16 }}
       >

@@ -293,7 +293,7 @@ const Debts = () => {
   return (
     <Box sx={{ p: 2, pb: 10 }}>
       <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
-        Dettes et Prêts
+        {t('debts.title')}
       </Typography>
 
       {/* KPIs */}
@@ -499,7 +499,7 @@ const Debts = () => {
                         disabled={debt.paid >= debt.amount}
                         fullWidth
                       >
-                        Effectuer un paiement
+                        {t('debts.makePayment')}
                       </Button>
                     </Box>
                   </CardContent>
@@ -515,7 +515,7 @@ const Debts = () => {
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
-              Montants restants par dette
+              {t('debts.remainingDebtByDebt')}
             </Typography>
             <Box sx={{ height: 300 }}>
               <Bar data={barData} options={barOptions} />
@@ -526,7 +526,7 @@ const Debts = () => {
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
-              Évolution des paiements mensuels
+              {t('debts.monthlyPaymentsEvolution')}
             </Typography>
             <Box sx={{ height: 300 }}>
               <Line data={lineData} options={lineOptions} />
@@ -547,12 +547,12 @@ const Debts = () => {
 
       {/* Dialogs */}
       <Dialog open={addDialog} onClose={() => setAddDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Ajouter une dette</DialogTitle>
+        <DialogTitle>{t('debts.addDebtTitle')}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             margin="dense"
-            label="Nom de la dette"
+            label={t('debts.debtName')}
             fullWidth
             variant="outlined"
             value={newDebt.name}
@@ -560,19 +560,19 @@ const Debts = () => {
             sx={{ mb: 2 }}
           />
           <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Type de dette</InputLabel>
+            <InputLabel>{t('debts.debtType')}</InputLabel>
             <Select
               value={newDebt.type}
               onChange={(e) => setNewDebt({ ...newDebt, type: e.target.value })}
             >
-              <MenuItem value="credit_card">Carte de crédit</MenuItem>
-              <MenuItem value="loan">Prêt personnel</MenuItem>
-              <MenuItem value="mortgage">Hypothèque</MenuItem>
+              <MenuItem value="credit_card">{t('debts.creditCard')}</MenuItem>
+              <MenuItem value="loan">{t('debts.loan')}</MenuItem>
+              <MenuItem value="mortgage">{t('debts.mortgage')}</MenuItem>
             </Select>
           </FormControl>
           <TextField
             margin="dense"
-            label="Montant total (€)"
+            label={t('debts.totalAmount')}
             type="number"
             fullWidth
             variant="outlined"
@@ -582,7 +582,7 @@ const Debts = () => {
           />
           <TextField
             margin="dense"
-            label="Montant déjà payé (€)"
+            label={t('debts.paidAmount')}
             type="number"
             fullWidth
             variant="outlined"
@@ -592,7 +592,7 @@ const Debts = () => {
           />
           <TextField
             margin="dense"
-            label="Taux d'intérêt annuel (%)"
+            label={t('debts.interestRate')}
             type="number"
             fullWidth
             variant="outlined"
@@ -602,7 +602,7 @@ const Debts = () => {
           />
           <TextField
             margin="dense"
-            label="Paiement mensuel (€)"
+            label={t('debts.monthlyPayment')}
             type="number"
             fullWidth
             variant="outlined"
@@ -611,24 +611,24 @@ const Debts = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAddDialog(false)}>Annuler</Button>
+          <Button onClick={() => setAddDialog(false)}>{t('debts.cancel')}</Button>
           <Button 
             onClick={handleAddDebt} 
             variant="contained"
             disabled={!newDebt.name || !newDebt.amount || !newDebt.interest}
           >
-            Ajouter
+            {t('debts.add')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={editDialog} onClose={() => setEditDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Modifier la dette</DialogTitle>
+        <DialogTitle>{t('debts.editDebtTitle')}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             margin="dense"
-            label="Nom de la dette"
+            label={t('debts.debtName')}
             fullWidth
             variant="outlined"
             value={newDebt.name}
@@ -636,19 +636,19 @@ const Debts = () => {
             sx={{ mb: 2 }}
           />
           <FormControl fullWidth sx={{ mb: 2 }}>
-            <InputLabel>Type de dette</InputLabel>
+            <InputLabel>{t('debts.debtType')}</InputLabel>
             <Select
               value={newDebt.type}
               onChange={(e) => setNewDebt({ ...newDebt, type: e.target.value })}
             >
-              <MenuItem value="credit_card">Carte de crédit</MenuItem>
-              <MenuItem value="loan">Prêt personnel</MenuItem>
-              <MenuItem value="mortgage">Hypothèque</MenuItem>
+              <MenuItem value="credit_card">{t('debts.creditCard')}</MenuItem>
+              <MenuItem value="loan">{t('debts.loan')}</MenuItem>
+              <MenuItem value="mortgage">{t('debts.mortgage')}</MenuItem>
             </Select>
           </FormControl>
           <TextField
             margin="dense"
-            label="Montant total (€)"
+            label={t('debts.totalAmount')}
             type="number"
             fullWidth
             variant="outlined"
@@ -658,7 +658,7 @@ const Debts = () => {
           />
           <TextField
             margin="dense"
-            label="Montant déjà payé (€)"
+            label={t('debts.paidAmount')}
             type="number"
             fullWidth
             variant="outlined"
@@ -668,7 +668,7 @@ const Debts = () => {
           />
           <TextField
             margin="dense"
-            label="Taux d'intérêt annuel (%)"
+            label={t('debts.interestRate')}
             type="number"
             fullWidth
             variant="outlined"
@@ -678,7 +678,7 @@ const Debts = () => {
           />
           <TextField
             margin="dense"
-            label="Paiement mensuel (€)"
+            label={t('debts.monthlyPayment')}
             type="number"
             fullWidth
             variant="outlined"
@@ -687,30 +687,30 @@ const Debts = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditDialog(false)}>Annuler</Button>
+          <Button onClick={() => setEditDialog(false)}>{t('debts.cancel')}</Button>
           <Button 
             onClick={handleEditDebt} 
             variant="contained"
             disabled={!newDebt.name || !newDebt.amount || !newDebt.interest}
           >
-            Modifier
+            {t('debts.edit')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={paymentDialog} onClose={() => setPaymentDialog(false)}>
-        <DialogTitle>Effectuer un paiement</DialogTitle>
+        <DialogTitle>{t('debts.makePaymentTitle')}</DialogTitle>
         <DialogContent>
           <Typography gutterBottom>
-            Paiement pour: <strong>{selectedDebt?.name}</strong>
+            {t('debts.paymentFor')} <strong>{selectedDebt?.name}</strong>
           </Typography>
           <Typography variant="body2" color="text.secondary" gutterBottom>
-            Montant restant: {selectedDebt ? (selectedDebt.amount - selectedDebt.paid).toLocaleString() : 0}€
+            {t('debts.remainingAmount')} {selectedDebt ? (selectedDebt.amount - selectedDebt.paid).toLocaleString() : 0}€
           </Typography>
           <TextField
             autoFocus
             margin="dense"
-            label="Montant du paiement (€)"
+            label={t('debts.paymentAmount')}
             type="number"
             fullWidth
             variant="outlined"
@@ -719,28 +719,28 @@ const Debts = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setPaymentDialog(false)}>Annuler</Button>
+          <Button onClick={() => setPaymentDialog(false)}>{t('debts.cancel')}</Button>
           <Button 
             onClick={handlePayment} 
             variant="contained"
             disabled={!paymentAmount || parseFloat(paymentAmount) <= 0}
           >
-            Payer
+            {t('debts.pay')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={deleteDialog} onClose={() => setDeleteDialog(false)}>
-        <DialogTitle>Supprimer la dette</DialogTitle>
+        <DialogTitle>{t('debts.deleteDebtTitle')}</DialogTitle>
         <DialogContent>
           <Typography>
-            Êtes-vous sûr de vouloir supprimer la dette "{selectedDebt?.name}" ?
+            {t('debts.deleteConfirmation')} "{selectedDebt?.name}" ?
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialog(false)}>Annuler</Button>
+          <Button onClick={() => setDeleteDialog(false)}>{t('debts.cancel')}</Button>
           <Button onClick={handleDeleteDebt} color="error" variant="contained">
-            Supprimer
+            {t('debts.delete')}
           </Button>
         </DialogActions>
       </Dialog>

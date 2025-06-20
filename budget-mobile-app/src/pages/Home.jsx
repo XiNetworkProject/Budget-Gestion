@@ -75,25 +75,59 @@ ChartJS.register(
 
 const Home = () => {
   const { 
-    user, 
-    months, 
-    revenus, 
     data, 
-    sideByMonth, 
-    budgetLimits, 
-    incomeTransactions, 
-    expenses,
+    months, 
+    selectedMonth, 
+    selectedYear, 
+    setSelectedMonth, 
+    setSelectedYear,
+    categories,
+    revenus,
     incomes,
-    selectedMonth,
-    selectedYear,
-    setSelectedMonth,
-    getCurrentMonthIndex,
-    getSelectedMonthIndex,
+    persons,
+    saved,
+    sideByMonth,
+    totalPotentialSavings,
+    budgetLimits,
+    expenses,
+    incomeTransactions,
+    savings,
+    debts,
+    bankAccounts,
+    transactions,
+    userProfile,
+    appSettings,
+    updateUserProfile,
+    updateAppSettings,
+    isLoading,
+    isSaving,
+    error,
     serverConnected,
-    logout,
-    isAuthenticated,
+    tutorialCompleted,
+    onboardingCompleted,
+    forceTutorial,
+    setTutorialCompleted,
+    clearForceTutorial,
+    validateAndCleanDates,
+    syncExpensesWithCategories,
+    showUpdateDialog,
+    closeUpdateDialog,
+    checkForUpdates,
+    checkAndFixOnboardingState,
+    activeAccount, 
+    accounts, 
+    setActiveAccount,
+    showTutorial: storeShowTutorial,
+    setShowTutorial: setStoreShowTutorial,
+    showOnboarding,
+    setShowOnboarding,
+    subscription,
+    subscriptionPlans,
     getCurrentPlan,
-    isFeatureAvailable
+    isFeatureAvailable,
+    hasFullAI,
+    hasPartialAI,
+    getAILevel
   } = useStore();
   const navigate = useNavigate();
   const [localData, setLocalData] = useState({
@@ -1077,23 +1111,23 @@ const Home = () => {
       {/* Alerte de connexion */}
       {!isAuthenticated && (
         <Alert severity="warning" sx={{ mb: 2 }}>
-          <AlertTitle>Non connecté</AlertTitle>
-          Vous n'êtes pas connecté. Vos données sont sauvegardées localement uniquement.
+          <AlertTitle>{t('home.notConnected')}</AlertTitle>
+          {t('home.notConnectedMessage')}
           <Button 
             color="inherit" 
             size="small" 
             sx={{ ml: 1 }}
             onClick={() => window.location.href = '/login'}
           >
-            Se connecter
+            {t('home.connect')}
           </Button>
         </Alert>
       )}
       
       {isAuthenticated && !serverConnected && (
         <Alert severity="info" sx={{ mb: 2 }}>
-          <AlertTitle>Mode hors ligne</AlertTitle>
-          Pas de connexion au serveur. Vos données sont sauvegardées localement.
+          <AlertTitle>{t('home.offlineMode')}</AlertTitle>
+          {t('home.offlineModeMessage')}
         </Alert>
       )}
       
@@ -1117,7 +1151,7 @@ const Home = () => {
                   mb: 0.5
                 }}
               >
-                Bonjour{user?.name ? `, ${user.name}` : ''}
+                {t('home.hello')}{user?.name ? `, ${user.name}` : ''}
               </Typography>
             </Box>
             <Box>
@@ -1150,7 +1184,7 @@ const Home = () => {
                     backgroundColor: 'rgba(255,255,255,0.1)'
                   }
                 }}
-                title={serverConnected ? 'Connecté au serveur' : 'Mode hors ligne - Données locales'}
+                title={serverConnected ? t('home.connectedToServer') : t('home.offlineModeData')}
               >
                 {serverConnected ? (
                   <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'currentColor' }} />
@@ -1161,7 +1195,7 @@ const Home = () => {
               {/* Bouton de déconnexion */}
               <IconButton
                 onClick={() => {
-                  if (window.confirm('Voulez-vous vraiment vous déconnecter ?')) {
+                  if (window.confirm(t('home.confirmLogout'))) {
                     logout();
                   }
                 }}
@@ -1284,7 +1318,7 @@ const Home = () => {
             }} 
             component="span"
           >
-            Solde {getMonthName(selectedMonth, selectedYear)}
+            {t('home.balance')} {getMonthName(selectedMonth, selectedYear)}
           </Typography>
         </Box>
       </Fade>
@@ -1450,7 +1484,7 @@ const Home = () => {
       </Grid>
 
       {/* Prévisions intelligentes */}
-      {isFeatureAvailable('aiAnalysis') && (
+      {hasPartialAI() && (
         <Paper sx={{ p: 2, mb: 3 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <AccountBalance sx={{ mr: 1, color: 'warning.main' }} />
@@ -1458,7 +1492,7 @@ const Home = () => {
               Prévisions intelligentes {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
             </Typography>
             <Chip 
-              label="IA" 
+              label={t('home.ai')} 
               size="small" 
               color="warning" 
               variant="outlined"
@@ -1584,7 +1618,7 @@ const Home = () => {
       )}
 
       {/* Message pour les utilisateurs gratuits - Prévisions intelligentes */}
-      {!isFeatureAvailable('aiAnalysis') && (
+      {!hasPartialAI() && (
         <Paper sx={{ p: 2, mb: 3, bgcolor: 'warning.light' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <AccountBalance sx={{ mr: 1, color: 'warning.main' }} />
@@ -1622,7 +1656,7 @@ const Home = () => {
               Recommandations intelligentes
             </Typography>
             <Chip 
-              label="IA" 
+              label={t('home.ai')} 
               size="small" 
               color="info" 
               variant="outlined"
@@ -1661,8 +1695,8 @@ const Home = () => {
             >
               <AlertTitle sx={{ display: 'flex', alignItems: 'center' }}>
                 {rec.title}
-                {rec.priority === 'high' && <Chip label="Priorité" size="small" color="error" sx={{ ml: 1, height: 20 }} />}
-                {rec.priority === 'medium' && <Chip label="Important" size="small" color="warning" sx={{ ml: 1, height: 20 }} />}
+                {rec.priority === 'high' && <Chip label={t('home.priority')} size="small" color="error" sx={{ ml: 1, height: 20 }} />}
+                {rec.priority === 'medium' && <Chip label={t('home.important')} size="small" color="warning" sx={{ ml: 1, height: 20 }} />}
               </AlertTitle>
               <Typography variant="body2">
                 {rec.message}

@@ -223,7 +223,18 @@
     "maintainTrend": "Excellent ! Continuez à maintenir cette tendance positive dans {{category}}.",
     "seeAll": "Voir tout",
     "income": "Revenu",
-    "expense": "Dépense"
+    "expense": "Dépense",
+    "notConnected": "Non connecté",
+    "notConnectedMessage": "Vous n'êtes pas connecté. Vos données sont sauvegardées localement uniquement.",
+    "connect": "Se connecter",
+    "offlineMode": "Mode hors ligne",
+    "offlineModeMessage": "Pas de connexion au serveur. Vos données sont sauvegardées localement.",
+    "hello": "Bonjour",
+    "connectedToServer": "Connecté au serveur",
+    "offlineModeData": "Mode hors ligne - Données locales",
+    "confirmLogout": "Voulez-vous vraiment vous déconnecter ?",
+    "balance": "Solde",
+    "ai": "IA"
   },
   "analytics": {
     "title": "Analyses et Statistiques",
@@ -405,7 +416,20 @@
     "paidAmountEUR": "Montant déjà payé (€)",
     "annualInterestRate": "Taux d'intérêt annuel (%)",
     "monthlyPaymentEUR": "Paiement mensuel (€)",
-    "paymentAmountEUR": "Montant du paiement (€)"
+    "paymentAmountEUR": "Montant du paiement (€)",
+    "remainingDebtByDebt": "Montants restants par dette",
+    "monthlyPaymentsEvolution": "Évolution des paiements mensuels",
+    "addDebtTitle": "Ajouter une dette",
+    "cancel": "Annuler",
+    "add": "Ajouter",
+    "editDebtTitle": "Modifier la dette",
+    "edit": "Modifier",
+    "makePaymentTitle": "Effectuer un paiement",
+    "paymentFor": "Paiement pour:",
+    "pay": "Payer",
+    "deleteDebtTitle": "Supprimer la dette",
+    "deleteConfirmation": "Êtes-vous sûr de vouloir supprimer la dette",
+    "delete": "Supprimer"
   },
   "history": {
     "title": "Historique",
@@ -452,7 +476,26 @@
     "high": "Haute",
     "medium": "Moyenne",
     "low": "Faible",
-    "unknown": "Inconnu"
+    "unknown": "Inconnu",
+    "pendingPlans": "Plans en attente",
+    "targetAmount": "Objectif",
+    "start": "Commencer",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "inProgressPlans": "Plans en cours",
+    "advance": "Avancer",
+    "complete": "Terminer",
+    "completedPlans": "Plans terminés",
+    "completedDate": "Terminé le",
+    "revert": "Remettre en cours",
+    "noPlan": "Aucun plan d'action",
+    "createFirst": "Créez votre premier plan d'action pour améliorer votre situation financière.",
+    "editPlan": "Modifier le plan",
+    "createNewPlan": "Créer un nouveau plan",
+    "title": "Titre du plan",
+    "cancel": "Annuler",
+    "create": "Créer",
+    "add": "Ajouter"
   },
   "quickAdd": {
     "amountEUR": "Montant (€)",
@@ -785,6 +828,7 @@
   },
   "subscription": {
     "title": "Abonnements",
+    "subtitle": "Choisissez le plan qui vous convient le mieux",
     "currentPlan": "Plan actuel",
     "free": "Gratuit",
     "premium": "Premium",
@@ -829,7 +873,9 @@
     "confirmDowngrade": "Êtes-vous sûr de vouloir passer au plan {{plan}} ?",
     "confirmCancel": "Êtes-vous sûr de vouloir annuler votre abonnement ?",
     "downgradeSubscription": "Passer au plan {{plan}}",
-    "cancelSubscription": "Annuler l'abonnement"
+    "cancelSubscription": "Annuler l'abonnement",
+    "specialAccess": "Vous avez un accès spécial avec période d'essai de 30 jours",
+    "processing": "Traitement en cours..."
   },
   "ai": {
     "recommendations": "Recommandations intelligentes",

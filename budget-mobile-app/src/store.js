@@ -1285,6 +1285,27 @@ const useStore = create(
         return currentPlan.features[feature] !== false && currentPlan.features[feature] !== 0;
       },
 
+      // Vérifier le niveau d'IA disponible
+      getAILevel: () => {
+        const state = get();
+        const currentPlan = state.getCurrentPlan();
+        return currentPlan.features.aiAnalysis || false;
+      },
+
+      // Vérifier si l'IA complète est disponible (Pro uniquement)
+      hasFullAI: () => {
+        const state = get();
+        const currentPlan = state.getCurrentPlan();
+        return currentPlan.features.aiAnalysis === 'full';
+      },
+
+      // Vérifier si l'IA partielle est disponible (Premium et Pro)
+      hasPartialAI: () => {
+        const state = get();
+        const currentPlan = state.getCurrentPlan();
+        return currentPlan.features.aiAnalysis === 'partial' || currentPlan.features.aiAnalysis === 'full';
+      },
+
       // Vérifier les limites d'utilisation
       checkUsageLimit: (feature, currentUsage) => {
         const state = get();

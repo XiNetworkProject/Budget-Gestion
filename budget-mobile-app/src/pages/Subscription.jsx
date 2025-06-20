@@ -111,7 +111,7 @@ const Subscription = () => {
       // Mettre à jour le plan dans le store
       updateSubscription(selectedPlan);
       
-      toast.success(t('downgradeSuccess'));
+      toast.success(t('subscription.downgradeSuccess'));
       setShowDowngradeDialog(false);
     } catch (error) {
       console.error('Erreur lors du downgrade:', error);
@@ -131,7 +131,7 @@ const Subscription = () => {
       // Passer au plan gratuit
       updateSubscription('FREE');
       
-      toast.success(t('cancelSuccess'));
+      toast.success(t('subscription.cancelSuccess'));
       setShowCancelDialog(false);
     } catch (error) {
       console.error('Erreur lors de l\'annulation:', error);
@@ -218,7 +218,7 @@ const Subscription = () => {
         >
           {isCurrentPlan && (
             <Chip
-              label={t('currentPlan')}
+              label={t('subscription.currentPlan')}
               color="primary"
               sx={{
                 position: 'absolute',
@@ -235,10 +235,10 @@ const Subscription = () => {
                 {plan.name}
               </Typography>
               <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 1 }}>
-                {plan.price === 0 ? t('free') : `${plan.price}€`}
+                {plan.price === 0 ? t('subscription.free') : `${plan.price}€`}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {plan.price === 0 ? t('forever') : t('perMonth')}
+                {plan.price === 0 ? t('subscription.forever') : t('subscription.perMonth')}
               </Typography>
             </Box>
 
@@ -276,7 +276,7 @@ const Subscription = () => {
                   onClick={() => setShowCancelDialog(true)}
                   startIcon={<Cancel />}
                 >
-                  {t('cancel')}
+                  {t('subscription.cancel')}
                 </Button>
               ) : (
                 <Button
@@ -285,7 +285,7 @@ const Subscription = () => {
                   disabled
                   startIcon={<CheckCircle />}
                 >
-                  {t('currentPlan')}
+                  {t('subscription.currentPlan')}
                 </Button>
               )
             ) : (
@@ -298,7 +298,7 @@ const Subscription = () => {
                 startIcon={isUpgrade ? (isProcessing ? <CircularProgress size={20} /> : <Payment />) : <Edit />}
                 disabled={isProcessing}
               >
-                {isProcessing ? t('processing') : (isUpgrade ? t('upgrade') : t('downgrade'))}
+                {isProcessing ? t('subscription.processing') : (isUpgrade ? t('subscription.upgrade') : t('subscription.downgrade'))}
               </Button>
             )}
           </CardActions>
@@ -310,15 +310,15 @@ const Subscription = () => {
   return (
     <Box sx={{ p: 2, pb: 10 }}>
       <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
-        {t('title')}
+        {t('subscription.title')}
       </Typography>
       <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
-        {t('subtitle')}
+        {t('subscription.subtitle')}
       </Typography>
 
       {isSpecialAccess && (
         <Alert severity="info" sx={{ mb: 3 }}>
-          {t('specialAccess')}
+          {t('subscription.specialAccess')}
         </Alert>
       )}
 
