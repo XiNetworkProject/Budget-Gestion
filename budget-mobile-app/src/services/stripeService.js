@@ -185,5 +185,80 @@ export const stripeService = {
   // Obtenir l'URL directe d'un plan
   getDirectUrl(planId) {
     return STRIPE_URLS[planId] || null;
+  },
+
+  // Synchroniser l'abonnement Stripe avec l'application
+  async syncSubscription() {
+    try {
+      const token = useStore.getState().token;
+      const user = useStore.getState().user;
+      
+      if (!token || !user) {
+        throw new Error('Utilisateur non connecté');
+      }
+
+      const headers = { 
+        'Authorization': `Bearer ${token}`
+      };
+
+      const response = await fetch(`${API_URL}/api/stripe/sync-subscription`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          userId: user.id,
+          userEmail: user.email
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erreur lors de la synchronisation de l\'abonnement');
+      }
+
+      const result = await response.json();
+      
+      // Mettre à jour le store avec les nouvelles informations d'abonnement
+      if (result.subscription) {
+        const { updateSubscription } = useStore.getState();
+        updateSubscription(result.subscription.currentPlan, result.subscription);
+        toast.success('Abonnement synchronisé avec succès !');
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Erreur synchronisation abonnement:', error);
+      throw error;
+    }
+  },
+
+  // Vérifier le statut de l'abonnement actuel
+  async checkSubscriptionStatus() {
+    try {
+      const token = useStore.getState().token;
+      const user = useStore.getState().user;
+      
+      if (!token || !user) {
+        throw new Error('Utilisateur non connecté');
+      }
+
+      const headers = { 
+        'Authorization': `Bearer ${token}`
+      };
+
+      const response = await fetch(`${API_URL}/api/stripe/subscription-status`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erreur lors de la vérification du statut');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Erreur vérification statut abonnement:', error);
+      throw error;
+    }
   }
 }; 

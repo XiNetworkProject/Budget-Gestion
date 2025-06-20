@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { stripeService } from '../services/stripeService';
@@ -46,7 +46,8 @@ import {
   CloudSync,
   Psychology,
   TrendingUp,
-  Warning
+  Warning,
+  Refresh
 } from '@mui/icons-material';
 import { toast } from 'react-hot-toast';
 
@@ -69,6 +70,23 @@ const Subscription = () => {
 
   const currentPlan = getCurrentPlan() || subscriptionPlans.FREE;
   const isSpecialAccess = hasSpecialAccess();
+
+  // Synchronisation automatique au chargement de la page
+  useEffect(() => {
+    const syncOnLoad = async () => {
+      try {
+        // Synchroniser silencieusement au chargement
+        await stripeService.syncSubscription();
+      } catch (error) {
+        console.log('Synchronisation automatique échouée:', error.message);
+        // Ne pas afficher d'erreur pour la synchronisation automatique
+      }
+    };
+
+    if (user && user.email) {
+      syncOnLoad();
+    }
+  }, [user]);
 
   // Calculer l'utilisation actuelle
   const currentUsage = {
@@ -136,6 +154,18 @@ const Subscription = () => {
     } catch (error) {
       console.error('Erreur lors de l\'annulation:', error);
       toast.error(error.message || 'Erreur lors de l\'annulation');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleSyncSubscription = async () => {
+    try {
+      setIsProcessing(true);
+      await stripeService.syncSubscription();
+    } catch (error) {
+      console.error('Erreur lors de la synchronisation:', error);
+      toast.error(error.message || 'Erreur lors de la synchronisation');
     } finally {
       setIsProcessing(false);
     }
@@ -343,9 +373,20 @@ const Subscription = () => {
         <Typography variant="body2" sx={{ mb: 1 }}>
           • {t('subscription.cancelAnytime')}
         </Typography>
-        <Typography variant="body2">
+        <Typography variant="body2" sx={{ mb: 2 }}>
           • {t('subscription.downgradeInfo')}
         </Typography>
+        
+        {/* Bouton de synchronisation */}
+        <Button
+          variant="outlined"
+          onClick={handleSyncSubscription}
+          disabled={isProcessing}
+          startIcon={isProcessing ? <CircularProgress size={20} /> : <Refresh />}
+          sx={{ mt: 2 }}
+        >
+          {isProcessing ? 'Synchronisation...' : 'Synchroniser avec Stripe'}
+        </Button>
       </Paper>
 
       {/* Dialog d'annulation */}
