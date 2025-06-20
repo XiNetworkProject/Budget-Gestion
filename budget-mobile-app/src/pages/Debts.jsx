@@ -291,8 +291,8 @@ const Debts = () => {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
-      <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
+    <Box sx={{ p: 2, pb: 10 }}>
+      <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
         Dettes et Prêts
       </Typography>
 

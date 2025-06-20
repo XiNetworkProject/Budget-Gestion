@@ -265,7 +265,7 @@ const Expenses = () => {
   };
 
   return (
-    <Box sx={{ pb: 8 }}>
+    <Box sx={{ p: 2, pb: 10 }}>
       {/* AppBar */}
       <AppBar position="static" elevation={0}>
         <Toolbar>

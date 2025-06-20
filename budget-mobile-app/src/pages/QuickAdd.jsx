@@ -145,7 +145,10 @@ const QuickAdd = () => {
   };
 
   return (
-    <>
+    <Box sx={{ p: 2, pb: 10 }}>
+      <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
+        {t('quickAdd.quickAddTitle')}
+      </Typography>
       {/* Bouton pour ouvrir la popup - CORRIGÉ : une seule icône */}
       <Button
         variant="contained"
@@ -313,7 +316,7 @@ const QuickAdd = () => {
           {successMessage}
         </Alert>
       </Snackbar>
-    </>
+    </Box>
   );
 };
 

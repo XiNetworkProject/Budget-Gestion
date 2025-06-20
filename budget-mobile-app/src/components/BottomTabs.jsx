@@ -13,23 +13,19 @@ const tabs = [
 const BottomTabs = () => {
   const location = useLocation();
   return (
-    <>
-      {/* Espace pour éviter que le contenu soit caché par la barre de navigation */}
-      <div style={{ height: '64px' }} />
-      <nav className="fixed bottom-0 left-0 right-0 bg-primary flex justify-around items-center h-16 z-10">
-        {tabs.map((tab) => (
-          <Link
-            key={tab.to}
-            to={tab.to}
-            className={`flex-1 text-center py-2  ${
-              location.pathname === tab.to ? 'text-accent font-bold' : 'text-secondary'
-            }`}
-          >
-            {tab.label}
-          </Link>
-        ))}
-      </nav>
-    </>
+    <nav className="fixed bottom-0 left-0 right-0 bg-primary flex justify-around items-center h-16 z-10">
+      {tabs.map((tab) => (
+        <Link
+          key={tab.to}
+          to={tab.to}
+          className={`flex-1 text-center py-2  ${
+            location.pathname === tab.to ? 'text-accent font-bold' : 'text-secondary'
+          }`}
+        >
+          {tab.label}
+        </Link>
+      ))}
+    </nav>
   );
 };
 

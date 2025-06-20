@@ -248,7 +248,11 @@ const Settings = () => {
   };
 
   return (
-    <Box sx={{ pb: 8 }}>
+    <Box sx={{ p: 2, pb: 10 }}>
+      <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
+        {t('settings.title')}
+      </Typography>
+
       {/* En-tête */}
       <Paper sx={{ p: 2, mb: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

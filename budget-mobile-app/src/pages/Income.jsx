@@ -365,7 +365,10 @@ const Income = () => {
   const transactions = incomeTransactions.filter(inc => !activeAccount || inc.accountId === activeAccount.id);
 
   return (
-    <Box sx={{ pb: 8 }}>
+    <Box sx={{ p: 2, pb: 10 }}>
+      <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
+        {t('income.title')}
+      </Typography>
       {/* AppBar */}
       <AppBar position="static" elevation={0}>
         <Toolbar>

@@ -227,7 +227,7 @@ const ActionPlans = () => {
   const completedPlans = plans.filter(p => p.status === 'completed');
 
   return (
-    <Box sx={{ p: 2, maxWidth: 1200, mx: 'auto' }}>
+    <Box sx={{ p: 2, pb: 10 }}>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
         <IconButton onClick={() => navigate('/home')} sx={{ mr: 2 }}>

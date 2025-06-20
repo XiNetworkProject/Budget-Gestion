@@ -308,47 +308,45 @@ const Subscription = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ textAlign: 'center', mb: 4 }}>
-        <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 2 }}>
-          {t('subscription.title')}
+    <Box sx={{ p: 2, pb: 10 }}>
+      <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
+        {t('subscription.title')}
+      </Typography>
+      <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
+        {t('subscription.subtitle')}
+      </Typography>
+
+      {isSpecialAccess && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          {t('subscription.specialAccess')}
+        </Alert>
+      )}
+
+      {/* Plans d'abonnement */}
+      <Grid container spacing={3}>
+        {Object.entries(subscriptionPlans).map(([key, plan]) => (
+          <Grid item xs={12} md={4} key={key}>
+            {renderPlanCard(key, plan)}
+          </Grid>
+        ))}
+      </Grid>
+
+      {/* Informations importantes */}
+      <Paper sx={{ p: 3, mt: 4, bgcolor: 'info.light' }}>
+        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Warning />
+          {t('subscription.importantInfo')}
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
-          {t('subscription.subtitle')}
+        <Typography variant="body2" sx={{ mb: 1 }}>
+          • {t('subscription.noRefund')}
         </Typography>
-
-        {isSpecialAccess && (
-          <Alert severity="info" sx={{ mb: 3 }}>
-            {t('subscription.specialAccess')}
-          </Alert>
-        )}
-
-        {/* Plans d'abonnement */}
-        <Grid container spacing={3}>
-          {Object.entries(subscriptionPlans).map(([key, plan]) => (
-            <Grid item xs={12} md={4} key={key}>
-              {renderPlanCard(key, plan)}
-            </Grid>
-          ))}
-        </Grid>
-
-        {/* Informations importantes */}
-        <Paper sx={{ p: 3, mt: 4, bgcolor: 'info.light' }}>
-          <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Warning />
-            {t('subscription.importantInfo')}
-          </Typography>
-          <Typography variant="body2" sx={{ mb: 1 }}>
-            • {t('subscription.noRefund')}
-          </Typography>
-          <Typography variant="body2" sx={{ mb: 1 }}>
-            • {t('subscription.cancelAnytime')}
-          </Typography>
-          <Typography variant="body2">
-            • {t('subscription.downgradeInfo')}
-          </Typography>
-        </Paper>
-      </Box>
+        <Typography variant="body2" sx={{ mb: 1 }}>
+          • {t('subscription.cancelAnytime')}
+        </Typography>
+        <Typography variant="body2">
+          • {t('subscription.downgradeInfo')}
+        </Typography>
+      </Paper>
 
       {/* Dialog d'annulation */}
       <Dialog open={showCancelDialog} onClose={() => setShowCancelDialog(false)}>
@@ -385,7 +383,7 @@ const Subscription = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </Box>
   );
 };
 
