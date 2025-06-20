@@ -880,16 +880,19 @@
   "ai": {
     "recommendations": "Recommandations intelligentes",
     "ai": "IA",
-    "conseils": "conseils",
+    "tips": "conseils",
     "lowSavingsRate": "Taux d'épargne faible",
     "lowSavingsRateMessage": "Votre taux d'épargne prévu est de {{savingsRate}}%. Il est recommandé d'épargner au moins 20% de vos revenus.",
-    "priorite": "Priorité",
-    "planSuggere": "Plan suggéré",
+    "priority": "Priorité",
+    "suggestedPlan": "Plan suggéré",
     "emergencySavingsPlan": "Plan d'épargne d'urgence",
     "emergencySavingsPlanDescription": "Créer un fonds d'urgence équivalent à 3 mois de dépenses",
-    "economie": "Économie",
+    "savings": "Économie",
     "effort": "Effort",
-    "parMois": "€/mois",
-    "et": "et"
+    "perMonth": "€/mois",
+    "and": "et",
+    "lowEffort": "Faible",
+    "mediumEffort": "Moyen",
+    "highEffort": "Élevé"
   }
 } 

@@ -879,16 +879,19 @@
   "ai": {
     "recommendations": "Smart Recommendations",
     "ai": "AI",
-    "conseils": "tips",
+    "tips": "tips",
     "lowSavingsRate": "Low savings rate",
     "lowSavingsRateMessage": "Your projected savings rate is {{savingsRate}}%. It is recommended to save at least 20% of your income.",
-    "priorite": "Priority",
-    "planSuggere": "Suggested plan",
+    "priority": "Priority",
+    "suggestedPlan": "Suggested plan",
     "emergencySavingsPlan": "Emergency savings plan",
     "emergencySavingsPlanDescription": "Create an emergency fund equivalent to 3 months of expenses",
-    "economie": "Savings",
+    "savings": "Savings",
     "effort": "Effort",
-    "parMois": "€/month",
-    "et": "and"
+    "perMonth": "€/month",
+    "and": "and",
+    "lowEffort": "Low",
+    "mediumEffort": "Medium",
+    "highEffort": "High"
   }
 } 
