@@ -998,12 +998,12 @@ const Home = () => {
     })),
     ...expenses
       .filter(e => isDateInSelectedMonth(e.date))
-      .map(t => ({
-      ...t,
+      .map(e => ({
+      ...e,
       type: 'expense',
       icon: '💸',
-      category: t.category || 'Dépense',
-        date: parseDate(t.date)
+      category: e.category || 'Dépense',
+        date: parseDate(e.date)
     }))
   ];
   const recentTransactions = allTransactions
@@ -1011,7 +1011,7 @@ const Home = () => {
     .slice(0, 5)
     .map(t => ({
       ...t,
-      date: t.date.toLocaleDateString('fr-FR')
+      date: t.date ? t.date.toLocaleDateString('fr-FR') : 'Date inconnue'
     }));
 
   const getBalanceColor = (amount) => {
@@ -1784,7 +1784,7 @@ const Home = () => {
                           {t('home.thisMonth')}:
                         </Typography>
                         <Typography variant="body2" fontWeight="bold">
-                          {cat.current.toLocaleString()}€
+                          {(cat.current || 0).toLocaleString()}€
                         </Typography>
                       </Box>
                       
@@ -1793,8 +1793,8 @@ const Home = () => {
                         <Typography variant="body2" color="text.secondary">
                           {t('home.budgetPercentage')}:
                         </Typography>
-                        <Typography variant="body2" fontWeight="bold" color={cat.budgetPercentage > 30 ? 'error.main' : 'text.primary'}>
-                          {Math.round(cat.budgetPercentage)}%
+                        <Typography variant="body2" fontWeight="bold" color={(cat.budgetPercentage || 0) > 30 ? 'error.main' : 'text.primary'}>
+                          {Math.round(cat.budgetPercentage || 0)}%
                         </Typography>
                       </Box>
                       
@@ -1804,7 +1804,7 @@ const Home = () => {
                           {t('home.forecast')}:
                         </Typography>
                         <Typography variant="body2" fontWeight="bold" color="warning.main">
-                          {cat.forecast.toLocaleString()}€
+                          {(cat.forecast || 0).toLocaleString()}€
                         </Typography>
                       </Box>
                       
@@ -1813,21 +1813,21 @@ const Home = () => {
                         <Typography variant="body2" color="text.secondary">
                           {t('home.change')}:
                         </Typography>
-                        <Typography variant="body2" fontWeight="bold" color={cat.change > 0 ? 'error.main' : 'success.main'}>
-                          {cat.change > 0 ? '+' : ''}{cat.change.toLocaleString()}€
+                        <Typography variant="body2" fontWeight="bold" color={cat.trend > 0 ? 'error.main' : 'success.main'}>
+                          {cat.trend > 0 ? '+' : ''}{(cat.trend || 0).toLocaleString()}€
                         </Typography>
                       </Box>
                       
                       {/* Barre de progression */}
                       <LinearProgress 
                         variant="determinate" 
-                        value={Math.min(cat.budgetPercentage, 100)} 
+                        value={Math.min(cat.budgetPercentage || 0, 100)} 
                         sx={{ 
                           height: 8, 
                           borderRadius: 4,
                           bgcolor: 'grey.200',
                           '& .MuiLinearProgress-bar': { 
-                            bgcolor: cat.budgetPercentage > 30 ? 'error.main' : 'success.main',
+                            bgcolor: (cat.budgetPercentage || 0) > 30 ? 'error.main' : 'success.main',
                             borderRadius: 4
                           }
                         }} 
@@ -1915,7 +1915,7 @@ const Home = () => {
                     color={transaction.type === 'income' ? 'success.main' : 'error.main'}
                     sx={{ fontWeight: 'bold' }}
                   >
-                    {transaction.type === 'income' ? '+' : '-'}{transaction.amount}€
+                    {transaction.type === 'income' ? '+' : '-'}{(transaction.amount || 0).toLocaleString()}€
                   </Typography>
                   <Chip 
                     label={transaction.type === 'income' ? t('home.income') : t('home.expense')} 
