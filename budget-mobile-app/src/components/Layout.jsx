@@ -11,31 +11,6 @@ import QuickAdd from '../pages/QuickAdd';
 import { useStore } from '../store';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import LimitNotification from './LimitNotification';
-import {
-  IconButton,
-  Drawer,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListItemButton,
-  Divider,
-  useTheme,
-  useMediaQuery
-} from '@mui/material';
-import {
-  Menu,
-  AccountBalance,
-  TrendingUp,
-  Receipt,
-  CreditCard,
-  Assessment,
-  Lightbulb,
-  History,
-  Close
-} from '@mui/icons-material';
-import { Toaster } from 'react-hot-toast';
 
 const Layout = () => {
   const { t } = useTranslation();
@@ -144,28 +119,7 @@ const Layout = () => {
   }, [onboardingCompleted, tutorialCompleted, forceTutorial, clearForceTutorial]);
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Toaster position="top-right" />
-      <LimitNotification />
-      
-      {/* AppBar */}
-      <AppBar position="static">
-        <Toolbar>
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            onClick={() => setDrawerOpen(true)}
-            sx={{ mr: 2 }}
-          >
-            <Menu />
-          </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            {t('app.title')}
-          </Typography>
-        </Toolbar>
-      </AppBar>
-
+    <Box sx={{ pb: 7 }}>
       <Tutorial 
         open={showTutorial}
         onClose={() => setShowTutorial(false)}

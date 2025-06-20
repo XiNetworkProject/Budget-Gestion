@@ -1,165 +1,151 @@
-import { loadStripe } from '@stripe/stripe-js';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { useStore } from '../store';
 
-// Import de la configuration Stripe
-let STRIPE_CONFIG = null;
-try {
-  // Essayer d'importer la configuration personnalisée
-  const configModule = await import('../../stripe-config.js');
-  STRIPE_CONFIG = configModule.STRIPE_CONFIG;
-} catch (error) {
-  // Fallback vers les variables d'environnement
-  STRIPE_CONFIG = {
-    publishableKey: process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || 'pk_test_51Rc9J9GbDf2YOexvx07YTx57IEdGpQptOkeP6AO7UCPqJHQ3tjaqd06yEcQW8SQcgeiH4HvbhDbuX7yGpnR431ju00a23O01zp',
-    mode: process.env.REACT_APP_STRIPE_MODE || 'test'
-  };
-  console.warn('Configuration Stripe non trouvée. Utilisation des variables d\'environnement.');
-}
-
-// Clé publique Stripe
-const STRIPE_PUBLISHABLE_KEY = STRIPE_CONFIG.publishableKey;
-
-let stripePromise = null;
-
-const getStripe = () => {
-  if (!stripePromise) {
-    stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
-  }
-  return stripePromise;
-};
-
-// Service pour gérer les paiements Stripe
 export const stripeService = {
-  // Initialiser Stripe
-  initialize: async () => {
+  // Créer une session de paiement Stripe
+  async createCheckoutSession(planId, promoCode = null) {
     try {
-      const stripe = await getStripe();
-      return stripe;
-    } catch (error) {
-      console.error('Erreur d\'initialisation Stripe:', error);
-      throw error;
-    }
-  },
+      const token = useStore.getState().token;
+      const user = useStore.getState().user;
+      
+      if (!token || !user) {
+        throw new Error('Utilisateur non connecté');
+      }
 
-  // Créer une session de paiement
-  createCheckoutSession: async (planId, userId, promoCode = null) => {
-    try {
-      const response = await fetch('/api/create-checkout-session', {
+      const headers = { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+
+      const response = await fetch(`${API_URL}/api/stripe/create-checkout-session`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           planId,
-          userId,
           promoCode,
-          successUrl: `${window.location.origin}/subscription?success=true`,
-          cancelUrl: `${window.location.origin}/subscription?canceled=true`,
+          userId: user.id,
+          userEmail: user.email
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Erreur lors de la création de la session');
+        const error = await response.json();
+        throw new Error(error.message || 'Erreur lors de la création de la session de paiement');
       }
 
-      const session = await response.json();
-      return session;
+      const { sessionId, sessionUrl } = await response.json();
+      
+      // Rediriger vers Stripe Checkout
+      window.location.href = sessionUrl;
+      
+      return { sessionId, sessionUrl };
     } catch (error) {
       console.error('Erreur création session Stripe:', error);
       throw error;
     }
   },
 
-  // Rediriger vers le checkout Stripe
-  redirectToCheckout: async (sessionId) => {
+  // Vérifier le statut d'un paiement
+  async checkPaymentStatus(sessionId) {
     try {
-      const stripe = await getStripe();
-      const { error } = await stripe.redirectToCheckout({
-        sessionId,
+      const token = useStore.getState().token;
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+      const response = await fetch(`${API_URL}/api/stripe/check-payment-status/${sessionId}`, {
+        headers
       });
 
-      if (error) {
-        throw error;
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erreur lors de la vérification du paiement');
       }
-    } catch (error) {
-      console.error('Erreur redirection Stripe:', error);
-      throw error;
-    }
-  },
 
-  // Créer un abonnement
-  createSubscription: async (planId, userId, promoCode = null) => {
-    try {
-      // Créer la session de paiement
-      const session = await stripeService.createCheckoutSession(planId, userId, promoCode);
-      
-      // Rediriger vers le checkout
-      await stripeService.redirectToCheckout(session.id);
-      
-      return session;
+      return await response.json();
     } catch (error) {
-      console.error('Erreur création abonnement:', error);
+      console.error('Erreur vérification paiement:', error);
       throw error;
     }
   },
 
   // Annuler un abonnement
-  cancelSubscription: async (subscriptionId) => {
+  async cancelSubscription(subscriptionId) {
     try {
-      const response = await fetch('/api/cancel-subscription', {
+      const token = useStore.getState().token;
+      const headers = { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+
+      const response = await fetch(`${API_URL}/api/stripe/cancel-subscription`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          subscriptionId,
-        }),
+        headers,
+        body: JSON.stringify({ subscriptionId }),
       });
 
       if (!response.ok) {
-        throw new Error('Erreur lors de l\'annulation');
+        const error = await response.json();
+        throw new Error(error.message || 'Erreur lors de l\'annulation de l\'abonnement');
       }
 
-      const result = await response.json();
-      return result;
+      return await response.json();
     } catch (error) {
       console.error('Erreur annulation abonnement:', error);
       throw error;
     }
   },
 
-  // Récupérer les informations d'un abonnement
-  getSubscription: async (subscriptionId) => {
+  // Récupérer l'historique des paiements
+  async getPaymentHistory() {
     try {
-      const response = await fetch(`/api/subscription/${subscriptionId}`);
+      const token = useStore.getState().token;
+      const user = useStore.getState().user;
       
-      if (!response.ok) {
-        throw new Error('Erreur lors de la récupération');
+      if (!token || !user) {
+        throw new Error('Utilisateur non connecté');
       }
 
-      const subscription = await response.json();
-      return subscription;
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const response = await fetch(`${API_URL}/api/stripe/payment-history/${user.id}`, {
+        headers
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erreur lors de la récupération de l\'historique');
+      }
+
+      return await response.json();
     } catch (error) {
-      console.error('Erreur récupération abonnement:', error);
+      console.error('Erreur récupération historique:', error);
       throw error;
     }
   },
 
-  // Simuler un paiement (pour les tests)
-  simulatePayment: async (planId, userId, promoCode = null) => {
-    // Simulation pour les tests - à remplacer par l'intégration réelle
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          id: `sub_${Date.now()}`,
-          status: 'active',
-          planId,
-          userId,
-          promoCode,
-          createdAt: new Date().toISOString(),
-        });
-      }, 2000);
-    });
-  },
-};
+  // Mettre à jour la méthode de paiement
+  async updatePaymentMethod(paymentMethodId) {
+    try {
+      const token = useStore.getState().token;
+      const headers = { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
 
-export default stripeService; 
+      const response = await fetch(`${API_URL}/api/stripe/update-payment-method`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ paymentMethodId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erreur lors de la mise à jour de la méthode de paiement');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Erreur mise à jour méthode de paiement:', error);
+      throw error;
+    }
+  }
+}; 

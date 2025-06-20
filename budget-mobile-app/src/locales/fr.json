@@ -809,25 +809,6 @@
     "specialAccess": "Accès spécial",
     "specialAccessDescription": "Vous avez un accès développeur avec toutes les fonctionnalités",
     "developer": "Développeur",
-    "analytics": "Analytics et Insights",
-    "showAnalytics": "Afficher les analytics",
-    "hideAnalytics": "Masquer les analytics",
-    "usageStats": "Statistiques d'utilisation",
-    "planStats": "Statistiques du plan",
-    "overallUsage": "Utilisation globale",
-    "featuresUsed": "Fonctionnalités utilisées",
-    "recommendations": "Recommandations",
-    "insights": "Insights",
-    "retentionStats": "Statistiques de rétention",
-    "daysSinceStart": "Jours depuis le début",
-    "retentionRate": "Taux de rétention",
-    "churnRisk": "Risque de churn",
-    "churnRisk": {
-      "low": "Faible",
-      "medium": "Moyen",
-      "high": "Élevé"
-    },
-    "processing": "Traitement...",
     "features": {
       "transactions": "Transactions",
       "categories": "Catégories",
@@ -838,37 +819,7 @@
       "multipleAccounts": "Comptes multiples",
       "prioritySupport": "Support prioritaire",
       "advancedReports": "Rapports avancés"
-    }
-  },
-  "restrictions": {
-    "featureNotAvailable": "Fonctionnalité non disponible",
-    "upgradeRequired": "Cette fonctionnalité nécessite un plan supérieur.",
-    "upgradeNow": "Améliorer maintenant",
-    "limitReached": "Limite atteinte",
-    "limitReachedDescription": "Vous avez atteint votre limite de {{feature}} ({{limit}}). Passez à un plan supérieur pour continuer.",
-    "upgradeToUnlock": "Améliorer pour débloquer",
-    "usageWarning": "Il vous reste {{remaining}} utilisations de {{feature}}.",
-    "upgradeForMore": "Améliorer pour plus",
-    "features": {
-      "maxTransactions": "Transactions",
-      "maxSavingsGoals": "Objectifs d'épargne",
-      "maxActionPlans": "Plans d'action",
-      "aiAnalysis": "Analyses IA",
-      "multipleAccounts": "Comptes multiples",
-      "prioritySupport": "Support prioritaire",
-      "advancedReports": "Rapports avancés"
-    }
-  },
-  "notifications": {
-    "limitReached": "Limite atteinte",
-    "limitReachedMessage": "Vous avez atteint votre limite pour cette fonctionnalité.",
-    "upgradeRecommended": "Amélioration recommandée",
-    "upgradeRecommendedMessage": "Considérez un upgrade pour plus de fonctionnalités.",
-    "subscriptionExpiring": "Abonnement expirant",
-    "subscriptionExpiringMessage": "Votre abonnement expire bientôt.",
-    "paymentSuccess": "Paiement réussi",
-    "paymentSuccessMessage": "Votre paiement a été traité avec succès.",
-    "paymentError": "Erreur de paiement",
-    "paymentErrorMessage": "Une erreur est survenue lors du paiement."
+    },
+    "processing": "Traitement en cours..."
   }
 } 

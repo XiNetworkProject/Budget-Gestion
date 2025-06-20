@@ -807,24 +807,6 @@
     "specialAccess": "Special access",
     "specialAccessDescription": "You have developer access with all features",
     "developer": "Developer",
-    "analytics": "Analytics & Insights",
-    "showAnalytics": "Show analytics",
-    "hideAnalytics": "Hide analytics",
-    "usageStats": "Usage statistics",
-    "planStats": "Plan statistics",
-    "overallUsage": "Overall usage",
-    "featuresUsed": "Features used",
-    "recommendations": "Recommendations",
-    "insights": "Insights",
-    "retentionStats": "Retention statistics",
-    "daysSinceStart": "Days since start",
-    "retentionRate": "Retention rate",
-    "churnRisk": "Churn risk",
-    "churnRisk": {
-      "low": "Low",
-      "medium": "Medium",
-      "high": "High"
-    },
     "processing": "Processing...",
     "features": {
       "transactions": "Transactions",
@@ -837,36 +819,5 @@
       "prioritySupport": "Priority support",
       "advancedReports": "Advanced reports"
     }
-  },
-  "restrictions": {
-    "featureNotAvailable": "Feature not available",
-    "upgradeRequired": "This feature requires a higher plan.",
-    "upgradeNow": "Upgrade now",
-    "limitReached": "Limit reached",
-    "limitReachedDescription": "You have reached your limit for {{feature}} ({{limit}}). Upgrade to continue.",
-    "upgradeToUnlock": "Upgrade to unlock",
-    "usageWarning": "You have {{remaining}} uses of {{feature}} remaining.",
-    "upgradeForMore": "Upgrade for more",
-    "features": {
-      "maxTransactions": "Transactions",
-      "maxSavingsGoals": "Savings goals",
-      "maxActionPlans": "Action plans",
-      "aiAnalysis": "AI Analysis",
-      "multipleAccounts": "Multiple accounts",
-      "prioritySupport": "Priority support",
-      "advancedReports": "Advanced reports"
-    }
-  },
-  "notifications": {
-    "limitReached": "Limit reached",
-    "limitReachedMessage": "You have reached your limit for this feature.",
-    "upgradeRecommended": "Upgrade recommended",
-    "upgradeRecommendedMessage": "Consider upgrading for more features.",
-    "subscriptionExpiring": "Subscription expiring",
-    "subscriptionExpiringMessage": "Your subscription expires soon.",
-    "paymentSuccess": "Payment successful",
-    "paymentSuccessMessage": "Your payment has been processed successfully.",
-    "paymentError": "Payment error",
-    "paymentErrorMessage": "An error occurred during payment."
   }
 } 

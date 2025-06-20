@@ -5,13 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "build": "vite build",
+    "test": "vitest",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "start": "react-scripts start",
-    "eject": "react-scripts eject",
-    "setup-stripe": "node setup-stripe.js"
+    "start": "node server/api.js"
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",

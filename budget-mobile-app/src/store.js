@@ -139,14 +139,14 @@ const defaultUserProfile = {
 };
 
 const useStore = create(
-  (set, get) => {
-    let saveTimeout = null;
-    const SAVE_DEBOUNCE_MS = 500;
+    (set, get) => {
+      let saveTimeout = null;
+      const SAVE_DEBOUNCE_MS = 500;
 
-    function scheduleSave() {
-      if (saveTimeout) clearTimeout(saveTimeout);
-      saveTimeout = setTimeout(async () => {
-        const state = get();
+      function scheduleSave() {
+        if (saveTimeout) clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(async () => {
+          const state = get();
         
         // Diagnostic : vérifier l'état de l'authentification
         console.log('=== DIAGNOSTIC SAUVEGARDE ===');
@@ -160,31 +160,31 @@ const useStore = create(
           return;
         }
         
-        set({ isSaving: true });
-        try {
+          set({ isSaving: true });
+          try {
           console.log('Tentative de sauvegarde pour userId:', state.user.id);
           
           const result = await budgetService.saveBudget(state.user.id, {
-            months: state.months,
-            categories: state.categories,
-            data: state.data,
-            revenus: state.revenus,
-            incomeTypes: state.incomeTypes,
-            incomes: state.incomes,
-            persons: state.persons,
-            saved: state.saved,
-            sideByMonth: state.sideByMonth,
-            totalPotentialSavings: state.totalPotentialSavings,
-            budgetLimits: state.budgetLimits,
-            expenses: state.expenses,
-            incomeTransactions: state.incomeTransactions,
-            savings: state.savings,
-            debts: state.debts,
-            bankAccounts: state.bankAccounts,
-            transactions: state.transactions,
-            userProfile: state.userProfile,
-            appSettings: state.appSettings,
-            accounts: state.accounts,
+              months: state.months,
+              categories: state.categories,
+              data: state.data,
+              revenus: state.revenus,
+              incomeTypes: state.incomeTypes,
+              incomes: state.incomes,
+              persons: state.persons,
+              saved: state.saved,
+              sideByMonth: state.sideByMonth,
+              totalPotentialSavings: state.totalPotentialSavings,
+              budgetLimits: state.budgetLimits,
+              expenses: state.expenses,
+              incomeTransactions: state.incomeTransactions,
+              savings: state.savings,
+              debts: state.debts,
+              bankAccounts: state.bankAccounts,
+              transactions: state.transactions,
+              userProfile: state.userProfile,
+              appSettings: state.appSettings,
+              accounts: state.accounts,
             activeAccount: state.activeAccount,
             tutorialCompleted: state.tutorialCompleted,
             onboardingCompleted: state.onboardingCompleted,
@@ -202,7 +202,7 @@ const useStore = create(
             toast.success('Données sauvegardées');
             set({ serverConnected: true }); // Marquer comme connecté
           }
-        } catch (error) {
+          } catch (error) {
           console.error('Erreur de sauvegarde:', error);
           console.error('Détails de l\'erreur:', {
             message: error.message,
@@ -214,45 +214,45 @@ const useStore = create(
           // Ne pas afficher d'erreur à l'utilisateur car la sauvegarde locale fonctionne
           // set({ error: error.message });
           // toast.error('Erreur de sauvegarde');
-        } finally {
-          set({ isSaving: false });
-        }
-      }, SAVE_DEBOUNCE_MS);
-    }
+          } finally {
+            set({ isSaving: false });
+          }
+        }, SAVE_DEBOUNCE_MS);
+      }
 
-    return {
-      isSaving: false,
-      user: null,
-      token: null,
-      isAuthenticated: false,
-      isLoading: false,
-      error: null,
+      return {
+        isSaving: false,
+        user: null,
+        token: null,
+        isAuthenticated: false,
+        isLoading: false,
+        error: null,
       serverConnected: true,
-      
-      // Données budgétaires
-      months: defaultMonths,
-      categories: defaultCategories,
-      data: defaultData,
-      revenus: defaultRevenus,
-      incomeTypes: defaultIncomeTypes,
-      incomes: defaultIncomes,
-      persons: defaultPersons,
-      saved: defaultSaved,
-      sideByMonth: defaultSideByMonth,
-      budgetLimits: defaultCategoryLimits,
-      totalPotentialSavings: 0,
+        
+        // Données budgétaires
+        months: defaultMonths,
+        categories: defaultCategories,
+        data: defaultData,
+        revenus: defaultRevenus,
+        incomeTypes: defaultIncomeTypes,
+        incomes: defaultIncomes,
+        persons: defaultPersons,
+        saved: defaultSaved,
+        sideByMonth: defaultSideByMonth,
+        budgetLimits: defaultCategoryLimits,
+        totalPotentialSavings: 0,
 
-      // Nouvelles données pour la persistance complète
-      expenses: [],
-      incomeTransactions: [],
-      savings: [],
-      debts: [],
-      bankAccounts: [],
-      transactions: [],
-      
-      // Profil et paramètres utilisateur
-      userProfile: defaultUserProfile,
-      appSettings: defaultAppSettings,
+        // Nouvelles données pour la persistance complète
+        expenses: [],
+        incomeTransactions: [],
+        savings: [],
+        debts: [],
+        bankAccounts: [],
+        transactions: [],
+        
+        // Profil et paramètres utilisateur
+        userProfile: defaultUserProfile,
+        appSettings: defaultAppSettings,
       selectedMonth: new Date().getMonth(), // Mois actuel par défaut
       selectedYear: new Date().getFullYear(), // Année actuelle par défaut
 
@@ -292,14 +292,14 @@ const useStore = create(
         // Vérifier si c'est la première fois ou si la version a changé
         if (!lastShown || lastShown.version !== currentVersion) {
           console.log('Nouvelle version détectée, affichage du dialog');
-          set({ 
+                set({
             showUpdateDialog: true,
             lastUpdateShown: {
               version: currentVersion,
               date: new Date().toISOString()
             }
-          });
-        } else {
+                });
+              } else {
           console.log('Version déjà affichée, pas d\'affichage automatique');
           // Ne pas afficher si la version a déjà été montrée
           set({ showUpdateDialog: false });
@@ -328,19 +328,19 @@ const useStore = create(
           forceTutorial: false,
           lastUpdateShown: null
         });
-        scheduleSave();
-      },
+          scheduleSave();
+        },
 
       // Fonction pour forcer l'état onboardingCompleted à true
       forceOnboardingCompleted: () => {
         console.log('Force onboardingCompleted à true');
         set({ onboardingCompleted: true });
-        scheduleSave();
-      },
+          scheduleSave();
+        },
 
       // Fonction pour vérifier et corriger automatiquement l'état onboarding
       checkAndFixOnboardingState: () => {
-        const state = get();
+          const state = get();
         console.log('CheckAndFixOnboardingState: Vérification de l\'état');
         
         // Vérifier si l'utilisateur a des données réelles
@@ -370,11 +370,11 @@ const useStore = create(
         }
         
         return false; // Aucune correction nécessaire
-      },
+        },
 
       // Fonction pour valider et nettoyer les dates
       validateAndCleanDates: () => {
-        const state = get();
+          const state = get();
         
         // Nettoyer les dates invalides dans les dépenses
         const cleanedExpenses = state.expenses.map(exp => ({
@@ -407,12 +407,12 @@ const useStore = create(
         });
         
         // Sauvegarder les données nettoyées
-        scheduleSave();
-      },
+          scheduleSave();
+        },
 
       // Fonction pour synchroniser les dépenses entre les deux systèmes
       syncExpensesWithCategories: () => {
-        const state = get();
+          const state = get();
         
         // Créer un objet pour stocker les totaux par catégorie et par mois
         const categoryTotals = {};
@@ -463,12 +463,12 @@ const useStore = create(
         });
         
         set({ data: newData });
-        scheduleSave();
-      },
+          scheduleSave();
+        },
 
       // Fonction pour synchroniser les revenus entre les deux systèmes
       syncIncomesWithTypes: () => {
-        const state = get();
+          const state = get();
         
         // Créer un objet pour stocker les totaux par type et par mois
         const typeTotals = {};
@@ -525,28 +525,28 @@ const useStore = create(
         
         set({ incomes: newIncomes });
           scheduleSave();
-      },
+        },
 
-      // Gestion des transactions
-      addTransaction: (transaction) => {
-        const state = get();
-        const newTransaction = {
-          id: Date.now().toString(),
-          ...transaction,
+        // Gestion des transactions
+        addTransaction: (transaction) => {
+          const state = get();
+          const newTransaction = {
+            id: Date.now().toString(),
+            ...transaction,
           date: transaction.date && !isNaN(new Date(transaction.date).getTime()) 
             ? transaction.date 
             : new Date().toISOString(),
-          createdAt: new Date().toISOString()
-        };
-        
-        const updatedTransactions = [...state.transactions, newTransaction];
-        set({ transactions: updatedTransactions });
-        scheduleSave();
-      },
+            createdAt: new Date().toISOString()
+          };
+          
+          const updatedTransactions = [...state.transactions, newTransaction];
+          set({ transactions: updatedTransactions });
+          scheduleSave();
+        },
 
-      // Gestion des dépenses
-      addExpense: (expense) => {
-        const state = get();
+        // Gestion des dépenses
+        addExpense: (expense) => {
+          const state = get();
         
         // Créer une date cohérente
         let expenseDate;
@@ -558,12 +558,12 @@ const useStore = create(
           expenseDate = new Date().toISOString();
         }
         
-        const newExpense = {
-          id: Date.now().toString(),
-          ...expense,
+          const newExpense = {
+            id: Date.now().toString(),
+            ...expense,
           date: expenseDate,
-          createdAt: new Date().toISOString()
-        };
+            createdAt: new Date().toISOString()
+          };
         
         console.log('Nouvelle dépense ajoutée:', {
           category: newExpense.category,
@@ -574,49 +574,49 @@ const useStore = create(
           year: new Date(newExpense.date).getFullYear(),
           originalDate: expense.date
         });
-        
-        const updatedExpenses = [...state.expenses, newExpense];
-        set({ expenses: updatedExpenses });
-        
-        // Synchroniser avec les catégories après un délai
-        setTimeout(() => {
-          get().syncExpensesWithCategories();
-        }, 100);
-        
-        scheduleSave();
-      },
-
-      updateExpense: (expenseId, updates) => {
-        const state = get();
-        const updatedExpenses = state.expenses.map(exp => 
-          exp.id === expenseId ? { ...exp, ...updates } : exp
-        );
-        set({ expenses: updatedExpenses });
+          
+          const updatedExpenses = [...state.expenses, newExpense];
+          set({ expenses: updatedExpenses });
         
         // Synchroniser avec les catégories après un délai
         setTimeout(() => {
           get().syncExpensesWithCategories();
         }, 100);
         
-        scheduleSave();
-      },
+          scheduleSave();
+        },
 
-      deleteExpense: (expenseId) => {
-        const state = get();
-        const updatedExpenses = state.expenses.filter(exp => exp.id !== expenseId);
-        set({ expenses: updatedExpenses });
+        updateExpense: (expenseId, updates) => {
+          const state = get();
+          const updatedExpenses = state.expenses.map(exp => 
+            exp.id === expenseId ? { ...exp, ...updates } : exp
+          );
+          set({ expenses: updatedExpenses });
         
         // Synchroniser avec les catégories après un délai
         setTimeout(() => {
           get().syncExpensesWithCategories();
         }, 100);
         
-        scheduleSave();
-      },
+          scheduleSave();
+        },
 
-      // Gestion des revenus
-      addIncome: (income) => {
-        const state = get();
+        deleteExpense: (expenseId) => {
+          const state = get();
+          const updatedExpenses = state.expenses.filter(exp => exp.id !== expenseId);
+          set({ expenses: updatedExpenses });
+        
+        // Synchroniser avec les catégories après un délai
+        setTimeout(() => {
+          get().syncExpensesWithCategories();
+        }, 100);
+        
+          scheduleSave();
+        },
+
+        // Gestion des revenus
+        addIncome: (income) => {
+          const state = get();
         
         // Créer une date cohérente
         let incomeDate;
@@ -628,12 +628,12 @@ const useStore = create(
           incomeDate = new Date().toISOString();
         }
         
-        const newIncome = {
-          id: Date.now().toString(),
-          ...income,
+          const newIncome = {
+            id: Date.now().toString(),
+            ...income,
           date: incomeDate,
-          createdAt: new Date().toISOString()
-        };
+            createdAt: new Date().toISOString()
+          };
         
         console.log('Nouveau revenu ajouté:', {
           type: newIncome.type,
@@ -644,305 +644,305 @@ const useStore = create(
           year: new Date(newIncome.date).getFullYear(),
           originalDate: income.date
         });
-        
-        const updatedIncomeTransactions = [...state.incomeTransactions, newIncome];
-        set({ incomeTransactions: updatedIncomeTransactions });
-        
-        // Ne pas synchroniser automatiquement pour éviter le double comptage
-        
-        scheduleSave();
-      },
-
-      updateIncome: (incomeId, updates) => {
-        const state = get();
-        const updatedIncomeTransactions = state.incomeTransactions.map(inc => 
-          inc.id === incomeId ? { ...inc, ...updates } : inc
-        );
-        set({ incomeTransactions: updatedIncomeTransactions });
+          
+          const updatedIncomeTransactions = [...state.incomeTransactions, newIncome];
+          set({ incomeTransactions: updatedIncomeTransactions });
         
         // Ne pas synchroniser automatiquement pour éviter le double comptage
         
-        scheduleSave();
-      },
+          scheduleSave();
+        },
 
-      deleteIncome: (incomeId) => {
-        const state = get();
-        const updatedIncomeTransactions = state.incomeTransactions.filter(inc => inc.id !== incomeId);
-        set({ incomeTransactions: updatedIncomeTransactions });
+        updateIncome: (incomeId, updates) => {
+          const state = get();
+          const updatedIncomeTransactions = state.incomeTransactions.map(inc => 
+            inc.id === incomeId ? { ...inc, ...updates } : inc
+          );
+          set({ incomeTransactions: updatedIncomeTransactions });
         
         // Ne pas synchroniser automatiquement pour éviter le double comptage
         
-        scheduleSave();
-      },
+          scheduleSave();
+        },
 
-      // Gestion de l'épargne
-      addSavingsGoal: (goal) => {
-        const state = get();
-        const newGoal = {
-          id: Date.now().toString(),
-          ...goal,
-          createdAt: new Date().toISOString(),
-          progress: 0
-        };
+        deleteIncome: (incomeId) => {
+          const state = get();
+          const updatedIncomeTransactions = state.incomeTransactions.filter(inc => inc.id !== incomeId);
+          set({ incomeTransactions: updatedIncomeTransactions });
         
-        const updatedSavings = [...state.savings, newGoal];
-        set({ savings: updatedSavings });
-        scheduleSave();
-      },
-
-      updateSavingsGoal: (goalId, updates) => {
-        const state = get();
-        const updatedSavings = state.savings.map(goal => 
-          goal.id === goalId ? { ...goal, ...updates } : goal
-        );
-        set({ savings: updatedSavings });
-        scheduleSave();
-      },
-
-      deleteSavingsGoal: (goalId) => {
-        const state = get();
-        const updatedSavings = state.savings.filter(goal => goal.id !== goalId);
-        set({ savings: updatedSavings });
-        scheduleSave();
-      },
-
-      // Gestion des dettes
-      addDebt: (debt) => {
-        const state = get();
-        const newDebt = {
-          id: Date.now().toString(),
-          ...debt,
-          createdAt: new Date().toISOString(),
-          paidAmount: 0
-        };
+        // Ne pas synchroniser automatiquement pour éviter le double comptage
         
-        const updatedDebts = [...state.debts, newDebt];
-        set({ debts: updatedDebts });
-        scheduleSave();
-      },
+          scheduleSave();
+        },
 
-      updateDebt: (debtId, updates) => {
-        const state = get();
-        const updatedDebts = state.debts.map(debt => 
-          debt.id === debtId ? { ...debt, ...updates } : debt
-        );
-        set({ debts: updatedDebts });
-        scheduleSave();
-      },
+        // Gestion de l'épargne
+        addSavingsGoal: (goal) => {
+          const state = get();
+          const newGoal = {
+            id: Date.now().toString(),
+            ...goal,
+            createdAt: new Date().toISOString(),
+            progress: 0
+          };
+          
+          const updatedSavings = [...state.savings, newGoal];
+          set({ savings: updatedSavings });
+          scheduleSave();
+        },
 
-      deleteDebt: (debtId) => {
-        const state = get();
-        const updatedDebts = state.debts.filter(debt => debt.id !== debtId);
-        set({ debts: updatedDebts });
-        scheduleSave();
-      },
+        updateSavingsGoal: (goalId, updates) => {
+          const state = get();
+          const updatedSavings = state.savings.map(goal => 
+            goal.id === goalId ? { ...goal, ...updates } : goal
+          );
+          set({ savings: updatedSavings });
+          scheduleSave();
+        },
 
-      // Gestion des comptes bancaires
-      addBankAccount: (account) => {
-        const state = get();
-        const newBankAccount = {
-          id: Date.now().toString(),
-          ...account,
-          createdAt: new Date().toISOString(),
-          balance: account.balance || 0
-        };
-        
-        const updatedBankAccounts = [...state.bankAccounts, newBankAccount];
-        set({ bankAccounts: updatedBankAccounts });
-        scheduleSave();
-      },
+        deleteSavingsGoal: (goalId) => {
+          const state = get();
+          const updatedSavings = state.savings.filter(goal => goal.id !== goalId);
+          set({ savings: updatedSavings });
+          scheduleSave();
+        },
 
-      updateBankAccount: (accountId, updates) => {
-        const state = get();
-        const updatedBankAccounts = state.bankAccounts.map(acc => 
-          acc.id === accountId ? { ...acc, ...updates } : acc
-        );
-        set({ bankAccounts: updatedBankAccounts });
-        scheduleSave();
-      },
+        // Gestion des dettes
+        addDebt: (debt) => {
+          const state = get();
+          const newDebt = {
+            id: Date.now().toString(),
+            ...debt,
+            createdAt: new Date().toISOString(),
+            paidAmount: 0
+          };
+          
+          const updatedDebts = [...state.debts, newDebt];
+          set({ debts: updatedDebts });
+          scheduleSave();
+        },
 
-      deleteBankAccount: (accountId) => {
-        const state = get();
-        const updatedBankAccounts = state.bankAccounts.filter(acc => acc.id !== accountId);
-        set({ bankAccounts: updatedBankAccounts });
-        scheduleSave();
-      },
+        updateDebt: (debtId, updates) => {
+          const state = get();
+          const updatedDebts = state.debts.map(debt => 
+            debt.id === debtId ? { ...debt, ...updates } : debt
+          );
+          set({ debts: updatedDebts });
+          scheduleSave();
+        },
 
-      // Fonctions existantes avec sauvegarde améliorée
-      setValue: (cat, monthIdx, value) => {
-        const state = get();
-        const newData = { ...state.data };
-        newData[cat] = [...newData[cat]];
-        newData[cat][monthIdx] = value;
-        set({ data: newData });
-        scheduleSave();
-      },
+        deleteDebt: (debtId) => {
+          const state = get();
+          const updatedDebts = state.debts.filter(debt => debt.id !== debtId);
+          set({ debts: updatedDebts });
+          scheduleSave();
+        },
 
-      addCategory: (cat) => {
-        const state = get();
-        if (state.categories.includes(cat)) return;
+        // Gestion des comptes bancaires
+        addBankAccount: (account) => {
+          const state = get();
+          const newBankAccount = {
+            id: Date.now().toString(),
+            ...account,
+            createdAt: new Date().toISOString(),
+            balance: account.balance || 0
+          };
+          
+          const updatedBankAccounts = [...state.bankAccounts, newBankAccount];
+          set({ bankAccounts: updatedBankAccounts });
+          scheduleSave();
+        },
 
-        const newData = { ...state.data };
-        newData[cat] = state.months.map(() => 0);
-        const newCategories = [...state.categories, cat];
-        const newLimits = { ...state.budgetLimits, [cat]: 0 };
-        
-        set({ categories: newCategories, data: newData, budgetLimits: newLimits });
-        scheduleSave();
-      },
+        updateBankAccount: (accountId, updates) => {
+          const state = get();
+          const updatedBankAccounts = state.bankAccounts.map(acc => 
+            acc.id === accountId ? { ...acc, ...updates } : acc
+          );
+          set({ bankAccounts: updatedBankAccounts });
+          scheduleSave();
+        },
 
-      removeCategory: (cat) => {
-        const state = get();
-        const { [cat]: _, ...rest } = state.data;
-        const newCategories = state.categories.filter((c) => c !== cat);
-        const { [cat]: __, ...newLimits } = state.budgetLimits;
-        
-        set({ categories: newCategories, data: rest, budgetLimits: newLimits });
-        scheduleSave();
-      },
+        deleteBankAccount: (accountId) => {
+          const state = get();
+          const updatedBankAccounts = state.bankAccounts.filter(acc => acc.id !== accountId);
+          set({ bankAccounts: updatedBankAccounts });
+          scheduleSave();
+        },
 
-      addMonth: (month) => {
-        const state = get();
-        if (state.months.includes(month)) return;
+        // Fonctions existantes avec sauvegarde améliorée
+        setValue: (cat, monthIdx, value) => {
+          const state = get();
+          const newData = { ...state.data };
+          newData[cat] = [...newData[cat]];
+          newData[cat][monthIdx] = value;
+          set({ data: newData });
+          scheduleSave();
+        },
 
-        const newData = { ...state.data };
-        const lastIdx = state.months.length - 1;
-        Object.keys(newData).forEach((cat) => {
-          const lastVal = lastIdx >= 0 ? newData[cat][lastIdx] : 0;
-          newData[cat] = [...newData[cat], lastVal];
-        });
+        addCategory: (cat) => {
+          const state = get();
+          if (state.categories.includes(cat)) return;
 
-        const newIncomes = { ...state.incomes };
-        Object.keys(newIncomes).forEach((type) => {
-          const lastVal = lastIdx >= 0 ? newIncomes[type][lastIdx] : 0;
-          newIncomes[type] = [...newIncomes[type], lastVal];
-        });
+          const newData = { ...state.data };
+          newData[cat] = state.months.map(() => 0);
+          const newCategories = [...state.categories, cat];
+          const newLimits = { ...state.budgetLimits, [cat]: 0 };
+          
+          set({ categories: newCategories, data: newData, budgetLimits: newLimits });
+          scheduleSave();
+        },
 
-        const newRevenus = [...state.revenus];
-        const lastRev = lastIdx >= 0 ? newRevenus[lastIdx] : 0;
-        newRevenus.push(lastRev);
+        removeCategory: (cat) => {
+          const state = get();
+          const { [cat]: _, ...rest } = state.data;
+          const newCategories = state.categories.filter((c) => c !== cat);
+          const { [cat]: __, ...newLimits } = state.budgetLimits;
+          
+          set({ categories: newCategories, data: rest, budgetLimits: newLimits });
+          scheduleSave();
+        },
 
-        const newSide = [...state.sideByMonth];
-        const lastSide = newSide.length > 0 ? newSide[newSide.length - 1] : 0;
-        newSide.push(lastSide);
+        addMonth: (month) => {
+          const state = get();
+          if (state.months.includes(month)) return;
 
-        const newMonths = [...state.months, month];
+          const newData = { ...state.data };
+          const lastIdx = state.months.length - 1;
+          Object.keys(newData).forEach((cat) => {
+            const lastVal = lastIdx >= 0 ? newData[cat][lastIdx] : 0;
+            newData[cat] = [...newData[cat], lastVal];
+          });
 
-        set({
-          months: newMonths,
-          data: newData,
-          revenus: newRevenus,
-          incomes: newIncomes,
-          sideByMonth: newSide,
-        });
-        scheduleSave();
-      },
+          const newIncomes = { ...state.incomes };
+          Object.keys(newIncomes).forEach((type) => {
+            const lastVal = lastIdx >= 0 ? newIncomes[type][lastIdx] : 0;
+            newIncomes[type] = [...newIncomes[type], lastVal];
+          });
 
-      removeMonth: (month) => {
-        const currentMonth = new Date().toLocaleString('fr-FR', { month: 'long' });
-        if (month === currentMonth) {
-          alert("Impossible de supprimer le mois en cours");
-          return;
-        }
+          const newRevenus = [...state.revenus];
+          const lastRev = lastIdx >= 0 ? newRevenus[lastIdx] : 0;
+          newRevenus.push(lastRev);
 
-        const state = get();
-        const monthIdx = state.months.indexOf(month);
-        if (monthIdx === -1) return;
+          const newSide = [...state.sideByMonth];
+          const lastSide = newSide.length > 0 ? newSide[newSide.length - 1] : 0;
+          newSide.push(lastSide);
 
-        const newData = { ...state.data };
-        Object.keys(newData).forEach((cat) => {
-          newData[cat] = newData[cat].filter((_, idx) => idx !== monthIdx);
-        });
+          const newMonths = [...state.months, month];
 
-        const newIncomes = { ...state.incomes };
-        Object.keys(newIncomes).forEach((type) => {
-          newIncomes[type] = newIncomes[type].filter((_, idx) => idx !== monthIdx);
-        });
+          set({
+            months: newMonths,
+            data: newData,
+            revenus: newRevenus,
+            incomes: newIncomes,
+            sideByMonth: newSide,
+          });
+          scheduleSave();
+        },
 
-        const newRevenus = state.revenus.filter((_, idx) => idx !== monthIdx);
-        const newSideByMonth = state.sideByMonth.filter((_, idx) => idx !== monthIdx);
-        const newMonths = state.months.filter((m) => m !== month);
+        removeMonth: (month) => {
+          const currentMonth = new Date().toLocaleString('fr-FR', { month: 'long' });
+          if (month === currentMonth) {
+            alert("Impossible de supprimer le mois en cours");
+            return;
+          }
 
-        set({
-          months: newMonths,
-          data: newData,
-          incomes: newIncomes,
-          revenus: newRevenus,
-          sideByMonth: newSideByMonth,
-        });
-        scheduleSave();
-      },
+          const state = get();
+          const monthIdx = state.months.indexOf(month);
+          if (monthIdx === -1) return;
 
-      setIncome: (type, monthIdx, value) => {
-        const state = get();
-        const newIncomes = { ...state.incomes };
-        newIncomes[type] = [...newIncomes[type]];
-        newIncomes[type][monthIdx] = value;
+          const newData = { ...state.data };
+          Object.keys(newData).forEach((cat) => {
+            newData[cat] = newData[cat].filter((_, idx) => idx !== monthIdx);
+          });
 
-        set({ incomes: newIncomes });
-        scheduleSave();
-      },
+          const newIncomes = { ...state.incomes };
+          Object.keys(newIncomes).forEach((type) => {
+            newIncomes[type] = newIncomes[type].filter((_, idx) => idx !== monthIdx);
+          });
 
-      addIncomeType: (type) => {
-        const state = get();
-        if (state.incomeTypes.includes(type)) return;
+          const newRevenus = state.revenus.filter((_, idx) => idx !== monthIdx);
+          const newSideByMonth = state.sideByMonth.filter((_, idx) => idx !== monthIdx);
+          const newMonths = state.months.filter((m) => m !== month);
 
-        const newIncomes = { ...state.incomes };
-        newIncomes[type] = state.months.map(() => 0);
-        const newIncomeTypes = [...state.incomeTypes, type];
-        
-        set({ incomeTypes: newIncomeTypes, incomes: newIncomes });
-        scheduleSave();
-      },
+          set({
+            months: newMonths,
+            data: newData,
+            incomes: newIncomes,
+            revenus: newRevenus,
+            sideByMonth: newSideByMonth,
+          });
+          scheduleSave();
+        },
 
-      removeIncomeType: (type) => {
-        const state = get();
-        const { [type]: _, ...rest } = state.incomes;
-        const newIncomeTypes = state.incomeTypes.filter((t) => t !== type);
-        
-        set({ incomeTypes: newIncomeTypes, incomes: rest });
-        scheduleSave();
-      },
+        setIncome: (type, monthIdx, value) => {
+          const state = get();
+          const newIncomes = { ...state.incomes };
+          newIncomes[type] = [...newIncomes[type]];
+          newIncomes[type][monthIdx] = value;
 
-      renameIncomeType: (oldType, newType) => {
-        const state = get();
-        if (state.incomeTypes.includes(newType)) return;
+          set({ incomes: newIncomes });
+          scheduleSave();
+        },
 
-        const newIncomeTypes = state.incomeTypes.map((t) => (t === oldType ? newType : t));
-        const newIncomes = { ...state.incomes };
-        newIncomes[newType] = newIncomes[oldType];
-        delete newIncomes[oldType];
-        
-        set({ incomeTypes: newIncomeTypes, incomes: newIncomes });
-        scheduleSave();
-      },
+        addIncomeType: (type) => {
+          const state = get();
+          if (state.incomeTypes.includes(type)) return;
 
-      setSideByMonth: (monthIdx, value) => {
-        const state = get();
-        const newSide = [...state.sideByMonth];
-        newSide[monthIdx] = value;
-        
-        set({ sideByMonth: newSide });
-        scheduleSave();
-      },
+          const newIncomes = { ...state.incomes };
+          newIncomes[type] = state.months.map(() => 0);
+          const newIncomeTypes = [...state.incomeTypes, type];
+          
+          set({ incomeTypes: newIncomeTypes, incomes: newIncomes });
+          scheduleSave();
+        },
 
-      renameCategory: (oldName, newName) => {
-        const state = get();
-        const newData = { ...state.data };
-        const newCategories = [...state.categories];
-        const index = newCategories.indexOf(oldName);
-        
-        if (index !== -1) {
-          newCategories[index] = newName;
-          newData[newName] = newData[oldName];
-          delete newData[oldName];
-        }
-        
-        set({ categories: newCategories, data: newData });
-        scheduleSave();
-      },
+        removeIncomeType: (type) => {
+          const state = get();
+          const { [type]: _, ...rest } = state.incomes;
+          const newIncomeTypes = state.incomeTypes.filter((t) => t !== type);
+          
+          set({ incomeTypes: newIncomeTypes, incomes: rest });
+          scheduleSave();
+        },
 
-      logout: () => {
+        renameIncomeType: (oldType, newType) => {
+          const state = get();
+          if (state.incomeTypes.includes(newType)) return;
+
+          const newIncomeTypes = state.incomeTypes.map((t) => (t === oldType ? newType : t));
+          const newIncomes = { ...state.incomes };
+          newIncomes[newType] = newIncomes[oldType];
+          delete newIncomes[oldType];
+          
+          set({ incomeTypes: newIncomeTypes, incomes: newIncomes });
+          scheduleSave();
+        },
+
+        setSideByMonth: (monthIdx, value) => {
+          const state = get();
+          const newSide = [...state.sideByMonth];
+          newSide[monthIdx] = value;
+          
+          set({ sideByMonth: newSide });
+          scheduleSave();
+        },
+
+        renameCategory: (oldName, newName) => {
+          const state = get();
+          const newData = { ...state.data };
+          const newCategories = [...state.categories];
+          const index = newCategories.indexOf(oldName);
+          
+          if (index !== -1) {
+            newCategories[index] = newName;
+            newData[newName] = newData[oldName];
+            delete newData[oldName];
+          }
+          
+          set({ categories: newCategories, data: newData });
+          scheduleSave();
+        },
+
+        logout: () => {
         console.log('Déconnexion utilisateur');
         set({ 
           user: null, 
@@ -962,53 +962,53 @@ const useStore = create(
       },
 
       clearAllData: () => {
-        set({
-          user: null,
-          token: null,
-          isAuthenticated: false,
-          error: null,
-          months: defaultMonths,
-          categories: defaultCategories,
-          data: defaultData,
-          revenus: defaultRevenus,
-          incomeTypes: defaultIncomeTypes,
-          incomes: defaultIncomes,
-          persons: defaultPersons,
-          saved: defaultSaved,
-          sideByMonth: defaultSideByMonth,
-          expenses: [],
-          incomeTransactions: [],
-          savings: [],
-          debts: [],
-          bankAccounts: [],
-          transactions: [],
-          userProfile: defaultUserProfile,
-          appSettings: defaultAppSettings,
-          accounts: [],
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            error: null,
+            months: defaultMonths,
+            categories: defaultCategories,
+            data: defaultData,
+            revenus: defaultRevenus,
+            incomeTypes: defaultIncomeTypes,
+            incomes: defaultIncomes,
+            persons: defaultPersons,
+            saved: defaultSaved,
+            sideByMonth: defaultSideByMonth,
+            expenses: [],
+            incomeTransactions: [],
+            savings: [],
+            debts: [],
+            bankAccounts: [],
+            transactions: [],
+            userProfile: defaultUserProfile,
+            appSettings: defaultAppSettings,
+            accounts: [],
           activeAccount: null,
           budgetLimits: {}
-        });
-      },
+          });
+        },
 
       // Réinitialiser avec des données par défaut (garder l'utilisateur connecté)
       resetToDefaults: () => {
         const state = get();
-        set({
-          months: defaultMonths,
-          categories: defaultCategories,
-          data: defaultData,
-          revenus: defaultRevenus,
-          incomeTypes: defaultIncomeTypes,
-          incomes: defaultIncomes,
-          persons: defaultPersons,
-          saved: defaultSaved,
-          sideByMonth: defaultSideByMonth,
-          expenses: [],
-          incomeTransactions: [],
-          savings: [],
-          debts: [],
-          bankAccounts: [],
-          transactions: [],
+          set({
+            months: defaultMonths,
+            categories: defaultCategories,
+            data: defaultData,
+            revenus: defaultRevenus,
+            incomeTypes: defaultIncomeTypes,
+            incomes: defaultIncomes,
+            persons: defaultPersons,
+            saved: defaultSaved,
+            sideByMonth: defaultSideByMonth,
+            expenses: [],
+            incomeTransactions: [],
+            savings: [],
+            debts: [],
+            bankAccounts: [],
+            transactions: [],
           budgetLimits: defaultCategoryLimits,
           selectedMonth: new Date().getMonth(),
           selectedYear: new Date().getFullYear(),
@@ -1050,50 +1050,50 @@ const useStore = create(
             console.error('Erreur lors de la sauvegarde des données par défaut:', error);
           });
         }
-      },
+        },
 
-      renameMonth: (oldMonth, newMonth) => {
-        const state = get();
-        const monthIdx = state.months.indexOf(oldMonth);
-        if (monthIdx === -1) return;
+        renameMonth: (oldMonth, newMonth) => {
+          const state = get();
+          const monthIdx = state.months.indexOf(oldMonth);
+          if (monthIdx === -1) return;
 
-        const newMonths = [...state.months];
-        newMonths[monthIdx] = newMonth;
+          const newMonths = [...state.months];
+          newMonths[monthIdx] = newMonth;
 
-        set({ months: newMonths });
-        scheduleSave();
-      },
+          set({ months: newMonths });
+          scheduleSave();
+        },
 
-      reorderCategories: (sourceIdx, destIdx) => {
-        const state = get();
-        const newCategories = Array.from(state.categories);
-        const [moved] = newCategories.splice(sourceIdx, 1);
-        newCategories.splice(destIdx, 0, moved);
-        set({ categories: newCategories });
-        scheduleSave();
-      },
+        reorderCategories: (sourceIdx, destIdx) => {
+          const state = get();
+          const newCategories = Array.from(state.categories);
+          const [moved] = newCategories.splice(sourceIdx, 1);
+          newCategories.splice(destIdx, 0, moved);
+          set({ categories: newCategories });
+          scheduleSave();
+        },
 
-      reorderIncomeTypes: (sourceIdx, destIdx) => {
-        const state = get();
-        const newIncomeTypes = Array.from(state.incomeTypes);
-        const [moved] = newIncomeTypes.splice(sourceIdx, 1);
-        newIncomeTypes.splice(destIdx, 0, moved);
-        set({ incomeTypes: newIncomeTypes });
-        scheduleSave();
-      },
+        reorderIncomeTypes: (sourceIdx, destIdx) => {
+          const state = get();
+          const newIncomeTypes = Array.from(state.incomeTypes);
+          const [moved] = newIncomeTypes.splice(sourceIdx, 1);
+          newIncomeTypes.splice(destIdx, 0, moved);
+          set({ incomeTypes: newIncomeTypes });
+          scheduleSave();
+        },
 
-      setCategoryLimit: (cat, value) => {
-        const state = get();
-        const newLimits = { ...state.budgetLimits, [cat]: value };
-        set({ budgetLimits: newLimits });
-        scheduleSave();
-      },
+        setCategoryLimit: (cat, value) => {
+          const state = get();
+          const newLimits = { ...state.budgetLimits, [cat]: value };
+          set({ budgetLimits: newLimits });
+          scheduleSave();
+        },
 
-      setTutorialCompleted: (completed) => {
-        console.log('Tutoriel: setTutorialCompleted appelé avec', completed);
-        set({ tutorialCompleted: completed });
-        scheduleSave();
-      },
+        setTutorialCompleted: (completed) => {
+          console.log('Tutoriel: setTutorialCompleted appelé avec', completed);
+          set({ tutorialCompleted: completed });
+          scheduleSave();
+        },
 
       setOnboardingCompleted: (completed) => {
         console.log('Onboarding: setOnboardingCompleted appelé avec', completed);
@@ -1101,29 +1101,29 @@ const useStore = create(
         scheduleSave();
       },
 
-      showTutorial: () => {
-        console.log('Tutoriel: showTutorial appelé');
-        set({ tutorialCompleted: false });
-        scheduleSave();
-      },
+        showTutorial: () => {
+          console.log('Tutoriel: showTutorial appelé');
+          set({ tutorialCompleted: false });
+          scheduleSave();
+        },
 
-      resetTutorial: () => {
-        console.log('Tutoriel: resetTutorial appelé');
-        set({ tutorialCompleted: false });
-        scheduleSave();
-      },
+        resetTutorial: () => {
+          console.log('Tutoriel: resetTutorial appelé');
+          set({ tutorialCompleted: false });
+          scheduleSave();
+        },
 
-      forceShowTutorial: () => {
-        console.log('Tutoriel: forceShowTutorial appelé');
-        set({ forceTutorial: true, tutorialCompleted: false });
-        scheduleSave();
-      },
+        forceShowTutorial: () => {
+          console.log('Tutoriel: forceShowTutorial appelé');
+          set({ forceTutorial: true, tutorialCompleted: false });
+          scheduleSave();
+        },
 
-      clearForceTutorial: () => {
-        console.log('Tutoriel: clearForceTutorial appelé');
-        set({ forceTutorial: false });
-        scheduleSave();
-      },
+        clearForceTutorial: () => {
+          console.log('Tutoriel: clearForceTutorial appelé');
+          set({ forceTutorial: false });
+          scheduleSave();
+        },
 
       setUser: async (user) => {
         console.log('setUser: Connexion de l\'utilisateur:', user);
