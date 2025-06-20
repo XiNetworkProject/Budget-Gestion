@@ -818,6 +818,10 @@
     "downgradeConfirmation": "Are you sure you want to switch to {{plan}} plan?",
     "cancelSuccess": "Subscription cancelled successfully",
     "downgradeSuccess": "Plan changed successfully",
-    "upgradeSuccess": "Plan upgraded successfully"
+    "upgradeSuccess": "Plan upgraded successfully",
+    "importantInfo": "Important information",
+    "noRefund": "No refund for already paid subscriptions",
+    "cancelAnytime": "You can cancel your subscription at any time",
+    "downgradeInfo": "When downgrading, your current subscription will be automatically cancelled"
   }
 } 

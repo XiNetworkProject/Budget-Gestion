@@ -821,6 +821,10 @@
     "downgradeConfirmation": "Êtes-vous sûr de vouloir passer au plan {{plan}} ?",
     "cancelSuccess": "Abonnement annulé avec succès",
     "downgradeSuccess": "Plan changé avec succès",
-    "upgradeSuccess": "Plan mis à niveau avec succès"
+    "upgradeSuccess": "Plan mis à niveau avec succès",
+    "importantInfo": "Informations importantes",
+    "noRefund": "Aucun remboursement pour les abonnements déjà payés",
+    "cancelAnytime": "Vous pouvez annuler votre abonnement à tout moment",
+    "downgradeInfo": "En rétrogradant, votre abonnement actuel sera annulé automatiquement"
   }
 } 
