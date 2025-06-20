@@ -52,7 +52,6 @@ const Login = () => {
 
   return (
     <div className="login-page">
-      <h1 className="login-title">Budget Gestion</h1>
       <div className="login-container">
         <h2 className="text-lg text-white">Connectez-vous pour démarrer</h2>
         <GoogleLogin

@@ -126,14 +126,6 @@ const Layout = () => {
         onClose={closeUpdateDialog}
       />
 
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Budget Gestion
-          </Typography>
-        </Toolbar>
-      </AppBar>
-
       <Box sx={{ p: 2 }}>
         <Outlet />
       </Box>

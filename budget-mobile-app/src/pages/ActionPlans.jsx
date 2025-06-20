@@ -228,7 +228,7 @@ const ActionPlans = () => {
     <Box sx={{ p: 2, maxWidth: 1200, mx: 'auto' }}>
       {/* Header */}
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <IconButton onClick={() => navigate('/')} sx={{ mr: 2 }}>
+        <IconButton onClick={() => navigate('/home')} sx={{ mr: 2 }}>
           <ArrowBack />
         </IconButton>
         <Typography variant="h4" component="h1">
