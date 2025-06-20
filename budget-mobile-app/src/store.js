@@ -1138,6 +1138,7 @@ const useStore = create(
     {
       name: 'budget-storage',
       partialize: (state) => ({
+        // Données d'authentification et configuration
         user: state.user,
         isAuthenticated: state.isAuthenticated,
         token: state.token,
@@ -1145,19 +1146,43 @@ const useStore = create(
         appSettings: state.appSettings,
         selectedMonth: state.selectedMonth,
         selectedYear: state.selectedYear,
+        
+        // États d'onboarding et tutoriel
         tutorialCompleted: state.tutorialCompleted,
         onboardingCompleted: state.onboardingCompleted,
         forceTutorial: state.forceTutorial,
         lastUpdateShown: state.lastUpdateShown,
-        appVersion: state.appVersion
+        appVersion: state.appVersion,
+        
+        // Données budgétaires complètes
+        months: state.months,
+        categories: state.categories,
+        data: state.data,
+        revenus: state.revenus,
+        incomeTypes: state.incomeTypes,
+        incomes: state.incomes,
+        persons: state.persons,
+        saved: state.saved,
+        sideByMonth: state.sideByMonth,
+        totalPotentialSavings: state.totalPotentialSavings,
+        budgetLimits: state.budgetLimits,
+        expenses: state.expenses,
+        incomeTransactions: state.incomeTransactions,
+        savings: state.savings,
+        debts: state.debts,
+        bankAccounts: state.bankAccounts,
+        transactions: state.transactions,
+        accounts: state.accounts,
+        activeAccount: state.activeAccount
       })
     }
   )
 );
 
-const store = useStore.getState();
-if (store.user && store.isAuthenticated) {
-  store.setUser(store.user);
-}
+// Suppression de la recharge automatique pour éviter les conflits avec la persistance locale
+// const store = useStore.getState();
+// if (store.user && store.isAuthenticated) {
+//   store.setUser(store.user);
+// }
 
 export { useStore }; 
