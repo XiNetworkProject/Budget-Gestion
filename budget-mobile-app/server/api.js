@@ -41,7 +41,7 @@ const STRIPE_CONFIG = {
       name: 'Premium',
       price: 1.99,
       currency: 'EUR',
-      checkoutUrl: 'https://buy.stripe.com/dRm5kDfwF0I7frw331fAc01',
+      checkoutUrl: 'https://buy.stripe.com/bJe28rbgpduTbbgcDBfAc00', // URL Pro
       features: {
         maxTransactions: -1, // Illimité
         unlimitedCategories: true,
@@ -59,7 +59,7 @@ const STRIPE_CONFIG = {
       name: 'Pro',
       price: 5.99,
       currency: 'EUR',
-      checkoutUrl: 'https://buy.stripe.com/bJe28rbgpduTbbgcDBfAc00',
+      checkoutUrl: 'https://buy.stripe.com/dRm5kDfwF0I7frw331fAc01', // URL Premium
       features: {
         maxTransactions: -1, // Illimité
         unlimitedCategories: true,
@@ -72,13 +72,6 @@ const STRIPE_CONFIG = {
         advancedReports: true
       }
     }
-  },
-  
-  // Codes promo
-  PROMO_CODES: {
-    'DEV2024': { discount: 100, type: 'percentage', validUntil: '2025-12-31' },
-    'TEST50': { discount: 50, type: 'percentage', validUntil: '2025-12-31' },
-    'FREEMONTH': { discount: 1, type: 'months', validUntil: '2025-12-31' }
   }
 };
 
@@ -261,7 +254,7 @@ app.delete('/api/budget/:userId', verifyAuth, async (req, res) => {
 // Routes Stripe
 app.post('/api/stripe/create-checkout-session', verifyAuth, async (req, res) => {
   try {
-    const { planId, promoCode, userId, userEmail } = req.body;
+    const { planId, userId, userEmail } = req.body;
     
     // Vérifier le plan
     const plan = STRIPE_CONFIG.PLANS[planId];
@@ -269,29 +262,13 @@ app.post('/api/stripe/create-checkout-session', verifyAuth, async (req, res) => 
       return res.status(400).json({ message: 'Plan invalide' });
     }
 
-    // Appliquer le code promo si fourni
-    let finalCheckoutUrl = plan.checkoutUrl;
-    if (promoCode) {
-      const promo = STRIPE_CONFIG.PROMO_CODES[promoCode.toUpperCase()];
-      if (promo) {
-        // Pour les codes promo, on peut ajouter des paramètres à l'URL
-        const separator = finalCheckoutUrl.includes('?') ? '&' : '?';
-        if (promo.type === 'percentage') {
-          finalCheckoutUrl += `${separator}prefilled_promo_code=${promoCode}`;
-        } else if (promo.type === 'months') {
-          finalCheckoutUrl += `${separator}prefilled_promo_code=${promoCode}`;
-        }
-      }
-    }
-
     // Enregistrer la tentative d'abonnement dans la base de données
     try {
       await db.collection('subscription_attempts').insertOne({
         userId,
         planId,
-        promoCode: promoCode || null,
         userEmail,
-        checkoutUrl: finalCheckoutUrl,
+        checkoutUrl: plan.checkoutUrl,
         createdAt: new Date(),
         status: 'pending'
       });
@@ -302,7 +279,7 @@ app.post('/api/stripe/create-checkout-session', verifyAuth, async (req, res) => 
 
     res.json({
       sessionId: `cs_${Date.now()}`,
-      sessionUrl: finalCheckoutUrl
+      sessionUrl: plan.checkoutUrl
     });
 
   } catch (error) {
@@ -330,52 +307,45 @@ app.get('/api/stripe/check-payment-status/:sessionId', verifyAuth, async (req, r
 
 app.post('/api/stripe/cancel-subscription', verifyAuth, async (req, res) => {
   try {
-    const { subscriptionId } = req.body;
+    const { subscriptionId, userId } = req.body;
     
     // Enregistrer l'annulation dans la base de données
     try {
       await db.collection('subscription_cancellations').insertOne({
-        userId: req.user.id,
+        userId,
         subscriptionId,
-        cancelledAt: new Date()
+        cancelledAt: new Date(),
+        reason: 'user_request'
       });
     } catch (dbError) {
       console.warn('Erreur lors de l\'enregistrement de l\'annulation:', dbError);
     }
 
-    res.json({ 
-      success: true, 
-      message: 'Abonnement annulé avec succès'
+    // Pour les URLs directes, on ne peut pas annuler via l'API Stripe
+    // L'utilisateur devra annuler manuellement depuis son compte Stripe
+    res.json({
+      message: 'Demande d\'annulation enregistrée',
+      note: 'Pour les abonnements via URLs directes, veuillez annuler manuellement depuis votre compte Stripe'
     });
+
   } catch (error) {
     console.error('Erreur annulation abonnement:', error);
     res.status(500).json({ message: 'Erreur lors de l\'annulation de l\'abonnement' });
   }
 });
 
-app.get('/api/stripe/payment-history/:userId', verifyAuth, async (req, res) => {
+app.get('/api/stripe/payment-history', verifyAuth, async (req, res) => {
   try {
-    const { userId } = req.params;
+    const userId = req.user.id;
     
-    if (req.user.id !== userId) {
-      return res.status(403).json({ message: 'Non autorisé' });
-    }
-
     // Récupérer l'historique depuis la base de données
-    const attempts = await db.collection('subscription_attempts')
+    const history = await db.collection('subscription_attempts')
       .find({ userId })
       .sort({ createdAt: -1 })
+      .limit(10)
       .toArray();
-
-    const cancellations = await db.collection('subscription_cancellations')
-      .find({ userId })
-      .sort({ cancelledAt: -1 })
-      .toArray();
-
-    res.json({
-      attempts,
-      cancellations
-    });
+    
+    res.json(history);
   } catch (error) {
     console.error('Erreur récupération historique:', error);
     res.status(500).json({ message: 'Erreur lors de la récupération de l\'historique' });

@@ -1,10 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, Box, BottomNavigation, BottomNavigationAction } from '@mui/material';
+import { 
+  AppBar, 
+  Toolbar, 
+  Typography, 
+  Box, 
+  BottomNavigation, 
+  BottomNavigationAction,
+  Chip,
+  IconButton,
+  Tooltip
+} from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SavingsIcon from '@mui/icons-material/Savings';
+import StarIcon from '@mui/icons-material/Star';
+import DiamondIcon from '@mui/icons-material/Diamond';
 import Tutorial from './Tutorial';
 import UpdateDialog from './UpdateDialog';
 import QuickAdd from '../pages/QuickAdd';
@@ -34,7 +46,9 @@ const Layout = () => {
     showTutorial: storeShowTutorial,
     setShowTutorial: setStoreShowTutorial,
     showOnboarding,
-    setShowOnboarding
+    setShowOnboarding,
+    subscription,
+    getCurrentPlan
   } = useStore();
   
   // map path to nav value (retiré /quickadd)
@@ -84,6 +98,30 @@ const Layout = () => {
     setValue(newValue);
     const path = paths[newValue];
     navigate(path);
+  };
+
+  // Fonction pour obtenir l'icône d'abonnement
+  const getSubscriptionIcon = () => {
+    const currentPlan = getCurrentPlan();
+    
+    if (currentPlan.id === 'premium') {
+      return <StarIcon sx={{ color: '#FFD700' }} />;
+    } else if (currentPlan.id === 'pro') {
+      return <DiamondIcon sx={{ color: '#00D4FF' }} />;
+    }
+    return null;
+  };
+
+  // Fonction pour obtenir le texte de l'abonnement
+  const getSubscriptionText = () => {
+    const currentPlan = getCurrentPlan();
+    
+    if (currentPlan.id === 'premium') {
+      return t('subscription.premium');
+    } else if (currentPlan.id === 'pro') {
+      return t('subscription.pro');
+    }
+    return '';
   };
 
   // Gestion du tutoriel - ne se lance qu'une seule fois après l'onboarding
@@ -153,6 +191,40 @@ const Layout = () => {
         <BottomNavigationAction label={t('navigation.savings')} icon={<SavingsIcon />} />
         <BottomNavigationAction label={t('navigation.settings')} icon={<SettingsIcon />} />
       </BottomNavigation>
+
+      {/* Indicateur d'abonnement discret */}
+      {getSubscriptionIcon() && (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 16,
+            right: 16,
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1
+          }}
+        >
+          <Tooltip title={getSubscriptionText()} arrow>
+            <Chip
+              icon={getSubscriptionIcon()}
+              label={getSubscriptionText()}
+              size="small"
+              sx={{
+                bgcolor: 'rgba(255, 255, 255, 0.9)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(0, 0, 0, 0.1)',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                '&:hover': {
+                  bgcolor: 'rgba(255, 255, 255, 1)',
+                  transform: 'scale(1.05)',
+                  transition: 'all 0.2s ease'
+                }
+              }}
+            />
+          </Tooltip>
+        </Box>
+      )}
     </Box>
   );
 };

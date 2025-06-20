@@ -120,13 +120,6 @@ const specialAccessEmails = [
   'dev@example.com'
 ];
 
-// Codes promo pour les tests
-const promoCodes = {
-  'DEV2024': { discount: 100, type: 'percentage', validUntil: '2025-12-31' },
-  'TEST50': { discount: 50, type: 'percentage', validUntil: '2025-12-31' },
-  'FREEMONTH': { discount: 1, type: 'months', validUntil: '2025-12-31' }
-};
-
 // Profil utilisateur par défaut
 const defaultUserProfile = {
   firstName: '',
@@ -279,9 +272,6 @@ const useStore = create(
       },
       subscriptionPlans,
       specialAccessEmails,
-      promoCodes,
-      appliedPromoCode: null,
-      promoCodeDiscount: 0,
 
       // Fonction pour vérifier et afficher les mises à jour
       checkForUpdates: () => {
@@ -1306,39 +1296,6 @@ const useStore = create(
         
         const remaining = Math.max(0, limit - currentUsage);
         return { allowed: remaining > 0, remaining };
-      },
-
-      // Appliquer un code promo
-      applyPromoCode: (code) => {
-        const state = get();
-        const promoCode = state.promoCodes[code.toUpperCase()];
-        
-        if (!promoCode) {
-          toast.error('Code promo invalide');
-          return false;
-        }
-        
-        const now = new Date();
-        const validUntil = new Date(promoCode.validUntil);
-        
-        if (now > validUntil) {
-          toast.error('Code promo expiré');
-          return false;
-        }
-        
-        set({ 
-          appliedPromoCode: code.toUpperCase(),
-          promoCodeDiscount: promoCode.discount
-        });
-        
-        toast.success(`Code promo appliqué ! ${promoCode.discount}${promoCode.type === 'percentage' ? '%' : ' mois'} de réduction`);
-        return true;
-      },
-
-      // Supprimer le code promo appliqué
-      removePromoCode: () => {
-        set({ appliedPromoCode: null, promoCodeDiscount: 0 });
-        toast.success('Code promo supprimé');
       },
 
       // Mettre à jour l'abonnement

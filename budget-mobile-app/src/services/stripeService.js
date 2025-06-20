@@ -1,15 +1,16 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 import { useStore } from '../store';
+import { toast } from 'react-hot-toast';
 
 // Configuration des URLs Stripe directes
 const STRIPE_URLS = {
-  PREMIUM: 'https://buy.stripe.com/dRm5kDfwF0I7frw331fAc01',
-  PRO: 'https://buy.stripe.com/bJe28rbgpduTbbgcDBfAc00'
+  PREMIUM: 'https://buy.stripe.com/bJe28rbgpduTbbgcDBfAc00',
+  PRO: 'https://buy.stripe.com/dRm5kDfwF0I7frw331fAc01'
 };
 
 export const stripeService = {
   // Créer une session de paiement Stripe (redirection directe)
-  async createCheckoutSession(planId, promoCode = null) {
+  async createCheckoutSession(planId) {
     try {
       const token = useStore.getState().token;
       const user = useStore.getState().user;
@@ -22,17 +23,8 @@ export const stripeService = {
       const directUrl = STRIPE_URLS[planId];
       if (directUrl) {
         // Redirection directe vers Stripe
-        let finalUrl = directUrl;
-        
-        // Ajouter le code promo si fourni
-        if (promoCode) {
-          const separator = finalUrl.includes('?') ? '&' : '?';
-          finalUrl += `${separator}prefilled_promo_code=${promoCode}`;
-        }
-        
-        // Rediriger immédiatement
-        window.location.href = finalUrl;
-        return { sessionId: `direct_${Date.now()}`, sessionUrl: finalUrl };
+        window.location.href = directUrl;
+        return { sessionId: `direct_${Date.now()}`, sessionUrl: directUrl };
       }
 
       // Fallback vers l'API si pas d'URL directe
@@ -46,7 +38,6 @@ export const stripeService = {
         headers,
         body: JSON.stringify({
           planId,
-          promoCode,
           userId: user.id,
           userEmail: user.email
         }),
@@ -92,9 +83,15 @@ export const stripeService = {
   },
 
   // Annuler un abonnement
-  async cancelSubscription(subscriptionId) {
+  async cancelSubscription(subscriptionId = 'current') {
     try {
       const token = useStore.getState().token;
+      const user = useStore.getState().user;
+      
+      if (!token || !user) {
+        throw new Error('Utilisateur non connecté');
+      }
+
       const headers = { 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
@@ -103,7 +100,10 @@ export const stripeService = {
       const response = await fetch(`${API_URL}/api/stripe/cancel-subscription`, {
         method: 'POST',
         headers,
-        body: JSON.stringify({ subscriptionId }),
+        body: JSON.stringify({
+          subscriptionId,
+          userId: user.id
+        }),
       });
 
       if (!response.ok) {
@@ -111,7 +111,14 @@ export const stripeService = {
         throw new Error(error.message || 'Erreur lors de l\'annulation de l\'abonnement');
       }
 
-      return await response.json();
+      const result = await response.json();
+      
+      // Afficher un message informatif
+      if (result.note) {
+        toast(result.note, { duration: 6000 });
+      }
+      
+      return result;
     } catch (error) {
       console.error('Erreur annulation abonnement:', error);
       throw error;
@@ -122,16 +129,18 @@ export const stripeService = {
   async getPaymentHistory() {
     try {
       const token = useStore.getState().token;
-      const user = useStore.getState().user;
       
-      if (!token || !user) {
+      if (!token) {
         throw new Error('Utilisateur non connecté');
       }
 
-      const headers = { Authorization: `Bearer ${token}` };
+      const headers = { 
+        'Authorization': `Bearer ${token}`
+      };
 
-      const response = await fetch(`${API_URL}/api/stripe/payment-history/${user.id}`, {
-        headers
+      const response = await fetch(`${API_URL}/api/stripe/payment-history`, {
+        method: 'GET',
+        headers,
       });
 
       if (!response.ok) {

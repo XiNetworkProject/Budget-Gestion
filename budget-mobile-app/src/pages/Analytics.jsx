@@ -15,7 +15,8 @@ import {
   IconButton,
   Tooltip,
   Fade,
-  Zoom
+  Zoom,
+  Button
 } from '@mui/material';
 import { 
   TrendingUp, 
@@ -23,7 +24,10 @@ import {
   AccountBalance, 
   Savings,
   Refresh,
-  Info
+  Info,
+  Star,
+  Diamond,
+  CardMembership
 } from '@mui/icons-material';
 import { Pie, Bar, Line } from 'react-chartjs-2';
 import { 
@@ -39,6 +43,7 @@ import {
 } from 'chart.js';
 import { useStore } from '../store';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 ChartJS.register(
   ArcElement, 
@@ -63,11 +68,14 @@ const Analytics = () => {
     expenses, 
     savings, 
     sideByMonth,
-    activeAccount 
+    activeAccount,
+    getCurrentPlan,
+    isFeatureAvailable
   } = useStore();
   const [timeFilter, setTimeFilter] = useState('month');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   // Index du mois courant
   const idx = months.length - 1;
@@ -191,6 +199,42 @@ const Analytics = () => {
 
   const last6MonthsLabels = getLast6MonthsLabels();
 
+  // Fonction pour obtenir l'icône d'abonnement
+  const getSubscriptionIcon = () => {
+    const currentPlan = getCurrentPlan();
+    
+    if (currentPlan.id === 'premium') {
+      return <Star sx={{ color: '#FFD700' }} />;
+    } else if (currentPlan.id === 'pro') {
+      return <Diamond sx={{ color: '#00D4FF' }} />;
+    }
+    return <CardMembership sx={{ color: '#9E9E9E' }} />;
+  };
+
+  // Fonction pour obtenir le texte de l'abonnement
+  const getSubscriptionText = () => {
+    const currentPlan = getCurrentPlan();
+    
+    if (currentPlan.id === 'premium') {
+      return t('subscription.premium');
+    } else if (currentPlan.id === 'pro') {
+      return t('subscription.pro');
+    }
+    return t('subscription.free');
+  };
+
+  // Fonction pour obtenir la couleur de l'abonnement
+  const getSubscriptionColor = () => {
+    const currentPlan = getCurrentPlan();
+    
+    if (currentPlan.id === 'premium') {
+      return '#FFD700';
+    } else if (currentPlan.id === 'pro') {
+      return '#00D4FF';
+    }
+    return '#9E9E9E';
+  };
+
   const barData = {
     labels: last6MonthsLabels,
     datasets: [{
@@ -272,226 +316,269 @@ const Analytics = () => {
 
   return (
     <Box sx={{ p: 2 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-            {t('analytics.title')}
+      {/* Vérifier l'accès aux analytics */}
+      {!isFeatureAvailable('basicAnalytics') ? (
+        <Box sx={{ textAlign: 'center', py: 8 }}>
+          <Analytics sx={{ fontSize: 64, color: 'secondary.main', mb: 2 }} />
+          <Typography variant="h4" sx={{ mb: 2, fontWeight: 'bold' }}>
+            {t('analytics.upgradeRequired')}
           </Typography>
-          {activeAccount && (
-            <Typography variant="body2" color="text.secondary" component="span">
-              {t('analytics.account')} {activeAccount.name}
-            </Typography>
-          )}
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>{t('analytics.period')}</InputLabel>
-            <Select
-              value={timeFilter}
-              label={t('analytics.period')}
-              onChange={(e) => setTimeFilter(e.target.value)}
-            >
-              <MenuItem value="week">{t('analytics.week')}</MenuItem>
-              <MenuItem value="month">{t('analytics.month')}</MenuItem>
-              <MenuItem value="quarter">{t('analytics.quarter')}</MenuItem>
-              <MenuItem value="year">{t('analytics.year')}</MenuItem>
-            </Select>
-          </FormControl>
-          <Tooltip title={t('analytics.refresh')}>
-            <IconButton>
-              <Refresh />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      </Box>
-
-      {/* KPIs */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Fade in timeout={500}>
-            <Card sx={{ bgcolor: 'primary.main', color: 'white' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <AccountBalance sx={{ mr: 1 }} />
-                  <Typography variant="h6">{t('analytics.revenues')}</Typography>
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {currentRevenue.toLocaleString()}€
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                  {t('analytics.thisMonth')}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Fade>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Fade in timeout={700}>
-            <Card sx={{ bgcolor: 'error.main', color: 'white' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <TrendingDown sx={{ mr: 1 }} />
-                  <Typography variant="h6">{t('analytics.expenses')}</Typography>
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {totalExpenses.toLocaleString()}€
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                  {expenseRate}% {t('analytics.ofRevenue')}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Fade>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Fade in timeout={900}>
-            <Card sx={{ bgcolor: 'success.main', color: 'white' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <Savings sx={{ mr: 1 }} />
-                  <Typography variant="h6">{t('analytics.savings')}</Typography>
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {currentSavings.toLocaleString()}€
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                  {savingsRate}% {t('analytics.ofRevenue')}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Fade>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Fade in timeout={1100}>
-            <Card sx={{ bgcolor: 'warning.main', color: 'white' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <TrendingUp sx={{ mr: 1 }} />
-                  <Typography variant="h6">{t('analytics.savingsRate')}</Typography>
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {savingsRate}%
-                </Typography>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={parseFloat(savingsRate)} 
-                  sx={{ mt: 1, bgcolor: 'rgba(255,255,255,0.3)', '& .MuiLinearProgress-bar': { bgcolor: 'white' } }}
-                />
-              </CardContent>
-            </Card>
-          </Fade>
-        </Grid>
-      </Grid>
-
-      {/* Graphiques */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Zoom in timeout={600}>
-            <Paper sx={{ p: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                  {t('analytics.expenseDistribution')}
-                </Typography>
-                <Tooltip title={t('analytics.expenseDistributionTooltip')}>
-                  <IconButton size="small">
-                    <Info />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-              <Box sx={{ height: 300 }}>
-                <Pie data={pieData} options={chartOptions} />
-              </Box>
-            </Paper>
-          </Zoom>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Zoom in timeout={800}>
-            <Paper sx={{ p: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                  {t('analytics.savingsEvolution')}
-                </Typography>
-                <Tooltip title={t('analytics.savingsEvolutionTooltip')}>
-                  <IconButton size="small">
-                    <Info />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-              <Box sx={{ height: 300 }}>
-                <Bar data={barData} options={barOptions} />
-              </Box>
-            </Paper>
-          </Zoom>
-        </Grid>
-
-        <Grid item xs={12}>
-          <Zoom in timeout={1000}>
-            <Paper sx={{ p: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                  {t('analytics.revenuesVsExpenses')}
-                </Typography>
-                <Tooltip title={t('analytics.revenuesVsExpensesTooltip')}>
-                  <IconButton size="small">
-                    <Info />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-              <Box sx={{ height: 300 }}>
-                <Line data={lineData} options={lineOptions} />
-              </Box>
-            </Paper>
-          </Zoom>
-        </Grid>
-      </Grid>
-
-      {/* Détails par catégorie */}
-      <Paper sx={{ p: 2, mt: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          {t('analytics.expenseDetails')}
-        </Typography>
-        {expenseByCategory.length === 0 ? (
-          <Typography variant="body2" color="text.secondary" textAlign="center" component="span">
-            {t('analytics.noExpenseRecordedThisMonth')}
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
+            {t('analytics.upgradeDescription')}
           </Typography>
-        ) : (
-          <Grid container spacing={2}>
-            {expenseByCategory.map((item, index) => (
-              <Grid item xs={12} sm={6} md={4} key={item.category}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center', 
-                  p: 2,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: 1,
-                  bgcolor: 'background.paper'
-                }}>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary" component="span">
-                      {item.category}
+          <Button 
+            variant="contained" 
+            color="secondary" 
+            size="large"
+            onClick={() => navigate('/subscription')}
+            startIcon={<Analytics />}
+            sx={{ mb: 2 }}
+          >
+            {t('analytics.upgradeNow')}
+          </Button>
+          <Typography variant="body2" color="text.secondary">
+            {t('analytics.currentPlan')}: {getSubscriptionText()}
+          </Typography>
+        </Box>
+      ) : (
+        <>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Box>
+              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+                {t('analytics.title')}
+              </Typography>
+              {activeAccount && (
+                <Typography variant="body2" color="text.secondary" component="span">
+                  {t('analytics.account')} {activeAccount.name}
+                </Typography>
+              )}
+            </Box>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <FormControl size="small" sx={{ minWidth: 120 }}>
+                <InputLabel>{t('analytics.period')}</InputLabel>
+                <Select
+                  value={timeFilter}
+                  label={t('analytics.period')}
+                  onChange={(e) => setTimeFilter(e.target.value)}
+                >
+                  <MenuItem value="week">{t('analytics.week')}</MenuItem>
+                  <MenuItem value="month">{t('analytics.month')}</MenuItem>
+                  <MenuItem value="quarter">{t('analytics.quarter')}</MenuItem>
+                  <MenuItem value="year">{t('analytics.year')}</MenuItem>
+                </Select>
+              </FormControl>
+              <Tooltip title={`${t('subscription.currentPlan')}: ${getSubscriptionText()}`}>
+                <IconButton
+                  onClick={() => navigate('/subscription')}
+                  sx={{
+                    color: getSubscriptionColor(),
+                    '&:hover': {
+                      backgroundColor: 'rgba(0,0,0,0.1)',
+                      transform: 'scale(1.1)',
+                      transition: 'all 0.2s ease'
+                    }
+                  }}
+                >
+                  {getSubscriptionIcon()}
+                </IconButton>
+              </Tooltip>
+              <Tooltip title={t('analytics.refresh')}>
+                <IconButton>
+                  <Refresh />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Box>
+
+          {/* KPIs */}
+          <Grid container spacing={2} sx={{ mb: 3 }}>
+            <Grid item xs={12} sm={6} md={3}>
+              <Fade in timeout={500}>
+                <Card sx={{ bgcolor: 'primary.main', color: 'white' }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <AccountBalance sx={{ mr: 1 }} />
+                      <Typography variant="h6">{t('analytics.revenues')}</Typography>
+                    </Box>
+                    <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                      {currentRevenue.toLocaleString()}€
                     </Typography>
-                    <Typography variant="h6">
-                      {item.amount.toLocaleString()}€
+                    <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
+                      {t('analytics.thisMonth')}
                     </Typography>
-                  </Box>
-                  <Chip 
-                    label={`${totalExpenses > 0 ? ((item.amount / totalExpenses) * 100).toFixed(1) : 0}%`}
-                    size="small"
-                    color="primary"
-                    variant="outlined"
-                  />
-                </Box>
-              </Grid>
-            ))}
+                  </CardContent>
+                </Card>
+              </Fade>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <Fade in timeout={700}>
+                <Card sx={{ bgcolor: 'error.main', color: 'white' }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <TrendingDown sx={{ mr: 1 }} />
+                      <Typography variant="h6">{t('analytics.expenses')}</Typography>
+                    </Box>
+                    <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                      {totalExpenses.toLocaleString()}€
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
+                      {expenseRate}% {t('analytics.ofRevenue')}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Fade>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <Fade in timeout={900}>
+                <Card sx={{ bgcolor: 'success.main', color: 'white' }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <Savings sx={{ mr: 1 }} />
+                      <Typography variant="h6">{t('analytics.savings')}</Typography>
+                    </Box>
+                    <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                      {currentSavings.toLocaleString()}€
+                    </Typography>
+                    <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
+                      {savingsRate}% {t('analytics.ofRevenue')}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Fade>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <Fade in timeout={1100}>
+                <Card sx={{ bgcolor: 'warning.main', color: 'white' }}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <TrendingUp sx={{ mr: 1 }} />
+                      <Typography variant="h6">{t('analytics.savingsRate')}</Typography>
+                    </Box>
+                    <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                      {savingsRate}%
+                    </Typography>
+                    <LinearProgress 
+                      variant="determinate" 
+                      value={parseFloat(savingsRate)} 
+                      sx={{ mt: 1, bgcolor: 'rgba(255,255,255,0.3)', '& .MuiLinearProgress-bar': { bgcolor: 'white' } }}
+                    />
+                  </CardContent>
+                </Card>
+              </Fade>
+            </Grid>
           </Grid>
-        )}
-      </Paper>
+
+          {/* Graphiques */}
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <Zoom in timeout={600}>
+                <Paper sx={{ p: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                      {t('analytics.expenseDistribution')}
+                    </Typography>
+                    <Tooltip title={t('analytics.expenseDistributionTooltip')}>
+                      <IconButton size="small">
+                        <Info />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                  <Box sx={{ height: 300 }}>
+                    <Pie data={pieData} options={chartOptions} />
+                  </Box>
+                </Paper>
+              </Zoom>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Zoom in timeout={800}>
+                <Paper sx={{ p: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                      {t('analytics.savingsEvolution')}
+                    </Typography>
+                    <Tooltip title={t('analytics.savingsEvolutionTooltip')}>
+                      <IconButton size="small">
+                        <Info />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                  <Box sx={{ height: 300 }}>
+                    <Bar data={barData} options={barOptions} />
+                  </Box>
+                </Paper>
+              </Zoom>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Zoom in timeout={1000}>
+                <Paper sx={{ p: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                      {t('analytics.revenuesVsExpenses')}
+                    </Typography>
+                    <Tooltip title={t('analytics.revenuesVsExpensesTooltip')}>
+                      <IconButton size="small">
+                        <Info />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                  <Box sx={{ height: 300 }}>
+                    <Line data={lineData} options={lineOptions} />
+                  </Box>
+                </Paper>
+              </Zoom>
+            </Grid>
+          </Grid>
+
+          {/* Détails par catégorie */}
+          <Paper sx={{ p: 2, mt: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              {t('analytics.expenseDetails')}
+            </Typography>
+            {expenseByCategory.length === 0 ? (
+              <Typography variant="body2" color="text.secondary" textAlign="center" component="span">
+                {t('analytics.noExpenseRecordedThisMonth')}
+              </Typography>
+            ) : (
+              <Grid container spacing={2}>
+                {expenseByCategory.map((item, index) => (
+                  <Grid item xs={12} sm={6} md={4} key={item.category}>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      p: 2,
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 1,
+                      bgcolor: 'background.paper'
+                    }}>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary" component="span">
+                          {item.category}
+                        </Typography>
+                        <Typography variant="h6">
+                          {item.amount.toLocaleString()}€
+                        </Typography>
+                      </Box>
+                      <Chip 
+                        label={`${totalExpenses > 0 ? ((item.amount / totalExpenses) * 100).toFixed(1) : 0}%`}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </Paper>
+        </>
+      )}
     </Box>
   );
 };

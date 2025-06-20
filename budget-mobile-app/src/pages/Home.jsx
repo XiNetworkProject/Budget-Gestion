@@ -46,7 +46,10 @@ import {
   Lightbulb,
   Analytics,
   Logout,
-  Assignment
+  Assignment,
+  Star,
+  Diamond,
+  CardMembership
 } from '@mui/icons-material';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { 
@@ -88,7 +91,9 @@ const Home = () => {
     getSelectedMonthIndex,
     serverConnected,
     logout,
-    isAuthenticated
+    isAuthenticated,
+    getCurrentPlan,
+    isFeatureAvailable
   } = useStore();
   const navigate = useNavigate();
   const [localData, setLocalData] = useState({
@@ -1016,7 +1021,44 @@ const Home = () => {
   };
 
   const getProgressValue = (current, target) => {
+    if (target === 0) return 0;
     return Math.min((current / target) * 100, 100);
+  };
+
+  // Fonction pour obtenir l'icône d'abonnement
+  const getSubscriptionIcon = () => {
+    const currentPlan = getCurrentPlan();
+    
+    if (currentPlan.id === 'premium') {
+      return <Star sx={{ color: '#FFD700' }} />;
+    } else if (currentPlan.id === 'pro') {
+      return <Diamond sx={{ color: '#00D4FF' }} />;
+    }
+    return <CardMembership sx={{ color: '#9E9E9E' }} />;
+  };
+
+  // Fonction pour obtenir le texte de l'abonnement
+  const getSubscriptionText = () => {
+    const currentPlan = getCurrentPlan();
+    
+    if (currentPlan.id === 'premium') {
+      return t('subscription.premium');
+    } else if (currentPlan.id === 'pro') {
+      return t('subscription.pro');
+    }
+    return t('subscription.free');
+  };
+
+  // Fonction pour obtenir la couleur de l'abonnement
+  const getSubscriptionColor = () => {
+    const currentPlan = getCurrentPlan();
+    
+    if (currentPlan.id === 'premium') {
+      return '#FFD700';
+    } else if (currentPlan.id === 'pro') {
+      return '#00D4FF';
+    }
+    return '#9E9E9E';
   };
 
   return (
@@ -1084,6 +1126,21 @@ const Home = () => {
               </IconButton>
               <IconButton>
                 <Refresh />
+              </IconButton>
+              {/* Indicateur d'abonnement */}
+              <IconButton
+                onClick={() => navigate('/subscription')}
+                sx={{
+                  color: getSubscriptionColor(),
+                  '&:hover': {
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    transform: 'scale(1.1)',
+                    transition: 'all 0.2s ease'
+                  }
+                }}
+                title={`${t('subscription.currentPlan')}: ${getSubscriptionText()}`}
+              >
+                {getSubscriptionIcon()}
               </IconButton>
               {/* Indicateur de statut de connexion */}
               <IconButton
@@ -1525,296 +1582,303 @@ const Home = () => {
       </Paper>
 
       {/* Recommandations intelligentes */}
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Lightbulb sx={{ mr: 1, color: 'info.main' }} />
-          <Typography variant="h6">
-            {t('home.intelligentRecommendations')}
-          </Typography>
-          <Chip 
-            label={t('home.ai')} 
-            size="small" 
-            color="info" 
-            variant="outlined"
-            sx={{ ml: 1 }}
-          />
-          <Chip 
-            label={`${recommendations.length} ${t('home.tips')}`}
-            size="small" 
-            color="secondary" 
-            variant="outlined"
-            sx={{ ml: 1 }}
-          />
-        </Box>
-        
-        {recommendations.map((rec, index) => (
-          <Alert 
-            key={index}
-            severity={rec.type} 
-            sx={{ mb: 2 }}
-            action={
-              <Button 
-                color="inherit" 
-                size="small"
-                onClick={() => handleRecommendationAction(rec.actionType, rec)}
-                variant="outlined"
-                sx={{ 
-                  borderColor: 'currentColor',
-                  '&:hover': {
-                    bgcolor: 'rgba(255,255,255,0.1)'
-                  }
-                }}
-              >
-                {rec.action}
-              </Button>
-            }
-          >
-            <AlertTitle sx={{ display: 'flex', alignItems: 'center' }}>
-              {rec.title}
-              {rec.priority === 'high' && <Chip label={t('home.priority')} size="small" color="error" sx={{ ml: 1, height: 20 }} />}
-              {rec.priority === 'medium' && <Chip label={t('home.important')} size="small" color="warning" sx={{ ml: 1, height: 20 }} />}
-            </AlertTitle>
-            <Typography variant="body2">
-              {rec.message}
+      {isFeatureAvailable('aiAnalysis') && (
+        <Paper sx={{ p: 2, mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Lightbulb sx={{ mr: 1, color: 'info.main' }} />
+            <Typography variant="h6">
+              {t('home.intelligentRecommendations')}
             </Typography>
-            
-            {/* Afficher le plan suggéré s'il existe */}
-            {rec.suggestedPlan && (
-              <Box sx={{ mt: 1, p: 1, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 1 }}>
-                <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                  💡 {t('home.suggestedPlan')} : {rec.suggestedPlan.title}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {rec.suggestedPlan.description}
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
-                  <Chip 
-                    label={`${t('home.objective')}: ${rec.suggestedPlan.targetAmount}€`}
-                    size="small"
-                    variant="outlined"
-                  />
-                  <Chip 
-                    label={rec.suggestedPlan.category}
-                    size="small"
-                    variant="outlined"
-                  />
-                </Box>
-              </Box>
-            )}
-            
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-              💡 {t('home.clickToAct')}
-            </Typography>
-          </Alert>
-        ))}
-        
-        {recommendations.length === 0 && (
-          <Box sx={{ textAlign: 'center', py: 3 }}>
-            <Typography variant="body1" color="text.secondary">
-              {t('home.noRecommendations')}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {t('home.continueAddingTransactions')}
-            </Typography>
+            <Chip 
+              label={t('home.ai')} 
+              size="small" 
+              color="info" 
+              variant="outlined"
+              sx={{ ml: 1 }}
+            />
+            <Chip 
+              label={`${recommendations.length} ${t('home.tips')}`}
+              size="small" 
+              color="secondary" 
+              variant="outlined"
+              sx={{ ml: 1 }}
+            />
           </Box>
-        )}
-      </Paper>
-
-      {/* Analyse détaillée par catégorie - AMÉLIORÉE */}
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Analytics sx={{ mr: 1, color: 'secondary.main' }} />
-          <Typography variant="h6">
-            {t('home.categoryAnalysis')}
-          </Typography>
-          <Chip 
-            label={t('home.intelligent')} 
-            size="small" 
-            color="secondary" 
-            variant="outlined"
-            sx={{ ml: 1 }}
-          />
-          <Chip 
-            label={`${categoryForecastAnalysis.length} ${t('home.categories')}`}
-            size="small" 
-            color="info" 
-            variant="outlined"
-            sx={{ ml: 1 }}
-          />
-        </Box>
-        
-        {categoryForecastAnalysis.length > 0 ? (
-          <Grid container spacing={2}>
-            {categoryForecastAnalysis.map((cat, index) => (
-              <Grid item xs={12} sm={6} md={4} key={index}>
-                <Card 
-                  variant="outlined" 
+          
+          {recommendations.map((rec, index) => (
+            <Alert 
+              key={index}
+              severity={rec.type} 
+              sx={{ mb: 2 }}
+              action={
+                <Button 
+                  color="inherit" 
+                  size="small"
+                  onClick={() => handleRecommendationAction(rec.actionType, rec)}
+                  variant="outlined"
                   sx={{ 
-                    height: '100%',
-                    borderColor: cat.isImportant ? `${cat.statusColor}.main` : 'grey.300',
-                    borderWidth: cat.isImportant ? 2 : 1,
-                    position: 'relative',
+                    borderColor: 'currentColor',
                     '&:hover': {
-                      boxShadow: 2,
-                      transform: 'translateY(-2px)',
-                      transition: 'all 0.2s ease-in-out'
+                      bgcolor: 'rgba(255,255,255,0.1)'
                     }
                   }}
                 >
-                  {cat.isImportant && (
-                    <Box sx={{ 
-                      position: 'absolute', 
-                      top: -8, 
-                      right: 8,
-                      zIndex: 1
-                    }}>
-                      <Chip 
-                        label={t('home.important')} 
-                        size="small" 
-                        color={cat.statusColor}
-                        sx={{ height: 20, fontSize: '0.7rem' }}
-                      />
-                    </Box>
-                  )}
-                  
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                      {cat.category}
-                      <Chip 
-                        label={cat.status === 'augmentation' ? '📈' : cat.status === 'diminution' ? '📉' : '➡️'}
-                        size="small" 
-                        color={cat.statusColor}
-                        sx={{ ml: 1, height: 20 }}
-                      />
-                    </Typography>
-                    
-                    {/* Montant actuel */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        {t('home.thisMonth')}:
-                      </Typography>
-                      <Typography variant="body2" fontWeight="bold">
-                        {cat.current.toLocaleString()}€
-                      </Typography>
-                    </Box>
-                    
-                    {/* Pourcentage du budget */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        {t('home.budgetPercentage')}:
-                      </Typography>
-                      <Typography variant="body2" fontWeight="bold" color={cat.budgetPercentage > 30 ? 'error.main' : 'text.primary'}>
-                        {Math.round(cat.budgetPercentage)}%
-                      </Typography>
-                    </Box>
-                    
-                    {/* Prévision */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        {t('home.forecast')}:
-                      </Typography>
-                      <Typography variant="body2" fontWeight="bold" color="warning.main">
-                        {cat.forecast.toLocaleString()}€
-                      </Typography>
-                    </Box>
-                    
-                    {/* Changement prévu */}
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        {t('home.change')}:
-                      </Typography>
-                      <Typography 
-                        variant="body2" 
-                        fontWeight="bold"
-                        color={cat.trendPercentage > 0 ? 'error.main' : cat.trendPercentage < 0 ? 'success.main' : 'text.secondary'}
-                      >
-                        {cat.trendPercentage > 0 ? '+' : ''}{Math.round(cat.trendPercentage)}%
-                      </Typography>
-                    </Box>
-                    
-                    {/* Barre de progression */}
-                    <LinearProgress 
-                      variant="determinate" 
-                      value={Math.min(cat.budgetPercentage, 100)} 
-                      sx={{ 
-                        mb: 1,
-                        height: 8,
-                        borderRadius: 4,
-                        bgcolor: 'grey.200',
-                        '& .MuiLinearProgress-bar': { 
-                          bgcolor: cat.budgetPercentage > 30 ? 'error.main' : cat.budgetPercentage > 20 ? 'warning.main' : 'success.main',
-                          borderRadius: 4
-                        }
-                      }}
+                  {rec.action}
+                </Button>
+              }
+            >
+              <AlertTitle sx={{ display: 'flex', alignItems: 'center' }}>
+                {rec.title}
+                {rec.priority === 'high' && <Chip label={t('home.priority')} size="small" color="error" sx={{ ml: 1, height: 20 }} />}
+                {rec.priority === 'medium' && <Chip label={t('home.important')} size="small" color="warning" sx={{ ml: 1, height: 20 }} />}
+              </AlertTitle>
+              <Typography variant="body2">
+                {rec.message}
+              </Typography>
+              
+              {/* Afficher le plan suggéré s'il existe */}
+              {rec.suggestedPlan && (
+                <Box sx={{ mt: 1, p: 1, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 1 }}>
+                  <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                    💡 {t('home.suggestedPlan')} : {rec.suggestedPlan.title}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {rec.suggestedPlan.description}
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
+                    <Chip 
+                      label={`${t('home.objective')}: ${rec.suggestedPlan.targetAmount}€`}
+                      size="small"
+                      variant="outlined"
                     />
-                    
-                    {/* Recommandation */}
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-                      {cat.recommendation}
-                    </Typography>
-                    
-                    {/* Actions */}
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                      {cat.actionType === 'reduce_expenses' && (
-                        <Button 
-                          size="small" 
-                          variant="outlined" 
-                          color="error"
-                          onClick={() => handleCategoryAction(cat.actionType, cat)}
-                          sx={{ fontSize: '0.7rem' }}
-                        >
-                          {t('home.reduce')}
-                        </Button>
-                      )}
-                      {cat.actionType === 'maintain_trend' && (
-                        <Button 
-                          size="small" 
-                          variant="outlined" 
-                          color="success"
-                          onClick={() => handleCategoryAction(cat.actionType, cat)}
-                          sx={{ fontSize: '0.7rem' }}
-                        >
-                          {t('home.maintain')}
-                        </Button>
-                      )}
-                      {cat.actionType === 'monitor' && (
-                        <Button 
-                          size="small" 
-                          variant="outlined" 
-                          color="info"
-                          onClick={() => handleCategoryAction(cat.actionType, cat)}
-                          sx={{ fontSize: '0.7rem' }}
-                        >
-                          {t('home.monitor')}
-                        </Button>
-                      )}
-                      
-                      <Button 
-                        size="small" 
-                        variant="text" 
-                        color="primary"
-                        onClick={() => navigate('/expenses')}
-                        sx={{ fontSize: '0.7rem' }}
-                      >
-                        {t('home.details')}
-                      </Button>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        ) : (
-          <Box sx={{ textAlign: 'center', py: 3 }}>
-            <Typography variant="body1" color="text.secondary">
-              {t('home.noCategoryData')}
+                    <Chip 
+                      label={rec.suggestedPlan.category}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </Box>
+                </Box>
+              )}
+              
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                💡 {t('home.clickToAct')}
+              </Typography>
+            </Alert>
+          ))}
+          
+          {recommendations.length === 0 && (
+            <Box sx={{ textAlign: 'center', py: 3 }}>
+              <Typography variant="body1" color="text.secondary">
+                {t('home.noRecommendations')}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t('home.continueAddingTransactions')}
+              </Typography>
+            </Box>
+          )}
+        </Paper>
+      )}
+
+      {/* Message pour les utilisateurs gratuits */}
+      {!isFeatureAvailable('aiAnalysis') && (
+        <Paper sx={{ p: 2, mb: 3, bgcolor: 'info.light' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Lightbulb sx={{ mr: 1, color: 'info.main' }} />
+            <Typography variant="h6">
+              {t('home.upgradeForAI')}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {t('home.addTransactionsForAnalysis')}
-            </Typography>
+            <Chip 
+              label={t('home.premium')} 
+              size="small" 
+              color="primary" 
+              variant="outlined"
+              sx={{ ml: 1 }}
+            />
           </Box>
-        )}
-      </Paper>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            {t('home.aiFeaturesDescription')}
+          </Typography>
+          <Button 
+            variant="contained" 
+            color="primary"
+            onClick={() => navigate('/subscription')}
+            startIcon={<Star />}
+          >
+            {t('home.upgradeNow')}
+          </Button>
+        </Paper>
+      )}
+
+      {/* Analyse détaillée par catégorie - AMÉLIORÉE */}
+      {isFeatureAvailable('basicAnalytics') && (
+        <Paper sx={{ p: 2, mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Analytics sx={{ mr: 1, color: 'secondary.main' }} />
+            <Typography variant="h6">
+              {t('home.categoryAnalysis')}
+            </Typography>
+            <Chip 
+              label={t('home.intelligent')} 
+              size="small" 
+              color="secondary" 
+              variant="outlined"
+              sx={{ ml: 1 }}
+            />
+            <Chip 
+              label={`${categoryForecastAnalysis.length} ${t('home.categories')}`}
+              size="small" 
+              color="info" 
+              variant="outlined"
+              sx={{ ml: 1 }}
+            />
+          </Box>
+          
+          {categoryForecastAnalysis.length > 0 ? (
+            <Grid container spacing={2}>
+              {categoryForecastAnalysis.map((cat, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <Card 
+                    variant="outlined" 
+                    sx={{ 
+                      height: '100%',
+                      borderColor: cat.isImportant ? `${cat.statusColor}.main` : 'grey.300',
+                      borderWidth: cat.isImportant ? 2 : 1,
+                      position: 'relative',
+                      '&:hover': {
+                        boxShadow: 2,
+                        transform: 'translateY(-2px)',
+                        transition: 'all 0.2s ease-in-out'
+                      }
+                    }}
+                  >
+                    {cat.isImportant && (
+                      <Box sx={{ 
+                        position: 'absolute', 
+                        top: -8, 
+                        right: 8,
+                        zIndex: 1
+                      }}>
+                        <Chip 
+                          label={t('home.important')} 
+                          size="small" 
+                          color={cat.statusColor}
+                          sx={{ height: 20, fontSize: '0.7rem' }}
+                        />
+                      </Box>
+                    )}
+                    
+                    <CardContent>
+                      <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                        {cat.category}
+                        <Chip 
+                          label={cat.status === 'augmentation' ? '📈' : cat.status === 'diminution' ? '📉' : '➡️'}
+                          size="small" 
+                          color={cat.statusColor}
+                          sx={{ ml: 1, height: 20 }}
+                        />
+                      </Typography>
+                      
+                      {/* Montant actuel */}
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {t('home.thisMonth')}:
+                        </Typography>
+                        <Typography variant="body2" fontWeight="bold">
+                          {cat.current.toLocaleString()}€
+                        </Typography>
+                      </Box>
+                      
+                      {/* Pourcentage du budget */}
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {t('home.budgetPercentage')}:
+                        </Typography>
+                        <Typography variant="body2" fontWeight="bold" color={cat.budgetPercentage > 30 ? 'error.main' : 'text.primary'}>
+                          {Math.round(cat.budgetPercentage)}%
+                        </Typography>
+                      </Box>
+                      
+                      {/* Prévision */}
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {t('home.forecast')}:
+                        </Typography>
+                        <Typography variant="body2" fontWeight="bold" color="warning.main">
+                          {cat.forecast.toLocaleString()}€
+                        </Typography>
+                      </Box>
+                      
+                      {/* Changement prévu */}
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                        <Typography variant="body2" color="text.secondary">
+                          {t('home.change')}:
+                        </Typography>
+                        <Typography variant="body2" fontWeight="bold" color={cat.change > 0 ? 'error.main' : 'success.main'}>
+                          {cat.change > 0 ? '+' : ''}{cat.change.toLocaleString()}€
+                        </Typography>
+                      </Box>
+                      
+                      {/* Barre de progression */}
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={Math.min(cat.budgetPercentage, 100)} 
+                        sx={{ 
+                          height: 8, 
+                          borderRadius: 4,
+                          bgcolor: 'grey.200',
+                          '& .MuiLinearProgress-bar': { 
+                            bgcolor: cat.budgetPercentage > 30 ? 'error.main' : 'success.main',
+                            borderRadius: 4
+                          }
+                        }} 
+                      />
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          ) : (
+            <Box sx={{ textAlign: 'center', py: 3 }}>
+              <Typography variant="body1" color="text.secondary">
+                {t('home.noCategoryData')}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t('home.addExpensesToSeeAnalysis')}
+              </Typography>
+            </Box>
+          )}
+        </Paper>
+      )}
+
+      {/* Message pour les utilisateurs gratuits - Analytics */}
+      {!isFeatureAvailable('basicAnalytics') && (
+        <Paper sx={{ p: 2, mb: 3, bgcolor: 'secondary.light' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+            <Analytics sx={{ mr: 1, color: 'secondary.main' }} />
+            <Typography variant="h6">
+              {t('home.upgradeForAnalytics')}
+            </Typography>
+            <Chip 
+              label={t('home.premium')} 
+              size="small" 
+              color="secondary" 
+              variant="outlined"
+              sx={{ ml: 1 }}
+            />
+          </Box>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            {t('home.analyticsFeaturesDescription')}
+          </Typography>
+          <Button 
+            variant="contained" 
+            color="secondary"
+            onClick={() => navigate('/subscription')}
+            startIcon={<Analytics />}
+          >
+            {t('home.upgradeNow')}
+          </Button>
+        </Paper>
+      )}
 
       {/* Transactions récentes */}
       <Paper sx={{ p: 2 }}>

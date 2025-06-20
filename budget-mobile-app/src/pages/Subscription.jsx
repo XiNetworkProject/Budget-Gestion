@@ -17,7 +17,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   IconButton,
   Fade,
   Zoom,
@@ -35,8 +34,9 @@ import {
   Close,
   Star,
   Diamond,
-  LocalOffer,
-  CreditCard,
+  Cancel,
+  Edit,
+  Payment,
   Security,
   Analytics,
   Savings,
@@ -46,61 +46,42 @@ import {
   CloudSync,
   Psychology,
   TrendingUp,
-  Cancel,
-  Edit,
-  Payment
+  Warning
 } from '@mui/icons-material';
 import { toast } from 'react-hot-toast';
 
 const Subscription = () => {
   const { t } = useTranslation();
   const {
+    subscription,
     subscriptionPlans,
-    getCurrentPlan,
-    hasSpecialAccess,
-    isFeatureAvailable,
-    checkUsageLimit,
-    applyPromoCode,
-    removePromoCode,
-    appliedPromoCode,
-    promoCodeDiscount,
+    specialAccessEmails,
+    user,
     updateSubscription,
-    cancelSubscription,
-    resetSubscription,
-    expenses,
-    savings,
-    transactions
+    hasSpecialAccess
   } = useStore();
 
-  const [showPromoDialog, setShowPromoDialog] = useState(false);
-  const [promoCode, setPromoCode] = useState('');
   const [showCancelDialog, setShowCancelDialog] = useState(false);
-  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
 
   const currentPlan = getCurrentPlan();
   const isSpecialAccess = hasSpecialAccess();
 
   // Calculer l'utilisation actuelle
   const currentUsage = {
-    transactions: transactions?.length || 0,
-    savingsGoals: savings?.length || 0,
-    actionPlans: 0 // À implémenter quand les plans d'action seront créés
-  };
-
-  const handlePromoCodeSubmit = () => {
-    if (applyPromoCode(promoCode)) {
-      setShowPromoDialog(false);
-      setPromoCode('');
-    }
+    transactions: 0, // À calculer depuis les vraies données
+    savingsGoals: 0, // À calculer depuis les vraies données
+    actionPlans: 0 // À calculer depuis les vraies données
   };
 
   const handleUpgrade = async (planId) => {
     try {
       setIsProcessing(true);
       
-      // Utiliser le vrai service Stripe
-      await stripeService.createCheckoutSession(planId, appliedPromoCode);
+      // Utiliser le service Stripe
+      await stripeService.createCheckoutSession(planId);
       
       // La redirection se fait automatiquement dans le service
     } catch (error) {
@@ -111,27 +92,65 @@ const Subscription = () => {
     }
   };
 
-  const handleCancelSubscription = () => {
-    cancelSubscription();
-    setShowCancelDialog(false);
+  const handleDowngrade = (planId) => {
+    setSelectedPlan(planId);
+    setShowDowngradeDialog(true);
   };
 
-  const handleResetSubscription = () => {
-    resetSubscription();
-    setShowResetDialog(false);
+  const confirmDowngrade = async () => {
+    try {
+      setIsProcessing(true);
+      
+      // Si on passe d'un plan payant au gratuit, annuler l'abonnement
+      if (currentPlan.price > 0 && selectedPlan === 'FREE') {
+        // Ici tu devrais appeler l'API pour annuler l'abonnement Stripe
+        await stripeService.cancelSubscription('current_subscription_id');
+      }
+      
+      // Mettre à jour le plan dans le store
+      updateSubscription(selectedPlan);
+      
+      toast.success(t('subscription.downgradeSuccess'));
+      setShowDowngradeDialog(false);
+    } catch (error) {
+      console.error('Erreur lors du downgrade:', error);
+      toast.error(error.message || 'Erreur lors du changement de plan');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    try {
+      setIsProcessing(true);
+      
+      // Annuler l'abonnement Stripe
+      await stripeService.cancelSubscription('current_subscription_id');
+      
+      // Passer au plan gratuit
+      updateSubscription('FREE');
+      
+      toast.success(t('subscription.cancelSuccess'));
+      setShowCancelDialog(false);
+    } catch (error) {
+      console.error('Erreur lors de l\'annulation:', error);
+      toast.error(error.message || 'Erreur lors de l\'annulation');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const getFeatureIcon = (feature) => {
     const icons = {
-      maxTransactions: <TrendingUp />,
+      maxTransactions: <Timeline />,
       unlimitedCategories: <AccountBalance />,
       maxSavingsGoals: <Savings />,
       basicAnalytics: <Analytics />,
       aiAnalysis: <Psychology />,
-      maxActionPlans: <Timeline />,
-      multipleAccounts: <AccountBalance />,
+      maxActionPlans: <TrendingUp />,
+      multipleAccounts: <CloudSync />,
       prioritySupport: <Support />,
-      advancedReports: <CloudSync />
+      advancedReports: <Security />
     };
     return icons[feature] || <CheckCircle />;
   };
@@ -180,6 +199,7 @@ const Subscription = () => {
     const isCurrentPlan = currentPlan.id === plan.id;
     const isUpgrade = plan.price > currentPlan.price;
     const isDowngrade = plan.price < currentPlan.price;
+    const isFreePlan = plan.price === 0;
 
     return (
       <Zoom in timeout={600}>
@@ -246,21 +266,34 @@ const Subscription = () => {
 
           <CardActions sx={{ p: 3, pt: 0 }}>
             {isCurrentPlan ? (
-              <Button
-                fullWidth
-                variant="outlined"
-                color="error"
-                onClick={() => setShowCancelDialog(true)}
-                startIcon={<Cancel />}
-              >
-                {t('subscription.cancel')}
-              </Button>
+              // Plan actuel - afficher le bouton d'annulation seulement pour les plans payants
+              plan.price > 0 ? (
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="error"
+                  onClick={() => setShowCancelDialog(true)}
+                  startIcon={<Cancel />}
+                >
+                  {t('subscription.cancel')}
+                </Button>
+              ) : (
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  disabled
+                  startIcon={<CheckCircle />}
+                >
+                  {t('subscription.currentPlan')}
+                </Button>
+              )
             ) : (
+              // Autres plans
               <Button
                 fullWidth
                 variant={isUpgrade ? "contained" : "outlined"}
                 color={isUpgrade ? "primary" : "inherit"}
-                onClick={() => handleUpgrade(planKey)}
+                onClick={() => isUpgrade ? handleUpgrade(planKey) : handleDowngrade(planKey)}
                 startIcon={isUpgrade ? (isProcessing ? <CircularProgress size={20} /> : <Payment />) : <Edit />}
                 disabled={isProcessing}
               >
@@ -289,45 +322,6 @@ const Subscription = () => {
           </Alert>
         )}
 
-        {/* Utilisation actuelle */}
-        <Paper sx={{ p: 3, mb: 4, bgcolor: 'background.default' }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            {t('subscription.currentUsage')}
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h4" color="primary.main">
-                  {currentUsage.transactions}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {t('subscription.transactionsUsed')}
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h4" color="primary.main">
-                  {currentUsage.savingsGoals}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {t('subscription.savingsGoalsUsed')}
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h4" color="primary.main">
-                  {currentUsage.actionPlans}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {t('subscription.actionPlansUsed')}
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </Paper>
-
         {/* Plans d'abonnement */}
         <Grid container spacing={3}>
           {Object.entries(subscriptionPlans).map(([key, plan]) => (
@@ -337,74 +331,23 @@ const Subscription = () => {
           ))}
         </Grid>
 
-        {/* Code promo */}
-        <Paper sx={{ p: 3, mt: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-            <LocalOffer color="primary" />
-            <Typography variant="h6">
-              {t('subscription.promoCode')}
-            </Typography>
-          </Box>
-          
-          {appliedPromoCode ? (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Chip 
-                label={`${appliedPromoCode} - ${promoCodeDiscount}%`} 
-                color="success" 
-                onDelete={removePromoCode}
-              />
-            </Box>
-          ) : (
-            <Button
-              variant="outlined"
-              onClick={() => setShowPromoDialog(true)}
-              startIcon={<LocalOffer />}
-            >
-              {t('subscription.applyPromoCode')}
-            </Button>
-          )}
+        {/* Informations importantes */}
+        <Paper sx={{ p: 3, mt: 4, bgcolor: 'info.light' }}>
+          <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Warning />
+            {t('subscription.importantInfo')}
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 1 }}>
+            • {t('subscription.noRefund')}
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 1 }}>
+            • {t('subscription.cancelAnytime')}
+          </Typography>
+          <Typography variant="body2">
+            • {t('subscription.downgradeInfo')}
+          </Typography>
         </Paper>
-
-        {/* Boutons de développement (à supprimer en production) */}
-        {isSpecialAccess && (
-          <Paper sx={{ p: 3, mt: 4, bgcolor: 'warning.light' }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>
-              {t('subscription.developerTools')}
-            </Typography>
-            <Button
-              variant="outlined"
-              onClick={() => setShowResetDialog(true)}
-              color="warning"
-            >
-              {t('subscription.resetSubscription')}
-            </Button>
-          </Paper>
-        )}
       </Box>
-
-      {/* Dialog code promo */}
-      <Dialog open={showPromoDialog} onClose={() => setShowPromoDialog(false)}>
-        <DialogTitle>{t('subscription.enterPromoCode')}</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label={t('subscription.promoCode')}
-            fullWidth
-            value={promoCode}
-            onChange={(e) => setPromoCode(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handlePromoCodeSubmit()}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowPromoDialog(false)}>
-            {t('common.cancel')}
-          </Button>
-          <Button onClick={handlePromoCodeSubmit} variant="contained">
-            {t('subscription.apply')}
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/* Dialog d'annulation */}
       <Dialog open={showCancelDialog} onClose={() => setShowCancelDialog(false)}>
@@ -424,20 +367,20 @@ const Subscription = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Dialog de réinitialisation */}
-      <Dialog open={showResetDialog} onClose={() => setShowResetDialog(false)}>
-        <DialogTitle>{t('subscription.resetSubscription')}</DialogTitle>
+      {/* Dialog de downgrade */}
+      <Dialog open={showDowngradeDialog} onClose={() => setShowDowngradeDialog(false)}>
+        <DialogTitle>{t('subscription.downgradeSubscription')}</DialogTitle>
         <DialogContent>
           <Typography>
-            {t('subscription.resetConfirmation')}
+            {t('subscription.downgradeConfirmation')}
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowResetDialog(false)}>
+          <Button onClick={() => setShowDowngradeDialog(false)}>
             {t('common.cancel')}
           </Button>
-          <Button onClick={handleResetSubscription} color="warning" variant="contained">
-            {t('subscription.confirmReset')}
+          <Button onClick={confirmDowngrade} color="warning" variant="contained">
+            {t('subscription.confirmDowngrade')}
           </Button>
         </DialogActions>
       </Dialog>

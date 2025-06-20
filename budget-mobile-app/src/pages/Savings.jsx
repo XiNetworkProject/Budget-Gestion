@@ -60,7 +60,10 @@ const Savings = () => {
     months,
     sideByMonth,
     selectedMonth,
-    selectedYear
+    selectedYear,
+    getCurrentPlan,
+    isFeatureAvailable,
+    checkUsageLimit
   } = useStore();
 
   const { t } = useTranslation();
@@ -80,6 +83,10 @@ const Savings = () => {
 
   // Filtrer les objectifs par compte actif
   const goals = savings.filter(goal => !activeAccount || goal.accountId === activeAccount.id);
+
+  // Vérifier les limites d'objectifs d'épargne
+  const savingsGoalsLimit = checkUsageLimit('maxSavingsGoals', goals.length);
+  const canAddMoreGoals = savingsGoalsLimit.allowed;
 
   // Calculer les vraies données d'épargne mensuelle
   const getMonthlySavingsData = () => {
@@ -354,8 +361,17 @@ const Savings = () => {
             variant="contained"
             startIcon={<Add />}
             onClick={() => setAddDialog(true)}
+            disabled={!canAddMoreGoals}
           >
             {t('savings.addGoal')}
+            {!canAddMoreGoals && (
+              <Chip 
+                label={t('savings.limitReached')} 
+                size="small" 
+                color="warning" 
+                sx={{ ml: 1, height: 20 }}
+              />
+            )}
           </Button>
         </Box>
         
