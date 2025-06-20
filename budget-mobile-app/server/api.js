@@ -517,7 +517,7 @@ app.get('/api/stripe/subscription-info', verifyAuth, async (req, res) => {
         const subscriptions = await stripe.subscriptions.list({
           customer: customer.id,
           status: 'all', // Inclure les abonnements actifs, annulés, etc.
-          expand: ['data.default_payment_method', 'data.items.data.price.product']
+          expand: ['data.default_payment_method', 'data.items.data.price']
         });
         
         console.log('Abonnements trouvés:', subscriptions.data.length);
