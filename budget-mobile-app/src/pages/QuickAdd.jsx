@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useStore } from '../store';
+import { useTranslation } from 'react-i18next';
 import { 
   Paper, 
   Typography, 
@@ -30,8 +31,11 @@ const QuickAdd = () => {
     addExpense, 
     addIncome,
     selectedMonth,
-    selectedYear
+    selectedYear,
+    activeAccount
   } = useStore();
+  
+  const { t } = useTranslation();
   
   // Assurer que incomeTypes a des valeurs par défaut
   const defaultIncomeTypes = ["Salaire", "Aides", "Freelance", "Investissements", "Autres"];
@@ -103,18 +107,19 @@ const QuickAdd = () => {
       };
       console.log('QuickAdd - Dépense à ajouter:', expense);
       addExpense(expense);
-      setSuccessMessage('Dépense ajoutée !');
+      setSuccessMessage(t('quickAdd.expenseAdded'));
     } else {
       // Ajouter un revenu
       const income = {
         type: incomeType,
         amount: val,
         date: isoDate,
-        description: description || `${incomeType} - ${new Date(selectedDate).toLocaleDateString('fr-FR')}`
+        description: description || `${incomeType} - ${new Date(selectedDate).toLocaleDateString('fr-FR')}`,
+        accountId: activeAccount?.id
       };
       console.log('QuickAdd - Revenu à ajouter:', income);
       addIncome(income);
-      setSuccessMessage('Revenu ajouté !');
+      setSuccessMessage(t('quickAdd.incomeAdded'));
     }
     
     setAmount('');
@@ -181,7 +186,7 @@ const QuickAdd = () => {
           {/* En-tête */}
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-              Ajout Rapide
+              {t('quickAdd.quickAddTitle')}
             </Typography>
             <IconButton onClick={handleClose} size="small">
               <Close />
@@ -192,14 +197,14 @@ const QuickAdd = () => {
           <Tabs 
             value={activeTab} 
             onChange={(e, newValue) => setActiveTab(newValue)}
-            sx={{ mb: 3 }}
+            sx={{ mb: 2 }}
             variant="fullWidth"
           >
             <Tab 
               label={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Remove color="error" />
-                  Dépense
+                  {t('quickAdd.expense')}
                 </Box>
               } 
             />
@@ -207,7 +212,7 @@ const QuickAdd = () => {
               label={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Add color="success" />
-                  Revenu
+                  {t('quickAdd.income')}
                 </Box>
               } 
             />
@@ -218,11 +223,11 @@ const QuickAdd = () => {
             {/* Sélecteur de catégorie/type */}
             <FormControl fullWidth>
               <InputLabel>
-                {activeTab === 0 ? 'Catégorie' : 'Type de revenu'}
+                {activeTab === 0 ? t('quickAdd.category') : t('quickAdd.incomeType')}
               </InputLabel>
               <Select
                 value={activeTab === 0 ? category : incomeType}
-                label={activeTab === 0 ? 'Catégorie' : 'Type de revenu'}
+                label={activeTab === 0 ? t('quickAdd.category') : t('quickAdd.incomeType')}
                 onChange={(e) => {
                   if (activeTab === 0) {
                     setCategory(e.target.value);
@@ -231,9 +236,14 @@ const QuickAdd = () => {
                   }
                 }}
               >
-                {(activeTab === 0 ? categories : availableIncomeTypes).map(item => (
-                  <MenuItem key={item} value={item}>{item}</MenuItem>
-                ))}
+                {activeTab === 0 ? 
+                  categories.map((cat) => (
+                    <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+                  )) :
+                  incomeTypes.map((type) => (
+                    <MenuItem key={type} value={type}>{type}</MenuItem>
+                  ))
+                }
               </Select>
             </FormControl>
 
@@ -241,7 +251,7 @@ const QuickAdd = () => {
             <TextField
               fullWidth
               type="number"
-              label="Montant (€)"
+              label={t('quickAdd.amount')}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -260,28 +270,21 @@ const QuickAdd = () => {
             <TextField
               fullWidth
               type="date"
-              label="Date"
+              label={t('quickAdd.date')}
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
               onKeyPress={handleKeyPress}
-              InputProps={{
-                startAdornment: <InputAdornment position="start">
-                  <CalendarToday fontSize="small" />
-                </InputAdornment>,
-              }}
-              inputProps={{
-                max: new Date().toISOString().split('T')[0] // Pas de dates futures
-              }}
+              InputLabelProps={{ shrink: true }}
             />
 
             {/* Description (optionnel) */}
             <TextField
               fullWidth
-              label="Description (optionnel)"
+              label={t('quickAdd.description')}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Ex: Courses, Salaire, etc."
+              placeholder={t('quickAdd.descriptionPlaceholder')}
             />
 
             {/* Bouton d'ajout */}
@@ -293,7 +296,7 @@ const QuickAdd = () => {
               size="large"
               sx={{ mt: 2, py: 1.5 }}
             >
-              {activeTab === 0 ? 'Ajouter la dépense' : 'Ajouter le revenu'}
+              {activeTab === 0 ? t('quickAdd.addExpense') : t('quickAdd.addIncome')}
             </Button>
           </Box>
         </Paper>

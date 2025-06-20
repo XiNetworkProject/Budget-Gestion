@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { 
   Box, 
   Typography, 
@@ -35,154 +36,113 @@ import {
 } from '@mui/icons-material';
 import { useStore } from '../store';
 
-const tutorialSteps = [
-  {
-    id: 'welcome',
-    title: 'Bienvenue dans votre tutoriel !',
-    subtitle: 'Découvrez Budget Gestion en quelques minutes',
-    description: 'Ce tutoriel interactif vous guidera à travers les principales fonctionnalités de l\'application. Cliquez sur "Suivant" pour commencer.',
-    icon: <School sx={{ fontSize: 40 }} />,
-    color: '#1976d2',
-    action: 'Commencer',
-    features: [
-      'Navigation intuitive',
-      'Fonctionnalités principales',
-      'Astuces et conseils'
-    ]
-  },
-  {
-    id: 'home-overview',
-    title: 'Page d\'accueil',
-    subtitle: 'Votre tableau de bord personnel',
-    description: 'Voici votre page d\'accueil avec tous vos KPIs financiers. Vous pouvez voir vos revenus, dépenses, économies et objectifs en un coup d\'œil.',
-    icon: <Home sx={{ fontSize: 40 }} />,
-    color: '#2e7d32',
-    action: 'Explorer',
-    features: [
-      'KPIs en temps réel',
-      'Vue d\'ensemble rapide',
-      'Navigation principale'
-    ]
-  },
-  {
-    id: 'quick-add-button',
-    title: 'Ajout rapide',
-    subtitle: 'Enregistrez vos transactions en un clic',
-    description: 'Le bouton "+" flottant vous permet d\'ajouter rapidement une dépense ou un revenu. C\'est votre raccourci principal pour enregistrer vos transactions.',
-    icon: <Add sx={{ fontSize: 40 }} />,
-    color: '#ed6c02',
-    action: 'Essayer',
-    features: [
-      'Ajout en un clic',
-      'Interface intuitive',
-      'Catégorisation automatique'
-    ]
-  },
-  {
-    id: 'navigation',
-    title: 'Navigation principale',
-    subtitle: 'Accédez à toutes les fonctionnalités',
-    description: 'La barre de navigation en bas vous permet d\'accéder rapidement à toutes les sections de l\'application.',
-    icon: <TouchApp sx={{ fontSize: 40 }} />,
-    color: '#d32f2f',
-    action: 'Naviguer',
-    features: [
-      'Accueil - Vue d\'ensemble',
-      'Analytics - Graphiques et analyses',
-      'Plans d\'actions - Objectifs et suivi',
-      'Épargne - Objectifs financiers',
-      'Paramètres - Configuration'
-    ]
-  },
-  {
-    id: 'analytics-page',
-    title: 'Analytics avancés',
-    subtitle: 'Analysez vos habitudes financières',
-    description: 'La page Analytics vous donne des insights précieux sur vos finances avec des graphiques interactifs et des rapports détaillés.',
-    icon: <Analytics sx={{ fontSize: 40 }} />,
-    color: '#1976d2',
-    action: 'Analyser',
-    features: [
-      'Graphiques interactifs',
-      'Rapports détaillés',
-      'Insights personnalisés'
-    ]
-  },
-  {
-    id: 'expenses-page',
-    title: 'Gestion des dépenses',
-    subtitle: 'Suivez et analysez vos dépenses',
-    description: 'La page Dépenses vous permet d\'enregistrer, modifier et analyser toutes vos dépenses. Créez des catégories personnalisées.',
-    icon: <TrendingUp sx={{ fontSize: 40 }} />,
-    color: '#d32f2f',
-    action: 'Découvrir',
-    features: [
-      'Catégories personnalisées',
-      'Historique détaillé',
-      'Graphiques interactifs'
-    ]
-  },
-  {
-    id: 'income-page',
-    title: 'Gestion des revenus',
-    subtitle: 'Suivez vos sources de revenus',
-    description: 'Enregistrez tous vos revenus : salaire, freelance, investissements, etc. Analysez l\'évolution de vos revenus dans le temps.',
-    icon: <AccountBalance sx={{ fontSize: 40 }} />,
-    color: '#388e3c',
-    action: 'Explorer',
-    features: [
-      'Sources multiples',
-      'Évolution temporelle',
-      'Analyse détaillée'
-    ]
-  },
-  {
-    id: 'savings-page',
-    title: 'Objectifs d\'épargne',
-    subtitle: 'Atteignez vos objectifs financiers',
-    description: 'Définissez des objectifs d\'épargne personnalisés et suivez vos progrès. L\'application vous aide à rester motivé.',
-    icon: <Savings sx={{ fontSize: 40 }} />,
-    color: '#7b1fa2',
-    action: 'Créer',
-    features: [
-      'Objectifs personnalisés',
-      'Suivi des progrès',
-      'Motivation continue'
-    ]
-  },
-  {
-    id: 'settings-page',
-    title: 'Paramètres et personnalisation',
-    subtitle: 'Adaptez l\'application à vos besoins',
-    description: 'Personnalisez l\'application selon vos préférences : thème, notifications, comptes multiples, export de données, etc.',
-    icon: <Settings sx={{ fontSize: 40 }} />,
-    color: '#5d4037',
-    action: 'Personnaliser',
-    features: [
-      'Comptes multiples',
-      'Thèmes personnalisés',
-      'Export/Import de données'
-    ]
-  },
-  {
-    id: 'complete',
-    title: 'Tutoriel terminé !',
-    subtitle: 'Vous êtes prêt à utiliser Budget Gestion',
-    description: 'Félicitations ! Vous connaissez maintenant les principales fonctionnalités de l\'application. N\'hésitez pas à explorer et à personnaliser selon vos besoins.',
-    icon: <CheckCircle sx={{ fontSize: 40 }} />,
-    color: '#2e7d32',
-    action: 'Commencer',
-    features: [
-      'Toutes les fonctionnalités débloquées',
-      'Support disponible',
-      'Mises à jour régulières'
-    ]
-  }
-];
-
 const Tutorial = ({ open, onClose, onComplete }) => {
   const [activeStep, setActiveStep] = useState(0);
   const { setTutorialCompleted } = useStore();
+  const { t } = useTranslation();
+
+  const tutorialSteps = [
+    {
+      id: 'welcome',
+      title: t('tutorial.welcome.title'),
+      subtitle: t('tutorial.welcome.subtitle'),
+      description: t('tutorial.welcome.description'),
+      icon: <School sx={{ fontSize: 40 }} />,
+      color: '#1976d2',
+      action: t('tutorial.welcome.action'),
+      features: t('tutorial.welcome.features')
+    },
+    {
+      id: 'home-overview',
+      title: t('tutorial.homeOverview.title'),
+      subtitle: t('tutorial.homeOverview.subtitle'),
+      description: t('tutorial.homeOverview.description'),
+      icon: <Home sx={{ fontSize: 40 }} />,
+      color: '#2e7d32',
+      action: t('tutorial.homeOverview.action'),
+      features: t('tutorial.homeOverview.features')
+    },
+    {
+      id: 'quick-add-button',
+      title: t('tutorial.quickAddButton.title'),
+      subtitle: t('tutorial.quickAddButton.subtitle'),
+      description: t('tutorial.quickAddButton.description'),
+      icon: <Add sx={{ fontSize: 40 }} />,
+      color: '#ed6c02',
+      action: t('tutorial.quickAddButton.action'),
+      features: t('tutorial.quickAddButton.features')
+    },
+    {
+      id: 'navigation',
+      title: t('tutorial.navigation.title'),
+      subtitle: t('tutorial.navigation.subtitle'),
+      description: t('tutorial.navigation.description'),
+      icon: <TouchApp sx={{ fontSize: 40 }} />,
+      color: '#d32f2f',
+      action: t('tutorial.navigation.action'),
+      features: t('tutorial.navigation.features')
+    },
+    {
+      id: 'analytics-page',
+      title: t('tutorial.analyticsPage.title'),
+      subtitle: t('tutorial.analyticsPage.subtitle'),
+      description: t('tutorial.analyticsPage.description'),
+      icon: <Analytics sx={{ fontSize: 40 }} />,
+      color: '#1976d2',
+      action: t('tutorial.analyticsPage.action'),
+      features: t('tutorial.analyticsPage.features')
+    },
+    {
+      id: 'expenses-page',
+      title: t('tutorial.expensesPage.title'),
+      subtitle: t('tutorial.expensesPage.subtitle'),
+      description: t('tutorial.expensesPage.description'),
+      icon: <TrendingUp sx={{ fontSize: 40 }} />,
+      color: '#d32f2f',
+      action: t('tutorial.expensesPage.action'),
+      features: t('tutorial.expensesPage.features')
+    },
+    {
+      id: 'income-page',
+      title: t('tutorial.incomePage.title'),
+      subtitle: t('tutorial.incomePage.subtitle'),
+      description: t('tutorial.incomePage.description'),
+      icon: <AccountBalance sx={{ fontSize: 40 }} />,
+      color: '#388e3c',
+      action: t('tutorial.incomePage.action'),
+      features: t('tutorial.incomePage.features')
+    },
+    {
+      id: 'savings-page',
+      title: t('tutorial.savingsPage.title'),
+      subtitle: t('tutorial.savingsPage.subtitle'),
+      description: t('tutorial.savingsPage.description'),
+      icon: <Savings sx={{ fontSize: 40 }} />,
+      color: '#7b1fa2',
+      action: t('tutorial.savingsPage.action'),
+      features: t('tutorial.savingsPage.features')
+    },
+    {
+      id: 'settings-page',
+      title: t('tutorial.settingsPage.title'),
+      subtitle: t('tutorial.settingsPage.subtitle'),
+      description: t('tutorial.settingsPage.description'),
+      icon: <Settings sx={{ fontSize: 40 }} />,
+      color: '#5d4037',
+      action: t('tutorial.settingsPage.action'),
+      features: t('tutorial.settingsPage.features')
+    },
+    {
+      id: 'complete',
+      title: t('tutorial.complete.title'),
+      subtitle: t('tutorial.complete.subtitle'),
+      description: t('tutorial.complete.description'),
+      icon: <CheckCircle sx={{ fontSize: 40 }} />,
+      color: '#2e7d32',
+      action: t('tutorial.complete.action'),
+      features: t('tutorial.complete.features')
+    }
+  ];
 
   const currentStep = tutorialSteps[activeStep];
   const isLast = activeStep === tutorialSteps.length - 1;
@@ -218,18 +178,18 @@ const Tutorial = ({ open, onClose, onComplete }) => {
 
   const getTipText = (stepIndex) => {
     const tips = [
-      "Vous pouvez reprendre ce tutoriel à tout moment depuis les paramètres.",
-      "Utilisez les filtres pour voir vos données par période ou par catégorie.",
-      "L'application mémorise vos dernières catégories pour un ajout plus rapide.",
-      "La navigation est intuitive - explorez chaque section pour découvrir toutes les fonctionnalités.",
-      "Les graphiques sont interactifs - cliquez dessus pour plus de détails.",
-      "Créez des catégories personnalisées pour mieux organiser vos dépenses.",
-      "Enregistrez vos revenus récurrents pour un suivi automatique.",
-      "Définissez des objectifs réalistes pour rester motivé.",
-      "Configurez plusieurs comptes pour séparer vos finances personnelles et professionnelles.",
-      "N'hésitez pas à explorer toutes les fonctionnalités pour tirer le meilleur parti de l'application !"
+      t('tutorial.tips.restart'),
+      t('tutorial.tips.filters'),
+      t('tutorial.tips.categories'),
+      t('tutorial.tips.navigation'),
+      t('tutorial.tips.charts'),
+      t('tutorial.tips.customCategories'),
+      t('tutorial.tips.recurringIncome'),
+      t('tutorial.tips.goals'),
+      t('tutorial.tips.multipleAccounts'),
+      t('tutorial.tips.explore')
     ];
-    return tips[stepIndex] || "Explorez l'application pour découvrir toutes les fonctionnalités !";
+    return tips[stepIndex] || t('tutorial.tips.default');
   };
 
   return (
@@ -288,7 +248,7 @@ const Tutorial = ({ open, onClose, onComplete }) => {
         {/* Step indicator */}
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
           <Chip 
-            label={`Étape ${activeStep + 1} sur ${tutorialSteps.length}`}
+            label={t('tutorial.stepIndicator', { current: activeStep + 1, total: tutorialSteps.length })}
             color="primary"
             variant="outlined"
             sx={{ fontWeight: 'bold' }}
@@ -331,7 +291,7 @@ const Tutorial = ({ open, onClose, onComplete }) => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
             <Lightbulb sx={{ color: currentStep.color, fontSize: 22 }} />
             <Typography variant="subtitle2" sx={{ fontWeight: 'bold', color: currentStep.color }}>
-              Astuce
+              {t('tutorial.tip')}
             </Typography>
           </Box>
           <Typography variant="body2" color="text.primary" sx={{ fontWeight: 500 }}>
@@ -354,7 +314,7 @@ const Tutorial = ({ open, onClose, onComplete }) => {
               px: 3
             }}
           >
-            Précédent
+            {t('tutorial.previous')}
           </Button>
 
           <Box sx={{ display: 'flex', gap: 1 }}>
@@ -363,7 +323,7 @@ const Tutorial = ({ open, onClose, onComplete }) => {
               onClick={handleSkip}
               sx={{ color: 'text.secondary', fontWeight: 'bold' }}
             >
-              Passer
+              {t('tutorial.skip')}
             </Button>
             
             <Button
@@ -383,7 +343,7 @@ const Tutorial = ({ open, onClose, onComplete }) => {
                 }
               }}
             >
-              {isLast ? 'Terminer' : currentStep.action}
+              {isLast ? t('tutorial.finish') : currentStep.action}
             </Button>
           </Box>
         </Box>

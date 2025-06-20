@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
+import { useTranslation } from 'react-i18next';
 import { 
   Box, 
   Typography, 
@@ -91,6 +92,8 @@ const Income = () => {
     incomeTransactions
   } = useStore();
   
+  const { t } = useTranslation();
+  
   const idx = months.length - 1;
   const [editIdx, setEditIdx] = useState(null);
   const [editValue, setEditValue] = useState('');
@@ -115,13 +118,13 @@ const Income = () => {
   const handleEditSave = (type) => {
     setIncome(type, idx, parseFloat(editValue) || 0);
     setEditIdx(null);
-    setSnack({ open: true, message: 'Revenu modifié avec succès', severity: 'success' });
+    setSnack({ open: true, message: t('income.incomeUpdated'), severity: 'success' });
   };
 
   const handleDelete = (type) => {
     removeIncomeType(type);
     setDeleteIdx(null);
-    setSnack({ open: true, message: 'Type de revenu supprimé', severity: 'info' });
+    setSnack({ open: true, message: t('income.typeDeleted'), severity: 'info' });
   };
 
   const handleAddIncome = () => {
@@ -159,13 +162,13 @@ const Income = () => {
         source: ''
       });
       setShowAddDialog(false);
-      setSnack({ open: true, message: 'Revenu ajouté avec succès', severity: 'success' });
+      setSnack({ open: true, message: t('income.incomeAdded'), severity: 'success' });
     }
   };
 
   const handleDeleteIncome = (incomeId) => {
     deleteIncome(incomeId);
-    setSnack({ open: true, message: 'Revenu supprimé', severity: 'info' });
+    setSnack({ open: true, message: t('income.incomeDeleted'), severity: 'info' });
   };
 
   // Calculs pour les graphiques - Utiliser les transactions individuelles
@@ -367,7 +370,7 @@ const Income = () => {
       <AppBar position="static" elevation={0}>
         <Toolbar>
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Revenus
+            {t('income.title')}
           </Typography>
           <IconButton color="inherit">
             <Info />
@@ -383,7 +386,7 @@ const Income = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <TrendingUp sx={{ mr: 1 }} />
-                  <Typography variant="h6">Total</Typography>
+                  <Typography variant="h6">{t('income.total')}</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                   {totalIncome.toLocaleString()}€
@@ -399,7 +402,7 @@ const Income = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <CalendarToday sx={{ mr: 1 }} />
-                  <Typography variant="h6">Ce mois</Typography>
+                  <Typography variant="h6">{t('income.thisMonth')}</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                   {monthlyIncome.toLocaleString()}€
@@ -417,9 +420,9 @@ const Income = () => {
         {/* Tabs */}
         <Paper sx={{ mb: 2 }}>
           <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
-            <Tab label="Types" />
-            <Tab label="Historique" />
-            <Tab label="Analytics" />
+            <Tab label={t('income.tabs.types')} />
+            <Tab label={t('income.tabs.history')} />
+            <Tab label={t('income.tabs.analytics')} />
           </Tabs>
         </Paper>
 
@@ -471,13 +474,13 @@ const Income = () => {
                   
                   {/* Dialog de confirmation suppression */}
                   <Dialog open={deleteIdx === index} onClose={() => setDeleteIdx(null)}>
-                    <DialogTitle>Supprimer le type de revenu ?</DialogTitle>
+                    <DialogTitle>{t('income.confirmDeleteType')}</DialogTitle>
                     <DialogContent>
                       Cette action supprimera <b>{type}</b> et toutes ses données.
                     </DialogContent>
                     <DialogActions>
-                      <Button onClick={() => setDeleteIdx(null)}>Annuler</Button>
-                      <Button color="error" onClick={() => handleDelete(type)}>Supprimer</Button>
+                      <Button onClick={() => setDeleteIdx(null)}>{t('common.cancel')}</Button>
+                      <Button color="error" onClick={() => handleDelete(type)}>{t('common.delete')}</Button>
                     </DialogActions>
                   </Dialog>
                 </React.Fragment>
@@ -491,10 +494,10 @@ const Income = () => {
             {transactions.length === 0 ? (
               <Paper sx={{ p: 4, textAlign: 'center' }}>
                 <Typography variant="h6" color="text.secondary" gutterBottom>
-                  Aucun revenu enregistré
+                  {t('income.noIncome')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" component="span">
-                  Ajoutez votre premier revenu en utilisant le bouton +
+                  {t('income.addFirstIncome')}
                 </Typography>
               </Paper>
             ) : (

@@ -174,21 +174,21 @@ const Settings = () => {
   const handleProfileSave = () => {
     updateUserProfile(profileForm);
     setProfileDialog(false);
-    setSnack({ open: true, message: 'Profil mis à jour avec succès', severity: 'success' });
+    setSnack({ open: true, message: t('settings.profileUpdated'), severity: 'success' });
   };
 
   const handleDeleteData = () => {
     // Supprimer toutes les données du store
     clearAllData();
     setDeleteDialog(false);
-    setSnack({ open: true, message: 'Toutes les données ont été supprimées', severity: 'info' });
+    setSnack({ open: true, message: t('settings.allDataDeleted'), severity: 'info' });
   };
 
   const handleResetToDefaults = () => {
     // Réinitialiser avec les données par défaut
     resetToDefaults();
     setResetDialog(false);
-    setSnack({ open: true, message: 'Données réinitialisées avec succès', severity: 'success' });
+    setSnack({ open: true, message: t('settings.dataReset'), severity: 'success' });
   };
 
   const handleExport = () => {
@@ -204,7 +204,7 @@ const Settings = () => {
     a.download = `budget-data-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    setSnack({ open: true, message: 'Données exportées avec succès', severity: 'success' });
+    setSnack({ open: true, message: t('settings.dataExported'), severity: 'success' });
   };
 
   const handleImport = (event) => {
@@ -216,9 +216,9 @@ const Settings = () => {
           const data = JSON.parse(e.target.result);
           if (data.userProfile) updateUserProfile(data.userProfile);
           if (data.appSettings) updateAppSettings(data.appSettings);
-          setSnack({ open: true, message: 'Données importées avec succès', severity: 'success' });
+          setSnack({ open: true, message: t('settings.dataImported'), severity: 'success' });
         } catch (error) {
-          setSnack({ open: true, message: 'Erreur lors de l\'import', severity: 'error' });
+          setSnack({ open: true, message: t('settings.importError'), severity: 'error' });
         }
       };
       reader.readAsText(file);
@@ -226,19 +226,19 @@ const Settings = () => {
   };
 
   const handleFeedback = () => {
-    setSnack({ open: true, message: 'Merci pour votre feedback !', severity: 'success' });
+    setSnack({ open: true, message: t('settings.thankYouFeedback'), severity: 'success' });
     setFeedbackDialog(false);
   };
 
   const handleRestartTutorial = () => {
     forceShowTutorial();
-    setSnack({ open: true, message: 'Tutoriel relancé ! Il se lancera automatiquement.', severity: 'success' });
+    setSnack({ open: true, message: t('settings.tutorialRestarted'), severity: 'success' });
     // Rediriger vers la page d'accueil pour déclencher le tutoriel
   };
 
   const handleShowUpdates = () => {
     checkForUpdates();
-    setSnack({ open: true, message: 'Dialog de mise à jour relancé !', severity: 'success' });
+    setSnack({ open: true, message: t('settings.updateDialogReloaded'), severity: 'success' });
   };
 
   return (
@@ -282,8 +282,8 @@ const Settings = () => {
                   </Avatar>
                 </ListItemAvatar>
                 <ListItemText 
-                  primary={`${userProfile.firstName || 'Prénom'} ${userProfile.lastName || 'Nom'}`}
-                  secondary={userProfile.email || 'Aucun email'}
+                  primary={`${userProfile.firstName || t('settings.firstName')} ${userProfile.lastName || t('settings.lastName')}`}
+                  secondary={userProfile.email || t('settings.noEmail')}
                 />
                 <IconButton onClick={() => setProfileDialog(true)}>
                   <Edit />
@@ -301,7 +301,7 @@ const Settings = () => {
                 </ListItemIcon>
                 <ListItemText 
                   primary={t('settings.accountCreated')} 
-                  secondary={userProfile.createdAt ? new Date(userProfile.createdAt).toLocaleDateString('fr-FR') : 'Non disponible'}
+                  secondary={userProfile.createdAt ? new Date(userProfile.createdAt).toLocaleDateString('fr-FR') : t('settings.notAvailable')}
                 />
               </ListItem>
               <ListItem>
@@ -310,7 +310,7 @@ const Settings = () => {
                 </ListItemIcon>
                 <ListItemText 
                   primary={t('settings.lastLogin')} 
-                  secondary={userProfile.lastLogin ? new Date(userProfile.lastLogin).toLocaleDateString('fr-FR') : 'Non disponible'}
+                  secondary={userProfile.lastLogin ? new Date(userProfile.lastLogin).toLocaleDateString('fr-FR') : t('settings.notAvailable')}
                 />
               </ListItem>
             </List>

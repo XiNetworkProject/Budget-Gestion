@@ -1,5 +1,6 @@
 {
   "app": { "title": "Budget Gestion" },
+  "appName": "Budget Gestion",
   "theme": { "light": "Clair", "dark": "Sombre" },
   "logout": "Déconnexion",
   "nav": { "table": "Tableau", "chart": "Visualisation" },
@@ -90,7 +91,19 @@
     "deleteConfirmTitle": "Confirmer la suppression",
     "deleteConfirmDescription": "Êtes-vous sûr de vouloir supprimer toutes les données ? Cette action est irréversible.",
     "accountCreated": "Compte créé le",
-    "lastLogin": "Dernière connexion"
+    "lastLogin": "Dernière connexion",
+    "profileUpdated": "Profil mis à jour avec succès",
+    "allDataDeleted": "Toutes les données ont été supprimées",
+    "dataReset": "Données réinitialisées avec succès",
+    "dataExported": "Données exportées avec succès",
+    "dataImported": "Données importées avec succès",
+    "importError": "Erreur lors de l'import",
+    "thankYouFeedback": "Merci pour votre feedback !",
+    "tutorialRestarted": "Tutoriel relancé ! Il se lancera automatiquement.",
+    "updateDialogReloaded": "Dialog de mise à jour relancé !",
+    "noEmail": "Aucun email",
+    "notAvailable": "Non disponible",
+    "dataSecurity": "Vos données sont sécurisées et privées"
   },
   "pages": {
     "home": "Accueil",
@@ -101,6 +114,12 @@
     "savings": "Épargne",
     "debts": "Dettes",
     "actionPlans": "Plans d'action"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "analytics": "Analytics",
+    "savings": "Épargne",
+    "settings": "Paramètres"
   },
   "home": {
     "title": "Tableau de bord",
@@ -141,7 +160,66 @@
     "current": "Actuel",
     "forecast": "Prévision",
     "trend": "Tendance",
-    "monthlyAverage": "Moyenne mensuelle"
+    "monthlyAverage": "Moyenne mensuelle",
+    "lowSavingsRate": "Taux d'épargne faible",
+    "lowSavingsRateMessage": "Votre taux d'épargne prévu est de {{savingsRate}}%. Il est recommandé d'épargner au moins 20% de vos revenus.",
+    "createSavingsPlan": "Créer un plan d'épargne",
+    "emergencySavingsPlan": "Plan d'épargne d'urgence",
+    "emergencySavingsPlanDescription": "Créer un fonds d'urgence équivalent à 3 mois de dépenses",
+    "excellentSavingsRate": "Excellent taux d'épargne",
+    "excellentSavingsRateMessage": "Félicitations ! Votre taux d'épargne prévu de {{savingsRate}}% est excellent.",
+    "optimizeInvestment": "Optimiser l'investissement",
+    "investmentPlan": "Plan d'investissement",
+    "diversifyInvestments": "Diversifier vos placements pour optimiser vos rendements",
+    "expectedExpenseIncrease": "Augmentation des dépenses prévue",
+    "expectedExpenseIncreaseMessage": "Vos dépenses pourraient augmenter de {{increase}}% le mois prochain.",
+    "createReductionPlan": "Créer un plan de réduction",
+    "reduceExpenses": "Plan de réduction des dépenses",
+    "reduceExpensesMessage": "Réduire les dépenses de {{increase}}% le mois prochain",
+    "expectedExpenseDecrease": "Diminution des dépenses prévue",
+    "expectedExpenseDecreaseMessage": "Vos dépenses pourraient diminuer de {{decrease}}% le mois prochain.",
+    "maintainTrend": "Maintenir cette tendance",
+    "expectedIncomeDecrease": "Baisse des revenus prévue",
+    "expectedIncomeDecreaseMessage": "Vos revenus pourraient diminuer de {{decrease}}% le mois prochain.",
+    "prepareContingencyPlan": "Préparer un plan de contingence",
+    "financialContingencyPlan": "Plan de contingence financière",
+    "financialContingencyPlanDescription": "Préparer un plan B en cas de baisse des revenus",
+    "concentrationExpenses": "Concentration des dépenses",
+    "concentrationExpensesMessage": "{{category}} représente {{percentage}}% de vos dépenses.",
+    "diversifyExpenses": "Diversifier vos dépenses",
+    "reduceExpensesCategory": "Réduction des dépenses {{category}}",
+    "reduceExpensesCategoryDescription": "Réduire les dépenses dans la catégorie {{category}} de {{percentage}}%",
+    "frequentSmallExpenses": "Petites dépenses fréquentes",
+    "frequentSmallExpensesMessage": "{{smallTransactions}} petites dépenses (<10€) sur {{totalTransactions}} transactions.",
+    "consolidateExpenses": "Consolider les petites dépenses",
+    "consolidateExpensesDescription": "Regrouper les petites dépenses en transactions mensuelles",
+    "financialHealth": "Finances en bonne santé",
+    "financialHealthMessage": "Vos prévisions montrent une situation financière stable.",
+    "continueMonitoring": "Continuer à suivre",
+    "priority": "Priorité",
+    "important": "Important",
+    "intelligent": "Intelligent",
+    "planCreatedAutomatically": "Plan \"{{title}}\" créé automatiquement ! Vous pouvez le modifier dans la page des plans d'actions.",
+    "reduceExpenses": "Réduction des dépenses",
+    "maintainTrend": "Excellent ! Continuez à maintenir cette tendance positive dans {{category}}.",
+    "clickToAct": "Cliquez sur le bouton pour agir",
+    "continueAddingTransactions": "Continuez à ajouter des transactions pour recevoir des conseils personnalisés",
+    "categoryAnalysis": "Analyse des dépenses par catégorie",
+    "categories": "catégories",
+    "thisMonth": "Ce mois",
+    "budgetPercentage": "% du budget",
+    "change": "Changement",
+    "monitor": "Surveiller",
+    "details": "Détails",
+    "noCategoryData": "Aucune donnée de catégorie disponible",
+    "addTransactionsForAnalysis": "Ajoutez des transactions pour voir les analyses par catégorie",
+    "seeAll": "Voir tout",
+    "income": "Revenu",
+    "expense": "Dépense",
+    "intelligentRecommendations": "Recommandations intelligentes",
+    "tips": "conseils",
+    "suggestedPlan": "Plan suggéré",
+    "objective": "Objectif"
   },
   "analytics": {
     "title": "Analytics",
@@ -156,10 +234,19 @@
     "thisMonth": "Ce mois",
     "expenses": "Dépenses",
     "expenseRate": "% du revenu",
+    "ofRevenue": "du revenu",
     "savings": "Économies",
     "savingsRate": "Taux d'épargne",
     "noData": "Aucune donnée disponible",
-    "addData": "Ajoutez des données pour voir les analyses"
+    "addData": "Ajoutez des données pour voir les analyses",
+    "expenseDistribution": "Répartition des dépenses",
+    "expenseDistributionTooltip": "Répartition des dépenses par catégorie",
+    "savingsEvolution": "Évolution des économies",
+    "savingsEvolutionTooltip": "Évolution mensuelle des économies",
+    "revenuesVsExpenses": "Revenus vs Dépenses",
+    "revenuesVsExpensesTooltip": "Comparaison des revenus et dépenses dans le temps",
+    "expenseDetails": "Détails par catégorie",
+    "noExpenseRecordedThisMonth": "Aucune dépense enregistrée pour ce mois"
   },
   "expenses": {
     "title": "Dépenses",
@@ -183,8 +270,16 @@
     "confirmDeleteCategory": "Êtes-vous sûr de vouloir supprimer cette catégorie ?",
     "expenseAdded": "Dépense ajoutée avec succès",
     "expenseDeleted": "Dépense supprimée",
+    "expenseUpdated": "Dépense modifiée avec succès",
     "categoryAdded": "Catégorie ajoutée avec succès",
-    "categoryDeleted": "Catégorie supprimée"
+    "categoryDeleted": "Catégorie supprimée",
+    "tabs": {
+      "categories": "Catégories",
+      "history": "Historique",
+      "analytics": "Analytics"
+    },
+    "createNewCategory": "Créer une nouvelle catégorie",
+    "descriptionOptional": "Description (optionnel)"
   },
   "income": {
     "title": "Revenus",
@@ -209,35 +304,59 @@
     "confirmDeleteType": "Êtes-vous sûr de vouloir supprimer ce type de revenu ?",
     "incomeAdded": "Revenu ajouté avec succès",
     "incomeDeleted": "Revenu supprimé",
+    "incomeUpdated": "Revenu modifié avec succès",
     "typeAdded": "Type ajouté avec succès",
     "typeDeleted": "Type supprimé",
-    "thisMonthIncome": "ce mois"
+    "thisMonthIncome": "ce mois",
+    "tabs": {
+      "types": "Types",
+      "history": "Historique",
+      "analytics": "Analytics"
+    },
+    "incomeType": "Type de revenu",
+    "sourceOptional": "Source (optionnel)",
+    "descriptionOptional": "Description (optionnel)",
+    "recurringIncome": "Revenu récurrent"
   },
   "savings": {
     "title": "Épargne",
     "totalSaved": "Total épargné",
     "on": "Sur",
-    "progress": "Progression",
+    "progression": "Progression",
     "goals": "Objectifs",
+    "achieved": "atteints",
+    "averageMonthly": "Moyenne mensuelle",
+    "thisMonth": "Ce mois",
+    "vsPreviousMonth": "vs mois précédent",
+    "savingsGoals": "Mes objectifs d'épargne",
+    "addGoal": "Ajouter un objectif",
+    "noSavingsGoals": "Aucun objectif d'épargne",
+    "addFirstGoal": "Ajoutez votre premier objectif d'épargne en utilisant le bouton +",
+    "daysLeft": "jours restants",
+    "monthlySavingsEvolution": "Évolution mensuelle de l'épargne",
+    "noSavingsData": "Aucune donnée d'épargne disponible",
+    "savingsDistribution": "Répartition par objectif",
+    "addGoalTitle": "Ajouter un objectif d'épargne",
+    "goalName": "Nom de l'objectif",
+    "targetAmount": "Montant cible (€)",
+    "currentAmount": "Montant actuel (€)",
+    "deadline": "Date limite",
+    "cancel": "Annuler",
+    "add": "Ajouter",
+    "modifyGoalTitle": "Modifier l'objectif",
+    "modify": "Modifier",
+    "deleteGoalTitle": "Supprimer l'objectif",
+    "areYouSureDelete": "Êtes-vous sûr de vouloir supprimer l'objectif \"{{goalName}}\" ?",
+    "delete": "Supprimer",
+    "goalAdded": "Objectif d'épargne ajouté",
+    "goalModified": "Objectif modifié",
+    "goalDeleted": "Objectif supprimé",
     "monthlyAverage": "Moyenne mensuelle",
     "mySavingsGoals": "Mes objectifs d'épargne",
-    "addGoal": "Ajouter un objectif",
     "editGoal": "Modifier l'objectif",
     "deleteGoal": "Supprimer l'objectif",
-    "goalName": "Nom de l'objectif",
-    "targetAmount": "Montant cible",
-    "currentAmount": "Montant actuel",
-    "deadline": "Échéance",
-    "priority": "Priorité",
-    "high": "Haute",
-    "medium": "Moyenne",
-    "low": "Basse",
-    "noGoals": "Aucun objectif d'épargne",
-    "addFirstGoal": "Ajoutez votre premier objectif d'épargne",
-    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet objectif ?",
-    "goalAdded": "Objectif ajouté avec succès",
-    "goalDeleted": "Objectif supprimé",
-    "goalUpdated": "Objectif mis à jour"
+    "targetAmountEUR": "Montant cible (€)",
+    "currentAmountEUR": "Montant actuel (€)"
   },
   "debts": {
     "title": "Dettes et Prêts",
@@ -275,7 +394,13 @@
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer la dette",
     "debtAdded": "Dette ajoutée",
     "debtDeleted": "Dette supprimée",
-    "paymentMade": "Paiement effectué"
+    "debtUpdated": "Dette modifiée",
+    "paymentMade": "Paiement de {{amount}}€ effectué",
+    "totalAmountEUR": "Montant total (€)",
+    "paidAmountEUR": "Montant déjà payé (€)",
+    "annualInterestRate": "Taux d'intérêt annuel (%)",
+    "monthlyPaymentEUR": "Paiement mensuel (€)",
+    "paymentAmountEUR": "Montant du paiement (€)"
   },
   "history": {
     "title": "Historique",
@@ -313,7 +438,33 @@
     "confirmDelete": "Êtes-vous sûr de vouloir supprimer ce plan ?",
     "planAdded": "Plan ajouté avec succès",
     "planDeleted": "Plan supprimé",
-    "planUpdated": "Plan mis à jour"
+    "planUpdated": "Plan mis à jour",
+    "planTitle": "Titre du plan",
+    "category": "Catégorie",
+    "objective": "Objectif (montant en €)",
+    "titleRequired": "Le titre est obligatoire",
+    "plans": "plans",
+    "high": "Haute",
+    "medium": "Moyenne",
+    "low": "Faible",
+    "unknown": "Inconnu"
+  },
+  "quickAdd": {
+    "amountEUR": "Montant (€)",
+    "date": "Date",
+    "descriptionOptional": "Description (optionnel)",
+    "quickAddTitle": "Ajout Rapide",
+    "expense": "Dépense",
+    "income": "Revenu",
+    "category": "Catégorie",
+    "incomeType": "Type de revenu",
+    "amount": "Montant (€)",
+    "description": "Description (optionnel)",
+    "descriptionPlaceholder": "Ex: Courses, Salaire, etc.",
+    "addExpense": "Ajouter la dépense",
+    "addIncome": "Ajouter le revenu",
+    "expenseAdded": "Dépense ajoutée !",
+    "incomeAdded": "Revenu ajouté !"
   },
   "common": {
     "add": "Ajouter",
@@ -453,5 +604,178 @@
     "northwest": "Nord-ouest",
     "southeast": "Sud-est",
     "southwest": "Sud-ouest"
+  },
+  "onboarding": {
+    "welcome": "Bienvenue sur Budget Gestion",
+    "welcomeSubtitle": "Votre assistant financier personnel",
+    "welcomeDescription": "Prenez le contrôle de vos finances avec une application moderne et intuitive. Suivez vos dépenses, analysez vos habitudes et atteignez vos objectifs financiers.",
+    "welcomeFeatures": [
+      "Interface moderne et intuitive",
+      "Synchronisation multi-appareils",
+      "Sécurité de vos données"
+    ],
+    "trackFinances": "Suivez vos finances",
+    "trackFinancesSubtitle": "Analysez et optimisez",
+    "trackFinancesDescription": "Enregistrez vos dépenses et revenus en temps réel. Analysez vos habitudes de consommation avec des graphiques détaillés et des rapports personnalisés.",
+    "trackFinancesFeatures": [
+      "Catégorisation automatique",
+      "Graphiques interactifs",
+      "Rapports détaillés"
+    ],
+    "reachGoals": "Atteignez vos objectifs",
+    "reachGoalsSubtitle": "Épargnez intelligemment",
+    "reachGoalsDescription": "Définissez des objectifs d'épargne personnalisés et suivez vos progrès. Recevez des alertes et des conseils pour optimiser votre budget.",
+    "reachGoalsFeatures": [
+      "Objectifs personnalisés",
+      "Suivi des progrès",
+      "Alertes intelligentes"
+    ],
+    "readyToStart": "Prêt à commencer ?",
+    "readyToStartSubtitle": "Configuration rapide",
+    "readyToStartDescription": "Créez votre profil en quelques étapes et commencez à gérer vos finances dès aujourd'hui. Votre avenir financier commence ici !",
+    "readyToStartFeatures": [
+      "Configuration en 2 minutes",
+      "Données sécurisées",
+      "Support 24/7"
+    ],
+    "skip": "Passer",
+    "previous": "Précédent",
+    "next": "Suivant",
+    "start": "Commencer",
+    "configuring": "Configuration",
+    "satisfaction": "Plus de 00,001 utilisateurs satisfaits",
+    "dataSecurity": "Vos données sont sécurisées et privées"
+  },
+  "tutorial": {
+    "welcome": {
+      "title": "Bienvenue dans votre tutoriel !",
+      "subtitle": "Découvrez Budget Gestion en quelques minutes",
+      "description": "Ce tutoriel interactif vous guidera à travers les principales fonctionnalités de l'application. Cliquez sur \"Suivant\" pour commencer.",
+      "action": "Commencer",
+      "features": [
+        "Navigation intuitive",
+        "Fonctionnalités principales",
+        "Astuces et conseils"
+      ]
+    },
+    "homeOverview": {
+      "title": "Page d'accueil",
+      "subtitle": "Votre tableau de bord personnel",
+      "description": "Voici votre page d'accueil avec tous vos KPIs financiers. Vous pouvez voir vos revenus, dépenses, économies et objectifs en un coup d'œil.",
+      "action": "Explorer",
+      "features": [
+        "KPIs en temps réel",
+        "Vue d'ensemble rapide",
+        "Navigation principale"
+      ]
+    },
+    "quickAddButton": {
+      "title": "Ajout rapide",
+      "subtitle": "Enregistrez vos transactions en un clic",
+      "description": "Le bouton \"+\" flottant vous permet d'ajouter rapidement une dépense ou un revenu. C'est votre raccourci principal pour enregistrer vos transactions.",
+      "action": "Essayer",
+      "features": [
+        "Ajout en un clic",
+        "Interface intuitive",
+        "Catégorisation automatique"
+      ]
+    },
+    "navigation": {
+      "title": "Navigation principale",
+      "subtitle": "Accédez à toutes les fonctionnalités",
+      "description": "La barre de navigation en bas vous permet d'accéder rapidement à toutes les sections de l'application.",
+      "action": "Naviguer",
+      "features": [
+        "Accueil - Vue d'ensemble",
+        "Analytics - Graphiques et analyses",
+        "Plans d'actions - Objectifs et suivi",
+        "Épargne - Objectifs financiers",
+        "Paramètres - Configuration"
+      ]
+    },
+    "analyticsPage": {
+      "title": "Analytics avancés",
+      "subtitle": "Analysez vos habitudes financières",
+      "description": "La page Analytics vous donne des insights précieux sur vos finances avec des graphiques interactifs et des rapports détaillés.",
+      "action": "Analyser",
+      "features": [
+        "Graphiques interactifs",
+        "Rapports détaillés",
+        "Insights personnalisés"
+      ]
+    },
+    "expensesPage": {
+      "title": "Gestion des dépenses",
+      "subtitle": "Suivez et analysez vos dépenses",
+      "description": "La page Dépenses vous permet d'enregistrer, modifier et analyser toutes vos dépenses. Créez des catégories personnalisées.",
+      "action": "Découvrir",
+      "features": [
+        "Catégories personnalisées",
+        "Historique détaillé",
+        "Graphiques interactifs"
+      ]
+    },
+    "incomePage": {
+      "title": "Gestion des revenus",
+      "subtitle": "Suivez vos sources de revenus",
+      "description": "Enregistrez tous vos revenus : salaire, freelance, investissements, etc. Analysez l'évolution de vos revenus dans le temps.",
+      "action": "Explorer",
+      "features": [
+        "Sources multiples",
+        "Évolution temporelle",
+        "Analyse détaillée"
+      ]
+    },
+    "savingsPage": {
+      "title": "Objectifs d'épargne",
+      "subtitle": "Atteignez vos objectifs financiers",
+      "description": "Définissez des objectifs d'épargne personnalisés et suivez vos progrès. L'application vous aide à rester motivé.",
+      "action": "Créer",
+      "features": [
+        "Objectifs personnalisés",
+        "Suivi des progrès",
+        "Motivation continue"
+      ]
+    },
+    "settingsPage": {
+      "title": "Paramètres et personnalisation",
+      "subtitle": "Adaptez l'application à vos besoins",
+      "description": "Personnalisez l'application selon vos préférences : thème, notifications, comptes multiples, export de données, etc.",
+      "action": "Personnaliser",
+      "features": [
+        "Comptes multiples",
+        "Thèmes personnalisés",
+        "Export/Import de données"
+      ]
+    },
+    "complete": {
+      "title": "Tutoriel terminé !",
+      "subtitle": "Vous êtes prêt à utiliser Budget Gestion",
+      "description": "Félicitations ! Vous connaissez maintenant les principales fonctionnalités de l'application. N'hésitez pas à explorer et à personnaliser selon vos besoins.",
+      "action": "Commencer",
+      "features": [
+        "Toutes les fonctionnalités débloquées",
+        "Support disponible",
+        "Mises à jour régulières"
+      ]
+    },
+    "stepIndicator": "Étape {{current}} sur {{total}}",
+    "tip": "Astuce",
+    "previous": "Précédent",
+    "skip": "Passer",
+    "finish": "Terminer",
+    "tips": {
+      "restart": "Vous pouvez reprendre ce tutoriel à tout moment depuis les paramètres.",
+      "filters": "Utilisez les filtres pour voir vos données par période ou par catégorie.",
+      "categories": "L'application mémorise vos dernières catégories pour un ajout plus rapide.",
+      "navigation": "La navigation est intuitive - explorez chaque section pour découvrir toutes les fonctionnalités.",
+      "charts": "Les graphiques sont interactifs - cliquez dessus pour plus de détails.",
+      "customCategories": "Créez des catégories personnalisées pour mieux organiser vos dépenses.",
+      "recurringIncome": "Enregistrez vos revenus récurrents pour un suivi automatique.",
+      "goals": "Définissez des objectifs réalistes pour rester motivé.",
+      "multipleAccounts": "Configurez plusieurs comptes pour séparer vos finances personnelles et professionnelles.",
+      "explore": "N'hésitez pas à explorer toutes les fonctionnalités pour tirer le meilleur parti de l'application !",
+      "default": "Explorez l'application pour découvrir toutes les fonctionnalités !"
+    }
   }
 } 

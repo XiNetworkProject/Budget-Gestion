@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useStore } from '../store';
+import { useTranslation } from 'react-i18next';
 import { 
   Box, 
   Typography, 
@@ -63,6 +65,8 @@ import {
 ChartJS.register(BarElement, CategoryScale, LinearScale, Legend, LineElement, PointElement);
 
 const Debts = () => {
+  const { t } = useTranslation();
+
   const [debts, setDebts] = useState([
     {
       id: 1,
@@ -212,7 +216,7 @@ const Debts = () => {
     setDebts([...debts, debt]);
     setAddDialog(false);
     setNewDebt({ name: '', type: 'credit_card', amount: '', paid: '0', interest: '', monthlyPayment: '' });
-    setSnack({ open: true, message: 'Dette ajoutée', severity: 'success' });
+    setSnack({ open: true, message: t('debts.debtAdded'), severity: 'success' });
   };
 
   const handleEditDebt = () => {
@@ -233,7 +237,7 @@ const Debts = () => {
       setEditDialog(false);
       setSelectedDebt(null);
       setNewDebt({ name: '', type: 'credit_card', amount: '', paid: '0', interest: '', monthlyPayment: '' });
-      setSnack({ open: true, message: 'Dette modifiée', severity: 'success' });
+      setSnack({ open: true, message: t('debts.debtUpdated'), severity: 'success' });
     }
   };
 
@@ -242,7 +246,7 @@ const Debts = () => {
       setDebts(debts.filter(debt => debt.id !== selectedDebt.id));
       setDeleteDialog(false);
       setSelectedDebt(null);
-      setSnack({ open: true, message: 'Dette supprimée', severity: 'info' });
+      setSnack({ open: true, message: t('debts.debtDeleted'), severity: 'info' });
     }
   };
 
@@ -299,13 +303,13 @@ const Debts = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <TrendingDown sx={{ mr: 1 }} />
-                <Typography variant="h6">Dette totale</Typography>
+                <Typography variant="h6">{t('debts.totalDebt')}</Typography>
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 {totalDebt.toLocaleString()}€
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                {remainingDebt.toLocaleString()}€ restants
+                {remainingDebt.toLocaleString()}€ {t('debts.remaining')}
               </Typography>
             </CardContent>
           </Card>
@@ -316,7 +320,7 @@ const Debts = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <Payment sx={{ mr: 1 }} />
-                <Typography variant="h6">Remboursé</Typography>
+                <Typography variant="h6">{t('debts.paid')}</Typography>
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 {overallProgress}%
@@ -335,7 +339,7 @@ const Debts = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <Schedule sx={{ mr: 1 }} />
-                <Typography variant="h6">Paiement mensuel</Typography>
+                <Typography variant="h6">{t('debts.monthlyPayment')}</Typography>
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 {totalMonthlyPayment.toLocaleString()}€
@@ -352,7 +356,7 @@ const Debts = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <Calculate sx={{ mr: 1 }} />
-                <Typography variant="h6">Intérêts mensuels</Typography>
+                <Typography variant="h6">{t('debts.monthlyInterest')}</Typography>
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 {debts.reduce((sum, debt) => sum + parseFloat(calculateInterestCost(debt)), 0).toFixed(0)}€
@@ -368,13 +372,13 @@ const Debts = () => {
       {/* Liste des dettes */}
       <Paper sx={{ p: 2, mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6">Mes dettes et prêts</Typography>
+          <Typography variant="h6">{t('debts.myDebtsAndLoans')}</Typography>
           <Button
             variant="contained"
             startIcon={<Add />}
             onClick={() => setAddDialog(true)}
           >
-            Ajouter une dette
+            {t('debts.addDebt')}
           </Button>
         </Box>
         
@@ -455,30 +459,30 @@ const Debts = () => {
 
                     <Box sx={{ mb: 2 }}>
                       <Typography variant="body2" color="text.secondary" gutterBottom component="span">
-                        Détails
+                        {t('debts.details')}
                       </Typography>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="body2" component="span">Reste à payer:</Typography>
+                        <Typography variant="body2" component="span">{t('debts.remainingToPay')}:</Typography>
                         <Typography variant="body2" fontWeight="bold" component="span">
                           {remaining.toLocaleString()}€
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="body2" component="span">Paiement mensuel:</Typography>
+                        <Typography variant="body2" component="span">{t('debts.monthlyPayment')}:</Typography>
                         <Typography variant="body2" fontWeight="bold" component="span">
                           {debt.monthlyPayment}€
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                        <Typography variant="body2" component="span">Intérêts mensuels:</Typography>
+                        <Typography variant="body2" component="span">{t('debts.monthlyInterestAmount')}:</Typography>
                         <Typography variant="body2" color="error.main" fontWeight="bold" component="span">
                           {monthlyInterest}€
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2" component="span">Échéance:</Typography>
+                        <Typography variant="body2" component="span">{t('debts.dueIn')}:</Typography>
                         <Typography variant="body2" color={daysLeft <= 7 ? 'error.main' : 'text.secondary'} component="span">
-                          {daysLeft} jours
+                          {daysLeft} {t('debts.daysLeft')}
                         </Typography>
                       </Box>
                     </Box>

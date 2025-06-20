@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Typography,
@@ -50,6 +51,7 @@ import {
 const ActionPlans = () => {
   const navigate = useNavigate();
   const { user } = useStore();
+  const { t } = useTranslation();
   const [plans, setPlans] = useState([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [editingPlan, setEditingPlan] = useState(null);
@@ -115,7 +117,7 @@ const ActionPlans = () => {
 
   const handleSubmit = () => {
     if (!formData.title.trim()) {
-      alert('Le titre est obligatoire');
+      alert(t('actionPlans.titleRequired'));
       return;
     }
 
@@ -139,7 +141,7 @@ const ActionPlans = () => {
   };
 
   const handleDelete = (planId) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer ce plan ?')) {
+    if (window.confirm(t('actionPlans.confirmDelete'))) {
       const newPlans = plans.filter(p => p.id !== planId);
       savePlans(newPlans);
     }
@@ -194,19 +196,19 @@ const ActionPlans = () => {
 
   const getStatusText = (status) => {
     switch (status) {
-      case 'completed': return 'Terminé';
-      case 'in_progress': return 'En cours';
-      case 'pending': return 'En attente';
-      default: return 'Inconnu';
+      case 'completed': return t('actionPlans.completed');
+      case 'in_progress': return t('actionPlans.inProgress');
+      case 'pending': return t('actionPlans.pending');
+      default: return t('actionPlans.unknown');
     }
   };
 
   const getPriorityText = (priority) => {
     switch (priority) {
-      case 'high': return 'Haute';
-      case 'medium': return 'Moyenne';
-      case 'low': return 'Faible';
-      default: return 'Inconnue';
+      case 'high': return t('actionPlans.high');
+      case 'medium': return t('actionPlans.medium');
+      case 'low': return t('actionPlans.low');
+      default: return t('actionPlans.unknown');
     }
   };
 
@@ -232,10 +234,10 @@ const ActionPlans = () => {
           <ArrowBack />
         </IconButton>
         <Typography variant="h4" component="h1">
-          Plans d'actions
+          {t('actionPlans.title')}
         </Typography>
         <Chip 
-          label={`${plans.length} plans`}
+          label={`${plans.length} ${t('actionPlans.plans')}`}
           color="primary"
           sx={{ ml: 2 }}
         />

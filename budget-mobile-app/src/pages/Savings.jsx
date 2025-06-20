@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
+import { useTranslation } from 'react-i18next';
 import { 
   Box, 
   Typography, 
@@ -61,6 +62,8 @@ const Savings = () => {
     selectedMonth,
     selectedYear
   } = useStore();
+
+  const { t } = useTranslation();
 
   const [addDialog, setAddDialog] = useState(false);
   const [editDialog, setEditDialog] = useState(false);
@@ -198,7 +201,7 @@ const Savings = () => {
       icon: '💰',
       deadline: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     });
-    setSnack({ open: true, message: 'Objectif d\'épargne ajouté', severity: 'success' });
+    setSnack({ open: true, message: t('savings.goalAdded'), severity: 'success' });
   };
 
   const handleEditGoal = () => {
@@ -219,7 +222,7 @@ const Savings = () => {
         icon: '💰',
         deadline: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
       });
-      setSnack({ open: true, message: 'Objectif modifié', severity: 'success' });
+      setSnack({ open: true, message: t('savings.goalModified'), severity: 'success' });
     }
   };
 
@@ -228,7 +231,7 @@ const Savings = () => {
       deleteSavingsGoal(selectedGoal.id);
       setDeleteDialog(false);
       setSelectedGoal(null);
-      setSnack({ open: true, message: 'Objectif supprimé', severity: 'info' });
+      setSnack({ open: true, message: t('savings.goalDeleted'), severity: 'info' });
     }
   };
 
@@ -254,7 +257,7 @@ const Savings = () => {
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold' }}>
-        Économies
+        {t('savings.title')}
       </Typography>
 
       {/* KPIs */}
@@ -264,13 +267,13 @@ const Savings = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <SavingsIcon sx={{ mr: 1 }} />
-                <Typography variant="h6">Total épargné</Typography>
+                <Typography variant="h6">{t('savings.totalSaved')}</Typography>
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 {totalSaved.toLocaleString()}€
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                Sur {totalTarget.toLocaleString()}€
+                {t('savings.on')} {totalTarget.toLocaleString()}€
               </Typography>
             </CardContent>
           </Card>
@@ -281,7 +284,7 @@ const Savings = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <TrendingUp sx={{ mr: 1 }} />
-                <Typography variant="h6">Progression</Typography>
+                <Typography variant="h6">{t('savings.progression')}</Typography>
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 {overallProgress}%
@@ -300,13 +303,13 @@ const Savings = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <Flag sx={{ mr: 1 }} />
-                <Typography variant="h6">Objectifs</Typography>
+                <Typography variant="h6">{t('savings.goals')}</Typography>
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 {goals.length}
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                {goals.filter(g => g.target > 0 && ((g.current || 0) / g.target) >= 1).length} atteints
+                {goals.filter(g => g.target > 0 && ((g.current || 0) / g.target) >= 1).length} {t('savings.achieved')}
               </Typography>
             </CardContent>
           </Card>
@@ -317,13 +320,13 @@ const Savings = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <Info sx={{ mr: 1 }} />
-                <Typography variant="h6">Moyenne mensuelle</Typography>
+                <Typography variant="h6">{t('savings.averageMonthly')}</Typography>
               </Box>
               <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                 {Math.round(averageMonthlySavings)}€
               </Typography>
               <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                Ce mois: {Math.round(currentMonthSavings)}€
+                {t('savings.thisMonth')}: {Math.round(currentMonthSavings)}€
               </Typography>
               {sideByMonth.length >= 2 && (
                 <Typography 
@@ -335,7 +338,7 @@ const Savings = () => {
                   }} 
                   component="span"
                 >
-                  {isEvolutionPositive ? '+' : ''}{savingsEvolution}% vs mois précédent
+                  {isEvolutionPositive ? '+' : ''}{savingsEvolution}% {t('savings.vsPreviousMonth')}
                 </Typography>
               )}
             </CardContent>
@@ -346,13 +349,13 @@ const Savings = () => {
       {/* Objectifs d'épargne */}
       <Paper sx={{ p: 2, mb: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6">Mes objectifs d'épargne</Typography>
+          <Typography variant="h6">{t('savings.savingsGoals')}</Typography>
           <Button
             variant="contained"
             startIcon={<Add />}
             onClick={() => setAddDialog(true)}
           >
-            Ajouter un objectif
+            {t('savings.addGoal')}
           </Button>
         </Box>
         
@@ -361,10 +364,10 @@ const Savings = () => {
             <Grid item xs={12}>
               <Paper sx={{ p: 4, textAlign: 'center' }}>
                 <Typography variant="h6" color="text.secondary" gutterBottom>
-                  Aucun objectif d'épargne
+                  {t('savings.noSavingsGoals')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" component="span">
-                  Ajoutez votre premier objectif d'épargne en utilisant le bouton +
+                  {t('savings.addFirstGoal')}
                 </Typography>
               </Paper>
             </Grid>
@@ -383,7 +386,7 @@ const Savings = () => {
                           <Box>
                             <Typography variant="h6">{goal.name}</Typography>
                             <Typography variant="body2" color="text.secondary" component="span">
-                              {daysLeft} jours restants
+                              {daysLeft} {t('savings.daysLeft')}
                             </Typography>
                           </Box>
                         </Box>
@@ -463,12 +466,12 @@ const Savings = () => {
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
-              Évolution mensuelle de l'épargne
+              {t('savings.monthlySavingsEvolution')}
             </Typography>
             {sideByMonth.length === 0 ? (
               <Box sx={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Typography variant="body1" color="text.secondary">
-                  Aucune donnée d'épargne disponible
+                  {t('savings.noSavingsData')}
                 </Typography>
               </Box>
             ) : (
@@ -482,12 +485,12 @@ const Savings = () => {
         <Grid item xs={12} md={6}>
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
-              Répartition par objectif
+              {t('savings.savingsDistribution')}
             </Typography>
             {goals.length === 0 ? (
               <Box sx={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Typography variant="body1" color="text.secondary">
-                  Aucun objectif d'épargne défini
+                  {t('savings.noSavingsGoals')}
                 </Typography>
               </Box>
             ) : (
@@ -501,12 +504,12 @@ const Savings = () => {
 
       {/* Dialogs */}
       <Dialog open={addDialog} onClose={() => setAddDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Ajouter un objectif d'épargne</DialogTitle>
+        <DialogTitle>{t('savings.addGoalTitle')}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             margin="dense"
-            label="Nom de l'objectif"
+            label={t('savings.goalName')}
             fullWidth
             variant="outlined"
             value={newGoal.name}
@@ -515,7 +518,7 @@ const Savings = () => {
           />
           <TextField
             margin="dense"
-            label="Montant cible (€)"
+            label={t('savings.targetAmount')}
             type="number"
             fullWidth
             variant="outlined"
@@ -525,7 +528,7 @@ const Savings = () => {
           />
           <TextField
             margin="dense"
-            label="Montant actuel (€)"
+            label={t('savings.currentAmount')}
             type="number"
             fullWidth
             variant="outlined"
@@ -535,7 +538,7 @@ const Savings = () => {
           />
           <TextField
             margin="dense"
-            label="Date limite"
+            label={t('savings.deadline')}
             type="date"
             fullWidth
             variant="outlined"
@@ -545,24 +548,24 @@ const Savings = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAddDialog(false)}>Annuler</Button>
+          <Button onClick={() => setAddDialog(false)}>{t('savings.cancel')}</Button>
           <Button 
             onClick={handleAddGoal} 
             variant="contained"
             disabled={!newGoal.name || !newGoal.target}
           >
-            Ajouter
+            {t('savings.add')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={editDialog} onClose={() => setEditDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Modifier l'objectif</DialogTitle>
+        <DialogTitle>{t('savings.modifyGoalTitle')}</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
             margin="dense"
-            label="Nom de l'objectif"
+            label={t('savings.goalName')}
             fullWidth
             variant="outlined"
             value={newGoal.name}
@@ -571,7 +574,7 @@ const Savings = () => {
           />
           <TextField
             margin="dense"
-            label="Montant cible (€)"
+            label={t('savings.targetAmount')}
             type="number"
             fullWidth
             variant="outlined"
@@ -581,7 +584,7 @@ const Savings = () => {
           />
           <TextField
             margin="dense"
-            label="Montant actuel (€)"
+            label={t('savings.currentAmount')}
             type="number"
             fullWidth
             variant="outlined"
@@ -591,7 +594,7 @@ const Savings = () => {
           />
           <TextField
             margin="dense"
-            label="Date limite"
+            label={t('savings.deadline')}
             type="date"
             fullWidth
             variant="outlined"
@@ -601,28 +604,28 @@ const Savings = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditDialog(false)}>Annuler</Button>
+          <Button onClick={() => setEditDialog(false)}>{t('savings.cancel')}</Button>
           <Button 
             onClick={handleEditGoal} 
             variant="contained"
             disabled={!newGoal.name || !newGoal.target}
           >
-            Modifier
+            {t('savings.modify')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={deleteDialog} onClose={() => setDeleteDialog(false)}>
-        <DialogTitle>Supprimer l'objectif</DialogTitle>
+        <DialogTitle>{t('savings.deleteGoalTitle')}</DialogTitle>
         <DialogContent>
           <Typography>
-            Êtes-vous sûr de vouloir supprimer l'objectif "{selectedGoal?.name}" ?
+            {t('savings.areYouSureDelete', { goalName: selectedGoal?.name })}
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialog(false)}>Annuler</Button>
+          <Button onClick={() => setDeleteDialog(false)}>{t('savings.cancel')}</Button>
           <Button onClick={handleDeleteGoal} color="error" variant="contained">
-            Supprimer
+            {t('savings.delete')}
           </Button>
         </DialogActions>
       </Dialog>

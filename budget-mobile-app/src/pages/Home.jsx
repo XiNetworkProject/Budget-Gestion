@@ -637,8 +637,7 @@ const Home = () => {
 
   // Fonction pour créer automatiquement un plan suggéré
   const createSuggestedPlan = (suggestedPlan) => {
-    const existingPlans = JSON.parse(localStorage.getItem('actionPlans') || '[]');
-    
+    // Créer un plan d'action basé sur la recommandation
     const newPlan = {
       id: Date.now(),
       title: suggestedPlan.title,
@@ -657,7 +656,7 @@ const Home = () => {
     const updatedPlans = [...existingPlans, newPlan];
     localStorage.setItem('actionPlans', JSON.stringify(updatedPlans));
     
-    alert(`Plan "${suggestedPlan.title}" créé automatiquement ! Vous pouvez le modifier dans la page des plans d'actions.`);
+    alert(t('home.planCreatedAutomatically', { title: suggestedPlan.title }));
   };
 
   // Fonction pour gérer les actions des catégories
@@ -666,9 +665,12 @@ const Home = () => {
       case 'reduce_expenses':
         // Créer un plan de réduction pour cette catégorie
         const reductionPlan = {
-          title: `Réduire les dépenses ${category.category}`,
-          description: `Réduire les dépenses dans la catégorie ${category.category} de ${Math.round(category.trendPercentage)}%`,
-          category: 'Réduction des dépenses',
+          title: t('home.reduceExpensesCategory', { category: category.category }),
+          description: t('home.reduceExpensesCategoryDescription', { 
+            category: category.category, 
+            percentage: Math.round(category.trendPercentage) 
+          }),
+          category: t('home.reduceExpenses'),
           targetAmount: Math.round(category.current * (category.trendPercentage / 100)),
           priority: 'high'
         };
@@ -676,7 +678,7 @@ const Home = () => {
         break;
       case 'maintain_trend':
         // Message d'encouragement
-        alert(`Excellent ! Continuez à maintenir cette tendance positive dans ${category.category}.`);
+        alert(t('home.maintainTrend', { category: category.category }));
         break;
       case 'monitor':
         // Naviguer vers Analytics pour surveiller
@@ -1112,7 +1114,7 @@ const Home = () => {
                     backgroundColor: 'rgba(255,255,255,0.1)'
                   }
                 }}
-                title="Se déconnecter"
+                title={t('logout')}
               >
                 <Logout />
               </IconButton>
@@ -1527,17 +1529,17 @@ const Home = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <Lightbulb sx={{ mr: 1, color: 'info.main' }} />
           <Typography variant="h6">
-            Recommandations intelligentes
+            {t('home.intelligentRecommendations')}
           </Typography>
           <Chip 
-            label="IA" 
+            label={t('home.ai')} 
             size="small" 
             color="info" 
             variant="outlined"
             sx={{ ml: 1 }}
           />
           <Chip 
-            label={`${recommendations.length} conseils`}
+            label={`${recommendations.length} ${t('home.tips')}`}
             size="small" 
             color="secondary" 
             variant="outlined"
@@ -1569,8 +1571,8 @@ const Home = () => {
           >
             <AlertTitle sx={{ display: 'flex', alignItems: 'center' }}>
               {rec.title}
-              {rec.priority === 'high' && <Chip label="Priorité" size="small" color="error" sx={{ ml: 1, height: 20 }} />}
-              {rec.priority === 'medium' && <Chip label="Important" size="small" color="warning" sx={{ ml: 1, height: 20 }} />}
+              {rec.priority === 'high' && <Chip label={t('home.priority')} size="small" color="error" sx={{ ml: 1, height: 20 }} />}
+              {rec.priority === 'medium' && <Chip label={t('home.important')} size="small" color="warning" sx={{ ml: 1, height: 20 }} />}
             </AlertTitle>
             <Typography variant="body2">
               {rec.message}
@@ -1580,14 +1582,14 @@ const Home = () => {
             {rec.suggestedPlan && (
               <Box sx={{ mt: 1, p: 1, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 1 }}>
                 <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                  💡 Plan suggéré : {rec.suggestedPlan.title}
+                  💡 {t('home.suggestedPlan')} : {rec.suggestedPlan.title}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   {rec.suggestedPlan.description}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
                   <Chip 
-                    label={`Objectif: ${rec.suggestedPlan.targetAmount}€`}
+                    label={`${t('home.objective')}: ${rec.suggestedPlan.targetAmount}€`}
                     size="small"
                     variant="outlined"
                   />
@@ -1601,7 +1603,7 @@ const Home = () => {
             )}
             
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-              💡 Cliquez sur le bouton pour agir
+              💡 {t('home.clickToAct')}
             </Typography>
           </Alert>
         ))}
@@ -1609,10 +1611,10 @@ const Home = () => {
         {recommendations.length === 0 && (
           <Box sx={{ textAlign: 'center', py: 3 }}>
             <Typography variant="body1" color="text.secondary">
-              Aucune recommandation pour le moment
+              {t('home.noRecommendations')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Continuez à ajouter des transactions pour recevoir des conseils personnalisés
+              {t('home.continueAddingTransactions')}
             </Typography>
           </Box>
         )}
@@ -1623,17 +1625,17 @@ const Home = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <Analytics sx={{ mr: 1, color: 'secondary.main' }} />
           <Typography variant="h6">
-            Analyse des dépenses par catégorie
+            {t('home.categoryAnalysis')}
           </Typography>
           <Chip 
-            label="Intelligent" 
+            label={t('home.intelligent')} 
             size="small" 
             color="secondary" 
             variant="outlined"
             sx={{ ml: 1 }}
           />
           <Chip 
-            label={`${categoryForecastAnalysis.length} catégories`}
+            label={`${categoryForecastAnalysis.length} ${t('home.categories')}`}
             size="small" 
             color="info" 
             variant="outlined"
@@ -1667,7 +1669,7 @@ const Home = () => {
                       zIndex: 1
                     }}>
                       <Chip 
-                        label="Important" 
+                        label={t('home.important')} 
                         size="small" 
                         color={cat.statusColor}
                         sx={{ height: 20, fontSize: '0.7rem' }}
@@ -1689,7 +1691,7 @@ const Home = () => {
                     {/* Montant actuel */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2" color="text.secondary">
-                        Ce mois:
+                        {t('home.thisMonth')}:
                       </Typography>
                       <Typography variant="body2" fontWeight="bold">
                         {cat.current.toLocaleString()}€
@@ -1699,7 +1701,7 @@ const Home = () => {
                     {/* Pourcentage du budget */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2" color="text.secondary">
-                        % du budget:
+                        {t('home.budgetPercentage')}:
                       </Typography>
                       <Typography variant="body2" fontWeight="bold" color={cat.budgetPercentage > 30 ? 'error.main' : 'text.primary'}>
                         {Math.round(cat.budgetPercentage)}%
@@ -1709,7 +1711,7 @@ const Home = () => {
                     {/* Prévision */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                       <Typography variant="body2" color="text.secondary">
-                        Prévision:
+                        {t('home.forecast')}:
                       </Typography>
                       <Typography variant="body2" fontWeight="bold" color="warning.main">
                         {cat.forecast.toLocaleString()}€
@@ -1719,7 +1721,7 @@ const Home = () => {
                     {/* Changement prévu */}
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
                       <Typography variant="body2" color="text.secondary">
-                        Changement:
+                        {t('home.change')}:
                       </Typography>
                       <Typography 
                         variant="body2" 
@@ -1761,7 +1763,7 @@ const Home = () => {
                           onClick={() => handleCategoryAction(cat.actionType, cat)}
                           sx={{ fontSize: '0.7rem' }}
                         >
-                          Réduire
+                          {t('home.reduce')}
                         </Button>
                       )}
                       {cat.actionType === 'maintain_trend' && (
@@ -1772,7 +1774,7 @@ const Home = () => {
                           onClick={() => handleCategoryAction(cat.actionType, cat)}
                           sx={{ fontSize: '0.7rem' }}
                         >
-                          Maintenir
+                          {t('home.maintain')}
                         </Button>
                       )}
                       {cat.actionType === 'monitor' && (
@@ -1783,7 +1785,7 @@ const Home = () => {
                           onClick={() => handleCategoryAction(cat.actionType, cat)}
                           sx={{ fontSize: '0.7rem' }}
                         >
-                          Surveiller
+                          {t('home.monitor')}
                         </Button>
                       )}
                       
@@ -1794,7 +1796,7 @@ const Home = () => {
                         onClick={() => navigate('/expenses')}
                         sx={{ fontSize: '0.7rem' }}
                       >
-                        Détails
+                        {t('home.details')}
                       </Button>
                     </Box>
                   </CardContent>
@@ -1805,10 +1807,10 @@ const Home = () => {
         ) : (
           <Box sx={{ textAlign: 'center', py: 3 }}>
             <Typography variant="body1" color="text.secondary">
-              Aucune donnée de catégorie disponible
+              {t('home.noCategoryData')}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Ajoutez des transactions pour voir les analyses par catégorie
+              {t('home.addTransactionsForAnalysis')}
             </Typography>
           </Box>
         )}
@@ -1818,7 +1820,7 @@ const Home = () => {
       <Paper sx={{ p: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h6">
-            Transactions récentes
+            {t('home.recentTransactions')}
           </Typography>
           <Button
             component={RouterLink}
@@ -1826,7 +1828,7 @@ const Home = () => {
             size="small"
             endIcon={<MoreVert />}
           >
-            Voir tout
+            {t('home.seeAll')}
           </Button>
         </Box>
         
@@ -1852,7 +1854,7 @@ const Home = () => {
                     {transaction.type === 'income' ? '+' : '-'}{transaction.amount}€
                   </Typography>
                   <Chip 
-                    label={transaction.type === 'income' ? 'Revenu' : 'Dépense'} 
+                    label={transaction.type === 'income' ? t('home.income') : t('home.expense')} 
                     size="small" 
                     color={transaction.type === 'income' ? 'success' : 'error'}
                     variant="outlined"

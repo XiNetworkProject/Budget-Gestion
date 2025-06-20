@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Box, 
   Typography, 
@@ -38,6 +38,7 @@ import {
   Title
 } from 'chart.js';
 import { useStore } from '../store';
+import { useTranslation } from 'react-i18next';
 
 ChartJS.register(
   ArcElement, 
@@ -66,6 +67,7 @@ const Analytics = () => {
   } = useStore();
   const [timeFilter, setTimeFilter] = useState('month');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const { t } = useTranslation();
 
   // Index du mois courant
   const idx = months.length - 1;
@@ -273,29 +275,29 @@ const Analytics = () => {
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-            Analytics
+            {t('analytics.title')}
           </Typography>
           {activeAccount && (
             <Typography variant="body2" color="text.secondary" component="span">
-              Compte : {activeAccount.name}
+              {t('analytics.account')} {activeAccount.name}
             </Typography>
           )}
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Période</InputLabel>
+            <InputLabel>{t('analytics.period')}</InputLabel>
             <Select
               value={timeFilter}
-              label="Période"
+              label={t('analytics.period')}
               onChange={(e) => setTimeFilter(e.target.value)}
             >
-              <MenuItem value="week">Semaine</MenuItem>
-              <MenuItem value="month">Mois</MenuItem>
-              <MenuItem value="quarter">Trimestre</MenuItem>
-              <MenuItem value="year">Année</MenuItem>
+              <MenuItem value="week">{t('analytics.week')}</MenuItem>
+              <MenuItem value="month">{t('analytics.month')}</MenuItem>
+              <MenuItem value="quarter">{t('analytics.quarter')}</MenuItem>
+              <MenuItem value="year">{t('analytics.year')}</MenuItem>
             </Select>
           </FormControl>
-          <Tooltip title="Actualiser les données">
+          <Tooltip title={t('analytics.refresh')}>
             <IconButton>
               <Refresh />
             </IconButton>
@@ -311,13 +313,13 @@ const Analytics = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <AccountBalance sx={{ mr: 1 }} />
-                  <Typography variant="h6">Revenus</Typography>
+                  <Typography variant="h6">{t('analytics.revenues')}</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                   {currentRevenue.toLocaleString()}€
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                  Ce mois
+                  {t('analytics.thisMonth')}
                 </Typography>
               </CardContent>
             </Card>
@@ -330,13 +332,13 @@ const Analytics = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <TrendingDown sx={{ mr: 1 }} />
-                  <Typography variant="h6">Dépenses</Typography>
+                  <Typography variant="h6">{t('analytics.expenses')}</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                   {totalExpenses.toLocaleString()}€
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                  {expenseRate}% du revenu
+                  {expenseRate}% {t('analytics.ofRevenue')}
                 </Typography>
               </CardContent>
             </Card>
@@ -349,13 +351,13 @@ const Analytics = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <Savings sx={{ mr: 1 }} />
-                  <Typography variant="h6">Économies</Typography>
+                  <Typography variant="h6">{t('analytics.savings')}</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                   {currentSavings.toLocaleString()}€
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                  {savingsRate}% du revenu
+                  {savingsRate}% {t('analytics.ofRevenue')}
                 </Typography>
               </CardContent>
             </Card>
@@ -368,7 +370,7 @@ const Analytics = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <TrendingUp sx={{ mr: 1 }} />
-                  <Typography variant="h6">Taux d'épargne</Typography>
+                  <Typography variant="h6">{t('analytics.savingsRate')}</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                   {savingsRate}%
@@ -391,9 +393,9 @@ const Analytics = () => {
             <Paper sx={{ p: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                  Répartition des dépenses
+                  {t('analytics.expenseDistribution')}
                 </Typography>
-                <Tooltip title="Répartition des dépenses par catégorie">
+                <Tooltip title={t('analytics.expenseDistributionTooltip')}>
                   <IconButton size="small">
                     <Info />
                   </IconButton>
@@ -411,9 +413,9 @@ const Analytics = () => {
             <Paper sx={{ p: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                  Évolution des économies
+                  {t('analytics.savingsEvolution')}
                 </Typography>
-                <Tooltip title="Évolution mensuelle des économies">
+                <Tooltip title={t('analytics.savingsEvolutionTooltip')}>
                   <IconButton size="small">
                     <Info />
                   </IconButton>
@@ -431,9 +433,9 @@ const Analytics = () => {
             <Paper sx={{ p: 2 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                  Revenus vs Dépenses
+                  {t('analytics.revenuesVsExpenses')}
                 </Typography>
-                <Tooltip title="Comparaison des revenus et dépenses dans le temps">
+                <Tooltip title={t('analytics.revenuesVsExpensesTooltip')}>
                   <IconButton size="small">
                     <Info />
                   </IconButton>
@@ -450,11 +452,11 @@ const Analytics = () => {
       {/* Détails par catégorie */}
       <Paper sx={{ p: 2, mt: 3 }}>
         <Typography variant="h6" gutterBottom>
-          Détails par catégorie
+          {t('analytics.expenseDetails')}
         </Typography>
         {expenseByCategory.length === 0 ? (
           <Typography variant="body2" color="text.secondary" textAlign="center" component="span">
-            Aucune dépense enregistrée pour ce mois
+            {t('analytics.noExpenseRecordedThisMonth')}
           </Typography>
         ) : (
           <Grid container spacing={2}>

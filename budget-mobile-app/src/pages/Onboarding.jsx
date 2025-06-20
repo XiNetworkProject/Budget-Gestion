@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { 
   Box, 
   Typography, 
@@ -41,52 +42,36 @@ import { useStore } from '../store';
 
 const steps = [
   {
-    title: 'Bienvenue sur Budget Gestion',
-    subtitle: 'Votre assistant financier personnel',
-    description: 'Prenez le contrôle de vos finances avec une application moderne et intuitive. Suivez vos dépenses, analysez vos habitudes et atteignez vos objectifs financiers.',
+    title: t('onboarding.welcome'),
+    subtitle: t('onboarding.welcomeSubtitle'),
+    description: t('onboarding.welcomeDescription'),
     icon: <TrendingUp sx={{ fontSize: 60 }} />,
     color: '#1976d2',
-    features: [
-      'Interface moderne et intuitive',
-      'Synchronisation multi-appareils',
-      'Sécurité de vos données'
-    ]
+    features: t('onboarding.welcomeFeatures')
   },
   {
-    title: 'Suivez vos finances',
-    subtitle: 'Analysez et optimisez',
-    description: 'Enregistrez vos dépenses et revenus en temps réel. Analysez vos habitudes de consommation avec des graphiques détaillés et des rapports personnalisés.',
+    title: t('onboarding.trackFinances'),
+    subtitle: t('onboarding.trackFinancesSubtitle'),
+    description: t('onboarding.trackFinancesDescription'),
     icon: <Analytics sx={{ fontSize: 60 }} />,
     color: '#2e7d32',
-    features: [
-      'Catégorisation automatique',
-      'Graphiques interactifs',
-      'Rapports détaillés'
-    ]
+    features: t('onboarding.trackFinancesFeatures')
   },
   {
-    title: 'Atteignez vos objectifs',
-    subtitle: 'Épargnez intelligemment',
-    description: 'Définissez des objectifs d\'épargne personnalisés et suivez vos progrès. Recevez des alertes et des conseils pour optimiser votre budget.',
+    title: t('onboarding.reachGoals'),
+    subtitle: t('onboarding.reachGoalsSubtitle'),
+    description: t('onboarding.reachGoalsDescription'),
     icon: <Savings sx={{ fontSize: 60 }} />,
     color: '#ed6c02',
-    features: [
-      'Objectifs personnalisés',
-      'Suivi des progrès',
-      'Alertes intelligentes'
-    ]
+    features: t('onboarding.reachGoalsFeatures')
   },
   {
-    title: 'Prêt à commencer ?',
-    subtitle: 'Configuration rapide',
-    description: 'Créez votre profil en quelques étapes et commencez à gérer vos finances dès aujourd\'hui. Votre avenir financier commence ici !',
+    title: t('onboarding.readyToStart'),
+    subtitle: t('onboarding.readyToStartSubtitle'),
+    description: t('onboarding.readyToStartDescription'),
     icon: <CheckCircle sx={{ fontSize: 60 }} />,
     color: '#9c27b0',
-    features: [
-      'Configuration en 2 minutes',
-      'Données sécurisées',
-      'Support 24/7'
-    ]
+    features: t('onboarding.readyToStartFeatures')
   }
 ];
 
@@ -96,6 +81,7 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const { setOnboardingCompleted } = useStore();
   const isLast = step === steps.length - 1;
+  const { t } = useTranslation();
 
   const next = async () => {
     if (isLast) {
@@ -133,14 +119,14 @@ const Onboarding = () => {
       {/* Header avec Skip */}
       <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6" color="text.secondary" component="span">
-          Budget Gestion
+          {t('appName')}
         </Typography>
         <Button 
           variant="text" 
           onClick={skip}
           sx={{ color: 'text.secondary' }}
         >
-          Passer
+          {t('onboarding.skip')}
         </Button>
       </Box>
 
@@ -236,7 +222,7 @@ const Onboarding = () => {
               '&:hover': { borderColor: currentStep.color }
             }}
           >
-            Précédent
+            {t('onboarding.previous')}
           </Button>
 
           {/* Step Indicators */}
@@ -275,12 +261,12 @@ const Onboarding = () => {
             {loading ? (
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Typography variant="body2" sx={{ mr: 1 }}>
-                  Configuration...
+                  {t('onboarding.configuring')}...
                 </Typography>
                 <LinearProgress sx={{ width: 20, height: 2 }} />
               </Box>
             ) : (
-              isLast ? 'Commencer' : 'Suivant'
+              isLast ? t('onboarding.start') : t('onboarding.next')
             )}
           </Button>
         </Box>
@@ -291,11 +277,11 @@ const Onboarding = () => {
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1, mb: 1 }}>
           <Star sx={{ color: '#ffc107', fontSize: 20 }} />
           <Typography variant="body2" color="text.secondary" component="span">
-            Plus de 00,001 utilisateurs satisfaits
+            {t('onboarding.satisfaction')}
           </Typography>
         </Box>
         <Typography variant="caption" color="text.secondary" component="span">
-          Vos données sont sécurisées et privées
+          {t('onboarding.dataSecurity')}
         </Typography>
       </Box>
     </Box>

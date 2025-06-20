@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Paper, List, ListItem, ListItemAvatar, Avatar, ListItemText, Divider, IconButton, TextField, Dialog, DialogTitle, DialogContent, DialogActions, Button, Snackbar, Alert } from '@mui/material';
 import Delete from '@mui/icons-material/Delete';
 import Edit from '@mui/icons-material/Edit';
 import { useStore } from '../store';
+import { useTranslation } from 'react-i18next';
 
 const History = () => {
+  const { t } = useTranslation();
+  
   const { 
     incomeTransactions, 
     expenses, 
@@ -14,7 +17,12 @@ const History = () => {
     categories,
     data,
     incomeTypes,
-    incomes
+    incomes,
+    savings,
+    activeAccount,
+    deleteExpense,
+    deleteIncome,
+    deleteSavings
   } = useStore();
   
   const [editIdx, setEditIdx] = useState(null);
@@ -84,26 +92,26 @@ const History = () => {
   const handleEditSave = (i) => {
     // Edition locale uniquement pour la démo
     setEditIdx(null);
-    setSnack({ open: true, message: 'Transaction modifiée', severity: 'success' });
+    setSnack({ open: true, message: t('history.transactionUpdated'), severity: 'success' });
   };
   const handleDelete = (i) => {
     // Suppression locale uniquement pour la démo
     setDeleteIdx(null);
-    setSnack({ open: true, message: 'Transaction supprimée', severity: 'info' });
+    setSnack({ open: true, message: t('history.transactionDeleted'), severity: 'info' });
   };
 
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h5" gutterBottom>
-        Activité Récente
+        {t('history.title')}
       </Typography>
       <Paper sx={{ mb: 3 }}>
         <List>
           {allTransactions.length === 0 ? (
             <ListItem>
               <ListItemText 
-                primary="Aucune transaction" 
-                secondary="Ajoutez des dépenses ou revenus pour voir l'historique"
+                primary={t('history.noTransactions')} 
+                secondary={t('history.addTransactionsToSeeHistory')}
               />
             </ListItem>
           ) : (
@@ -157,13 +165,13 @@ const History = () => {
                 {idx < allTransactions.length - 1 && <Divider />}
                 {/* Dialog de confirmation suppression */}
                 <Dialog open={deleteIdx === idx} onClose={() => setDeleteIdx(null)}>
-                  <DialogTitle>Supprimer la transaction ?</DialogTitle>
+                  <DialogTitle>{t('history.confirmDelete')}</DialogTitle>
                   <DialogContent>
                     Cette action supprimera la transaction <b>{item.title}</b>.
                   </DialogContent>
                   <DialogActions>
-                    <Button onClick={() => setDeleteIdx(null)}>Annuler</Button>
-                    <Button color="error" onClick={() => handleDelete(idx)}>Supprimer</Button>
+                    <Button onClick={() => setDeleteIdx(null)}>{t('common.cancel')}</Button>
+                    <Button color="error" onClick={() => handleDelete(idx)}>{t('common.delete')}</Button>
                   </DialogActions>
                 </Dialog>
               </React.Fragment>
@@ -179,7 +187,7 @@ const History = () => {
               {totalSavings.toLocaleString()} €
             </Typography>
           }>
-            <ListItemText primary="Économies" />
+            <ListItemText primary={t('history.savings')} />
           </ListItem>
           <Divider />
           <ListItem secondaryAction={
@@ -187,7 +195,7 @@ const History = () => {
               {totalIncome.toLocaleString()} €
             </Typography>
           }>
-            <ListItemText primary="Revenus" />
+            <ListItemText primary={t('history.income')} />
           </ListItem>
           <Divider />
           <ListItem secondaryAction={
@@ -195,7 +203,7 @@ const History = () => {
               {totalExpenses.toLocaleString()} €
             </Typography>
           }>
-            <ListItemText primary="Dépenses" />
+            <ListItemText primary={t('history.expenses')} />
           </ListItem>
         </List>
       </Paper>

@@ -10,8 +10,10 @@ import UpdateDialog from './UpdateDialog';
 import QuickAdd from '../pages/QuickAdd';
 import { useStore } from '../store';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 const Layout = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { 
@@ -25,7 +27,14 @@ const Layout = () => {
     showUpdateDialog,
     closeUpdateDialog,
     checkForUpdates,
-    checkAndFixOnboardingState
+    checkAndFixOnboardingState,
+    activeAccount, 
+    accounts, 
+    setActiveAccount,
+    showTutorial: storeShowTutorial,
+    setShowTutorial: setStoreShowTutorial,
+    showOnboarding,
+    setShowOnboarding
   } = useStore();
   
   // map path to nav value (retiré /quickadd)
@@ -139,10 +148,10 @@ const Layout = () => {
         showLabels
         sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }}
       >
-        <BottomNavigationAction label="Accueil" icon={<HomeIcon />} />
-        <BottomNavigationAction label="Analytics" icon={<BarChartIcon />} />
-        <BottomNavigationAction label="Épargne" icon={<SavingsIcon />} />
-        <BottomNavigationAction label="Paramètres" icon={<SettingsIcon />} />
+        <BottomNavigationAction label={t('navigation.home')} icon={<HomeIcon />} />
+        <BottomNavigationAction label={t('navigation.analytics')} icon={<BarChartIcon />} />
+        <BottomNavigationAction label={t('navigation.savings')} icon={<SavingsIcon />} />
+        <BottomNavigationAction label={t('navigation.settings')} icon={<SettingsIcon />} />
       </BottomNavigation>
     </Box>
   );
