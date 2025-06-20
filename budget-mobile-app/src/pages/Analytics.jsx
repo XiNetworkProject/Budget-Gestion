@@ -75,7 +75,7 @@ const Analytics = () => {
   const filteredExpenses = expenses.filter(e => !activeAccount || e.accountId === activeAccount?.id);
   const filteredSavings = savings.filter(s => !activeAccount || s.accountId === activeAccount?.id);
 
-  // Calculer les revenus du mois courant (transactions + revenus par type)
+  // Calculer les revenus du mois courant - SEULEMENT LES TRANSACTIONS INDIVIDUELLES
   const currentMonthIncomeTransactions = filteredIncomeTransactions
     .filter(t => {
       const transactionDate = new Date(t.date);
@@ -85,10 +85,9 @@ const Analytics = () => {
     })
     .reduce((sum, t) => sum + (t.amount || 0), 0);
 
-  const currentMonthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
-  const currentRevenue = currentMonthIncomeTransactions + currentMonthIncomeByType;
+  const currentRevenue = currentMonthIncomeTransactions;
 
-  // Calculer les dépenses du mois courant (transactions + dépenses par catégorie)
+  // Calculer les dépenses du mois courant - SEULEMENT LES TRANSACTIONS INDIVIDUELLES
   const currentMonthExpenses = filteredExpenses
     .filter(e => {
       const expenseDate = new Date(e.date);
@@ -98,8 +97,7 @@ const Analytics = () => {
     })
     .reduce((sum, e) => sum + (e.amount || 0), 0);
 
-  const currentMonthExpensesByCategory = Object.values(data).reduce((sum, arr) => sum + (arr[idx] || 0), 0);
-  const totalExpenses = currentMonthExpenses + currentMonthExpensesByCategory;
+  const totalExpenses = currentMonthExpenses;
 
   // Calculer les économies (revenus - dépenses)
   const currentSavings = currentRevenue - totalExpenses;
@@ -108,9 +106,8 @@ const Analytics = () => {
   const savingsRate = currentRevenue > 0 ? ((currentSavings / currentRevenue) * 100).toFixed(1) : 0;
   const expenseRate = currentRevenue > 0 ? ((totalExpenses / currentRevenue) * 100).toFixed(1) : 0;
 
-  // Revenus par mois (6 derniers mois)
+  // Revenus par mois (6 derniers mois) - SEULEMENT LES TRANSACTIONS INDIVIDUELLES
   const revenuesByMonth = months.slice(-6).map((_, i) => {
-    const monthIdx = months.length - 6 + i;
     const monthIncomeTransactions = filteredIncomeTransactions
       .filter(t => {
         const transactionDate = new Date(t.date);
@@ -121,13 +118,11 @@ const Analytics = () => {
       })
       .reduce((sum, t) => sum + (t.amount || 0), 0);
     
-    const monthIncomeByType = Object.values(incomes).reduce((sum, arr) => sum + (arr[monthIdx] || 0), 0);
-    return monthIncomeTransactions + monthIncomeByType;
+    return monthIncomeTransactions;
   });
 
-  // Dépenses par mois (6 derniers mois)
+  // Dépenses par mois (6 derniers mois) - SEULEMENT LES TRANSACTIONS INDIVIDUELLES
   const expensesByMonth = months.slice(-6).map((_, i) => {
-    const monthIdx = months.length - 6 + i;
     const monthExpenses = filteredExpenses
       .filter(e => {
         const expenseDate = new Date(e.date);
@@ -138,14 +133,13 @@ const Analytics = () => {
       })
       .reduce((sum, e) => sum + (e.amount || 0), 0);
     
-    const monthExpensesByCategory = Object.values(data).reduce((sum, arr) => sum + (arr[monthIdx] || 0), 0);
-    return monthExpenses + monthExpensesByCategory;
+    return monthExpenses;
   });
 
   // Économies par mois (revenus - dépenses)
   const savingsByMonth = revenuesByMonth.map((revenue, i) => revenue - expensesByMonth[i]);
 
-  // Catégories de dépenses pour le mois courant
+  // Catégories de dépenses pour le mois courant - SEULEMENT LES TRANSACTIONS INDIVIDUELLES
   const expenseByCategory = categories.map(cat => {
     const categoryExpenses = filteredExpenses
       .filter(e => {
@@ -157,10 +151,9 @@ const Analytics = () => {
       })
       .reduce((sum, e) => sum + (e.amount || 0), 0);
     
-    const categoryData = data[cat] ? data[cat][idx] || 0 : 0;
     return {
       category: cat,
-      amount: categoryExpenses + categoryData
+      amount: categoryExpenses
     };
   }).filter(item => item.amount > 0);
 
@@ -177,8 +170,27 @@ const Analytics = () => {
     }]
   };
 
+  // Générer les labels des 6 derniers mois avec les bonnes dates
+  const getLast6MonthsLabels = () => {
+    const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+                       'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+    const labels = [];
+    
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const monthName = monthNames[date.getMonth()];
+      const year = date.getFullYear();
+      labels.push(`${monthName} ${year}`);
+    }
+    
+    return labels;
+  };
+
+  const last6MonthsLabels = getLast6MonthsLabels();
+
   const barData = {
-    labels: months.slice(-6),
+    labels: last6MonthsLabels,
     datasets: [{
       label: 'Économies',
       data: savingsByMonth,
@@ -189,7 +201,7 @@ const Analytics = () => {
   };
 
   const lineData = {
-    labels: months.slice(-6),
+    labels: last6MonthsLabels,
     datasets: [
       {
         label: 'Revenus',
