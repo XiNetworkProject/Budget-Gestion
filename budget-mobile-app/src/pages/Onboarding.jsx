@@ -40,48 +40,49 @@ import {
 } from '@mui/icons-material';
 import { useStore } from '../store';
 
-const steps = [
-  {
-    title: t('onboarding.welcome'),
-    subtitle: t('onboarding.welcomeSubtitle'),
-    description: t('onboarding.welcomeDescription'),
-    icon: <TrendingUp sx={{ fontSize: 60 }} />,
-    color: '#1976d2',
-    features: t('onboarding.welcomeFeatures')
-  },
-  {
-    title: t('onboarding.trackFinances'),
-    subtitle: t('onboarding.trackFinancesSubtitle'),
-    description: t('onboarding.trackFinancesDescription'),
-    icon: <Analytics sx={{ fontSize: 60 }} />,
-    color: '#2e7d32',
-    features: t('onboarding.trackFinancesFeatures')
-  },
-  {
-    title: t('onboarding.reachGoals'),
-    subtitle: t('onboarding.reachGoalsSubtitle'),
-    description: t('onboarding.reachGoalsDescription'),
-    icon: <Savings sx={{ fontSize: 60 }} />,
-    color: '#ed6c02',
-    features: t('onboarding.reachGoalsFeatures')
-  },
-  {
-    title: t('onboarding.readyToStart'),
-    subtitle: t('onboarding.readyToStartSubtitle'),
-    description: t('onboarding.readyToStartDescription'),
-    icon: <CheckCircle sx={{ fontSize: 60 }} />,
-    color: '#9c27b0',
-    features: t('onboarding.readyToStartFeatures')
-  }
-];
-
 const Onboarding = () => {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { setOnboardingCompleted } = useStore();
-  const isLast = step === steps.length - 1;
   const { t } = useTranslation();
+
+  const steps = [
+    {
+      title: t('onboarding.welcome'),
+      subtitle: t('onboarding.welcomeSubtitle'),
+      description: t('onboarding.welcomeDescription'),
+      icon: <TrendingUp sx={{ fontSize: 60 }} />,
+      color: '#1976d2',
+      features: t('onboarding.welcomeFeatures')
+    },
+    {
+      title: t('onboarding.trackFinances'),
+      subtitle: t('onboarding.trackFinancesSubtitle'),
+      description: t('onboarding.trackFinancesDescription'),
+      icon: <Analytics sx={{ fontSize: 60 }} />,
+      color: '#2e7d32',
+      features: t('onboarding.trackFinancesFeatures')
+    },
+    {
+      title: t('onboarding.reachGoals'),
+      subtitle: t('onboarding.reachGoalsSubtitle'),
+      description: t('onboarding.reachGoalsDescription'),
+      icon: <Savings sx={{ fontSize: 60 }} />,
+      color: '#ed6c02',
+      features: t('onboarding.reachGoalsFeatures')
+    },
+    {
+      title: t('onboarding.readyToStart'),
+      subtitle: t('onboarding.readyToStartSubtitle'),
+      description: t('onboarding.readyToStartDescription'),
+      icon: <CheckCircle sx={{ fontSize: 60 }} />,
+      color: '#9c27b0',
+      features: t('onboarding.readyToStartFeatures')
+    }
+  ];
+
+  const isLast = step === steps.length - 1;
 
   const next = async () => {
     if (isLast) {
