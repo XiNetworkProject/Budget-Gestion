@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import CurrencyFormatter from '../components/CurrencyFormatter';
+import { useTranslation } from 'react-i18next';
 import { 
   Box, 
   Typography, 
@@ -96,6 +97,7 @@ const Home = () => {
     savings: [],
     recentTransactions: []
   });
+  const { t } = useTranslation();
 
   // Charger les données depuis localStorage au démarrage
   useEffect(() => {
@@ -418,14 +420,14 @@ const Home = () => {
     if (savingsRate < 10) {
       recommendations.push({
         type: 'warning',
-        title: 'Taux d\'épargne faible',
-        message: `Votre taux d'épargne prévu est de ${Math.round(savingsRate)}%. Il est recommandé d'épargner au moins 20% de vos revenus.`,
-        action: 'Créer un plan d\'épargne',
+        title: t('lowSavingsRate'),
+        message: t('lowSavingsRateMessage', { savingsRate: Math.round(savingsRate) }),
+        action: t('createSavingsPlan'),
         actionType: 'create_savings_plan',
         priority: 'high',
         suggestedPlan: {
-          title: 'Plan d\'épargne d\'urgence',
-          description: 'Créer un fonds d\'urgence équivalent à 3 mois de dépenses',
+          title: t('emergencySavingsPlan'),
+          description: t('emergencySavingsPlanDescription'),
           category: 'Épargne',
           targetAmount: Math.round(selectedMonthExpense * 3),
           priority: 'high'
@@ -434,14 +436,14 @@ const Home = () => {
     } else if (savingsRate > 30) {
       recommendations.push({
         type: 'success',
-        title: 'Excellent taux d\'épargne',
-        message: `Félicitations ! Votre taux d'épargne prévu de ${Math.round(savingsRate)}% est excellent.`,
-        action: 'Optimiser l\'investissement',
+        title: t('excellentSavingsRate'),
+        message: t('excellentSavingsRateMessage', { savingsRate: Math.round(savingsRate) }),
+        action: t('optimizeInvestment'),
         actionType: 'optimize_investment',
         priority: 'low',
         suggestedPlan: {
-          title: 'Plan d\'investissement',
-          description: 'Diversifier vos placements pour optimiser vos rendements',
+          title: t('investmentPlan'),
+          description: t('diversifyInvestments'),
           category: 'Investissement',
           targetAmount: Math.round(forecast.balance * 0.5),
           priority: 'medium'
@@ -456,14 +458,14 @@ const Home = () => {
     if (expenseChange > 20) {
       recommendations.push({
         type: 'error',
-        title: 'Augmentation des dépenses prévue',
-        message: `Vos dépenses pourraient augmenter de ${Math.round(expenseChange)}% le mois prochain.`,
-        action: 'Créer un plan de réduction',
+        title: t('expectedExpenseIncrease'),
+        message: t('expectedExpenseIncreaseMessage', { increase: Math.round(expenseChange) }),
+        action: t('createReductionPlan'),
         actionType: 'create_reduction_plan',
         priority: 'high',
         suggestedPlan: {
-          title: 'Plan de réduction des dépenses',
-          description: `Réduire les dépenses de ${Math.round(expenseChange)}% le mois prochain`,
+          title: t('reduceExpenses'),
+          description: t('reduceExpensesMessage', { increase: Math.round(expenseChange) }),
           category: 'Réduction des dépenses',
           targetAmount: Math.round(currentMonthExpense * (expenseChange / 100)),
           priority: 'high'
@@ -472,9 +474,9 @@ const Home = () => {
     } else if (expenseChange < -10) {
       recommendations.push({
         type: 'info',
-        title: 'Diminution des dépenses prévue',
-        message: `Vos dépenses pourraient diminuer de ${Math.round(Math.abs(expenseChange))}% le mois prochain.`,
-        action: 'Maintenir cette tendance',
+        title: t('expectedExpenseDecrease'),
+        message: t('expectedExpenseDecreaseMessage', { decrease: Math.round(Math.abs(expenseChange)) }),
+        action: t('maintainTrend'),
         actionType: 'maintain_trend',
         priority: 'medium'
       });
@@ -487,14 +489,14 @@ const Home = () => {
     if (incomeChange < -15) {
       recommendations.push({
         type: 'warning',
-        title: 'Baisse des revenus prévue',
-        message: `Vos revenus pourraient diminuer de ${Math.round(Math.abs(incomeChange))}% le mois prochain.`,
-        action: 'Préparer un plan de contingence',
+        title: t('expectedIncomeDecrease'),
+        message: t('expectedIncomeDecreaseMessage', { decrease: Math.round(Math.abs(incomeChange)) }),
+        action: t('prepareContingencyPlan'),
         actionType: 'prepare_contingency_plan',
         priority: 'high',
         suggestedPlan: {
-          title: 'Plan de contingence financière',
-          description: 'Préparer un plan B en cas de baisse des revenus',
+          title: t('financialContingencyPlan'),
+          description: t('financialContingencyPlanDescription'),
           category: 'Budget',
           targetAmount: Math.round(currentMonthIncome * (Math.abs(incomeChange) / 100)),
           priority: 'high'
@@ -519,14 +521,14 @@ const Home = () => {
       if (topCategoryPercentage > 40) {
         recommendations.push({
           type: 'warning',
-          title: 'Concentration des dépenses',
-          message: `${topCategory.category} représente ${Math.round(topCategoryPercentage)}% de vos dépenses.`,
-          action: 'Diversifier vos dépenses',
+          title: t('concentrationExpenses'),
+          message: t('concentrationExpensesMessage', { category: topCategory.category, percentage: Math.round(topCategoryPercentage) }),
+          action: t('diversifyExpenses'),
           actionType: 'diversify_expenses',
           priority: 'medium',
           suggestedPlan: {
-            title: `Réduction des dépenses ${topCategory.category}`,
-            description: `Réduire les dépenses dans la catégorie ${topCategory.category}`,
+            title: t('reduceExpensesCategory', { category: topCategory.category }),
+            description: t('reduceExpensesCategoryDescription', { category: topCategory.category }),
             category: 'Réduction des dépenses',
             targetAmount: Math.round(topCategory.amount * 0.2),
             priority: 'medium'
@@ -548,14 +550,14 @@ const Home = () => {
       if (smallTransactions > recentTransactions.length * 0.6) {
         recommendations.push({
           type: 'info',
-          title: 'Petites dépenses fréquentes',
-          message: `${smallTransactions} petites dépenses (<10€) sur ${recentTransactions.length} transactions.`,
-          action: 'Consolider les petites dépenses',
+          title: t('frequentSmallExpenses'),
+          message: t('frequentSmallExpensesMessage', { smallTransactions: smallTransactions, totalTransactions: recentTransactions.length }),
+          action: t('consolidateExpenses'),
           actionType: 'consolidate_expenses',
           priority: 'medium',
           suggestedPlan: {
-            title: 'Plan de consolidation des dépenses',
-            description: 'Regrouper les petites dépenses en transactions mensuelles',
+            title: t('consolidateExpenses'),
+            description: t('consolidateExpensesDescription'),
             category: 'Budget',
             targetAmount: Math.round(avgAmount * smallTransactions * 0.3),
             priority: 'medium'
@@ -568,9 +570,9 @@ const Home = () => {
     if (recommendations.length === 0) {
       recommendations.push({
         type: 'success',
-        title: 'Finances en bonne santé',
-        message: 'Vos prévisions montrent une situation financière stable.',
-        action: 'Continuer à suivre',
+        title: t('financialHealth'),
+        message: t('financialHealthMessage'),
+        action: t('continueMonitoring'),
         actionType: 'continue_monitoring',
         priority: 'low'
       });
@@ -1236,7 +1238,7 @@ const Home = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <TrendingUp sx={{ mr: 1 }} />
-                  <Typography variant="h6">Revenus</Typography>
+                  <Typography variant="h6">{t('home.revenues')}</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                   <CurrencyFormatter amount={selectedMonthIncome} />
@@ -1255,7 +1257,7 @@ const Home = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <TrendingDown sx={{ mr: 1 }} />
-                  <Typography variant="h6">Dépenses</Typography>
+                  <Typography variant="h6">{t('home.expenses')}</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                   <CurrencyFormatter amount={selectedMonthExpense} />
@@ -1274,7 +1276,7 @@ const Home = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <Savings sx={{ mr: 1 }} />
-                  <Typography variant="h6">Économies</Typography>
+                  <Typography variant="h6">{t('home.savings')}</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                   <CurrencyFormatter amount={selectedMonthSaved} />
@@ -1295,7 +1297,7 @@ const Home = () => {
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <AccountBalance sx={{ mr: 1 }} />
-                  <Typography variant="h6">Prévisions</Typography>
+                  <Typography variant="h6">{t('home.forecasts')}</Typography>
                 </Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                   <CurrencyFormatter amount={nextMonthProjected} />
@@ -1312,7 +1314,7 @@ const Home = () => {
       {/* Actions rapides */}
       <Paper sx={{ p: 2, mb: 3 }}>
         <Typography variant="h6" gutterBottom>
-          Actions rapides
+          {t('home.quickActions')}
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={6} sm={3}>
@@ -1368,7 +1370,7 @@ const Home = () => {
         <Grid item xs={12} md={8}>
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
-              Évolution des finances
+              {t('home.financialEvolution')}
             </Typography>
             <Box sx={{ height: 300 }}>
               <Line data={lineData} options={lineOptions} />
@@ -1379,7 +1381,7 @@ const Home = () => {
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 2 }}>
             <Typography variant="h6" gutterBottom>
-              Répartition des dépenses
+              {t('home.expenseBreakdown')}
             </Typography>
             <Box sx={{ height: 300 }}>
               <Doughnut data={doughnutData} options={chartOptions} />
@@ -1393,10 +1395,10 @@ const Home = () => {
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <AccountBalance sx={{ mr: 1, color: 'warning.main' }} />
           <Typography variant="h6">
-            Prévisions intelligentes pour {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
+            {t('home.intelligentForecasts')} {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
           </Typography>
           <Chip 
-            label="IA" 
+            label={t('home.ai')} 
             size="small" 
             color="warning" 
             variant="outlined"
@@ -1405,26 +1407,25 @@ const Home = () => {
         </Box>
         
         <Alert severity="info" sx={{ mb: 2 }}>
-          <AlertTitle>Calcul intelligent</AlertTitle>
-          Les prévisions sont basées sur vos données historiques des 3 derniers mois, 
-          les tendances saisonnières et vos budgets planifiés.
+          <AlertTitle>{t('home.intelligentCalculation')}</AlertTitle>
+          {t('home.intelligentCalculationDescription')}
         </Alert>
         
         <Grid container spacing={2} sx={{ mb: 2 }}>
           <Grid item xs={12} sm={6} md={3}>
             <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'success.light', borderRadius: 2 }}>
               <Typography variant="h6" color="success.dark">
-                Revenus prévus
+                {t('home.forecastedIncome')}
               </Typography>
               <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.dark' }}>
                 {forecast.income.toLocaleString()}€
               </Typography>
               <Typography variant="body2" color="success.dark" sx={{ mt: 1 }}>
                 {forecast.incomeTrend > 0 ? '📈 +' : forecast.incomeTrend < 0 ? '📉 ' : '➡️ '}
-                {Math.abs(forecast.incomeTrend).toLocaleString()}€ vs ce mois
+                {Math.abs(forecast.incomeTrend).toLocaleString()}€ {t('home.vsThisMonth')}
               </Typography>
               <Typography variant="caption" color="success.dark" sx={{ display: 'block', mt: 0.5 }}>
-                Confiance: {Math.round(forecast.incomeConfidence * 100)}%
+                {t('home.confidence')}: {Math.round(forecast.incomeConfidence * 100)}%
               </Typography>
             </Box>
           </Grid>
