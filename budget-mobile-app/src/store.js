@@ -1350,6 +1350,70 @@ const useStore = create(
         scheduleSave();
         toast.success('Abonnement réinitialisé');
       },
+
+      // Récupérer les informations d'abonnement depuis Stripe
+      fetchSubscriptionFromStripe: async () => {
+        const state = get();
+        if (!state.user?.id || !state.token) {
+          console.log('Utilisateur non connecté, impossible de récupérer l\'abonnement');
+          return;
+        }
+
+        try {
+          console.log('Récupération des informations d\'abonnement depuis Stripe...');
+          
+          const response = await fetch(`${import.meta.env.VITE_API_URL}/api/stripe/subscription-info`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${state.token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (!response.ok) {
+            throw new Error(`Erreur HTTP: ${response.status}`);
+          }
+
+          const data = await response.json();
+          
+          if (data.success && data.subscription) {
+            const subscriptionInfo = data.subscription;
+            console.log('Informations d\'abonnement récupérées:', subscriptionInfo);
+            
+            // Mettre à jour l'abonnement dans le store
+            const newSubscription = {
+              currentPlan: subscriptionInfo.planId,
+              status: subscriptionInfo.status,
+              startDate: subscriptionInfo.createdAt,
+              endDate: subscriptionInfo.currentPeriodEnd,
+              stripeCustomerId: subscriptionInfo.customerId,
+              stripeSubscriptionId: subscriptionInfo.subscriptionId,
+              isTrialing: subscriptionInfo.isTrialing,
+              trialEnd: subscriptionInfo.trialEnd,
+              cancelAtPeriodEnd: subscriptionInfo.cancelAtPeriodEnd
+            };
+            
+            set({ subscription: newSubscription });
+            scheduleSave();
+            
+            const plan = state.subscriptionPlans[subscriptionInfo.planId];
+            if (subscriptionInfo.isTrialing) {
+              toast.success(`Période d'essai ${plan.name} activée !`);
+            } else if (subscriptionInfo.planId !== 'FREE') {
+              toast.success(`Abonnement ${plan.name} détecté !`);
+            }
+            
+            return subscriptionInfo;
+          } else {
+            console.log('Aucun abonnement actif trouvé, plan gratuit par défaut');
+            return null;
+          }
+        } catch (error) {
+          console.error('Erreur lors de la récupération de l\'abonnement:', error);
+          toast.error('Erreur lors de la récupération de l\'abonnement');
+          return null;
+        }
+      },
     };
   }
 );

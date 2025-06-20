@@ -106,7 +106,8 @@ const Settings = () => {
     appVersion,
     checkForUpdates,
     getCurrentPlan,
-    hasSpecialAccess
+    hasSpecialAccess,
+    fetchSubscriptionFromStripe
   } = useStore();
 
   const {
@@ -607,14 +608,27 @@ const Settings = () => {
                   primary={t('settings.subscription')} 
                   secondary={`${t('settings.currentPlan')}: ${getCurrentPlan().name}`}
                 />
-                <Button 
-                  variant="contained" 
-                  size="small" 
-                  onClick={() => navigate('/subscription')}
-                  startIcon={<Star />}
-                >
-                  {t('settings.manageSubscription')}
-                </Button>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button 
+                    variant="outlined" 
+                    size="small" 
+                    onClick={async () => {
+                      await fetchSubscriptionFromStripe();
+                      setSnack({ open: true, message: 'Vérification de l\'abonnement terminée', severity: 'info' });
+                    }}
+                    startIcon={<Refresh />}
+                  >
+                    Vérifier
+                  </Button>
+                  <Button 
+                    variant="contained" 
+                    size="small" 
+                    onClick={() => navigate('/subscription')}
+                    startIcon={<Star />}
+                  >
+                    {t('settings.manageSubscription')}
+                  </Button>
+                </Box>
               </ListItem>
               {hasSpecialAccess() && (
                 <>

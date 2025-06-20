@@ -4,12 +4,18 @@ import cors from 'cors';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { OAuth2Client } from 'google-auth-library';
+import Stripe from 'stripe';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 10000;
+
+// Initialiser Stripe
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2023-10-16',
+});
 
 // Log des requêtes entrantes
 app.use((req, res, next) => {
@@ -374,6 +380,127 @@ app.get('/api/stripe/test', (req, res) => {
     premiumUrl: STRIPE_CONFIG.PLANS.PREMIUM.checkoutUrl,
     proUrl: STRIPE_CONFIG.PLANS.PRO.checkoutUrl
   });
+});
+
+// Route pour récupérer les informations d'abonnement depuis Stripe
+app.get('/api/stripe/subscription-info', verifyAuth, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const userEmail = req.user.email;
+    
+    console.log('Recherche d\'abonnement pour:', { userId, userEmail });
+    
+    // Rechercher le client Stripe par email
+    let customer = null;
+    try {
+      const customers = await stripe.customers.list({
+        email: userEmail,
+        limit: 1
+      });
+      
+      if (customers.data.length > 0) {
+        customer = customers.data[0];
+        console.log('Client Stripe trouvé:', customer.id);
+      }
+    } catch (stripeError) {
+      console.warn('Erreur lors de la recherche du client Stripe:', stripeError);
+    }
+    
+    // Si on a trouvé un client, chercher ses abonnements
+    if (customer) {
+      try {
+        const subscriptions = await stripe.subscriptions.list({
+          customer: customer.id,
+          status: 'all', // Inclure les abonnements actifs, annulés, etc.
+          expand: ['data.default_payment_method', 'data.items.data.price.product']
+        });
+        
+        console.log('Abonnements trouvés:', subscriptions.data.length);
+        
+        // Chercher l'abonnement actif ou en période d'essai
+        const activeSubscription = subscriptions.data.find(sub => 
+          sub.status === 'active' || sub.status === 'trialing'
+        );
+        
+        if (activeSubscription) {
+          console.log('Abonnement actif trouvé:', {
+            id: activeSubscription.id,
+            status: activeSubscription.status,
+            currentPeriodEnd: activeSubscription.current_period_end,
+            trialEnd: activeSubscription.trial_end
+          });
+          
+          // Déterminer le plan basé sur le prix
+          let planId = 'FREE';
+          const priceId = activeSubscription.items.data[0].price.id;
+          
+          // Mapper les Price IDs vers les plans
+          if (priceId === 'price_1RcAEjGb8GKvvz2G9mn9OlJs') {
+            planId = 'PREMIUM';
+          } else if (priceId === 'price_1RcAERGb8GKvvz2GAyajrGFo') {
+            planId = 'PRO';
+          }
+          
+          // Calculer si l'abonnement est en période d'essai
+          const isTrialing = activeSubscription.status === 'trialing';
+          const trialEnd = activeSubscription.trial_end ? new Date(activeSubscription.trial_end * 1000) : null;
+          const currentPeriodEnd = new Date(activeSubscription.current_period_end * 1000);
+          
+          const subscriptionInfo = {
+            subscriptionId: activeSubscription.id,
+            customerId: customer.id,
+            planId: planId,
+            status: activeSubscription.status,
+            isTrialing: isTrialing,
+            trialEnd: trialEnd,
+            currentPeriodEnd: currentPeriodEnd,
+            cancelAtPeriodEnd: activeSubscription.cancel_at_period_end,
+            createdAt: new Date(activeSubscription.created * 1000)
+          };
+          
+          // Sauvegarder les informations dans la base de données
+          try {
+            await db.collection('user_subscriptions').updateOne(
+              { userId },
+              { 
+                $set: { 
+                  ...subscriptionInfo,
+                  updatedAt: new Date()
+                }
+              },
+              { upsert: true }
+            );
+          } catch (dbError) {
+            console.warn('Erreur lors de la sauvegarde des infos d\'abonnement:', dbError);
+          }
+          
+          return res.json({
+            success: true,
+            subscription: subscriptionInfo
+          });
+        }
+      } catch (subscriptionError) {
+        console.error('Erreur lors de la récupération des abonnements:', subscriptionError);
+      }
+    }
+    
+    // Si aucun abonnement trouvé, retourner le plan gratuit
+    res.json({
+      success: true,
+      subscription: {
+        planId: 'FREE',
+        status: 'free',
+        isTrialing: false
+      }
+    });
+    
+  } catch (error) {
+    console.error('Erreur lors de la récupération des infos d\'abonnement:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Erreur lors de la récupération des informations d\'abonnement' 
+    });
+  }
 });
 
 // Servir les fichiers statiques
