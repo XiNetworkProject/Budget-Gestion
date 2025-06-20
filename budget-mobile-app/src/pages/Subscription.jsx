@@ -159,7 +159,7 @@ const Subscription = () => {
       if (value === 'partial') return t('subscription.partial');
       if (value === 'full') return t('subscription.full');
     }
-    return value;
+    return value || t('subscription.notAvailable');
   };
 
   const renderPlanCard = (planKey, plan) => {
