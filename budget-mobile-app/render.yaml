@@ -17,13 +17,5 @@ services:
         value: https://budget-mobile-app-pa2n.onrender.com
       - key: NODE_ENV
         value: production
-      - key: STRIPE_SECRET_KEY
-        sync: false
-      - key: STRIPE_PUBLISHABLE_KEY
-        sync: false
-      - key: STRIPE_WEBHOOK_SECRET
-        sync: false
-      - key: FRONTEND_URL
-        value: https://budget-mobile-app-pa2n.onrender.com
     healthCheckPath: /health
     autoDeploy: true 

@@ -47,37 +47,37 @@ const Onboarding = () => {
   const { setOnboardingCompleted } = useStore();
   const { t } = useTranslation();
 
-  const steps = [
-    {
+const steps = [
+  {
       title: t('onboarding.welcome'),
       subtitle: t('onboarding.welcomeSubtitle'),
       description: t('onboarding.welcomeDescription'),
-      icon: <TrendingUp sx={{ fontSize: 60 }} />,
-      color: '#1976d2',
+    icon: <TrendingUp sx={{ fontSize: 60 }} />,
+    color: '#1976d2',
       features: t('onboarding.welcomeFeatures')
-    },
-    {
+  },
+  {
       title: t('onboarding.trackFinances'),
       subtitle: t('onboarding.trackFinancesSubtitle'),
       description: t('onboarding.trackFinancesDescription'),
-      icon: <Analytics sx={{ fontSize: 60 }} />,
-      color: '#2e7d32',
+    icon: <Analytics sx={{ fontSize: 60 }} />,
+    color: '#2e7d32',
       features: t('onboarding.trackFinancesFeatures')
-    },
-    {
+  },
+  {
       title: t('onboarding.reachGoals'),
       subtitle: t('onboarding.reachGoalsSubtitle'),
       description: t('onboarding.reachGoalsDescription'),
-      icon: <Savings sx={{ fontSize: 60 }} />,
-      color: '#ed6c02',
+    icon: <Savings sx={{ fontSize: 60 }} />,
+    color: '#ed6c02',
       features: t('onboarding.reachGoalsFeatures')
-    },
-    {
+  },
+  {
       title: t('onboarding.readyToStart'),
       subtitle: t('onboarding.readyToStartSubtitle'),
       description: t('onboarding.readyToStartDescription'),
-      icon: <CheckCircle sx={{ fontSize: 60 }} />,
-      color: '#9c27b0',
+    icon: <CheckCircle sx={{ fontSize: 60 }} />,
+    color: '#9c27b0',
       features: t('onboarding.readyToStartFeatures')
     }
   ];

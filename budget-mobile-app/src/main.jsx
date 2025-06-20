@@ -21,8 +21,8 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <>
-        <AppRoutes />
-        <Toaster position="bottom-right" />
+          <AppRoutes />
+          <Toaster position="bottom-right" />
       </>
     </GoogleOAuthProvider>
   </StrictMode>,

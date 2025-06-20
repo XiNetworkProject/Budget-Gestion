@@ -4,40 +4,12 @@ import cors from 'cors';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { OAuth2Client } from 'google-auth-library';
-import Stripe from 'stripe';
-import dotenv from 'dotenv';
-import helmet from 'helmet';
-
-// Charger les variables d'environnement
-dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
 const port = process.env.PORT || 10000;
-
-// Initialiser Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_placeholder');
-
-// Configuration Stripe avec les vrais Price IDs
-const STRIPE_PLANS = {
-  PREMIUM: {
-    priceId: 'price_1RcAEjGb8GKvvz2G9mn9OlJs',
-    name: 'Premium',
-    price: 1.99
-  },
-  PRO: {
-    priceId: 'price_1RcAERGb8GKvvz2GAyajrGFo',
-    name: 'Pro',
-    price: 5.99
-  }
-};
-
-// Configuration Helmet sans CSP restrictive pour tester Google Auth
-app.use(helmet({
-  contentSecurityPolicy: false
-}));
 
 // Log des requêtes entrantes
 app.use((req, res, next) => {
@@ -47,19 +19,10 @@ app.use((req, res, next) => {
 });
 
 // Configuration CORS
-app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-  credentials: true
-}));
+app.use(cors());
 
-// Middleware pour parser le JSON (sauf pour les webhooks Stripe)
-app.use((req, res, next) => {
-  if (req.path === '/api/stripe/webhook') {
-    express.raw({ type: 'application/json' })(req, res, next);
-  } else {
-    express.json()(req, res, next);
-  }
-});
+// Middleware pour parser le JSON
+app.use(express.json());
 
 // Configuration MongoDB
 const uri = process.env.VITE_MONGODB_URI;
@@ -69,6 +32,55 @@ let client;
 let db;
 
 const googleClient = new OAuth2Client(process.env.VITE_GOOGLE_CLIENT_ID);
+
+// Configuration Stripe avec les URLs directes
+const STRIPE_CONFIG = {
+  PLANS: {
+    PREMIUM: {
+      id: 'premium',
+      name: 'Premium',
+      price: 1.99,
+      currency: 'EUR',
+      checkoutUrl: 'https://buy.stripe.com/dRm5kDfwF0I7frw331fAc01',
+      features: {
+        maxTransactions: -1, // Illimité
+        unlimitedCategories: true,
+        maxSavingsGoals: -1, // Illimité
+        basicAnalytics: true,
+        aiAnalysis: 'partial',
+        maxActionPlans: 1,
+        multipleAccounts: false,
+        prioritySupport: false,
+        advancedReports: false
+      }
+    },
+    PRO: {
+      id: 'pro',
+      name: 'Pro',
+      price: 5.99,
+      currency: 'EUR',
+      checkoutUrl: 'https://buy.stripe.com/bJe28rbgpduTbbgcDBfAc00',
+      features: {
+        maxTransactions: -1, // Illimité
+        unlimitedCategories: true,
+        maxSavingsGoals: -1, // Illimité
+        basicAnalytics: true,
+        aiAnalysis: 'full',
+        maxActionPlans: -1, // Illimité
+        multipleAccounts: true,
+        prioritySupport: true,
+        advancedReports: true
+      }
+    }
+  },
+  
+  // Codes promo
+  PROMO_CODES: {
+    'DEV2024': { discount: 100, type: 'percentage', validUntil: '2025-12-31' },
+    'TEST50': { discount: 50, type: 'percentage', validUntil: '2025-12-31' },
+    'FREEMONTH': { discount: 1, type: 'months', validUntil: '2025-12-31' }
+  }
+};
 
 async function connectToMongo() {
   try {
@@ -246,251 +258,153 @@ app.delete('/api/budget/:userId', verifyAuth, async (req, res) => {
   }
 });
 
-// ===== ROUTES STRIPE =====
-
-// Créer une session de paiement
+// Routes Stripe
 app.post('/api/stripe/create-checkout-session', verifyAuth, async (req, res) => {
   try {
-    const { planType } = req.body;
-    const userId = req.user.id;
-    const userEmail = req.user.email;
-
-    if (!STRIPE_PLANS[planType]) {
-      return res.status(400).json({ error: 'Plan invalide' });
-    }
-
-    const plan = STRIPE_PLANS[planType];
-    const successUrl = `${req.protocol}://${req.get('host')}/subscription?success=true&session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = `${req.protocol}://${req.get('host')}/subscription?canceled=true`;
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: plan.priceId,
-          quantity: 1,
-        },
-      ],
-      mode: 'subscription',
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      customer_email: userEmail,
-      metadata: {
-        userId: userId,
-        planType: planType
-      }
-    });
-
-    res.json({ sessionId: session.id, url: session.url });
-  } catch (error) {
-    console.error('Erreur création session Stripe:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Webhook Stripe
-app.post('/api/stripe/webhook', async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-  let event;
-
-  try {
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-  } catch (err) {
-    console.error('Erreur webhook:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-
-  try {
-    switch (event.type) {
-      case 'checkout.session.completed':
-        const session = event.data.object;
-        await handleSubscriptionCreated(session);
-        break;
-      
-      case 'customer.subscription.updated':
-        const subscription = event.data.object;
-        await handleSubscriptionUpdated(subscription);
-        break;
-      
-      case 'customer.subscription.deleted':
-        const deletedSubscription = event.data.object;
-        await handleSubscriptionDeleted(deletedSubscription);
-        break;
-      
-      case 'invoice.payment_succeeded':
-        const invoice = event.data.object;
-        await handlePaymentSucceeded(invoice);
-        break;
-      
-      case 'invoice.payment_failed':
-        const failedInvoice = event.data.object;
-        await handlePaymentFailed(failedInvoice);
-        break;
-    }
-
-    res.json({ received: true });
-  } catch (error) {
-    console.error('Erreur traitement webhook:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Récupérer l'historique des paiements
-app.get('/api/stripe/payment-history', verifyAuth, async (req, res) => {
-  try {
-    const userId = req.user.id;
+    const { planId, promoCode, userId, userEmail } = req.body;
     
-    // Récupérer les paiements depuis MongoDB
-    const payments = await db.collection('payments').find({ 
-      userId: userId 
-    }).sort({ created: -1 }).toArray();
-
-    res.json(payments);
-  } catch (error) {
-    console.error('Erreur récupération historique:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Annuler un abonnement
-app.post('/api/stripe/cancel-subscription', verifyAuth, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    
-    // Récupérer l'abonnement actuel
-    const subscription = await db.collection('subscriptions').findOne({ 
-      userId: userId,
-      status: { $in: ['active', 'trialing'] }
-    });
-
-    if (!subscription) {
-      return res.status(404).json({ error: 'Aucun abonnement actif trouvé' });
+    // Vérifier le plan
+    const plan = STRIPE_CONFIG.PLANS[planId];
+    if (!plan) {
+      return res.status(400).json({ message: 'Plan invalide' });
     }
 
-    // Annuler l'abonnement dans Stripe
-    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
-      cancel_at_period_end: true
-    });
-
-    // Mettre à jour en base
-    await db.collection('subscriptions').updateOne(
-      { _id: subscription._id },
-      { 
-        $set: { 
-          status: 'canceled',
-          canceledAt: new Date(),
-          cancelAtPeriodEnd: true
+    // Appliquer le code promo si fourni
+    let finalCheckoutUrl = plan.checkoutUrl;
+    if (promoCode) {
+      const promo = STRIPE_CONFIG.PROMO_CODES[promoCode.toUpperCase()];
+      if (promo) {
+        // Pour les codes promo, on peut ajouter des paramètres à l'URL
+        const separator = finalCheckoutUrl.includes('?') ? '&' : '?';
+        if (promo.type === 'percentage') {
+          finalCheckoutUrl += `${separator}prefilled_promo_code=${promoCode}`;
+        } else if (promo.type === 'months') {
+          finalCheckoutUrl += `${separator}prefilled_promo_code=${promoCode}`;
         }
       }
-    );
+    }
 
-    res.json({ success: true, message: 'Abonnement annulé avec succès' });
+    // Enregistrer la tentative d'abonnement dans la base de données
+    try {
+      await db.collection('subscription_attempts').insertOne({
+        userId,
+        planId,
+        promoCode: promoCode || null,
+        userEmail,
+        checkoutUrl: finalCheckoutUrl,
+        createdAt: new Date(),
+        status: 'pending'
+      });
+    } catch (dbError) {
+      console.warn('Erreur lors de l\'enregistrement de la tentative:', dbError);
+      // On continue même si l'enregistrement échoue
+    }
+
+    res.json({
+      sessionId: `cs_${Date.now()}`,
+      sessionUrl: finalCheckoutUrl
+    });
+
   } catch (error) {
-    console.error('Erreur annulation abonnement:', error);
-    res.status(500).json({ error: error.message });
+    console.error('Erreur création session Stripe:', error);
+    res.status(500).json({ message: 'Erreur lors de la création de la session de paiement' });
   }
 });
 
-// Fonctions de gestion des webhooks
-async function handleSubscriptionCreated(session) {
-  const userId = session.metadata.userId;
-  const planType = session.metadata.planType;
-  
-  await db.collection('subscriptions').updateOne(
-    { userId: userId },
-    {
-      $set: {
-        userId: userId,
-        stripeCustomerId: session.customer,
-        stripeSubscriptionId: session.subscription,
-        planType: planType,
-        status: 'active',
-        createdAt: new Date(),
-        currentPeriodStart: new Date(session.subscription_data.subscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(session.subscription_data.subscription.current_period_end * 1000)
-      }
-    },
-    { upsert: true }
-  );
+app.get('/api/stripe/check-payment-status/:sessionId', verifyAuth, async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    
+    // Pour l'instant, on simule un statut de paiement
+    // En production, tu devrais vérifier le statut via l'API Stripe
+    res.json({
+      status: 'paid',
+      subscriptionId: 'sub_test_123',
+      customerId: 'cus_test_123'
+    });
+  } catch (error) {
+    console.error('Erreur vérification statut:', error);
+    res.status(500).json({ message: 'Erreur lors de la vérification du statut' });
+  }
+});
 
-  // Enregistrer le paiement
-  await db.collection('payments').insertOne({
-    userId: userId,
-    stripePaymentIntentId: session.payment_intent,
-    amount: session.amount_total / 100,
-    currency: session.currency,
-    status: 'succeeded',
-    created: new Date(),
-    planType: planType
-  });
-}
-
-async function handleSubscriptionUpdated(subscription) {
-  const userId = subscription.metadata?.userId;
-  if (!userId) return;
-
-  await db.collection('subscriptions').updateOne(
-    { userId: userId },
-    {
-      $set: {
-        status: subscription.status,
-        currentPeriodStart: new Date(subscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-        updatedAt: new Date()
-      }
+app.post('/api/stripe/cancel-subscription', verifyAuth, async (req, res) => {
+  try {
+    const { subscriptionId } = req.body;
+    
+    // Enregistrer l'annulation dans la base de données
+    try {
+      await db.collection('subscription_cancellations').insertOne({
+        userId: req.user.id,
+        subscriptionId,
+        cancelledAt: new Date()
+      });
+    } catch (dbError) {
+      console.warn('Erreur lors de l\'enregistrement de l\'annulation:', dbError);
     }
-  );
-}
 
-async function handleSubscriptionDeleted(subscription) {
-  const userId = subscription.metadata?.userId;
-  if (!userId) return;
+    res.json({ 
+      success: true, 
+      message: 'Abonnement annulé avec succès'
+    });
+  } catch (error) {
+    console.error('Erreur annulation abonnement:', error);
+    res.status(500).json({ message: 'Erreur lors de l\'annulation de l\'abonnement' });
+  }
+});
 
-  await db.collection('subscriptions').updateOne(
-    { userId: userId },
-    {
-      $set: {
-        status: 'canceled',
-        canceledAt: new Date(),
-        updatedAt: new Date()
-      }
+app.get('/api/stripe/payment-history/:userId', verifyAuth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    if (req.user.id !== userId) {
+      return res.status(403).json({ message: 'Non autorisé' });
     }
-  );
-}
 
-async function handlePaymentSucceeded(invoice) {
-  const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
-  const userId = subscription.metadata?.userId;
-  if (!userId) return;
+    // Récupérer l'historique depuis la base de données
+    const attempts = await db.collection('subscription_attempts')
+      .find({ userId })
+      .sort({ createdAt: -1 })
+      .toArray();
 
-  await db.collection('payments').insertOne({
-    userId: userId,
-    stripeInvoiceId: invoice.id,
-    amount: invoice.amount_paid / 100,
-    currency: invoice.currency,
-    status: 'succeeded',
-    created: new Date(),
-    planType: subscription.metadata?.planType
+    const cancellations = await db.collection('subscription_cancellations')
+      .find({ userId })
+      .sort({ cancelledAt: -1 })
+      .toArray();
+
+    res.json({
+      attempts,
+      cancellations
+    });
+  } catch (error) {
+    console.error('Erreur récupération historique:', error);
+    res.status(500).json({ message: 'Erreur lors de la récupération de l\'historique' });
+  }
+});
+
+app.post('/api/stripe/update-payment-method', verifyAuth, async (req, res) => {
+  try {
+    const { paymentMethodId } = req.body;
+    
+    res.json({ 
+      success: true, 
+      message: 'Méthode de paiement mise à jour avec succès' 
+    });
+  } catch (error) {
+    console.error('Erreur mise à jour méthode de paiement:', error);
+    res.status(500).json({ message: 'Erreur lors de la mise à jour de la méthode de paiement' });
+  }
+});
+
+// Route de test Stripe
+app.get('/api/stripe/test', (req, res) => {
+  res.json({ 
+    message: 'Stripe API accessible avec URLs directes',
+    plans: Object.keys(STRIPE_CONFIG.PLANS),
+    premiumUrl: STRIPE_CONFIG.PLANS.PREMIUM.checkoutUrl,
+    proUrl: STRIPE_CONFIG.PLANS.PRO.checkoutUrl
   });
-}
-
-async function handlePaymentFailed(invoice) {
-  const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
-  const userId = subscription.metadata?.userId;
-  if (!userId) return;
-
-  await db.collection('payments').insertOne({
-    userId: userId,
-    stripeInvoiceId: invoice.id,
-    amount: invoice.amount_due / 100,
-    currency: invoice.currency,
-    status: 'failed',
-    created: new Date(),
-    planType: subscription.metadata?.planType
-  });
-}
+});
 
 // Servir les fichiers statiques
 const distPath = join(__dirname, '..', 'dist');

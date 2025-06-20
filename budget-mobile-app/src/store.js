@@ -353,7 +353,7 @@ const useStore = create(
           (state.data && Object.values(state.data).some(cat => cat.some(val => val > 0))) ||
           (state.revenus && state.revenus.some(val => val > 0))
         );
-        
+          
         console.log('CheckAndFixOnboardingState:', { 
           hasRealData, 
           currentOnboardingCompleted: state.onboardingCompleted,
@@ -526,7 +526,7 @@ const useStore = create(
         });
         
         set({ incomes: newIncomes });
-          scheduleSave();
+            scheduleSave();
         },
 
         // Gestion des transactions
@@ -1100,8 +1100,8 @@ const useStore = create(
       setOnboardingCompleted: (completed) => {
         console.log('Onboarding: setOnboardingCompleted appelé avec', completed);
         set({ onboardingCompleted: completed });
-        scheduleSave();
-      },
+          scheduleSave();
+        },
 
         showTutorial: () => {
           console.log('Tutoriel: showTutorial appelé');
