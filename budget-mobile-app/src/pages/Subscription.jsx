@@ -111,7 +111,7 @@ const Subscription = () => {
       // Mettre à jour le plan dans le store
       updateSubscription(selectedPlan);
       
-      toast.success(t('subscription.downgradeSuccess'));
+      toast.success(t('downgradeSuccess'));
       setShowDowngradeDialog(false);
     } catch (error) {
       console.error('Erreur lors du downgrade:', error);
@@ -131,7 +131,7 @@ const Subscription = () => {
       // Passer au plan gratuit
       updateSubscription('FREE');
       
-      toast.success(t('subscription.cancelSuccess'));
+      toast.success(t('cancelSuccess'));
       setShowCancelDialog(false);
     } catch (error) {
       console.error('Erreur lors de l\'annulation:', error);
@@ -158,15 +158,15 @@ const Subscription = () => {
 
   const getFeatureLabel = (feature) => {
     const featureLabels = {
-      maxTransactions: t('subscription.features.transactions'),
-      unlimitedCategories: t('subscription.features.categories'),
-      maxSavingsGoals: t('subscription.features.savingsGoals'),
-      basicAnalytics: t('subscription.features.analytics'),
-      aiAnalysis: t('subscription.features.aiAnalysis'),
-      maxActionPlans: t('subscription.features.actionPlans'),
-      multipleAccounts: t('subscription.features.multipleAccounts'),
-      prioritySupport: t('subscription.features.prioritySupport'),
-      advancedReports: t('subscription.features.advancedReports')
+      maxTransactions: t('features.transactions'),
+      unlimitedCategories: t('features.categories'),
+      maxSavingsGoals: t('features.savingsGoals'),
+      basicAnalytics: t('features.analytics'),
+      aiAnalysis: t('features.aiAnalysis'),
+      maxActionPlans: t('features.actionPlans'),
+      multipleAccounts: t('features.multipleAccounts'),
+      prioritySupport: t('features.prioritySupport'),
+      advancedReports: t('features.advancedReports')
     };
     return featureLabels[feature] || feature;
   };
@@ -175,16 +175,16 @@ const Subscription = () => {
     const value = plan.features[feature];
     
     // Gestion des valeurs spéciales
-    if (value === -1) return t('subscription.unlimited');
-    if (value === false) return t('subscription.notAvailable');
-    if (value === true) return t('subscription.available');
-    if (value === 0) return t('subscription.notAvailable');
+    if (value === -1) return t('unlimited');
+    if (value === false) return t('notAvailable');
+    if (value === true) return t('available');
+    if (value === 0) return t('notAvailable');
     
     // Gestion spécifique pour aiAnalysis
     if (feature === 'aiAnalysis') {
-      if (value === 'partial') return t('subscription.partial');
-      if (value === 'full') return t('subscription.full');
-      if (value === false) return t('subscription.notAvailable');
+      if (value === 'partial') return t('partial');
+      if (value === 'full') return t('full');
+      if (value === false) return t('notAvailable');
     }
     
     // Pour les valeurs numériques, afficher le nombre
@@ -193,7 +193,7 @@ const Subscription = () => {
     }
     
     // Valeur par défaut
-    return value || t('subscription.notAvailable');
+    return value || t('notAvailable');
   };
 
   const renderPlanCard = (planKey, plan) => {
@@ -218,7 +218,7 @@ const Subscription = () => {
         >
           {isCurrentPlan && (
             <Chip
-              label={t('subscription.currentPlan')}
+              label={t('currentPlan')}
               color="primary"
               sx={{
                 position: 'absolute',
@@ -235,10 +235,10 @@ const Subscription = () => {
                 {plan.name}
               </Typography>
               <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 1 }}>
-                {plan.price === 0 ? t('subscription.free') : `${plan.price}€`}
+                {plan.price === 0 ? t('free') : `${plan.price}€`}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {plan.price === 0 ? t('subscription.forever') : t('subscription.perMonth')}
+                {plan.price === 0 ? t('forever') : t('perMonth')}
               </Typography>
             </Box>
 
@@ -276,7 +276,7 @@ const Subscription = () => {
                   onClick={() => setShowCancelDialog(true)}
                   startIcon={<Cancel />}
                 >
-                  {t('subscription.cancel')}
+                  {t('cancel')}
                 </Button>
               ) : (
                 <Button
@@ -285,7 +285,7 @@ const Subscription = () => {
                   disabled
                   startIcon={<CheckCircle />}
                 >
-                  {t('subscription.currentPlan')}
+                  {t('currentPlan')}
                 </Button>
               )
             ) : (
@@ -298,7 +298,7 @@ const Subscription = () => {
                 startIcon={isUpgrade ? (isProcessing ? <CircularProgress size={20} /> : <Payment />) : <Edit />}
                 disabled={isProcessing}
               >
-                {isProcessing ? t('subscription.processing') : (isUpgrade ? t('subscription.upgrade') : t('subscription.downgrade'))}
+                {isProcessing ? t('processing') : (isUpgrade ? t('upgrade') : t('downgrade'))}
               </Button>
             )}
           </CardActions>
@@ -310,15 +310,15 @@ const Subscription = () => {
   return (
     <Box sx={{ p: 2, pb: 10 }}>
       <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
-        {t('subscription.title')}
+        {t('title')}
       </Typography>
       <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
-        {t('subscription.subtitle')}
+        {t('subtitle')}
       </Typography>
 
       {isSpecialAccess && (
         <Alert severity="info" sx={{ mb: 3 }}>
-          {t('subscription.specialAccess')}
+          {t('specialAccess')}
         </Alert>
       )}
 
@@ -335,25 +335,25 @@ const Subscription = () => {
       <Paper sx={{ p: 3, mt: 4, bgcolor: 'info.light' }}>
         <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
           <Warning />
-          {t('subscription.importantInfo')}
+          {t('importantInfo')}
         </Typography>
         <Typography variant="body2" sx={{ mb: 1 }}>
-          • {t('subscription.noRefund')}
+          • {t('noRefund')}
         </Typography>
         <Typography variant="body2" sx={{ mb: 1 }}>
-          • {t('subscription.cancelAnytime')}
+          • {t('cancelAnytime')}
         </Typography>
         <Typography variant="body2">
-          • {t('subscription.downgradeInfo')}
+          • {t('downgradeInfo')}
         </Typography>
       </Paper>
 
       {/* Dialog d'annulation */}
       <Dialog open={showCancelDialog} onClose={() => setShowCancelDialog(false)}>
-        <DialogTitle>{t('subscription.cancelSubscription')}</DialogTitle>
+        <DialogTitle>{t('cancelSubscription')}</DialogTitle>
         <DialogContent>
           <Typography>
-            {t('subscription.cancelConfirmation')}
+            {t('cancelConfirmation')}
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -361,17 +361,17 @@ const Subscription = () => {
             {t('common.cancel')}
           </Button>
           <Button onClick={handleCancelSubscription} color="error" variant="contained">
-            {t('subscription.confirmCancel')}
+            {t('confirmCancel')}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Dialog de downgrade */}
       <Dialog open={showDowngradeDialog} onClose={() => setShowDowngradeDialog(false)}>
-        <DialogTitle>{t('subscription.downgradeSubscription')}</DialogTitle>
+        <DialogTitle>{t('downgradeSubscription')}</DialogTitle>
         <DialogContent>
           <Typography>
-            {t('subscription.downgradeConfirmation')}
+            {t('downgradeConfirmation')}
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -379,7 +379,7 @@ const Subscription = () => {
             {t('common.cancel')}
           </Button>
           <Button onClick={confirmDowngrade} color="warning" variant="contained">
-            {t('subscription.confirmDowngrade')}
+            {t('confirmDowngrade', { plan: selectedPlan })}
           </Button>
         </DialogActions>
       </Dialog>

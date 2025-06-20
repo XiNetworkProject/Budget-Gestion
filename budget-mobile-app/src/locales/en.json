@@ -822,6 +822,25 @@
     "importantInfo": "Important information",
     "noRefund": "No refund for already paid subscriptions",
     "cancelAnytime": "You can cancel your subscription at any time",
-    "downgradeInfo": "When downgrading, your current subscription will be automatically cancelled"
+    "downgradeInfo": "You can cancel your subscription at any time from your Stripe account.",
+    "confirmDowngrade": "Are you sure you want to switch to the {{plan}} plan?",
+    "confirmCancel": "Are you sure you want to cancel your subscription?",
+    "downgradeSubscription": "Switch to {{plan}} plan",
+    "cancelSubscription": "Cancel subscription"
+  },
+  "ai": {
+    "recommendations": "Smart Recommendations",
+    "ai": "AI",
+    "conseils": "tips",
+    "lowSavingsRate": "Low savings rate",
+    "lowSavingsRateMessage": "Your projected savings rate is {{savingsRate}}%. It is recommended to save at least 20% of your income.",
+    "priorite": "Priority",
+    "planSuggere": "Suggested plan",
+    "emergencySavingsPlan": "Emergency savings plan",
+    "emergencySavingsPlanDescription": "Create an emergency fund equivalent to 3 months of expenses",
+    "economie": "Savings",
+    "effort": "Effort",
+    "parMois": "€/month",
+    "et": "and"
   }
 } 

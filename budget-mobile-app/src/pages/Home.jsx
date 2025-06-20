@@ -1672,20 +1672,20 @@ const Home = () => {
               {rec.suggestedPlan && (
                 <Box sx={{ mt: 1, p: 1, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 1 }}>
                   <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                    💡 Plan suggéré : {rec.suggestedPlan.title}
+                    💡 {t('ai.planSuggere')} : {rec.suggestedPlan.title}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {rec.suggestedPlan.description}
                   </Typography>
                   <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
                     <Chip 
-                      label={`Économie: ${rec.suggestedPlan.savings}€/mois`}
+                      label={`${t('ai.economie')}: ${rec.suggestedPlan.savings || 0}${t('ai.parMois')}`}
                       size="small" 
                       color="success"
                       variant="outlined"
                     />
                     <Chip 
-                      label={`Effort: ${rec.suggestedPlan.effort}`}
+                      label={`${t('ai.effort')}: ${rec.suggestedPlan.effort || 'Faible'}`}
                       size="small" 
                       color="info"
                       variant="outlined"

@@ -825,6 +825,25 @@
     "importantInfo": "Informations importantes",
     "noRefund": "Aucun remboursement pour les abonnements déjà payés",
     "cancelAnytime": "Vous pouvez annuler votre abonnement à tout moment",
-    "downgradeInfo": "En rétrogradant, votre abonnement actuel sera annulé automatiquement"
+    "downgradeInfo": "Vous pouvez annuler votre abonnement à tout moment depuis votre compte Stripe.",
+    "confirmDowngrade": "Êtes-vous sûr de vouloir passer au plan {{plan}} ?",
+    "confirmCancel": "Êtes-vous sûr de vouloir annuler votre abonnement ?",
+    "downgradeSubscription": "Passer au plan {{plan}}",
+    "cancelSubscription": "Annuler l'abonnement"
+  },
+  "ai": {
+    "recommendations": "Recommandations intelligentes",
+    "ai": "IA",
+    "conseils": "conseils",
+    "lowSavingsRate": "Taux d'épargne faible",
+    "lowSavingsRateMessage": "Votre taux d'épargne prévu est de {{savingsRate}}%. Il est recommandé d'épargner au moins 20% de vos revenus.",
+    "priorite": "Priorité",
+    "planSuggere": "Plan suggéré",
+    "emergencySavingsPlan": "Plan d'épargne d'urgence",
+    "emergencySavingsPlanDescription": "Créer un fonds d'urgence équivalent à 3 mois de dépenses",
+    "economie": "Économie",
+    "effort": "Effort",
+    "parMois": "€/mois",
+    "et": "et"
   }
 } 
