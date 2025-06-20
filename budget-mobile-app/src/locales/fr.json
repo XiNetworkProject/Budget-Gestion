@@ -103,7 +103,10 @@
     "updateDialogReloaded": "Dialog de mise à jour relancé !",
     "noEmail": "Aucun email",
     "notAvailable": "Non disponible",
-    "dataSecurity": "Vos données sont sécurisées et privées"
+    "dataSecurity": "Vos données sont sécurisées et privées",
+    "available": "Disponible",
+    "partial": "Partiel",
+    "full": "Complet"
   },
   "pages": {
     "home": "Accueil",

@@ -137,7 +137,7 @@ const Subscription = () => {
   };
 
   const getFeatureLabel = (feature) => {
-    const labels = {
+    const featureLabels = {
       maxTransactions: t('subscription.features.transactions'),
       unlimitedCategories: t('subscription.features.categories'),
       maxSavingsGoals: t('subscription.features.savingsGoals'),
@@ -148,17 +148,31 @@ const Subscription = () => {
       prioritySupport: t('subscription.features.prioritySupport'),
       advancedReports: t('subscription.features.advancedReports')
     };
-    return labels[feature] || feature;
+    return featureLabels[feature] || feature;
   };
 
   const getFeatureValue = (plan, feature) => {
     const value = plan.features[feature];
+    
+    // Gestion des valeurs spéciales
     if (value === -1) return t('subscription.unlimited');
-    if (value === false || value === 0) return t('subscription.notAvailable');
+    if (value === false) return t('subscription.notAvailable');
+    if (value === true) return t('subscription.available');
+    if (value === 0) return t('subscription.notAvailable');
+    
+    // Gestion spécifique pour aiAnalysis
     if (feature === 'aiAnalysis') {
       if (value === 'partial') return t('subscription.partial');
       if (value === 'full') return t('subscription.full');
+      if (value === false) return t('subscription.notAvailable');
     }
+    
+    // Pour les valeurs numériques, afficher le nombre
+    if (typeof value === 'number' && value > 0) {
+      return `${value}`;
+    }
+    
+    // Valeur par défaut
     return value || t('subscription.notAvailable');
   };
 
