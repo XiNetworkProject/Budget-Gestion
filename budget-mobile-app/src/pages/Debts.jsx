@@ -291,7 +291,8 @@ const Debts = () => {
   return (
     <Box sx={{ 
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: 'linear-gradient(135deg, #10131a 0%, #232946 100%)',
+      padding: 2,
       position: 'relative',
       overflow: 'hidden'
     }}>
@@ -485,12 +486,9 @@ const Debts = () => {
               startIcon={<Add />}
               onClick={() => setAddDialog(true)}
               sx={{
-                background: 'rgba(255, 255, 255, 0.2)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                color: 'white',
+                background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
                 '&:hover': {
-                  background: 'rgba(255, 255, 255, 0.3)'
+                  background: 'linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)'
                 }
               }}
             >
@@ -728,12 +726,9 @@ const Debts = () => {
             position: 'fixed', 
             bottom: 80, 
             right: 16,
-            background: 'rgba(255, 255, 255, 0.2)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.3)',
-            color: 'white',
+            background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
             '&:hover': {
-              background: 'rgba(255, 255, 255, 0.3)',
+              background: 'linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)',
               transform: 'scale(1.1)'
             },
             transition: 'all 0.3s ease'

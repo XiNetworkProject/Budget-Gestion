@@ -268,7 +268,8 @@ const Savings = () => {
   return (
     <Box sx={{ 
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: 'linear-gradient(135deg, #10131a 0%, #232946 100%)',
+      padding: 2,
       position: 'relative',
       overflow: 'hidden'
     }}>
@@ -476,12 +477,9 @@ const Savings = () => {
               onClick={() => setAddDialog(true)}
               disabled={!canAddMoreGoals}
               sx={{
-                background: 'rgba(255, 255, 255, 0.2)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                color: 'white',
+                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
                 '&:hover': {
-                  background: 'rgba(255, 255, 255, 0.3)'
+                  background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)'
                 }
               }}
             >
@@ -774,9 +772,9 @@ const Savings = () => {
               variant="contained"
               disabled={!newGoal.name || !newGoal.target}
               sx={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
+                  background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)'
                 }
               }}
             >
@@ -856,9 +854,9 @@ const Savings = () => {
               variant="contained"
               disabled={!newGoal.name || !newGoal.target}
               sx={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
+                  background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)'
                 }
               }}
             >
