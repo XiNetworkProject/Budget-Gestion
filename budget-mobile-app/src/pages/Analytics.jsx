@@ -750,8 +750,7 @@ const Analytics = () => {
               border: '1px solid rgba(255, 255, 255, 0.2)',
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
             }}>
-              <Typography variant="h6" sx={{ 
-                gutterBottom,
+              <Typography variant="h6" gutterBottom sx={{ 
                 color: 'white',
                 textShadow: '0 2px 4px rgba(0,0,0,0.3)'
               }}>
