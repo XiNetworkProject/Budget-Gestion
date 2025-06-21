@@ -1101,26 +1101,27 @@ const Home = () => {
   return (
     <Box sx={{ 
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: 'linear-gradient(135deg, #10131a 0%, #232946 100%)',
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* Particules d'arrière-plan animées */}
+      {/* Particules d'arrière-plan animées (sombre) */}
       <Box sx={{
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        opacity: 0.1,
+        opacity: 0.18,
+        zIndex: 0,
         backgroundImage: `
-          radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-          radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-          radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%)
+          radial-gradient(circle at 20% 80%, rgba(0, 180, 255, 0.18) 0%, transparent 60%),
+          radial-gradient(circle at 80% 20%, rgba(0, 255, 180, 0.13) 0%, transparent 60%),
+          radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.08) 0%, transparent 60%),
+          radial-gradient(circle at 70% 60%, rgba(80, 80, 255, 0.10) 0%, transparent 60%)
         `,
         animation: 'float 20s ease-in-out infinite'
       }} />
-      
       <style>
         {`
           @keyframes float {
