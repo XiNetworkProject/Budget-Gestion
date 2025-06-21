@@ -3115,7 +3115,7 @@ const Home = () => {
         onClick={() => setShowQuickAdd(true)}
         sx={{
           position: 'fixed',
-          bottom: 24,
+          bottom: 80,
           right: 24,
           zIndex: 1000,
           background: 'rgba(255,255,255,0.15)',
