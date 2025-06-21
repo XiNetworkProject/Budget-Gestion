@@ -1105,29 +1105,82 @@ const Home = () => {
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* Particules d'arrière-plan animées (sombre) */}
+      {/* Particules d'arrière-plan animées (vraies particules) */}
       <Box sx={{
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        opacity: 0.18,
         zIndex: 0,
-        backgroundImage: `
-          radial-gradient(circle at 20% 80%, rgba(0, 180, 255, 0.18) 0%, transparent 60%),
-          radial-gradient(circle at 80% 20%, rgba(0, 255, 180, 0.13) 0%, transparent 60%),
-          radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.08) 0%, transparent 60%),
-          radial-gradient(circle at 70% 60%, rgba(80, 80, 255, 0.10) 0%, transparent 60%)
-        `,
-        animation: 'float 20s ease-in-out infinite'
-      }} />
+        overflow: 'hidden'
+      }}>
+        {/* Particules flottantes */}
+        {[...Array(20)].map((_, index) => (
+          <Box
+            key={index}
+            sx={{
+              position: 'absolute',
+              width: Math.random() * 4 + 2,
+              height: Math.random() * 4 + 2,
+              background: `rgba(${Math.random() * 255}, ${Math.random() * 255}, 255, ${Math.random() * 0.3 + 0.1})`,
+              borderRadius: '50%',
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `floatParticle ${Math.random() * 10 + 10}s linear infinite`,
+              animationDelay: `${Math.random() * 5}s`,
+              filter: 'blur(0.5px)',
+              boxShadow: '0 0 10px rgba(255,255,255,0.3)'
+            }}
+          />
+        ))}
+        
+        {/* Particules plus grandes et plus lentes */}
+        {[...Array(8)].map((_, index) => (
+          <Box
+            key={`large-${index}`}
+            sx={{
+              position: 'absolute',
+              width: Math.random() * 8 + 4,
+              height: Math.random() * 8 + 4,
+              background: `rgba(255, ${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 0.2 + 0.05})`,
+              borderRadius: '50%',
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `floatParticleLarge ${Math.random() * 15 + 20}s linear infinite`,
+              animationDelay: `${Math.random() * 10}s`,
+              filter: 'blur(1px)',
+              boxShadow: '0 0 20px rgba(255,255,255,0.2)'
+            }}
+          />
+        ))}
+      </Box>
+      
       <style>
         {`
-          @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            33% { transform: translateY(-20px) rotate(1deg); }
-            66% { transform: translateY(10px) rotate(-1deg); }
+          @keyframes floatParticle {
+            0% { 
+              transform: translateY(100vh) translateX(0px) rotate(0deg);
+              opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { 
+              transform: translateY(-100px) translateX(${Math.random() * 200 - 100}px) rotate(360deg);
+              opacity: 0;
+            }
+          }
+          @keyframes floatParticleLarge {
+            0% { 
+              transform: translateY(100vh) translateX(0px) rotate(0deg);
+              opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { 
+              transform: translateY(-100px) translateX(${Math.random() * 300 - 150}px) rotate(720deg);
+              opacity: 0;
+            }
           }
           @keyframes pulse {
             0% { opacity: 1; transform: scale(1); }
@@ -1484,172 +1537,273 @@ const Home = () => {
           </Box>
         </Fade>
 
-        {/* KPIs principaux avec design moderne */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6} md={3}>
+        {/* KPIs principaux avec design bulles transparentes */}
+        <Grid container spacing={2} sx={{ mb: 4 }}>
+          <Grid item xs={6} sm={6} md={3}>
             <Zoom in timeout={600}>
-              <Card sx={{ 
-                background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
-                color: 'white',
+              <Box sx={{ 
+                p: 3,
                 borderRadius: 4,
-                boxShadow: '0 12px 40px rgba(76, 175, 80, 0.3)',
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
                 transition: 'all 0.3s ease',
+                textAlign: 'center',
                 '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: '0 20px 60px rgba(76, 175, 80, 0.4)',
+                  transform: 'translateY(-4px)',
+                  background: 'rgba(255,255,255,0.15)',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
                 }
               }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Box sx={{ 
-                      p: 1, 
-                      borderRadius: 2, 
-                      background: 'rgba(255,255,255,0.2)',
-                      mr: 2
-                    }}>
-                      <TrendingUp sx={{ fontSize: 28 }} />
-                    </Box>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      {t('home.revenues')}
-                    </Typography>
-                  </Box>
-                  <Typography variant="h3" sx={{ fontWeight: 900, mb: 1 }}>
-                    <CurrencyFormatter amount={selectedMonthIncome} />
-                  </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
-                    {getMonthName(selectedMonth, selectedYear)}
-                  </Typography>
-                </CardContent>
-              </Card>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2 
+                }}>
+                  <TrendingUp sx={{ 
+                    fontSize: 32, 
+                    color: '#4caf50',
+                    filter: 'drop-shadow(0 2px 4px rgba(76, 175, 80, 0.3))'
+                  }} />
+                </Box>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: '#4caf50',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    mb: 1
+                  }}
+                >
+                  {t('home.revenues')}
+                </Typography>
+                <Typography 
+                  variant="h4" 
+                  sx={{ 
+                    fontWeight: 900, 
+                    color: '#4caf50',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    mb: 1,
+                    fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' }
+                  }}
+                >
+                  <CurrencyFormatter amount={selectedMonthIncome} />
+                </Typography>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    opacity: 0.8, 
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.9)'
+                  }}
+                >
+                  {getMonthName(selectedMonth, selectedYear)}
+                </Typography>
+              </Box>
             </Zoom>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={6} sm={6} md={3}>
             <Zoom in timeout={700}>
-              <Card sx={{ 
-                background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
-                color: 'white',
+              <Box sx={{ 
+                p: 3,
                 borderRadius: 4,
-                boxShadow: '0 12px 40px rgba(244, 67, 54, 0.3)',
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
                 transition: 'all 0.3s ease',
+                textAlign: 'center',
                 '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: '0 20px 60px rgba(244, 67, 54, 0.4)',
+                  transform: 'translateY(-4px)',
+                  background: 'rgba(255,255,255,0.15)',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
                 }
               }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Box sx={{ 
-                      p: 1, 
-                      borderRadius: 2, 
-                      background: 'rgba(255,255,255,0.2)',
-                      mr: 2
-                    }}>
-                      <TrendingDown sx={{ fontSize: 28 }} />
-                    </Box>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      {t('home.expenses')}
-                    </Typography>
-                  </Box>
-                  <Typography variant="h3" sx={{ fontWeight: 900, mb: 1 }}>
-                    <CurrencyFormatter amount={selectedMonthExpense} />
-                  </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
-                    {getMonthName(selectedMonth, selectedYear)}
-                  </Typography>
-                </CardContent>
-              </Card>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2 
+                }}>
+                  <TrendingDown sx={{ 
+                    fontSize: 32, 
+                    color: '#f44336',
+                    filter: 'drop-shadow(0 2px 4px rgba(244, 67, 54, 0.3))'
+                  }} />
+                </Box>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: '#f44336',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    mb: 1
+                  }}
+                >
+                  {t('home.expenses')}
+                </Typography>
+                <Typography 
+                  variant="h4" 
+                  sx={{ 
+                    fontWeight: 900, 
+                    color: '#f44336',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    mb: 1,
+                    fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' }
+                  }}
+                >
+                  <CurrencyFormatter amount={selectedMonthExpense} />
+                </Typography>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    opacity: 0.8, 
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.9)'
+                  }}
+                >
+                  {getMonthName(selectedMonth, selectedYear)}
+                </Typography>
+              </Box>
             </Zoom>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={6} sm={6} md={3}>
             <Zoom in timeout={800}>
-              <Card sx={{ 
-                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
-                color: 'white',
+              <Box sx={{ 
+                p: 3,
                 borderRadius: 4,
-                boxShadow: '0 12px 40px rgba(33, 150, 243, 0.3)',
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
                 transition: 'all 0.3s ease',
+                textAlign: 'center',
                 '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: '0 20px 60px rgba(33, 150, 243, 0.4)',
+                  transform: 'translateY(-4px)',
+                  background: 'rgba(255,255,255,0.15)',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
                 }
               }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Box sx={{ 
-                      p: 1, 
-                      borderRadius: 2, 
-                      background: 'rgba(255,255,255,0.2)',
-                      mr: 2
-                    }}>
-                      <Savings sx={{ fontSize: 28 }} />
-                    </Box>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      {t('home.savings')}
-                    </Typography>
-                  </Box>
-                  <Typography variant="h3" sx={{ fontWeight: 900, mb: 1 }}>
-                    <CurrencyFormatter amount={selectedMonthSaved} />
-                  </Typography>
-                  <LinearProgress 
-                    variant="determinate" 
-                    value={getProgressValue(selectedMonthSaved, selectedMonthIncome)} 
-                    sx={{ 
-                      mt: 1, 
-                      height: 8,
-                      borderRadius: 4,
-                      bgcolor: 'rgba(255,255,255,0.3)', 
-                      '& .MuiLinearProgress-bar': { 
-                        bgcolor: 'white',
-                        borderRadius: 4
-                      } 
-                    }}
-                  />
-                </CardContent>
-              </Card>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2 
+                }}>
+                  <Savings sx={{ 
+                    fontSize: 32, 
+                    color: '#2196f3',
+                    filter: 'drop-shadow(0 2px 4px rgba(33, 150, 243, 0.3))'
+                  }} />
+                </Box>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: '#2196f3',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    mb: 1
+                  }}
+                >
+                  {t('home.savings')}
+                </Typography>
+                <Typography 
+                  variant="h4" 
+                  sx={{ 
+                    fontWeight: 900, 
+                    color: '#2196f3',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    mb: 1,
+                    fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' }
+                  }}
+                >
+                  <CurrencyFormatter amount={selectedMonthSaved} />
+                </Typography>
+                <LinearProgress 
+                  variant="determinate" 
+                  value={getProgressValue(selectedMonthSaved, selectedMonthIncome)} 
+                  sx={{ 
+                    mt: 1, 
+                    height: 6,
+                    borderRadius: 3,
+                    bgcolor: 'rgba(255,255,255,0.2)', 
+                    '& .MuiLinearProgress-bar': { 
+                      bgcolor: '#2196f3',
+                      borderRadius: 3
+                    } 
+                  }}
+                />
+              </Box>
             </Zoom>
           </Grid>
 
-          <Grid item xs={12} sm={6} md={3}>
+          <Grid item xs={6} sm={6} md={3}>
             <Zoom in timeout={900}>
-              <Card sx={{ 
-                background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
-                color: 'white',
+              <Box sx={{ 
+                p: 3,
                 borderRadius: 4,
-                boxShadow: '0 12px 40px rgba(255, 152, 0, 0.3)',
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
                 transition: 'all 0.3s ease',
+                textAlign: 'center',
                 '&:hover': {
-                  transform: 'translateY(-8px)',
-                  boxShadow: '0 20px 60px rgba(255, 152, 0, 0.4)',
+                  transform: 'translateY(-4px)',
+                  background: 'rgba(255,255,255,0.15)',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
                 }
               }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <Box sx={{ 
-                      p: 1, 
-                      borderRadius: 2, 
-                      background: 'rgba(255,255,255,0.2)',
-                      mr: 2
-                    }}>
-                      <AccountBalance sx={{ fontSize: 28 }} />
-                    </Box>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      {t('home.forecasts')}
-                    </Typography>
-                  </Box>
-                  <Typography variant="h3" sx={{ fontWeight: 900, mb: 1 }}>
-                    <CurrencyFormatter amount={nextMonthProjected} />
-                  </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
-                    {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
-                  </Typography>
-                </CardContent>
-              </Card>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2 
+                }}>
+                  <AccountBalance sx={{ 
+                    fontSize: 32, 
+                    color: '#ff9800',
+                    filter: 'drop-shadow(0 2px 4px rgba(255, 152, 0, 0.3))'
+                  }} />
+                </Box>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: '#ff9800',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    mb: 1
+                  }}
+                >
+                  {t('home.forecasts')}
+                </Typography>
+                <Typography 
+                  variant="h4" 
+                  sx={{ 
+                    fontWeight: 900, 
+                    color: '#ff9800',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    mb: 1,
+                    fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' }
+                  }}
+                >
+                  <CurrencyFormatter amount={nextMonthProjected} />
+                </Typography>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    opacity: 0.8, 
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.9)'
+                  }}
+                >
+                  {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
+                </Typography>
+              </Box>
             </Zoom>
           </Grid>
         </Grid>
@@ -2618,6 +2772,57 @@ const Home = () => {
             ))}
           </List>
         </Paper>
+      </Box>
+
+      {/* Bouton QuickAdd flottant avec design moderne */}
+      <Box
+        sx={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          zIndex: 1000,
+        }}
+      >
+        <Button
+          variant="contained"
+          onClick={() => navigate('/quickadd')}
+          sx={{
+            width: 64,
+            height: 64,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            boxShadow: '0 8px 32px rgba(102, 126, 234, 0.4), 0 0 0 0 rgba(102, 126, 234, 0.7)',
+            transition: 'all 0.3s ease',
+            animation: 'pulse 2s infinite',
+            '&:hover': {
+              transform: 'scale(1.1)',
+              boxShadow: '0 12px 40px rgba(102, 126, 234, 0.6), 0 0 0 0 rgba(102, 126, 234, 0.7)',
+              background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+            },
+            '&:active': {
+              transform: 'scale(0.95)',
+            },
+            '@keyframes pulse': {
+              '0%': {
+                boxShadow: '0 8px 32px rgba(102, 126, 234, 0.4), 0 0 0 0 rgba(102, 126, 234, 0.7)',
+              },
+              '70%': {
+                boxShadow: '0 8px 32px rgba(102, 126, 234, 0.4), 0 0 0 20px rgba(102, 126, 234, 0)',
+              },
+              '100%': {
+                boxShadow: '0 8px 32px rgba(102, 126, 234, 0.4), 0 0 0 0 rgba(102, 126, 234, 0)',
+              },
+            },
+          }}
+        >
+          <Add 
+            sx={{ 
+              fontSize: 32,
+              color: 'white',
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+            }} 
+          />
+        </Button>
       </Box>
     </Box>
   );
