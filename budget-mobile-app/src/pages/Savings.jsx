@@ -36,7 +36,9 @@ import {
   Flag,
   CheckCircle,
   Warning,
-  Info
+  Info,
+  AttachMoney,
+  MoreVert
 } from '@mui/icons-material';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { 
@@ -47,6 +49,7 @@ import {
   Legend,
   ArcElement
 } from 'chart.js';
+import CurrencyFormatter from '../components/CurrencyFormatter';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Legend, ArcElement);
 
@@ -76,7 +79,7 @@ const Savings = () => {
     name: '', 
     target: '', 
     current: '', 
-    icon: '💰',
+    icon: <AttachMoney sx={{ fontSize: 24 }} />,
     deadline: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   });
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
@@ -205,7 +208,7 @@ const Savings = () => {
       name: '', 
       target: '', 
       current: '', 
-      icon: '💰',
+      icon: <AttachMoney sx={{ fontSize: 24 }} />,
       deadline: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     });
     setSnack({ open: true, message: t('savings.goalAdded'), severity: 'success' });
@@ -226,7 +229,7 @@ const Savings = () => {
         name: '', 
         target: '', 
         current: '', 
-        icon: '💰',
+        icon: <AttachMoney sx={{ fontSize: 24 }} />,
         deadline: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
       });
       setSnack({ open: true, message: t('savings.goalModified'), severity: 'success' });
@@ -398,7 +401,7 @@ const Savings = () => {
                     <CardContent>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Typography variant="h3" sx={{ mr: 1 }}>{goal.icon || '💰'}</Typography>
+                          <Typography variant="h3" sx={{ mr: 1 }}>{goal.icon || <AttachMoney sx={{ fontSize: 24 }} />}</Typography>
                           <Box>
                             <Typography variant="h6">{goal.name}</Typography>
                             <Typography variant="body2" color="text.secondary" component="span">
@@ -412,7 +415,7 @@ const Savings = () => {
                             size="small" 
                             onClick={() => {
                               setSelectedGoal(goal);
-                              setNewGoal({ name: goal.name, target: goal.target, current: goal.current || 0, icon: goal.icon || '💰', deadline: goal.deadline });
+                              setNewGoal({ name: goal.name, target: goal.target, current: goal.current || 0, icon: goal.icon || <AttachMoney sx={{ fontSize: 24 }} />, deadline: goal.deadline });
                               setEditDialog(true);
                             }}
                           >

@@ -4,6 +4,7 @@ import Delete from '@mui/icons-material/Delete';
 import Edit from '@mui/icons-material/Edit';
 import { useStore } from '../store';
 import { useTranslation } from 'react-i18next';
+import { AttachMoney, MoneyOff } from '@mui/icons-material';
 
 const History = () => {
   const { t } = useTranslation();
@@ -68,7 +69,7 @@ const History = () => {
       .map(t => ({
       ...t,
       type: 'income',
-      icon: '💰',
+      icon: <AttachMoney sx={{ fontSize: 20 }} />,
       title: t.type || 'Revenu',
         date: parseDate(t.date),
       amount: t.amount
@@ -78,7 +79,7 @@ const History = () => {
       .map(t => ({
       ...t,
       type: 'expense',
-      icon: '💸',
+      icon: <MoneyOff sx={{ fontSize: 20 }} />,
       title: t.category || 'Dépense',
         date: parseDate(t.date),
       amount: t.amount

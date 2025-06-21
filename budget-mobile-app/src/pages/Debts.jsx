@@ -49,7 +49,9 @@ import {
   ExpandMore,
   AccountBalance,
   LocalAtm,
-  Calculate
+  Calculate,
+  Home,
+  MoreVert
 } from '@mui/icons-material';
 import { Bar, Line } from 'react-chartjs-2';
 import { 
@@ -61,6 +63,7 @@ import {
   LineElement,
   PointElement
 } from 'chart.js';
+import CurrencyFormatter from '../components/CurrencyFormatter';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Legend, LineElement, PointElement);
 
@@ -70,27 +73,23 @@ const Debts = () => {
   const [debts, setDebts] = useState([
     {
       id: 1,
-      name: 'Carte de crédit BNP',
-      type: 'credit_card',
+      name: 'Carte de crédit',
       amount: 2500,
       paid: 800,
-      interest: 18.9,
-      dueDate: '2024-02-15',
-      icon: '💳',
-      color: '#FF6384',
-      monthlyPayment: 200
+      type: 'credit_card',
+      icon: <CreditCard sx={{ fontSize: 24 }} />,
+      interest: 15.9,
+      dueDate: '2024-12-31'
     },
     {
       id: 2,
       name: 'Prêt immobilier',
-      type: 'loan',
       amount: 150000,
       paid: 45000,
+      type: 'mortgage',
+      icon: <Home sx={{ fontSize: 24 }} />,
       interest: 2.1,
-      dueDate: '2024-01-31',
-      icon: '🏠',
-      color: '#36A2EB',
-      monthlyPayment: 1200
+      dueDate: '2035-06-01'
     },
     {
       id: 3,
@@ -210,7 +209,7 @@ const Debts = () => {
       interest: parseFloat(newDebt.interest),
       monthlyPayment: parseFloat(newDebt.monthlyPayment),
       dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      icon: newDebt.type === 'credit_card' ? '💳' : newDebt.type === 'loan' ? '🏦' : '💰',
+      icon: newDebt.type === 'credit_card' ? <CreditCard sx={{ fontSize: 24 }} /> : newDebt.type === 'mortgage' ? <Home sx={{ fontSize: 24 }} /> : '💰',
       color: `hsl(${Math.random() * 360}, 70%, 50%)`
     };
     setDebts([...debts, debt]);

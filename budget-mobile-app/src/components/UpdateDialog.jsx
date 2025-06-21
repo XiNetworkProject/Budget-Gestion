@@ -17,11 +17,12 @@ import {
 } from '@mui/material';
 import {
   CheckCircle,
+  Rocket,
+  Star,
   NewReleases,
   BugReport,
   Speed,
   Security,
-  Star,
   Close
 } from '@mui/icons-material';
 
@@ -97,28 +98,15 @@ const UpdateDialog = ({ open, onClose }) => {
         }
       }}
     >
-      <DialogTitle sx={{ pb: 1 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', width: 50, height: 50 }}>
-              <NewReleases sx={{ fontSize: 30 }} />
-            </Avatar>
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                Mise à jour disponible !
-              </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                Version {currentVersion} - {new Date().toLocaleDateString('fr-FR')}
-              </Typography>
-            </Box>
-          </Box>
-          <Button
-            onClick={onClose}
-            sx={{ color: 'white', minWidth: 'auto' }}
-          >
-            <Close />
-          </Button>
-        </Box>
+      <DialogTitle sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: 1,
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white'
+      }}>
+        <Star sx={{ color: '#FFD700' }} />
+        Nouveautés de la version {currentVersion}
       </DialogTitle>
 
       <DialogContent sx={{ pt: 2, bgcolor: 'background.paper', color: 'text.primary' }}>
@@ -175,15 +163,26 @@ const UpdateDialog = ({ open, onClose }) => {
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ p: 2, bgcolor: 'background.paper' }}>
+      <DialogActions sx={{ p: 3, pt: 0 }}>
         <Button 
-          onClick={onClose} 
           variant="contained" 
-          color="primary"
-          size="large"
-          sx={{ px: 4 }}
+          onClick={onClose}
+          startIcon={<Rocket />}
+          sx={{
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: 3,
+            px: 4,
+            py: 1.5,
+            fontWeight: 600,
+            boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 12px 35px rgba(102, 126, 234, 0.4)',
+            }
+          }}
         >
-          Commencer à utiliser
+          Prêt à explorer ?
         </Button>
       </DialogActions>
     </Dialog>

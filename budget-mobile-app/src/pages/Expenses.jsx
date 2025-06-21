@@ -52,7 +52,16 @@ import {
   Cancel,
   Warning,
   CheckCircle,
-  Info
+  Info,
+  Home,
+  LocalHospital,
+  Restaurant,
+  DirectionsCar,
+  ShoppingCart,
+  School,
+  Entertainment,
+  AttachMoney,
+  MoreVert
 } from '@mui/icons-material';
 import { Doughnut, Bar } from 'react-chartjs-2';
 import { 
@@ -240,16 +249,15 @@ const Expenses = () => {
 
   const getCategoryIcon = (category) => {
     const icons = {
-      'Alimentation': '🍔',
-      'Transport': '🚗',
-      'Loisirs': '🎬',
-      'Logement': '🏠',
-      'Santé': '💊',
-      'Shopping': '🛍️',
-      'Restaurant': '🍽️',
-      'Voyages': '✈️'
+      'Logement': <Home sx={{ fontSize: 20 }} />,
+      'Santé': <LocalHospital sx={{ fontSize: 20 }} />,
+      'Alimentation': <Restaurant sx={{ fontSize: 20 }} />,
+      'Transport': <DirectionsCar sx={{ fontSize: 20 }} />,
+      'Shopping': <ShoppingCart sx={{ fontSize: 20 }} />,
+      'Éducation': <School sx={{ fontSize: 20 }} />,
+      'Loisirs': <Entertainment sx={{ fontSize: 20 }} />
     };
-    return icons[category] || '💰';
+    return icons[category] || <AttachMoney sx={{ fontSize: 20 }} />;
   };
 
   const getCategoryColor = (category) => {

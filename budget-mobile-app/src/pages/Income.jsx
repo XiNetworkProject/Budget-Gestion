@@ -54,7 +54,12 @@ import {
   Business,
   School,
   MonetizationOn,
-  AccountBalance
+  AccountBalance,
+  Computer,
+  Home,
+  Person,
+  AttachMoney,
+  MoreVert
 } from '@mui/icons-material';
 import { Doughnut, Line } from 'react-chartjs-2';
 import { 
@@ -326,16 +331,15 @@ const Income = () => {
 
   const getTypeIcon = (type) => {
     const icons = {
-      'Salaire': '💼',
-      'Freelance': '💻',
-      'Investissements': '📈',
-      'Location': '🏠',
-      'Bonus': '🎁',
-      'Pension': '👴',
-      'Allocations': '💰',
-      'Autres': '💵'
+      'Salaire': <Work sx={{ fontSize: 20 }} />,
+      'Freelance': <Computer sx={{ fontSize: 20 }} />,
+      'Investissements': <TrendingUp sx={{ fontSize: 20 }} />,
+      'Location': <Home sx={{ fontSize: 20 }} />,
+      'Pension': <Person sx={{ fontSize: 20 }} />,
+      'Allocations': <AttachMoney sx={{ fontSize: 20 }} />,
+      'Autres': <AttachMoney sx={{ fontSize: 20 }} />
     };
-    return icons[type] || '💵';
+    return icons[type] || <AttachMoney sx={{ fontSize: 20 }} />;
   };
 
   const getTypeColor = (type) => {

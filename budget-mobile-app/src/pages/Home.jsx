@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useStore } from '../store';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import CurrencyFormatter from '../components/CurrencyFormatter';
@@ -33,16 +33,19 @@ import {
 import {
   TrendingUp,
   TrendingDown,
-  Savings,
-  AccountBalance,
+  Remove,
   Add,
-  MoreVert,
-  Notifications,
-  Refresh,
-  Info,
-  CalendarToday,
   ArrowBack,
   ArrowForward,
+  AccountBalance,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon,
+  Remove as RemoveIcon,
+  CheckCircle,
+  Warning,
+  Psychology,
+  AttachMoney,
+  MoneyOff,
   Lightbulb,
   Analytics,
   Logout,
@@ -733,13 +736,12 @@ const Home = () => {
 
   // Fonction pour obtenir l'icône de tendance
   const getTrendIcon = (trendDirection) => {
-    switch (trendDirection) {
-      case 'up':
-        return '📈';
-      case 'down':
-        return '📉';
-      default:
-        return '➡️';
+    if (trendDirection === 'up') {
+      return <TrendingUpIcon sx={{ fontSize: 16, color: '#4caf50' }} />;
+    } else if (trendDirection === 'down') {
+      return <TrendingDownIcon sx={{ fontSize: 16, color: '#f44336' }} />;
+    } else {
+      return <RemoveIcon sx={{ fontSize: 16, color: '#ff9800' }} />;
     }
   };
 
@@ -1029,7 +1031,7 @@ const Home = () => {
       .map(t => ({
       ...t,
       type: 'income',
-      icon: '💰',
+      icon: <AttachMoney sx={{ fontSize: 20 }} />,
       category: t.type || 'Revenu',
         date: parseDate(t.date)
     })),
@@ -1038,7 +1040,7 @@ const Home = () => {
       .map(e => ({
       ...e,
       type: 'expense',
-      icon: '💸',
+      icon: <MoneyOff sx={{ fontSize: 20 }} />,
       category: e.category || 'Dépense',
         date: parseDate(e.date)
     }))
@@ -1457,18 +1459,26 @@ const Home = () => {
                   alignItems: 'center',
                   p: 4,
                   borderRadius: '50%',
-                  background: `linear-gradient(135deg, ${getBalanceColor(selectedMonthSaved)} 0%, ${getBalanceColor(selectedMonthSaved)}dd 100%)`,
-                  boxShadow: `0 20px 60px ${getBalanceColor(selectedMonthSaved)}40`,
+                  background: selectedMonthSaved >= 0 
+                    ? 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)'
+                    : 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+                  boxShadow: selectedMonthSaved >= 0
+                    ? '0 20px 60px rgba(76, 175, 80, 0.4)'
+                    : '0 20px 60px rgba(244, 67, 54, 0.4)',
                   minWidth: { xs: 160, sm: 200, md: 240 },
                   minHeight: { xs: 160, sm: 200, md: 240 },
                   justifyContent: 'center',
                   textAlign: 'center',
-                  border: `4px solid ${getBalanceColor(selectedMonthSaved)}30`,
+                  border: selectedMonthSaved >= 0
+                    ? '4px solid rgba(76, 175, 80, 0.3)'
+                    : '4px solid rgba(244, 67, 54, 0.3)',
                   transition: 'all 0.4s ease',
                   animation: 'pulse 3s ease-in-out infinite',
                   '&:hover': {
                     transform: 'scale(1.05)',
-                    boxShadow: `0 30px 80px ${getBalanceColor(selectedMonthSaved)}60`,
+                    boxShadow: selectedMonthSaved >= 0
+                      ? '0 30px 80px rgba(76, 175, 80, 0.6)'
+                      : '0 30px 80px rgba(244, 67, 54, 0.6)',
                   }
                 }}
               >
@@ -1511,7 +1521,7 @@ const Home = () => {
                     sx={{
                       fontSize: '0.8rem',
                       fontWeight: 900,
-                      color: getBalanceColor(selectedMonthSaved)
+                      color: selectedMonthSaved >= 0 ? '#4caf50' : '#f44336'
                     }}
                   >
                     {selectedMonthSaved >= 0 ? '✓' : '!'}
@@ -1523,7 +1533,7 @@ const Home = () => {
               variant="h6" 
               textAlign="center" 
               sx={{ 
-                color: 'rgba(255,255,255,0.9)',
+                color: selectedMonthSaved >= 0 ? '#4caf50' : '#f44336',
                 fontSize: '1rem',
                 fontWeight: 600,
                 textTransform: 'uppercase',
@@ -1812,13 +1822,23 @@ const Home = () => {
         <Paper sx={{ 
           p: 3, 
           mb: 4,
-          background: 'rgba(255,255,255,0.95)',
+          background: 'rgba(255,255,255,0.1)',
           backdropFilter: 'blur(20px)',
           borderRadius: 4,
           border: '1px solid rgba(255,255,255,0.2)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+          }
         }}>
-          <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
+          <Typography variant="h5" gutterBottom sx={{ 
+            fontWeight: 700, 
+            mb: 3,
+            color: 'white',
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          }}>
             {t('home.quickActions')}
           </Typography>
           <Grid container spacing={2}>
@@ -1848,20 +1868,17 @@ const Home = () => {
               <Button
                 component={RouterLink}
                 to="/expenses"
-                variant="outlined"
+                variant="contained"
                 fullWidth
                 sx={{ 
                   py: 2,
                   borderRadius: 3,
-                  borderColor: '#f44336',
-                  color: '#f44336',
-                  borderWidth: 2,
+                  background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+                  boxShadow: '0 8px 25px rgba(244, 67, 54, 0.3)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    background: '#f44336',
-                    color: 'white',
                     transform: 'translateY(-4px)',
-                    boxShadow: '0 12px 35px rgba(244, 67, 54, 0.3)',
+                    boxShadow: '0 12px 35px rgba(244, 67, 54, 0.4)',
                   }
                 }}
               >
@@ -1872,20 +1889,17 @@ const Home = () => {
               <Button
                 component={RouterLink}
                 to="/income"
-                variant="outlined"
+                variant="contained"
                 fullWidth
                 sx={{ 
                   py: 2,
                   borderRadius: 3,
-                  borderColor: '#4caf50',
-                  color: '#4caf50',
-                  borderWidth: 2,
+                  background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+                  boxShadow: '0 8px 25px rgba(76, 175, 80, 0.3)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    background: '#4caf50',
-                    color: 'white',
                     transform: 'translateY(-4px)',
-                    boxShadow: '0 12px 35px rgba(76, 175, 80, 0.3)',
+                    boxShadow: '0 12px 35px rgba(76, 175, 80, 0.4)',
                   }
                 }}
               >
@@ -1896,20 +1910,17 @@ const Home = () => {
               <Button
                 component={RouterLink}
                 to="/analytics"
-                variant="outlined"
+                variant="contained"
                 fullWidth
                 sx={{ 
                   py: 2,
                   borderRadius: 3,
-                  borderColor: '#2196f3',
-                  color: '#2196f3',
-                  borderWidth: 2,
+                  background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                  boxShadow: '0 8px 25px rgba(33, 150, 243, 0.3)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    background: '#2196f3',
-                    color: 'white',
                     transform: 'translateY(-4px)',
-                    boxShadow: '0 12px 35px rgba(33, 150, 243, 0.3)',
+                    boxShadow: '0 12px 35px rgba(33, 150, 243, 0.4)',
                   }
                 }}
               >
@@ -1924,7 +1935,7 @@ const Home = () => {
           <Grid item xs={12} md={8}>
             <Paper sx={{ 
               p: 3,
-              background: 'rgba(255,255,255,0.95)',
+              background: 'rgba(255,255,255,0.1)',
               backdropFilter: 'blur(20px)',
               borderRadius: 4,
               border: '1px solid rgba(255,255,255,0.2)',
@@ -1935,7 +1946,12 @@ const Home = () => {
                 boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
               }
             }}>
-              <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
+              <Typography variant="h5" gutterBottom sx={{ 
+                fontWeight: 700, 
+                mb: 3,
+                color: 'white',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
                 {t('home.financialEvolution')}
               </Typography>
               <Box sx={{ height: 350 }}>
@@ -1947,7 +1963,7 @@ const Home = () => {
           <Grid item xs={12} md={4}>
             <Paper sx={{ 
               p: 3,
-              background: 'rgba(255,255,255,0.95)',
+              background: 'rgba(255,255,255,0.1)',
               backdropFilter: 'blur(20px)',
               borderRadius: 4,
               border: '1px solid rgba(255,255,255,0.2)',
@@ -1958,7 +1974,12 @@ const Home = () => {
                 boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
               }
             }}>
-              <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
+              <Typography variant="h5" gutterBottom sx={{ 
+                fontWeight: 700, 
+                mb: 3,
+                color: 'white',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
                 {t('home.expenseBreakdown')}
               </Typography>
               <Box sx={{ height: 350 }}>
@@ -1973,7 +1994,7 @@ const Home = () => {
           <Paper sx={{ 
             p: 3, 
             mb: 4,
-            background: 'rgba(255,255,255,0.95)',
+            background: 'rgba(255,255,255,0.1)',
             backdropFilter: 'blur(20px)',
             borderRadius: 4,
             border: '1px solid rgba(255,255,255,0.2)',
@@ -1994,7 +2015,11 @@ const Home = () => {
               }}>
                 <AccountBalance sx={{ color: 'white', fontSize: 28 }} />
               </Box>
-              <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              <Typography variant="h5" sx={{ 
+                fontWeight: 700,
+                color: 'white',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
                 Prévisions intelligentes {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
               </Typography>
               <Chip 
@@ -2014,9 +2039,10 @@ const Home = () => {
               mb: 3,
               borderRadius: 3,
               background: 'rgba(33, 150, 243, 0.1)',
-              border: '1px solid rgba(33, 150, 243, 0.2)'
+              border: '1px solid rgba(33, 150, 243, 0.2)',
+              color: 'white'
             }}>
-              <AlertTitle>Calcul intelligent</AlertTitle>
+              <AlertTitle sx={{ color: 'white' }}>Calcul intelligent</AlertTitle>
               Ces prévisions utilisent l'IA pour analyser vos tendances et prédire vos finances du mois prochain.
             </Alert>
             
@@ -2025,27 +2051,47 @@ const Home = () => {
                 <Box sx={{ 
                   textAlign: 'center', 
                   p: 3, 
-                  background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(20px)',
                   borderRadius: 4,
-                  color: 'white',
-                  boxShadow: '0 8px 25px rgba(76, 175, 80, 0.3)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     transform: 'translateY(-4px)',
-                    boxShadow: '0 12px 35px rgba(76, 175, 80, 0.4)',
+                    background: 'rgba(255,255,255,0.15)',
+                    boxShadow: '0 12px 35px rgba(0,0,0,0.15)',
                   }
                 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                  <Typography variant="h6" sx={{ 
+                    fontWeight: 600, 
+                    mb: 1,
+                    color: '#4caf50',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
                     Revenus prévus
                   </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 900, mb: 2 }}>
+                  <Typography variant="h4" sx={{ 
+                    fontWeight: 900, 
+                    mb: 2,
+                    color: '#4caf50',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
                     {forecast.income.toLocaleString()}€
                   </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                    {forecast.incomeTrend > 0 ? '📈 +' : forecast.incomeTrend < 0 ? '📉 ' : '➡️ '}
+                  <Typography variant="body2" sx={{ 
+                    mb: 1, 
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.9)'
+                  }}>
+                    {forecast.incomeTrend > 0 ? <><TrendingUpIcon sx={{ fontSize: 16, color: '#4caf50', mr: 0.5 }} />+</> : forecast.incomeTrend < 0 ? <><TrendingDownIcon sx={{ fontSize: 16, color: '#f44336', mr: 0.5 }} /></> : <><RemoveIcon sx={{ fontSize: 16, color: '#ff9800', mr: 0.5 }} /></>}
                     {Math.abs(forecast.incomeTrend).toLocaleString()}€ vs ce mois
                   </Typography>
-                  <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
+                  <Typography variant="caption" sx={{ 
+                    display: 'block', 
+                    opacity: 0.9,
+                    color: 'rgba(255,255,255,0.8)'
+                  }}>
                     Confiance: {Math.round(forecast.incomeConfidence * 100)}%
                   </Typography>
                 </Box>
@@ -2054,27 +2100,47 @@ const Home = () => {
                 <Box sx={{ 
                   textAlign: 'center', 
                   p: 3, 
-                  background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(20px)',
                   borderRadius: 4,
-                  color: 'white',
-                  boxShadow: '0 8px 25px rgba(244, 67, 54, 0.3)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     transform: 'translateY(-4px)',
-                    boxShadow: '0 12px 35px rgba(244, 67, 54, 0.4)',
+                    background: 'rgba(255,255,255,0.15)',
+                    boxShadow: '0 12px 35px rgba(0,0,0,0.15)',
                   }
                 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                  <Typography variant="h6" sx={{ 
+                    fontWeight: 600, 
+                    mb: 1,
+                    color: '#f44336',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
                     Dépenses prévues
                   </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 900, mb: 2 }}>
+                  <Typography variant="h4" sx={{ 
+                    fontWeight: 900, 
+                    mb: 2,
+                    color: '#f44336',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
                     {forecast.expenses.toLocaleString()}€
                   </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                    {forecast.expenseTrend > 0 ? '📈 +' : forecast.expenseTrend < 0 ? '📉 ' : '➡️ '}
+                  <Typography variant="body2" sx={{ 
+                    mb: 1, 
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.9)'
+                  }}>
+                    {forecast.expenseTrend > 0 ? <><TrendingUpIcon sx={{ fontSize: 16, color: '#f44336', mr: 0.5 }} />+</> : forecast.expenseTrend < 0 ? <><TrendingDownIcon sx={{ fontSize: 16, color: '#4caf50', mr: 0.5 }} /></> : <><RemoveIcon sx={{ fontSize: 16, color: '#ff9800', mr: 0.5 }} /></>}
                     {Math.abs(forecast.expenseTrend).toLocaleString()}€ vs ce mois
                   </Typography>
-                  <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
+                  <Typography variant="caption" sx={{ 
+                    display: 'block', 
+                    opacity: 0.9,
+                    color: 'rgba(255,255,255,0.8)'
+                  }}>
                     Confiance: {Math.round(forecast.expenseConfidence * 100)}%
                   </Typography>
                 </Box>
@@ -2083,26 +2149,46 @@ const Home = () => {
                 <Box sx={{ 
                   textAlign: 'center', 
                   p: 3, 
-                  background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(20px)',
                   borderRadius: 4,
-                  color: 'white',
-                  boxShadow: '0 8px 25px rgba(33, 150, 243, 0.3)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     transform: 'translateY(-4px)',
-                    boxShadow: '0 12px 35px rgba(33, 150, 243, 0.4)',
+                    background: 'rgba(255,255,255,0.15)',
+                    boxShadow: '0 12px 35px rgba(0,0,0,0.15)',
                   }
                 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                  <Typography variant="h6" sx={{ 
+                    fontWeight: 600, 
+                    mb: 1,
+                    color: '#2196f3',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
                     Économies prévues
                   </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 900, mb: 2 }}>
+                  <Typography variant="h4" sx={{ 
+                    fontWeight: 900, 
+                    mb: 2,
+                    color: '#2196f3',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
                     {forecast.balance.toLocaleString()}€
                   </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                    {forecast.balance > 0 ? '✅ Prévision positive' : '⚠️ Attention nécessaire'}
+                  <Typography variant="body2" sx={{ 
+                    mb: 1, 
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.9)'
+                  }}>
+                    {forecast.balance > 0 ? <><CheckCircle sx={{ fontSize: 16, color: '#4caf50', mr: 0.5 }} />Prévision positive</> : <><Warning sx={{ fontSize: 16, color: '#ff9800', mr: 0.5 }} />Attention nécessaire</>}
                   </Typography>
-                  <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
+                  <Typography variant="caption" sx={{ 
+                    display: 'block', 
+                    opacity: 0.9,
+                    color: 'rgba(255,255,255,0.8)'
+                  }}>
                     Inclut les tendances saisonnières
                   </Typography>
                 </Box>
@@ -2111,26 +2197,46 @@ const Home = () => {
                 <Box sx={{ 
                   textAlign: 'center', 
                   p: 3, 
-                  background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(20px)',
                   borderRadius: 4,
-                  color: 'white',
-                  boxShadow: '0 8px 25px rgba(255, 152, 0, 0.3)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
                     transform: 'translateY(-4px)',
-                    boxShadow: '0 12px 35px rgba(255, 152, 0, 0.4)',
+                    background: 'rgba(255,255,255,0.15)',
+                    boxShadow: '0 12px 35px rgba(0,0,0,0.15)',
                   }
                 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                  <Typography variant="h6" sx={{ 
+                    fontWeight: 600, 
+                    mb: 1,
+                    color: '#ff9800',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
                     Taux d'épargne
                   </Typography>
-                  <Typography variant="h4" sx={{ fontWeight: 900, mb: 2 }}>
+                  <Typography variant="h4" sx={{ 
+                    fontWeight: 900, 
+                    mb: 2,
+                    color: '#ff9800',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
                     {forecast.income > 0 ? Math.round((forecast.balance / forecast.income) * 100) : 0}%
                   </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                  <Typography variant="body2" sx={{ 
+                    mb: 1, 
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.9)'
+                  }}>
                     Objectif recommandé: 20%
                   </Typography>
-                  <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
+                  <Typography variant="caption" sx={{ 
+                    display: 'block', 
+                    opacity: 0.9,
+                    color: 'rgba(255,255,255,0.8)'
+                  }}>
                     Basé sur les prévisions IA
                   </Typography>
                 </Box>
@@ -2147,7 +2253,8 @@ const Home = () => {
                 border: '1px solid rgba(33, 150, 243, 0.1)'
               }}>
                 <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: '#1976d2' }}>
-                  🧠 Détails du calcul intelligent:
+                  <Psychology sx={{ fontSize: 20, mr: 1, verticalAlign: 'middle' }} />
+                  Détails du calcul intelligent:
                 </Typography>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
@@ -2253,7 +2360,7 @@ const Home = () => {
           <Paper sx={{ 
             p: 3, 
             mb: 4,
-            background: 'rgba(255,255,255,0.95)',
+            background: 'rgba(255,255,255,0.1)',
             backdropFilter: 'blur(20px)',
             borderRadius: 4,
             border: '1px solid rgba(255,255,255,0.2)',
@@ -2274,7 +2381,11 @@ const Home = () => {
               }}>
                 <Lightbulb sx={{ color: 'white', fontSize: 28 }} />
               </Box>
-              <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              <Typography variant="h5" sx={{ 
+                fontWeight: 700,
+                color: 'white',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
                 Recommandations intelligentes
               </Typography>
               <Chip 
@@ -2301,127 +2412,261 @@ const Home = () => {
               />
             </Box>
             
-            {recommendations.map((rec, index) => (
-              <Alert 
-                key={index}
-                severity={rec.type} 
-                sx={{ 
-                  mb: 2,
-                  borderRadius: 3,
-                  border: 'none',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                  '& .MuiAlert-icon': {
-                    fontSize: 28
+            <Alert severity="info" sx={{ 
+              mb: 3,
+              borderRadius: 3,
+              background: 'rgba(33, 150, 243, 0.1)',
+              border: '1px solid rgba(33, 150, 243, 0.2)',
+              color: 'white'
+            }}>
+              <AlertTitle sx={{ color: 'white' }}>Calcul intelligent</AlertTitle>
+              Ces prévisions utilisent l'IA pour analyser vos tendances et prédire vos finances du mois prochain.
+            </Alert>
+            
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  p: 3, 
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(20px)',
+                  borderRadius: 4,
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    background: 'rgba(255,255,255,0.15)',
+                    boxShadow: '0 12px 35px rgba(0,0,0,0.15)',
                   }
-                }}
-                action={
-                  <Button 
-                    color="inherit" 
-                    size="small"
-                    onClick={() => handleRecommendationAction(rec.actionType, rec)}
-                    variant="outlined"
-                    sx={{ 
-                      borderRadius: 2,
-                      borderColor: 'currentColor',
-                      fontWeight: 600,
-                      '&:hover': {
-                        bgcolor: 'rgba(255,255,255,0.1)',
-                        transform: 'scale(1.05)',
-                        transition: 'all 0.2s ease'
-                      }
-                    }}
-                  >
-                    {rec.action}
-                  </Button>
-                }
-              >
-                <AlertTitle sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center',
-                  fontWeight: 700,
-                  fontSize: '1.1rem'
                 }}>
-                  {rec.title}
-                  {rec.priority === 'high' && (
-                    <Chip 
-                      label={t('home.priority')} 
-                      size="small" 
-                      sx={{ 
-                        ml: 2, 
-                        height: 24,
-                        background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
-                        color: 'white',
-                        fontWeight: 600,
-                        boxShadow: '0 2px 8px rgba(244, 67, 54, 0.3)'
-                      }} 
-                    />
-                  )}
-                  {rec.priority === 'medium' && (
-                    <Chip 
-                      label={t('home.important')} 
-                      size="small" 
-                      sx={{ 
-                        ml: 2, 
-                        height: 24,
-                        background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
-                        color: 'white',
-                        fontWeight: 600,
-                        boxShadow: '0 2px 8px rgba(255, 152, 0, 0.3)'
-                      }} 
-                    />
-                  )}
-                </AlertTitle>
-                <Typography variant="body1" sx={{ fontWeight: 500, mt: 1 }}>
-                  {rec.message}
-                </Typography>
-                
-                {/* Afficher le plan suggéré s'il existe */}
-                {rec.suggestedPlan && (
-                  <Box sx={{ 
-                    mt: 2, 
-                    p: 2, 
-                    background: 'rgba(255,255,255,0.1)', 
-                    borderRadius: 3,
-                    border: '1px solid rgba(255,255,255,0.2)'
+                  <Typography variant="h6" sx={{ 
+                    fontWeight: 600, 
+                    mb: 1,
+                    color: '#4caf50',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
                   }}>
-                    <Typography variant="h6" sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      mb: 1,
-                      fontWeight: 600,
-                      color: 'primary.main'
-                    }}>
-                      💡 {t('ai.suggestedPlan')} : {rec.suggestedPlan.title}
+                    Revenus prévus
+                  </Typography>
+                  <Typography variant="h4" sx={{ 
+                    fontWeight: 900, 
+                    mb: 2,
+                    color: '#4caf50',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
+                    {forecast.income.toLocaleString()}€
+                  </Typography>
+                  <Typography variant="body2" sx={{ 
+                    mb: 1, 
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.9)'
+                  }}>
+                    {forecast.incomeTrend > 0 ? <><TrendingUpIcon sx={{ fontSize: 16, color: '#4caf50', mr: 0.5 }} />+</> : forecast.incomeTrend < 0 ? <><TrendingDownIcon sx={{ fontSize: 16, color: '#f44336', mr: 0.5 }} /></> : <><RemoveIcon sx={{ fontSize: 16, color: '#ff9800', mr: 0.5 }} /></>}
+                    {Math.abs(forecast.incomeTrend).toLocaleString()}€ vs ce mois
+                  </Typography>
+                  <Typography variant="caption" sx={{ 
+                    display: 'block', 
+                    opacity: 0.9,
+                    color: 'rgba(255,255,255,0.8)'
+                  }}>
+                    Confiance: {Math.round(forecast.incomeConfidence * 100)}%
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  p: 3, 
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(20px)',
+                  borderRadius: 4,
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    background: 'rgba(255,255,255,0.15)',
+                    boxShadow: '0 12px 35px rgba(0,0,0,0.15)',
+                  }
+                }}>
+                  <Typography variant="h6" sx={{ 
+                    fontWeight: 600, 
+                    mb: 1,
+                    color: '#f44336',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
+                    Dépenses prévues
+                  </Typography>
+                  <Typography variant="h4" sx={{ 
+                    fontWeight: 900, 
+                    mb: 2,
+                    color: '#f44336',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
+                    {forecast.expenses.toLocaleString()}€
+                  </Typography>
+                  <Typography variant="body2" sx={{ 
+                    mb: 1, 
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.9)'
+                  }}>
+                    {forecast.expenseTrend > 0 ? <><TrendingUpIcon sx={{ fontSize: 16, color: '#f44336', mr: 0.5 }} />+</> : forecast.expenseTrend < 0 ? <><TrendingDownIcon sx={{ fontSize: 16, color: '#4caf50', mr: 0.5 }} /></> : <><RemoveIcon sx={{ fontSize: 16, color: '#ff9800', mr: 0.5 }} /></>}
+                    {Math.abs(forecast.expenseTrend).toLocaleString()}€ vs ce mois
+                  </Typography>
+                  <Typography variant="caption" sx={{ 
+                    display: 'block', 
+                    opacity: 0.9,
+                    color: 'rgba(255,255,255,0.8)'
+                  }}>
+                    Confiance: {Math.round(forecast.expenseConfidence * 100)}%
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  p: 3, 
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(20px)',
+                  borderRadius: 4,
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    background: 'rgba(255,255,255,0.15)',
+                    boxShadow: '0 12px 35px rgba(0,0,0,0.15)',
+                  }
+                }}>
+                  <Typography variant="h6" sx={{ 
+                    fontWeight: 600, 
+                    mb: 1,
+                    color: '#2196f3',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
+                    Économies prévues
+                  </Typography>
+                  <Typography variant="h4" sx={{ 
+                    fontWeight: 900, 
+                    mb: 2,
+                    color: '#2196f3',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
+                    {forecast.balance.toLocaleString()}€
+                  </Typography>
+                  <Typography variant="body2" sx={{ 
+                    mb: 1, 
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.9)'
+                  }}>
+                    {forecast.balance > 0 ? <><CheckCircle sx={{ fontSize: 16, color: '#4caf50', mr: 0.5 }} />Prévision positive</> : <><Warning sx={{ fontSize: 16, color: '#ff9800', mr: 0.5 }} />Attention nécessaire</>}
+                  </Typography>
+                  <Typography variant="caption" sx={{ 
+                    display: 'block', 
+                    opacity: 0.9,
+                    color: 'rgba(255,255,255,0.8)'
+                  }}>
+                    Inclut les tendances saisonnières
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  p: 3, 
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(20px)',
+                  borderRadius: 4,
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    background: 'rgba(255,255,255,0.15)',
+                    boxShadow: '0 12px 35px rgba(0,0,0,0.15)',
+                  }
+                }}>
+                  <Typography variant="h6" sx={{ 
+                    fontWeight: 600, 
+                    mb: 1,
+                    color: '#ff9800',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
+                    Taux d'épargne
+                  </Typography>
+                  <Typography variant="h4" sx={{ 
+                    fontWeight: 900, 
+                    mb: 2,
+                    color: '#ff9800',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
+                    {forecast.income > 0 ? Math.round((forecast.balance / forecast.income) * 100) : 0}%
+                  </Typography>
+                  <Typography variant="body2" sx={{ 
+                    mb: 1, 
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.9)'
+                  }}>
+                    Objectif recommandé: 20%
+                  </Typography>
+                  <Typography variant="caption" sx={{ 
+                    display: 'block', 
+                    opacity: 0.9,
+                    color: 'rgba(255,255,255,0.8)'
+                  }}>
+                    Basé sur les prévisions IA
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+            
+            {/* Détails du calcul amélioré */}
+            <Collapse in={true}>
+              <Box sx={{ 
+                mt: 3, 
+                p: 3, 
+                background: 'rgba(33, 150, 243, 0.05)',
+                borderRadius: 3,
+                border: '1px solid rgba(33, 150, 243, 0.1)'
+              }}>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: '#1976d2' }}>
+                  <Psychology sx={{ fontSize: 20, mr: 1, verticalAlign: 'middle' }} />
+                  Détails du calcul intelligent:
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      • Revenus: Moyenne pondérée des 3 derniers mois + ajustement tendance
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontWeight: 500 }}>
-                      {rec.suggestedPlan.description}
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      • Dépenses: Analyse des tendances + ajustements saisonniers
                     </Typography>
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                      <Chip 
-                        label={`${t('ai.savings')}: ${rec.suggestedPlan.savings || 0}${t('ai.perMonth')}`}
-                        size="small" 
-                        sx={{
-                          background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
-                          color: 'white',
-                          fontWeight: 600,
-                          boxShadow: '0 2px 8px rgba(76, 175, 80, 0.3)'
-                        }}
-                      />
-                      <Chip 
-                        label={`${t('ai.effort')}: ${rec.suggestedPlan.effort || t('ai.lowEffort')}`}
-                        size="small" 
-                        sx={{
-                          background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
-                          color: 'white',
-                          fontWeight: 600,
-                          boxShadow: '0 2px 8px rgba(33, 150, 243, 0.3)'
-                        }}
-                      />
-                    </Box>
-                  </Box>
-                )}
-              </Alert>
-            ))}
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      • Pondération: 50% mois récent, 30% avant-dernier, 20% troisième
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      • Précision: Améliore avec plus de données historiques
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      • Volatilité: Mesure de la stabilité des données
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      • Confiance: Indicateur de fiabilité des prévisions
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Box>
+            </Collapse>
           </Paper>
         )}
 
@@ -2489,25 +2734,43 @@ const Home = () => {
 
         {/* Analyse détaillée par catégorie - AMÉLIORÉE */}
         {isFeatureAvailable('basicAnalytics') && (
-          <Paper sx={{ p: 2, mb: 3 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Analytics sx={{ mr: 1, color: 'secondary.main' }} />
-              <Typography variant="h6">
+          <Paper sx={{ 
+            p: 3, 
+            mb: 4,
+            background: 'rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 4,
+            border: '1px solid rgba(255,255,255,0.2)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+            }
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <Analytics sx={{ 
+                mr: 2, 
+                color: '#2196f3',
+                fontSize: 28
+              }} />
+              <Typography variant="h5" sx={{ 
+                fontWeight: 700,
+                color: 'white',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
                 {t('home.categoryAnalysis')}
               </Typography>
               <Chip 
                 label={t('home.intelligent')} 
                 size="small" 
-                color="secondary" 
-                variant="outlined"
-                sx={{ ml: 1 }}
-              />
-              <Chip 
-                label={`${categoryForecastAnalysis.length} ${t('home.categories')}`}
-                size="small" 
-                color="info" 
-                variant="outlined"
-                sx={{ ml: 1 }}
+                sx={{ 
+                  ml: 2,
+                  background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                  color: 'white',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
+                }}
               />
             </Box>
             
@@ -2515,83 +2778,86 @@ const Home = () => {
               <Grid container spacing={2}>
                 {categoryForecastAnalysis.map((cat, index) => (
                   <Grid item xs={12} sm={6} md={4} key={index}>
-                    <Card 
-                      variant="outlined" 
-                      sx={{ 
-                        height: '100%',
-                        borderColor: cat.isImportant ? `${cat.statusColor}.main` : 'grey.300',
-                        borderWidth: cat.isImportant ? 2 : 1,
-                        position: 'relative',
-                        '&:hover': {
-                          boxShadow: 2,
-                          transform: 'translateY(-2px)',
-                          transition: 'all 0.2s ease-in-out'
-                        }
-                      }}
-                    >
-                      {cat.isImportant && (
-                        <Box sx={{ 
-                          position: 'absolute', 
-                          top: -8, 
-                          right: 8,
-                          zIndex: 1
-                        }}>
+                    <Card sx={{ 
+                      p: 2,
+                      background: 'rgba(255,255,255,0.1)',
+                      backdropFilter: 'blur(20px)',
+                      borderRadius: 3,
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        background: 'rgba(255,255,255,0.15)',
+                        boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                      }
+                    }}>
+                      <CardContent sx={{ p: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                          <Typography variant="h6" sx={{ 
+                            fontWeight: 600,
+                            color: 'white',
+                            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                          }}>
+                            {cat.category}
+                          </Typography>
                           <Chip 
-                            label={t('home.important')} 
+                            label={`${cat.budgetPercentage || 0}%`}
                             size="small" 
-                            color={cat.statusColor}
-                            sx={{ height: 20, fontSize: '0.7rem' }}
+                            sx={{
+                              background: (cat.budgetPercentage || 0) > 30 
+                                ? 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)'
+                                : 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+                              color: 'white',
+                              fontWeight: 600,
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                            }}
                           />
                         </Box>
-                      )}
-                      
-                      <CardContent>
-                        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                          {cat.category}
-                          <Chip 
-                            label={cat.status === 'augmentation' ? '📈' : cat.status === 'diminution' ? '📉' : '➡️'}
-                            size="small" 
-                            color={cat.statusColor}
-                            sx={{ ml: 1, height: 20 }}
-                          />
-                        </Typography>
                         
                         {/* Montant actuel */}
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                          <Typography variant="body2" color="text.secondary">
-                            {t('home.thisMonth')}:
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                          <Typography variant="body2" sx={{ 
+                            color: 'rgba(255,255,255,0.8)'
+                          }}>
+                            {t('home.current')}:
                           </Typography>
-                          <Typography variant="body2" fontWeight="bold">
+                          <Typography variant="body2" sx={{ 
+                            fontWeight: 'bold',
+                            color: '#f44336',
+                            textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                          }}>
                             {(cat.current || 0).toLocaleString()}€
                           </Typography>
                         </Box>
                         
-                        {/* Pourcentage du budget */}
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                          <Typography variant="body2" color="text.secondary">
-                            {t('home.budgetPercentage')}:
-                          </Typography>
-                          <Typography variant="body2" fontWeight="bold" color={(cat.budgetPercentage || 0) > 30 ? 'error.main' : 'text.primary'}>
-                            {Math.round(cat.budgetPercentage || 0)}%
-                          </Typography>
-                        </Box>
-                        
                         {/* Prévision */}
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                          <Typography variant="body2" color="text.secondary">
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                          <Typography variant="body2" sx={{ 
+                            color: 'rgba(255,255,255,0.8)'
+                          }}>
                             {t('home.forecast')}:
                           </Typography>
-                          <Typography variant="body2" fontWeight="bold" color="warning.main">
+                          <Typography variant="body2" sx={{ 
+                            fontWeight: 'bold',
+                            color: '#ff9800',
+                            textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                          }}>
                             {(cat.forecast || 0).toLocaleString()}€
                           </Typography>
                         </Box>
                         
                         {/* Changement prévu */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography variant="body2" sx={{ 
+                            color: 'rgba(255,255,255,0.8)'
+                          }}>
                             Changement:
                           </Typography>
-                          <Typography variant="body2" fontWeight="bold" color={cat.trend > 0 ? 'error.main' : 'success.main'}>
+                          <Typography variant="body2" sx={{ 
+                            fontWeight: 'bold',
+                            color: cat.trend > 0 ? '#f44336' : '#4caf50',
+                            textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                          }}>
                             {cat.trend > 0 ? '+' : ''}{(cat.trend || 0).toLocaleString()}€
                           </Typography>
                         </Box>
@@ -2603,9 +2869,9 @@ const Home = () => {
                           sx={{ 
                             height: 8, 
                             borderRadius: 4,
-                            bgcolor: 'grey.200',
+                            bgcolor: 'rgba(255,255,255,0.2)',
                             '& .MuiLinearProgress-bar': { 
-                              bgcolor: (cat.budgetPercentage || 0) > 30 ? 'error.main' : 'success.main',
+                              bgcolor: (cat.budgetPercentage || 0) > 30 ? '#f44336' : '#4caf50',
                               borderRadius: 4
                             }
                           }} 
@@ -2617,10 +2883,14 @@ const Home = () => {
               </Grid>
             ) : (
               <Box sx={{ textAlign: 'center', py: 3 }}>
-                <Typography variant="body1" color="text.secondary">
+                <Typography variant="body1" sx={{ 
+                  color: 'rgba(255,255,255,0.8)'
+                }}>
                   {t('home.noCategoryData')}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" sx={{ 
+                  color: 'rgba(255,255,255,0.6)'
+                }}>
                   {t('home.addExpensesToSeeAnalysis')}
                 </Typography>
               </Box>
@@ -2630,26 +2900,55 @@ const Home = () => {
 
         {/* Message pour les utilisateurs gratuits - Analytics */}
         {!isFeatureAvailable('basicAnalytics') && (
-          <Paper sx={{ p: 2, mb: 3, bgcolor: 'secondary.light' }}>
+          <Paper sx={{ 
+            p: 3, 
+            mb: 4,
+            background: 'rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 4,
+            border: '1px solid rgba(255,255,255,0.2)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+          }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <Analytics sx={{ mr: 1, color: 'secondary.main' }} />
-              <Typography variant="h6">
+              <Analytics sx={{ mr: 1, color: '#2196f3' }} />
+              <Typography variant="h6" sx={{ 
+                color: 'white',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
                 {t('home.upgradeForAnalytics')}
               </Typography>
               <Chip 
                 label={t('home.premium')} 
                 size="small" 
-                color="secondary" 
-                variant="outlined"
-                sx={{ ml: 1 }}
+                sx={{ 
+                  ml: 1,
+                  background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                  color: 'white',
+                  fontWeight: 600
+                }}
               />
             </Box>
-            <Typography variant="body2" sx={{ mb: 2 }}>
+            <Typography variant="body2" sx={{ 
+              mb: 2,
+              color: 'rgba(255,255,255,0.8)'
+            }}>
               {t('home.analyticsFeaturesDescription')}
             </Typography>
             <Button 
               variant="contained" 
-              color="secondary"
+              sx={{
+                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                borderRadius: 3,
+                px: 4,
+                py: 1.5,
+                fontWeight: 600,
+                boxShadow: '0 8px 25px rgba(33, 150, 243, 0.3)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 12px 35px rgba(33, 150, 243, 0.4)',
+                }
+              }}
               onClick={() => navigate('/subscription')}
               startIcon={<Analytics />}
             >
@@ -2661,7 +2960,7 @@ const Home = () => {
         {/* Transactions récentes avec design moderne */}
         <Paper sx={{ 
           p: 3,
-          background: 'rgba(255,255,255,0.95)',
+          background: 'rgba(255,255,255,0.1)',
           backdropFilter: 'blur(20px)',
           borderRadius: 4,
           border: '1px solid rgba(255,255,255,0.2)',
@@ -2673,7 +2972,11 @@ const Home = () => {
           }
         }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+            <Typography variant="h5" sx={{ 
+              fontWeight: 700,
+              color: 'white',
+              textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+            }}>
               {t('home.recentTransactions')}
             </Typography>
             <Button
@@ -2705,18 +3008,18 @@ const Home = () => {
                   p: 2,
                   borderRadius: 2,
                   mb: 1,
-                  background: 'rgba(255,255,255,0.5)',
+                  background: 'rgba(255,255,255,0.1)',
                   border: '1px solid rgba(255,255,255,0.2)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    background: 'rgba(255,255,255,0.8)',
+                    background: 'rgba(255,255,255,0.15)',
                     transform: 'translateX(8px)',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                   }
                 }}>
                   <ListItemAvatar>
                     <Avatar sx={{ 
-                      bgcolor: transaction.type === 'income' ? 'success.main' : 'error.main',
+                      bgcolor: transaction.type === 'income' ? '#4caf50' : '#f44336',
                       boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
                       width: 48,
                       height: 48
@@ -2726,12 +3029,19 @@ const Home = () => {
                   </ListItemAvatar>
                   <ListItemText
                     primary={
-                      <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      <Typography variant="h6" sx={{ 
+                        fontWeight: 600,
+                        color: 'white',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                      }}>
                         {transaction.category}
                       </Typography>
                     }
                     secondary={
-                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      <Typography variant="body2" sx={{ 
+                        fontWeight: 500,
+                        color: 'rgba(255,255,255,0.8)'
+                      }}>
                         {transaction.date}
                       </Typography>
                     }
@@ -2739,10 +3049,11 @@ const Home = () => {
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     <Typography 
                       variant="h6" 
-                      color={transaction.type === 'income' ? 'success.main' : 'error.main'}
+                      color={transaction.type === 'income' ? '#4caf50' : '#f44336'}
                       sx={{ 
                         fontWeight: 900,
-                        fontSize: '1.2rem'
+                        fontSize: '1.2rem',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.3)'
                       }}
                     >
                       {transaction.type === 'income' ? '+' : '-'}{(transaction.amount || 0).toLocaleString()}€
@@ -2765,7 +3076,7 @@ const Home = () => {
                   <Divider sx={{ 
                     my: 1,
                     opacity: 0.3,
-                    borderColor: 'rgba(0,0,0,0.1)'
+                    borderColor: 'rgba(255,255,255,0.2)'
                   }} />
                 )}
               </React.Fragment>
