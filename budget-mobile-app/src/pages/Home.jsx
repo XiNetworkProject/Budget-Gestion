@@ -70,7 +70,7 @@ import {
   Legend,
   ArcElement
 } from 'chart.js';
-import QuickAdd from './pages/QuickAdd';
+import QuickAdd from './QuickAdd';
 
 ChartJS.register(
   CategoryScale, 
