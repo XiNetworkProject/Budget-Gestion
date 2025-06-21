@@ -59,7 +59,7 @@ import {
   DirectionsCar,
   ShoppingCart,
   School,
-  Entertainment,
+  SportsEsports,
   AttachMoney,
   MoreVert
 } from '@mui/icons-material';
@@ -255,7 +255,7 @@ const Expenses = () => {
       'Transport': <DirectionsCar sx={{ fontSize: 20 }} />,
       'Shopping': <ShoppingCart sx={{ fontSize: 20 }} />,
       'Éducation': <School sx={{ fontSize: 20 }} />,
-      'Loisirs': <Entertainment sx={{ fontSize: 20 }} />
+      'Loisirs': <SportsEsports sx={{ fontSize: 20 }} />
     };
     return icons[category] || <AttachMoney sx={{ fontSize: 20 }} />;
   };
