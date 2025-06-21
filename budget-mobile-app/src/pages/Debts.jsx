@@ -605,49 +605,47 @@ const Debts = () => {
                         />
                       </Box>
 
-                      <Box sx={{ mb: 2 }}>
-                        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }} gutterBottom component="span">
-                          {t('debts.details')}
+                      <Typography variant="body2" gutterBottom sx={{ color: 'rgba(255, 255, 255, 0.7)' }} component="span">
+                        {t('debts.details')}
+                      </Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }} component="span">
+                          {t('debts.remainingToPay')}:
                         </Typography>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }} component="span">
-                            {t('debts.remainingToPay')}:
-                          </Typography>
-                          <Typography variant="body2" sx={{ color: 'white', fontWeight: 'bold' }} component="span">
-                            {remaining.toLocaleString()}€
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }} component="span">
-                            {t('debts.monthlyPayment')}:
-                          </Typography>
-                          <Typography variant="body2" sx={{ color: 'white', fontWeight: 'bold' }} component="span">
-                            {debt.monthlyPayment}€
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }} component="span">
-                            {t('debts.monthlyInterestAmount')}:
-                          </Typography>
-                          <Typography variant="body2" sx={{ color: '#f44336', fontWeight: 'bold' }} component="span">
-                            {monthlyInterest}€
-                          </Typography>
-                        </Box>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }} component="span">
-                            {t('debts.dueIn')}:
-                          </Typography>
-                          <Typography 
-                            variant="body2" 
-                            sx={{ 
-                              color: daysLeft <= 7 ? '#f44336' : 'rgba(255, 255, 255, 0.7)',
-                              fontWeight: daysLeft <= 7 ? 'bold' : 'normal'
-                            }} 
-                            component="span"
-                          >
-                            {daysLeft} {t('debts.daysLeft')}
-                          </Typography>
-                        </Box>
+                        <Typography variant="body2" sx={{ color: 'white', fontWeight: 'bold' }} component="span">
+                          {remaining.toLocaleString()}€
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }} component="span">
+                          {t('debts.monthlyPayment')}:
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: 'white', fontWeight: 'bold' }} component="span">
+                          {debt.monthlyPayment}€
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }} component="span">
+                          {t('debts.monthlyInterestAmount')}:
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#f44336', fontWeight: 'bold' }} component="span">
+                          {monthlyInterest}€
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }} component="span">
+                          {t('debts.dueIn')}:
+                        </Typography>
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            color: daysLeft <= 7 ? '#f44336' : 'rgba(255, 255, 255, 0.7)',
+                            fontWeight: daysLeft <= 7 ? 'bold' : 'normal'
+                          }} 
+                          component="span"
+                        >
+                          {daysLeft} {t('debts.daysLeft')}
+                        </Typography>
                       </Box>
 
                       <Box sx={{ display: 'flex', gap: 1 }}>
@@ -966,10 +964,10 @@ const Debts = () => {
             {t('debts.makePaymentTitle')}
           </DialogTitle>
           <DialogContent>
-            <Typography sx={{ color: '#333' }} gutterBottom>
+            <Typography gutterBottom sx={{ color: '#333' }}>
               {t('debts.paymentFor')} <strong>{selectedDebt?.name}</strong>
             </Typography>
-            <Typography variant="body2" sx={{ color: '#666' }} gutterBottom>
+            <Typography variant="body2" gutterBottom sx={{ color: '#666' }}>
               {t('debts.remainingAmount')} {selectedDebt ? (selectedDebt.amount - selectedDebt.paid).toLocaleString() : 0}€
             </Typography>
             <TextField

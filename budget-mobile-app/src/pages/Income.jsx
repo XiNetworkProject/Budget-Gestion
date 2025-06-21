@@ -714,11 +714,11 @@ const Income = () => {
                 border: '1px solid rgba(255,255,255,0.2)',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
               }}>
-                <Typography variant="h6" sx={{ 
+                <Typography variant="h6" gutterBottom sx={{ 
                   color: 'rgba(255,255,255,0.8)',
                   fontWeight: 600,
                   mb: 1
-                }} gutterBottom>
+                }}>
                   {t('income.noIncome')}
                 </Typography>
                 <Typography variant="body2" sx={{ 
@@ -825,8 +825,7 @@ const Income = () => {
                   boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
                 }
               }}>
-                <Typography variant="h6" sx={{ 
-                  gutterBottom: true,
+                <Typography variant="h6" gutterBottom sx={{ 
                   color: 'white',
                   fontWeight: 700,
                   textShadow: '0 2px 4px rgba(0,0,0,0.3)',
@@ -853,8 +852,7 @@ const Income = () => {
                   boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
                 }
               }}>
-                <Typography variant="h6" sx={{ 
-                  gutterBottom: true,
+                <Typography variant="h6" gutterBottom sx={{ 
                   color: 'white',
                   fontWeight: 700,
                   textShadow: '0 2px 4px rgba(0,0,0,0.3)',

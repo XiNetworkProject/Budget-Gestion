@@ -507,7 +507,7 @@ const Savings = () => {
                   backdropFilter: 'blur(10px)',
                   border: '1px solid rgba(255, 255, 255, 0.1)'
                 }}>
-                  <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.7)' }} gutterBottom>
+                  <Typography variant="h6" gutterBottom sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                     {t('savings.noSavingsGoals')}
                   </Typography>
                   <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }} component="span">
@@ -689,7 +689,7 @@ const Savings = () => {
               </Typography>
               {goals.length === 0 ? (
                 <Box sx={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                  <Typography variant="h6" gutterBottom sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                     {t('savings.noSavingsGoals')}
                   </Typography>
                 </Box>
