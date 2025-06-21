@@ -28,7 +28,8 @@ import {
   InputLabel,
   Alert,
   AlertTitle,
-  Collapse
+  Collapse,
+  Fab
 } from '@mui/material';
 import {
   TrendingUp,
@@ -69,6 +70,7 @@ import {
   Legend,
   ArcElement
 } from 'chart.js';
+import QuickAdd from './pages/QuickAdd';
 
 ChartJS.register(
   CategoryScale, 
@@ -147,6 +149,7 @@ const Home = () => {
     recentTransactions: []
   });
   const { t } = useTranslation();
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
 
   // Charger les données depuis localStorage au démarrage
   useEffect(() => {
@@ -1564,6 +1567,10 @@ const Home = () => {
                 boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
                 transition: 'all 0.3s ease',
                 textAlign: 'center',
+                minHeight: 210,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
                 '&:hover': {
                   transform: 'translateY(-4px)',
                   background: 'rgba(255,255,255,0.15)',
@@ -1630,6 +1637,10 @@ const Home = () => {
                 boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
                 transition: 'all 0.3s ease',
                 textAlign: 'center',
+                minHeight: 210,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
                 '&:hover': {
                   transform: 'translateY(-4px)',
                   background: 'rgba(255,255,255,0.15)',
@@ -1696,6 +1707,10 @@ const Home = () => {
                 boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
                 transition: 'all 0.3s ease',
                 textAlign: 'center',
+                minHeight: 210,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
                 '&:hover': {
                   transform: 'translateY(-4px)',
                   background: 'rgba(255,255,255,0.15)',
@@ -1766,6 +1781,10 @@ const Home = () => {
                 boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
                 transition: 'all 0.3s ease',
                 textAlign: 'center',
+                minHeight: 210,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
                 '&:hover': {
                   transform: 'translateY(-4px)',
                   background: 'rgba(255,255,255,0.15)',
@@ -3090,55 +3109,30 @@ const Home = () => {
       </Box>
 
       {/* Bouton QuickAdd flottant avec design moderne */}
-      <Box
+      <Fab
+        color="primary"
+        aria-label="quickadd"
+        onClick={() => setShowQuickAdd(true)}
         sx={{
           position: 'fixed',
           bottom: 24,
           right: 24,
           zIndex: 1000,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: 'white',
+          boxShadow: '0 8px 32px rgba(102, 126, 234, 0.4)',
+          width: 64,
+          height: 64,
+          '&:hover': {
+            background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+            boxShadow: '0 12px 40px rgba(102, 126, 234, 0.6)',
+          },
         }}
       >
-        <Button
-          variant="contained"
-          onClick={() => navigate('/quickadd')}
-          sx={{
-            width: 64,
-            height: 64,
-            borderRadius: '50%',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            boxShadow: '0 8px 32px rgba(102, 126, 234, 0.4), 0 0 0 0 rgba(102, 126, 234, 0.7)',
-            transition: 'all 0.3s ease',
-            animation: 'pulse 2s infinite',
-            '&:hover': {
-              transform: 'scale(1.1)',
-              boxShadow: '0 12px 40px rgba(102, 126, 234, 0.6), 0 0 0 0 rgba(102, 126, 234, 0.7)',
-              background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
-            },
-            '&:active': {
-              transform: 'scale(0.95)',
-            },
-            '@keyframes pulse': {
-              '0%': {
-                boxShadow: '0 8px 32px rgba(102, 126, 234, 0.4), 0 0 0 0 rgba(102, 126, 234, 0.7)',
-              },
-              '70%': {
-                boxShadow: '0 8px 32px rgba(102, 126, 234, 0.4), 0 0 0 20px rgba(102, 126, 234, 0)',
-              },
-              '100%': {
-                boxShadow: '0 8px 32px rgba(102, 126, 234, 0.4), 0 0 0 0 rgba(102, 126, 234, 0)',
-              },
-            },
-          }}
-        >
-          <Add 
-            sx={{ 
-              fontSize: 32,
-              color: 'white',
-              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
-            }} 
-          />
-        </Button>
-      </Box>
+        <Add sx={{ fontSize: 32 }} />
+      </Fab>
+      {/* Popup QuickAdd */}
+      <QuickAdd open={showQuickAdd} onClose={() => setShowQuickAdd(false)} />
     </Box>
   );
 };
