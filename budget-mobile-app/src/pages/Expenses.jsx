@@ -273,80 +273,233 @@ const Expenses = () => {
   };
 
   return (
-    <Box sx={{ p: 2, pb: 10 }}>
-      {/* AppBar */}
-      <AppBar position="static" elevation={0}>
+    <Box sx={{ 
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Particules animées en arrière-plan */}
+      <Box sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%)',
+        animation: 'float 20s ease-in-out infinite',
+        '@keyframes float': {
+          '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+          '33%': { transform: 'translateY(-20px) rotate(1deg)' },
+          '66%': { transform: 'translateY(10px) rotate(-1deg)' }
+        }
+      }} />
+
+      <AppBar position="static" sx={{ 
+        background: 'rgba(255,255,255,0.1)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255,255,255,0.2)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+      }}>
         <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" sx={{ 
+            flexGrow: 1,
+            color: 'white',
+            fontWeight: 700,
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          }}>
             Dépenses
           </Typography>
-          <IconButton color="inherit">
+          <IconButton color="inherit" sx={{
+            color: 'white',
+            '&:hover': {
+              background: 'rgba(255,255,255,0.1)'
+            }
+          }}>
             <Info />
           </IconButton>
         </Toolbar>
       </AppBar>
 
       {/* KPIs */}
-      <Box sx={{ p: 2 }}>
-        <Grid container spacing={2} sx={{ mb: 3 }}>
+      <Box sx={{ p: 3 }}>
+        <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={6}>
-            <Card sx={{ bgcolor: 'error.main', color: 'white' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <TrendingDown sx={{ mr: 1 }} />
-                  <Typography variant="h6">Total</Typography>
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {totalExpenses.toLocaleString()}€
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                  Toutes les dépenses
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box sx={{ 
+              p: 3,
+              borderRadius: 4,
+              background: 'rgba(255,255,255,0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease',
+              textAlign: 'center',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                background: 'rgba(255,255,255,0.15)',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+              }
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+                <TrendingDown sx={{ 
+                  fontSize: 32, 
+                  color: '#f44336',
+                  filter: 'drop-shadow(0 2px 4px rgba(244, 67, 54, 0.3))'
+                }} />
+              </Box>
+              <Typography variant="h6" sx={{ 
+                fontWeight: 600,
+                color: '#f44336',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                mb: 1
+              }}>
+                Total
+              </Typography>
+              <Typography variant="h4" sx={{ 
+                fontWeight: 900, 
+                color: '#f44336',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                mb: 1
+              }}>
+                {totalExpenses.toLocaleString()}€
+              </Typography>
+              <Typography variant="body2" sx={{ 
+                opacity: 0.8, 
+                fontWeight: 500,
+                color: 'rgba(255,255,255,0.9)'
+              }}>
+                Toutes les dépenses
+              </Typography>
+            </Box>
           </Grid>
           <Grid item xs={6}>
-            <Card sx={{ bgcolor: 'warning.main', color: 'white' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <CalendarToday sx={{ mr: 1 }} />
-                  <Typography variant="h6">{t('expenses.thisMonth')}</Typography>
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {monthlyExpenses.toLocaleString()}€
-                </Typography>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={Math.min((monthlyExpenses / 2000) * 100, 100)} 
-                  sx={{ mt: 1, bgcolor: 'rgba(255,255,255,0.3)', '& .MuiLinearProgress-bar': { bgcolor: 'white' } }}
-                />
-              </CardContent>
-            </Card>
+            <Box sx={{ 
+              p: 3,
+              borderRadius: 4,
+              background: 'rgba(255,255,255,0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease',
+              textAlign: 'center',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                background: 'rgba(255,255,255,0.15)',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+              }
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+                <CalendarToday sx={{ 
+                  fontSize: 32, 
+                  color: '#ff9800',
+                  filter: 'drop-shadow(0 2px 4px rgba(255, 152, 0, 0.3))'
+                }} />
+              </Box>
+              <Typography variant="h6" sx={{ 
+                fontWeight: 600,
+                color: '#ff9800',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                mb: 1
+              }}>
+                {t('expenses.thisMonth')}
+              </Typography>
+              <Typography variant="h4" sx={{ 
+                fontWeight: 900, 
+                color: '#ff9800',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                mb: 1
+              }}>
+                {monthlyExpenses.toLocaleString()}€
+              </Typography>
+              <LinearProgress 
+                variant="determinate" 
+                value={Math.min((monthlyExpenses / 2000) * 100, 100)} 
+                sx={{ 
+                  mt: 1, 
+                  height: 6,
+                  borderRadius: 3,
+                  bgcolor: 'rgba(255,255,255,0.2)', 
+                  '& .MuiLinearProgress-bar': { 
+                    bgcolor: '#ff9800',
+                    borderRadius: 3
+                  } 
+                }}
+              />
+            </Box>
           </Grid>
         </Grid>
 
         {/* Tabs */}
-        <Paper sx={{ mb: 2 }}>
-          <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
+        <Box sx={{ 
+          mb: 3,
+          background: 'rgba(255,255,255,0.1)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: 4,
+          border: '1px solid rgba(255,255,255,0.2)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+          overflow: 'hidden'
+        }}>
+          <Tabs 
+            value={activeTab} 
+            onChange={(e, newValue) => setActiveTab(newValue)}
+            sx={{
+              '& .MuiTab-root': {
+                color: 'rgba(255,255,255,0.8)',
+                fontWeight: 600,
+                '&.Mui-selected': {
+                  color: 'white',
+                  background: 'rgba(255,255,255,0.1)'
+                }
+              },
+              '& .MuiTabs-indicator': {
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                height: 3
+              }
+            }}
+          >
             <Tab label={t('expenses.tabs.categories')} />
             <Tab label={t('expenses.tabs.history')} />
             <Tab label={t('expenses.tabs.analytics')} />
           </Tabs>
-        </Paper>
+        </Box>
 
         {/* Tab Content */}
         {activeTab === 0 && (
-          <Paper>
-            <List>
+          <Box sx={{ 
+            background: 'rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 4,
+            border: '1px solid rgba(255,255,255,0.2)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+            overflow: 'hidden'
+          }}>
+            <List sx={{ p: 0 }}>
               {categories.map((cat, index) => (
                 <React.Fragment key={cat}>
-                  <ListItem
+                  <ListItem sx={{ 
+                    p: 2,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      background: 'rgba(255,255,255,0.1)',
+                    }
+                  }}
                     secondaryAction={
                       <>
-                        <IconButton edge="end" aria-label="edit" onClick={() => handleEdit(index, data[cat]?.[idx] || 0)}>
+                        <IconButton 
+                          edge="end" 
+                          aria-label="edit" 
+                          onClick={() => handleEdit(index, data[cat]?.[idx] || 0)}
+                          sx={{ color: 'rgba(255,255,255,0.8)' }}
+                        >
                           <Edit />
                         </IconButton>
-                        <IconButton edge="end" aria-label="delete" color="error" onClick={() => setDeleteIdx(index)}>
+                        <IconButton 
+                          edge="end" 
+                          aria-label="delete" 
+                          color="error" 
+                          onClick={() => setDeleteIdx(index)}
+                          sx={{ color: '#f44336' }}
+                        >
                           <Delete />
                         </IconButton>
                       </>
@@ -358,7 +511,28 @@ const Expenses = () => {
                         value={editValue}
                         onChange={e => setEditValue(e.target.value)}
                         size="small"
-                        sx={{ width: 100, mr: 2 }}
+                        sx={{ 
+                          width: 100, 
+                          mr: 2,
+                          '& .MuiOutlinedInput-root': {
+                            color: 'white',
+                            '& fieldset': {
+                              borderColor: 'rgba(255,255,255,0.3)',
+                            },
+                            '&:hover fieldset': {
+                              borderColor: 'rgba(255,255,255,0.5)',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: 'white',
+                            },
+                          },
+                          '& .MuiInputLabel-root': {
+                            color: 'rgba(255,255,255,0.7)',
+                          },
+                          '& .MuiInputAdornment-root': {
+                            color: 'rgba(255,255,255,0.7)',
+                          }
+                        }}
                         onBlur={() => handleEditSave(cat)}
                         onKeyDown={e => { if (e.key === 'Enter') handleEditSave(cat); }}
                         autoFocus
@@ -369,16 +543,39 @@ const Expenses = () => {
                     ) : (
                       <>
                         <ListItemText 
-                          primary={cat} 
-                          secondary={`${expenses.filter(exp => exp.category === cat).length} transactions`}
+                          primary={
+                            <Typography sx={{ 
+                              color: 'white',
+                              fontWeight: 600,
+                              textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                            }}>
+                              {cat}
+                            </Typography>
+                          }
+                          secondary={
+                            <Typography sx={{ 
+                              color: 'rgba(255,255,255,0.8)',
+                              fontWeight: 500
+                            }}>
+                              {`${expenses.filter(exp => exp.category === cat).length} transactions`}
+                            </Typography>
+                          }
                         />
-                        <Typography variant="h6" color="error.main" sx={{ fontWeight: 'bold' }}>
+                        <Typography variant="h6" color="#f44336" sx={{ 
+                          fontWeight: 900,
+                          textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                        }}>
                           {(data[cat]?.[idx] || 0).toLocaleString()}€
                         </Typography>
                       </>
                     )}
                   </ListItem>
-                  {index < categories.length - 1 && <Divider />}
+                  {index < categories.length - 1 && (
+                    <Divider sx={{ 
+                      opacity: 0.3,
+                      borderColor: 'rgba(255,255,255,0.2)'
+                    }} />
+                  )}
                   
                   {/* Dialog de confirmation suppression */}
                   <Dialog open={deleteIdx === index} onClose={() => setDeleteIdx(null)}>
@@ -394,84 +591,176 @@ const Expenses = () => {
                 </React.Fragment>
               ))}
             </List>
-          </Paper>
+          </Box>
         )}
 
         {activeTab === 1 && (
           <Box>
             {expenses.length === 0 ? (
-              <Paper sx={{ p: 4, textAlign: 'center' }}>
-                <Typography variant="h6" color="text.secondary" gutterBottom>
+              <Box sx={{ 
+                p: 4, 
+                textAlign: 'center',
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: 4,
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+              }}>
+                <Typography variant="h6" sx={{ 
+                  color: 'rgba(255,255,255,0.8)',
+                  fontWeight: 600,
+                  mb: 1
+                }} gutterBottom>
                   {t('expenses.noExpenses')}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" component="span">
+                <Typography variant="body2" sx={{ 
+                  color: 'rgba(255,255,255,0.6)',
+                  fontWeight: 500
+                }}>
                   {t('expenses.addFirstExpense')}
                 </Typography>
-              </Paper>
+              </Box>
             ) : (
-              <List>
-                {expenses.map((expense, index) => (
-                  <React.Fragment key={expense.id}>
-                    <ListItem>
-                      <ListItemText
-                        primary={
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="subtitle1">{expense.category}</Typography>
-                            {expense.recurring && (
-                              <Chip label={t('expenses.recurring')} size="small" color="warning" />
-                            )}
-                          </Box>
+              <Box sx={{ 
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: 4,
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                overflow: 'hidden'
+              }}>
+                <List sx={{ p: 0 }}>
+                  {expenses.map((expense, index) => (
+                    <React.Fragment key={expense.id}>
+                      <ListItem sx={{ 
+                        p: 2,
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          background: 'rgba(255,255,255,0.1)',
+                          transform: 'translateX(8px)',
                         }
-                        secondary={
-                          <Box>
-                            <Typography variant="body2" color="text.secondary" component="span">
+                      }}>
+                        <ListItemText
+                          primary={
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                              <Typography variant="subtitle1" sx={{ 
+                                color: 'white',
+                                fontWeight: 600,
+                                textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                              }}>
+                                {expense.category}
+                              </Typography>
+                              {expense.recurring && (
+                                <Chip 
+                                  label={t('expenses.recurring')} 
+                                  size="small" 
+                                  sx={{
+                                    background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                                    color: 'white',
+                                    fontWeight: 600,
+                                    boxShadow: '0 2px 8px rgba(255, 152, 0, 0.3)'
+                                  }}
+                                />
+                              )}
+                            </Box>
+                          }
+                          secondary={
+                            <Typography variant="body2" sx={{ 
+                              color: 'rgba(255,255,255,0.8)',
+                              fontWeight: 500
+                            }}>
                               {expense.date} • {expense.description}
                             </Typography>
-                          </Box>
-                        }
-                      />
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant="h6" color="error.main" sx={{ fontWeight: 'bold' }}>
-                          -{expense.amount}€
-                        </Typography>
-                        <IconButton 
-                          size="small" 
-                          color="error" 
-                          onClick={() => handleDeleteExpense(expense.id)}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Box>
-                    </ListItem>
-                    {index < expenses.length - 1 && <Divider />}
-                  </React.Fragment>
-                ))}
-              </List>
+                          }
+                        />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography variant="h6" color="#f44336" sx={{ 
+                            fontWeight: 900,
+                            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                          }}>
+                            -{expense.amount}€
+                          </Typography>
+                          <IconButton 
+                            size="small" 
+                            color="error" 
+                            onClick={() => handleDeleteExpense(expense.id)}
+                            sx={{ color: '#f44336' }}
+                          >
+                            <Delete />
+                          </IconButton>
+                        </Box>
+                      </ListItem>
+                      {index < expenses.length - 1 && (
+                        <Divider sx={{ 
+                          opacity: 0.3,
+                          borderColor: 'rgba(255,255,255,0.2)'
+                        }} />
+                      )}
+                    </React.Fragment>
+                  ))}
+                </List>
+              </Box>
             )}
           </Box>
         )}
 
         {activeTab === 2 && (
-          <Grid container spacing={2}>
+          <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom>
+              <Box sx={{ 
+                p: 3,
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: 4,
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                }
+              }}>
+                <Typography variant="h6" sx={{ 
+                  gutterBottom: true,
+                  color: 'white',
+                  fontWeight: 700,
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  mb: 2
+                }}>
                   Répartition par catégorie
                 </Typography>
                 <Box sx={{ height: 300 }}>
                   <Doughnut data={doughnutData} options={chartOptions} />
                 </Box>
-              </Paper>
+              </Box>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom>
+              <Box sx={{ 
+                p: 3,
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: 4,
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                }
+              }}>
+                <Typography variant="h6" sx={{ 
+                  gutterBottom: true,
+                  color: 'white',
+                  fontWeight: 700,
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  mb: 2
+                }}>
                   Dépenses hebdomadaires
                 </Typography>
                 <Box sx={{ height: 300 }}>
                   <Bar data={barData} options={chartOptions} />
                 </Box>
-              </Paper>
+              </Box>
             </Grid>
           </Grid>
         )}
@@ -481,10 +770,38 @@ const Expenses = () => {
       <Fab
         color="primary"
         aria-label="add"
-        sx={{ position: 'fixed', bottom: 80, right: 16 }}
         onClick={() => setShowAddDialog(true)}
+        sx={{
+          position: 'fixed',
+          bottom: 80,
+          right: 24,
+          zIndex: 1000,
+          background: 'rgba(255,255,255,0.15)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.3)',
+          color: 'white',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.1)',
+          width: 64,
+          height: 64,
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            background: 'rgba(255,255,255,0.25)',
+            transform: 'scale(1.1) translateY(-2px)',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.2)',
+          },
+          '&:active': {
+            transform: 'scale(0.95)',
+          },
+          '& .MuiFab-label': {
+            fontSize: 0,
+          },
+        }}
       >
-        <Add />
+        <Add sx={{ 
+          fontSize: 28,
+          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+          transition: 'all 0.3s ease'
+        }} />
       </Fab>
 
       {/* Dialog d'ajout de dépense */}

@@ -315,270 +315,504 @@ const Analytics = () => {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
-      {/* Vérifier l'accès aux analytics */}
-      {!isFeatureAvailable('basicAnalytics') ? (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <Analytics sx={{ fontSize: 64, color: 'secondary.main', mb: 2 }} />
-          <Typography variant="h4" sx={{ mb: 2, fontWeight: 'bold' }}>
-            Mise à niveau requise
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
-            Accédez aux analyses détaillées, graphiques interactifs et insights personnalisés pour mieux comprendre vos finances.
-          </Typography>
-          <Button 
-            variant="contained" 
-            color="secondary" 
-            size="large"
-            onClick={() => navigate('/subscription')}
-            startIcon={<Analytics />}
-            sx={{ mb: 2 }}
-          >
-            Passer à Premium
-          </Button>
-          <Typography variant="body2" color="text.secondary">
-            Plan actuel: {getSubscriptionText()}
-          </Typography>
-        </Box>
-      ) : (
-        <>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-                Analyses et Statistiques
-          </Typography>
-          {activeAccount && (
-            <Typography variant="body2" color="text.secondary" component="span">
-                  Compte: {activeAccount.name}
-            </Typography>
-          )}
-        </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>Période</InputLabel>
-            <Select
-              value={timeFilter}
-              label="Période"
-              onChange={(e) => setTimeFilter(e.target.value)}
-            >
-              <MenuItem value="week">Semaine</MenuItem>
-              <MenuItem value="month">Mois</MenuItem>
-              <MenuItem value="quarter">Trimestre</MenuItem>
-              <MenuItem value="year">Année</MenuItem>
-            </Select>
-          </FormControl>
-              <Tooltip title={`Plan actuel: ${getSubscriptionText()}`}>
-                <IconButton
-                  onClick={() => navigate('/subscription')}
-                  sx={{
-                    color: getSubscriptionColor(),
-                    '&:hover': {
-                      backgroundColor: 'rgba(0,0,0,0.1)',
-                      transform: 'scale(1.1)',
-                      transition: 'all 0.2s ease'
-                    }
-                  }}
-                >
-                  {getSubscriptionIcon()}
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Actualiser">
-            <IconButton>
-              <Refresh />
-            </IconButton>
-          </Tooltip>
-        </Box>
+    <Box sx={{ 
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Particules animées */}
+      <Box sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: 'hidden',
+        zIndex: 0
+      }}>
+        {[...Array(20)].map((_, i) => (
+          <Box
+            key={i}
+            sx={{
+              position: 'absolute',
+              width: Math.random() * 4 + 2,
+              height: Math.random() * 4 + 2,
+              background: 'rgba(255, 255, 255, 0.3)',
+              borderRadius: '50%',
+              animation: `float ${Math.random() * 10 + 10}s linear infinite`,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              '@keyframes float': {
+                '0%': {
+                  transform: 'translateY(0px) rotate(0deg)',
+                  opacity: 0
+                },
+                '10%': {
+                  opacity: 1
+                },
+                '90%': {
+                  opacity: 1
+                },
+                '100%': {
+                  transform: 'translateY(-100vh) rotate(360deg)',
+                  opacity: 0
+                }
+              }
+            }}
+          />
+        ))}
       </Box>
 
-      {/* KPIs */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Fade in timeout={500}>
-            <Card sx={{ bgcolor: 'primary.main', color: 'white' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <AccountBalance sx={{ mr: 1 }} />
-                  <Typography variant="h6">Revenus</Typography>
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {currentRevenue.toLocaleString()}€
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                  Ce mois
-                </Typography>
-              </CardContent>
-            </Card>
-          </Fade>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Fade in timeout={700}>
-            <Card sx={{ bgcolor: 'error.main', color: 'white' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <TrendingDown sx={{ mr: 1 }} />
-                  <Typography variant="h6">Dépenses</Typography>
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {totalExpenses.toLocaleString()}€
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                      {expenseRate}% des revenus
-                </Typography>
-              </CardContent>
-            </Card>
-          </Fade>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Fade in timeout={900}>
-            <Card sx={{ bgcolor: 'success.main', color: 'white' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <Savings sx={{ mr: 1 }} />
-                  <Typography variant="h6">Économies</Typography>
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {currentSavings.toLocaleString()}€
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                      Taux: {savingsRate}%
-                </Typography>
-              </CardContent>
-            </Card>
-          </Fade>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Fade in timeout={1100}>
-            <Card sx={{ bgcolor: 'warning.main', color: 'white' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <TrendingUp sx={{ mr: 1 }} />
-                      <Typography variant="h6">{t('analytics.savingsRate')}</Typography>
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {savingsRate}%
-                </Typography>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={parseFloat(savingsRate)} 
-                  sx={{ mt: 1, bgcolor: 'rgba(255,255,255,0.3)', '& .MuiLinearProgress-bar': { bgcolor: 'white' } }}
-                />
-              </CardContent>
-            </Card>
-          </Fade>
-        </Grid>
-      </Grid>
-
-      {/* Graphiques */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Zoom in timeout={600}>
-            <Paper sx={{ p: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                      {t('analytics.expenseDistribution')}
-                </Typography>
-                    <Tooltip title={t('analytics.expenseDistributionTooltip')}>
-                  <IconButton size="small">
-                    <Info />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-              <Box sx={{ height: 300 }}>
-                <Pie data={pieData} options={chartOptions} />
-              </Box>
-            </Paper>
-          </Zoom>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Zoom in timeout={800}>
-            <Paper sx={{ p: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                      {t('analytics.savingsEvolution')}
-                </Typography>
-                    <Tooltip title={t('analytics.savingsEvolutionTooltip')}>
-                  <IconButton size="small">
-                    <Info />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-              <Box sx={{ height: 300 }}>
-                <Bar data={barData} options={barOptions} />
-              </Box>
-            </Paper>
-          </Zoom>
-        </Grid>
-
-        <Grid item xs={12}>
-          <Zoom in timeout={1000}>
-            <Paper sx={{ p: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                      {t('analytics.revenuesVsExpenses')}
-                </Typography>
-                    <Tooltip title={t('analytics.revenuesVsExpensesTooltip')}>
-                  <IconButton size="small">
-                    <Info />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-              <Box sx={{ height: 300 }}>
-                <Line data={lineData} options={lineOptions} />
-              </Box>
-            </Paper>
-          </Zoom>
-        </Grid>
-      </Grid>
-
-      {/* Détails par catégorie */}
-      <Paper sx={{ p: 2, mt: 3 }}>
-        <Typography variant="h6" gutterBottom>
-              {t('analytics.expenseDetails')}
-        </Typography>
-        {expenseByCategory.length === 0 ? (
-          <Typography variant="body2" color="text.secondary" textAlign="center" component="span">
-                {t('analytics.noExpenseRecordedThisMonth')}
-          </Typography>
+      <Box sx={{ p: 2, pb: 10, position: 'relative', zIndex: 1 }}>
+        {/* Vérifier l'accès aux analytics */}
+        {!isFeatureAvailable('basicAnalytics') ? (
+          <Box sx={{ 
+            textAlign: 'center', 
+            py: 8,
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+          }}>
+            <AnalyticsIcon sx={{ fontSize: 64, color: 'rgba(255, 255, 255, 0.8)', mb: 2 }} />
+            <Typography variant="h4" sx={{ 
+              mb: 2, 
+              fontWeight: 'bold',
+              color: 'white',
+              textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+            }}>
+              Mise à niveau requise
+            </Typography>
+            <Typography variant="body1" sx={{ 
+              mb: 3, 
+              maxWidth: 500, 
+              mx: 'auto',
+              color: 'rgba(255, 255, 255, 0.8)',
+              textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+            }}>
+              Accédez aux analyses détaillées, graphiques interactifs et insights personnalisés pour mieux comprendre vos finances.
+            </Typography>
+            <Button 
+              variant="contained" 
+              size="large"
+              onClick={() => navigate('/subscription')}
+              startIcon={<AnalyticsIcon />}
+              sx={{ 
+                mb: 2,
+                background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #45a049 0%, #7cb342 100%)'
+                }
+              }}
+            >
+              Passer à Premium
+            </Button>
+            <Typography variant="body2" sx={{ 
+              color: 'rgba(255, 255, 255, 0.7)',
+              textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+            }}>
+              Plan actuel: {getSubscriptionText()}
+            </Typography>
+          </Box>
         ) : (
-          <Grid container spacing={2}>
-            {expenseByCategory.map((item, index) => (
-              <Grid item xs={12} sm={6} md={4} key={item.category}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center', 
-                  p: 2,
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: 1,
-                  bgcolor: 'background.paper'
+          <>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              mb: 3,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: 3,
+              p: 2,
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <Box>
+                <Typography variant="h5" sx={{ 
+                  fontWeight: 'bold',
+                  color: 'white',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)'
                 }}>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary" component="span">
-                      {item.category}
-                    </Typography>
-                    <Typography variant="h6">
-                      {item.amount.toLocaleString()}€
-                    </Typography>
-                  </Box>
-                  <Chip 
-                    label={`${totalExpenses > 0 ? ((item.amount / totalExpenses) * 100).toFixed(1) : 0}%`}
-                    size="small"
-                    color="primary"
-                    variant="outlined"
-                  />
-                </Box>
+                  Analyses et Statistiques
+                </Typography>
+                {activeAccount && (
+                  <Typography variant="body2" sx={{ 
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                  }} component="span">
+                    Compte: {activeAccount.name}
+                  </Typography>
+                )}
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <FormControl size="small" sx={{ minWidth: 120 }}>
+                  <Select
+                    value={timeFilter}
+                    onChange={(e) => setTimeFilter(e.target.value)}
+                    sx={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(10px)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      color: 'white',
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgba(255, 255, 255, 0.3)'
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: 'rgba(255, 255, 255, 0.5)'
+                      },
+                      '& .MuiSvgIcon-root': {
+                        color: 'white'
+                      }
+                    }}
+                  >
+                    <MenuItem value="week">Semaine</MenuItem>
+                    <MenuItem value="month">Mois</MenuItem>
+                    <MenuItem value="quarter">Trimestre</MenuItem>
+                    <MenuItem value="year">Année</MenuItem>
+                  </Select>
+                </FormControl>
+                <Tooltip title={`Plan actuel: ${getSubscriptionText()}`}>
+                  <IconButton
+                    onClick={() => navigate('/subscription')}
+                    sx={{
+                      color: getSubscriptionColor(),
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        transform: 'scale(1.1)',
+                        transition: 'all 0.2s ease'
+                      }
+                    }}
+                  >
+                    {getSubscriptionIcon()}
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Actualiser">
+                  <IconButton sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                    <Refresh />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            </Box>
+
+            {/* KPIs glassmorphism */}
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={12} sm={6} md={3}>
+                <Fade in timeout={500}>
+                  <Card sx={{ 
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                    color: 'white'
+                  }}>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <AccountBalance sx={{ mr: 1, color: '#4caf50' }} />
+                        <Typography variant="h6" sx={{ 
+                          color: 'white',
+                          textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                        }}>Revenus</Typography>
+                      </Box>
+                      <Typography variant="h4" sx={{ 
+                        fontWeight: 'bold',
+                        color: 'white',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                      }}>
+                        {currentRevenue.toLocaleString()}€
+                      </Typography>
+                      <Typography variant="body2" sx={{ 
+                        opacity: 0.8,
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                      }} component="span">
+                        Ce mois
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Fade>
               </Grid>
-            ))}
-          </Grid>
+
+              <Grid item xs={12} sm={6} md={3}>
+                <Fade in timeout={700}>
+                  <Card sx={{ 
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                    color: 'white'
+                  }}>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <TrendingDown sx={{ mr: 1, color: '#f44336' }} />
+                        <Typography variant="h6" sx={{ 
+                          color: 'white',
+                          textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                        }}>Dépenses</Typography>
+                      </Box>
+                      <Typography variant="h4" sx={{ 
+                        fontWeight: 'bold',
+                        color: 'white',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                      }}>
+                        {totalExpenses.toLocaleString()}€
+                      </Typography>
+                      <Typography variant="body2" sx={{ 
+                        opacity: 0.8,
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                      }} component="span">
+                        {expenseRate}% des revenus
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Fade>
+              </Grid>
+
+              <Grid item xs={12} sm={6} md={3}>
+                <Fade in timeout={900}>
+                  <Card sx={{ 
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                    color: 'white'
+                  }}>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <Savings sx={{ mr: 1, color: '#4caf50' }} />
+                        <Typography variant="h6" sx={{ 
+                          color: 'white',
+                          textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                        }}>Économies</Typography>
+                      </Box>
+                      <Typography variant="h4" sx={{ 
+                        fontWeight: 'bold',
+                        color: 'white',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                      }}>
+                        {currentSavings.toLocaleString()}€
+                      </Typography>
+                      <Typography variant="body2" sx={{ 
+                        opacity: 0.8,
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                      }} component="span">
+                        Taux: {savingsRate}%
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Fade>
+              </Grid>
+
+              <Grid item xs={12} sm={6} md={3}>
+                <Fade in timeout={1100}>
+                  <Card sx={{ 
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                    color: 'white'
+                  }}>
+                    <CardContent>
+                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                        <TrendingUp sx={{ mr: 1, color: '#ff9800' }} />
+                        <Typography variant="h6" sx={{ 
+                          color: 'white',
+                          textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                        }}>{t('analytics.savingsRate')}</Typography>
+                      </Box>
+                      <Typography variant="h4" sx={{ 
+                        fontWeight: 'bold',
+                        color: 'white',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                      }}>
+                        {savingsRate}%
+                      </Typography>
+                      <LinearProgress 
+                        variant="determinate" 
+                        value={parseFloat(savingsRate)} 
+                        sx={{ 
+                          mt: 1, 
+                          background: 'rgba(255,255,255,0.3)', 
+                          '& .MuiLinearProgress-bar': { 
+                            background: 'linear-gradient(90deg, #4caf50 0%, #8bc34a 100%)'
+                          } 
+                        }}
+                      />
+                    </CardContent>
+                  </Card>
+                </Fade>
+              </Grid>
+            </Grid>
+
+            {/* Graphiques glassmorphism */}
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Zoom in timeout={600}>
+                  <Paper sx={{ 
+                    p: 2,
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Typography variant="h6" sx={{ 
+                        flexGrow: 1,
+                        color: 'white',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                      }}>
+                        {t('analytics.expenseDistribution')}
+                      </Typography>
+                      <Tooltip title={t('analytics.expenseDistributionTooltip')}>
+                        <IconButton size="small" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                          <Info />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                    <Box sx={{ height: 300 }}>
+                      <Pie data={pieData} options={chartOptions} />
+                    </Box>
+                  </Paper>
+                </Zoom>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Zoom in timeout={800}>
+                  <Paper sx={{ 
+                    p: 2,
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Typography variant="h6" sx={{ 
+                        flexGrow: 1,
+                        color: 'white',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                      }}>
+                        {t('analytics.savingsEvolution')}
+                      </Typography>
+                      <Tooltip title={t('analytics.savingsEvolutionTooltip')}>
+                        <IconButton size="small" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                          <Info />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                    <Box sx={{ height: 300 }}>
+                      <Bar data={barData} options={barOptions} />
+                    </Box>
+                  </Paper>
+                </Zoom>
+              </Grid>
+
+              <Grid item xs={12}>
+                <Zoom in timeout={1000}>
+                  <Paper sx={{ 
+                    p: 2,
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(20px)',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <Typography variant="h6" sx={{ 
+                        flexGrow: 1,
+                        color: 'white',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                      }}>
+                        {t('analytics.revenuesVsExpenses')}
+                      </Typography>
+                      <Tooltip title={t('analytics.revenuesVsExpensesTooltip')}>
+                        <IconButton size="small" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                          <Info />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                    <Box sx={{ height: 300 }}>
+                      <Line data={lineData} options={lineOptions} />
+                    </Box>
+                  </Paper>
+                </Zoom>
+              </Grid>
+            </Grid>
+
+            {/* Détails par catégorie glassmorphism */}
+            <Paper sx={{ 
+              p: 2, 
+              mt: 3,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <Typography variant="h6" sx={{ 
+                gutterBottom,
+                color: 'white',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
+                {t('analytics.expenseDetails')}
+              </Typography>
+              {expenseByCategory.length === 0 ? (
+                <Typography variant="body2" sx={{ 
+                  textAlign: 'center',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                }} component="span">
+                  {t('analytics.noExpenseRecordedThisMonth')}
+                </Typography>
+              ) : (
+                <Grid container spacing={2}>
+                  {expenseByCategory.map((item, index) => (
+                    <Grid item xs={12} sm={6} md={4} key={item.category}>
+                      <Box sx={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        p: 2,
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        borderRadius: 1,
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        backdropFilter: 'blur(10px)'
+                      }}>
+                        <Box>
+                          <Typography variant="body2" sx={{ 
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                          }} component="span">
+                            {item.category}
+                          </Typography>
+                          <Typography variant="h6" sx={{ 
+                            color: 'white',
+                            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                          }}>
+                            {item.amount.toLocaleString()}€
+                          </Typography>
+                        </Box>
+                        <Chip 
+                          label={`${totalExpenses > 0 ? ((item.amount / totalExpenses) * 100).toFixed(1) : 0}%`}
+                          size="small"
+                          sx={{
+                            background: 'rgba(255, 255, 255, 0.1)',
+                            backdropFilter: 'blur(10px)',
+                            color: 'white',
+                            border: '1px solid rgba(255, 255, 255, 0.3)'
+                          }}
+                          variant="outlined"
+                        />
+                      </Box>
+                    </Grid>
+                  ))}
+                </Grid>
+              )}
+            </Paper>
+          </>
         )}
-      </Paper>
-        </>
-      )}
+      </Box>
     </Box>
   );
 };

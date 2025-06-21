@@ -42,7 +42,8 @@ import {
   Slider,
   InputAdornment,
   Fab,
-  Badge
+  Badge,
+  AppBar
 } from '@mui/material';
 import {
   DarkMode,
@@ -250,718 +251,1570 @@ const Settings = () => {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
-        {t('settings.title')}
-      </Typography>
+    <Box sx={{ 
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Particules animées */}
+      <Box sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: 'hidden',
+        zIndex: 0
+      }}>
+        {[...Array(20)].map((_, i) => (
+          <Box
+            key={i}
+            sx={{
+              position: 'absolute',
+              width: Math.random() * 4 + 2,
+              height: Math.random() * 4 + 2,
+              background: 'rgba(255, 255, 255, 0.3)',
+              borderRadius: '50%',
+              animation: `float ${Math.random() * 10 + 10}s linear infinite`,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              '@keyframes float': {
+                '0%': {
+                  transform: 'translateY(0px) rotate(0deg)',
+                  opacity: 0
+                },
+                '10%': {
+                  opacity: 1
+                },
+                '90%': {
+                  opacity: 1
+                },
+                '100%': {
+                  transform: 'translateY(-100vh) rotate(360deg)',
+                  opacity: 0
+                }
+              }
+            }}
+          />
+        ))}
+      </Box>
 
-      {/* En-tête */}
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+      {/* AppBar glassmorphism */}
+      <AppBar 
+        position="static" 
+        sx={{ 
+          background: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: 'none',
+          mb: 2
+        }}
+      >
+        <Box sx={{ p: 2 }}>
+          <Typography variant="h4" sx={{ 
+            fontWeight: 'bold',
+            color: 'white',
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          }}>
             {t('settings.title')}
           </Typography>
-          <IconButton color="primary">
-            <Info />
-          </IconButton>
         </Box>
-      </Paper>
+      </AppBar>
 
-      {/* Tabs principales */}
-      <Paper sx={{ mb: 2 }}>
-        <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
-          <Tab label={t('settings.tabs.profile')} />
-          <Tab label={t('settings.tabs.appearance')} />
-          <Tab label={t('settings.tabs.security')} />
-          <Tab label={t('settings.tabs.data')} />
-          <Tab label={t('settings.tabs.help')} />
-        </Tabs>
-      </Paper>
+      <Box sx={{ p: 2, pb: 10, position: 'relative', zIndex: 1 }}>
+        {/* Tabs principales glassmorphism */}
+        <Paper sx={{ 
+          mb: 2,
+          background: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+        }}>
+          <Tabs 
+            value={activeTab} 
+            onChange={(e, newValue) => setActiveTab(newValue)}
+            sx={{
+              '& .MuiTab-root': {
+                color: 'rgba(255, 255, 255, 0.7)',
+                '&.Mui-selected': {
+                  color: 'white',
+                  fontWeight: 'bold'
+                }
+              },
+              '& .MuiTabs-indicator': {
+                backgroundColor: 'white'
+              }
+            }}
+          >
+            <Tab label={t('settings.tabs.profile')} />
+            <Tab label={t('settings.tabs.appearance')} />
+            <Tab label={t('settings.tabs.security')} />
+            <Tab label={t('settings.tabs.data')} />
+            <Tab label={t('settings.tabs.help')} />
+          </Tabs>
+        </Paper>
 
-      {/* Contenu des tabs */}
-      {activeTab === 0 && (
-        <Box>
-          {/* Profil utilisateur */}
-          <Paper sx={{ mb: 2 }}>
-            <List>
-              <ListItem>
-                <ListItemAvatar>
-                  <Avatar 
-                    src={userProfile.avatar} 
-                    sx={{ width: 60, height: 60, bgcolor: 'primary.main' }}
+        {/* Contenu des tabs */}
+        {activeTab === 0 && (
+          <Box>
+            {/* Profil utilisateur glassmorphism */}
+            <Paper sx={{ 
+              mb: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <List>
+                <ListItem>
+                  <ListItemAvatar>
+                    <Avatar 
+                      src={userProfile.avatar} 
+                      sx={{ 
+                        width: 60, 
+                        height: 60, 
+                        background: 'rgba(255, 255, 255, 0.2)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.3)'
+                      }}
+                    >
+                      {userProfile.firstName?.charAt(0) || userProfile.email?.charAt(0) || 'U'}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText 
+                    primary={`${userProfile.firstName || t('settings.firstName')} ${userProfile.lastName || t('settings.lastName')}`}
+                    secondary={userProfile.email || t('settings.noEmail')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <IconButton 
+                    onClick={() => setProfileDialog(true)}
+                    sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
                   >
-                    {userProfile.firstName?.charAt(0) || userProfile.email?.charAt(0) || 'U'}
-                  </Avatar>
-                </ListItemAvatar>
-                <ListItemText 
-                  primary={`${userProfile.firstName || t('settings.firstName')} ${userProfile.lastName || t('settings.lastName')}`}
-                  secondary={userProfile.email || t('settings.noEmail')}
-                />
-                <IconButton onClick={() => setProfileDialog(true)}>
-                  <Edit />
-                </IconButton>
-              </ListItem>
-            </List>
-          </Paper>
+                    <Edit />
+                  </IconButton>
+                </ListItem>
+              </List>
+            </Paper>
 
-          {/* Informations du compte */}
-          <Paper sx={{ mb: 2 }}>
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  <AccountCircle color="primary" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={t('settings.accountCreated')} 
-                  secondary={userProfile.createdAt ? new Date(userProfile.createdAt).toLocaleDateString('fr-FR') : t('settings.notAvailable')}
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <Timeline color="primary" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={t('settings.lastLogin')} 
-                  secondary={userProfile.lastLogin ? new Date(userProfile.lastLogin).toLocaleDateString('fr-FR') : t('settings.notAvailable')}
-                />
-              </ListItem>
-            </List>
-          </Paper>
-        </Box>
-      )}
+            {/* Informations du compte glassmorphism */}
+            <Paper sx={{ 
+              mb: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <List>
+                <ListItem>
+                  <ListItemIcon>
+                    <AccountCircle sx={{ color: 'rgba(255, 255, 255, 0.8)' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={t('settings.accountCreated')} 
+                    secondary={userProfile.createdAt ? new Date(userProfile.createdAt).toLocaleDateString('fr-FR') : t('settings.notAvailable')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemIcon>
+                    <Timeline sx={{ color: 'rgba(255, 255, 255, 0.8)' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={t('settings.lastLogin')} 
+                    secondary={userProfile.lastLogin ? new Date(userProfile.lastLogin).toLocaleDateString('fr-FR') : t('settings.notAvailable')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                </ListItem>
+              </List>
+            </Paper>
+          </Box>
+        )}
 
-      {activeTab === 1 && (
-        <Box>
-          {/* Thème */}
-          <Paper sx={{ mb: 2 }}>
-            <List>
-              <ListItem>
-                <ListItemText 
-                  primary={t('settings.darkMode')} 
-                  secondary={t('settings.darkModeDescription')}
-                />
-                <Switch 
-                  checked={currentTheme === 'dark'} 
-                  onChange={(e) => changeTheme(e.target.checked ? 'dark' : 'light')} 
-                />
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemText 
-                  primary={t('settings.compactMode')} 
-                  secondary={t('settings.compactModeDescription')}
-                />
-                <Switch 
-                  checked={isCompactMode} 
-                  onChange={(e) => changeCompactMode(e.target.checked)} 
-                />
-              </ListItem>
-            </List>
-          </Paper>
+        {activeTab === 1 && (
+          <Box>
+            {/* Thème glassmorphism */}
+            <Paper sx={{ 
+              mb: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <List>
+                <ListItem>
+                  <ListItemText 
+                    primary={t('settings.darkMode')} 
+                    secondary={t('settings.darkModeDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Switch 
+                    checked={currentTheme === 'dark'} 
+                    onChange={(e) => changeTheme(e.target.checked ? 'dark' : 'light')}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': {
+                        color: '#4caf50',
+                        '&:hover': {
+                          backgroundColor: 'rgba(76, 175, 80, 0.08)'
+                        }
+                      },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        backgroundColor: '#4caf50'
+                      }
+                    }}
+                  />
+                </ListItem>
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                <ListItem>
+                  <ListItemText 
+                    primary={t('settings.compactMode')} 
+                    secondary={t('settings.compactModeDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Switch 
+                    checked={isCompactMode} 
+                    onChange={(e) => changeCompactMode(e.target.checked)}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': {
+                        color: '#4caf50',
+                        '&:hover': {
+                          backgroundColor: 'rgba(76, 175, 80, 0.08)'
+                        }
+                      },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        backgroundColor: '#4caf50'
+                      }
+                    }}
+                  />
+                </ListItem>
+              </List>
+            </Paper>
 
-          {/* Langue et devise */}
-          <Paper sx={{ mb: 2 }}>
-            <List>
-              <ListItem>
-                <ListItemText 
-                  primary={t('settings.language')} 
-                  secondary={t('settings.languageDescription')}
-                />
-                <FormControl size="small" sx={{ minWidth: 120 }}>
-                  <Select
-                    value={currentLanguage}
-                    onChange={(e) => changeLanguage(e.target.value)}
+            {/* Langue et devise glassmorphism */}
+            <Paper sx={{ 
+              mb: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <List>
+                <ListItem>
+                  <ListItemText 
+                    primary={t('settings.language')} 
+                    secondary={t('settings.languageDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <FormControl size="small" sx={{ minWidth: 120 }}>
+                    <Select
+                      value={currentLanguage}
+                      onChange={(e) => changeLanguage(e.target.value)}
+                      sx={{
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        color: 'white',
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgba(255, 255, 255, 0.3)'
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgba(255, 255, 255, 0.5)'
+                        },
+                        '& .MuiSvgIcon-root': {
+                          color: 'white'
+                        }
+                      }}
+                    >
+                      {languages.map(lang => (
+                        <MenuItem key={lang.code} value={lang.code}>
+                          {lang.flag} {lang.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </ListItem>
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                <ListItem>
+                  <ListItemText 
+                    primary={t('settings.currency')} 
+                    secondary={t('settings.currencyDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <FormControl size="small" sx={{ minWidth: 120 }}>
+                    <Select
+                      value={currentCurrency}
+                      onChange={(e) => changeCurrency(e.target.value)}
+                      sx={{
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        color: 'white',
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgba(255, 255, 255, 0.3)'
+                        },
+                        '&:hover .MuiOutlinedInput-notchedOutline': {
+                          borderColor: 'rgba(255, 255, 255, 0.5)'
+                        },
+                        '& .MuiSvgIcon-root': {
+                          color: 'white'
+                        }
+                      }}
+                    >
+                      {currencies.map(curr => (
+                        <MenuItem key={curr.code} value={curr.code}>
+                          {curr.symbol} {curr.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </ListItem>
+              </List>
+            </Paper>
+
+            {/* Affichage glassmorphism */}
+            <Paper sx={{ 
+              mb: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <List>
+                <ListItem>
+                  <ListItemText 
+                    primary={t('settings.showPercentages')} 
+                    secondary={t('settings.showPercentagesDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Switch 
+                    checked={showPercentages} 
+                    onChange={(e) => changeShowPercentages(e.target.checked)}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': {
+                        color: '#4caf50',
+                        '&:hover': {
+                          backgroundColor: 'rgba(76, 175, 80, 0.08)'
+                        }
+                      },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        backgroundColor: '#4caf50'
+                      }
+                    }}
+                  />
+                </ListItem>
+              </List>
+            </Paper>
+          </Box>
+        )}
+
+        {activeTab === 2 && (
+          <Box>
+            {/* Authentification glassmorphism */}
+            <Paper sx={{ 
+              mb: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <List>
+                <ListItem>
+                  <ListItemText 
+                    primary={t('settings.autoLock')} 
+                    secondary={t('settings.autoLockDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Switch 
+                    checked={appSettings.privacy?.autoLock || true} 
+                    onChange={e => updateAppSettings({ 
+                      privacy: { 
+                        ...appSettings.privacy, 
+                        autoLock: e.target.checked 
+                      } 
+                    })}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': {
+                        color: '#4caf50',
+                        '&:hover': {
+                          backgroundColor: 'rgba(76, 175, 80, 0.08)'
+                        }
+                      },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        backgroundColor: '#4caf50'
+                      }
+                    }}
+                  />
+                </ListItem>
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                <ListItem>
+                  <ListItemText 
+                    primary={t('settings.biometricAuth')} 
+                    secondary={t('settings.biometricAuthDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Switch 
+                    checked={appSettings.privacy?.biometricAuth || false} 
+                    onChange={e => updateAppSettings({ 
+                      privacy: { 
+                        ...appSettings.privacy, 
+                        biometricAuth: e.target.checked 
+                      } 
+                    })}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': {
+                        color: '#4caf50',
+                        '&:hover': {
+                          backgroundColor: 'rgba(76, 175, 80, 0.08)'
+                        }
+                      },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        backgroundColor: '#4caf50'
+                      }
+                    }}
+                  />
+                </ListItem>
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                <ListItem>
+                  <ListItemText 
+                    primary={t('settings.dataSharing')} 
+                    secondary={t('settings.dataSharingDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Switch 
+                    checked={appSettings.privacy?.dataSharing || false} 
+                    onChange={e => updateAppSettings({ 
+                      privacy: { 
+                        ...appSettings.privacy, 
+                        dataSharing: e.target.checked 
+                      } 
+                    })}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': {
+                        color: '#4caf50',
+                        '&:hover': {
+                          backgroundColor: 'rgba(76, 175, 80, 0.08)'
+                        }
+                      },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        backgroundColor: '#4caf50'
+                      }
+                    }}
+                  />
+                </ListItem>
+              </List>
+            </Paper>
+
+            {/* Changer le mot de passe glassmorphism */}
+            <Paper sx={{ 
+              mb: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <List>
+                <ListItem>
+                  <ListItemIcon>
+                    <VpnKey sx={{ color: 'rgba(255, 255, 255, 0.8)' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={t('settings.changePassword')} 
+                    secondary={t('settings.changePasswordDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Button 
+                    variant="outlined" 
+                    size="small"
+                    sx={{
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      color: 'white',
+                      '&:hover': {
+                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                        background: 'rgba(255, 255, 255, 0.1)'
+                      }
+                    }}
                   >
-                    {languages.map(lang => (
-                      <MenuItem key={lang.code} value={lang.code}>
-                        {lang.flag} {lang.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemText 
-                  primary={t('settings.currency')} 
-                  secondary={t('settings.currencyDescription')}
-                />
-                <FormControl size="small" sx={{ minWidth: 120 }}>
-                  <Select
-                    value={currentCurrency}
-                    onChange={(e) => changeCurrency(e.target.value)}
-                  >
-                    {currencies.map(curr => (
-                      <MenuItem key={curr.code} value={curr.code}>
-                        {curr.symbol} {curr.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </ListItem>
-            </List>
-          </Paper>
+                    {t('settings.modify')}
+                  </Button>
+                </ListItem>
+              </List>
+            </Paper>
+          </Box>
+        )}
 
-          {/* Affichage */}
-          <Paper sx={{ mb: 2 }}>
-            <List>
-              <ListItem>
-                <ListItemText 
-                  primary={t('settings.showPercentages')} 
-                  secondary={t('settings.showPercentagesDescription')}
-                />
-                <Switch 
-                  checked={showPercentages} 
-                  onChange={(e) => changeShowPercentages(e.target.checked)} 
-                />
-              </ListItem>
-            </List>
-          </Paper>
-        </Box>
-      )}
+        {activeTab === 3 && (
+          <Box>
+            {/* Notifications glassmorphism */}
+            <Paper sx={{ 
+              mb: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <List>
+                <ListItem>
+                  <ListItemText 
+                    primary={t('settings.budgetAlerts')} 
+                    secondary={t('settings.budgetAlertsDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Switch 
+                    checked={appSettings.notifications?.budgetAlerts || true} 
+                    onChange={e => updateAppSettings({ 
+                      notifications: { 
+                        ...appSettings.notifications, 
+                        budgetAlerts: e.target.checked 
+                      } 
+                    })}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': {
+                        color: '#4caf50',
+                        '&:hover': {
+                          backgroundColor: 'rgba(76, 175, 80, 0.08)'
+                        }
+                      },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        backgroundColor: '#4caf50'
+                      }
+                    }}
+                  />
+                </ListItem>
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                <ListItem>
+                  <ListItemText 
+                    primary={t('settings.billReminders')} 
+                    secondary={t('settings.billRemindersDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Switch 
+                    checked={appSettings.notifications?.billReminders || true} 
+                    onChange={e => updateAppSettings({ 
+                      notifications: { 
+                        ...appSettings.notifications, 
+                        billReminders: e.target.checked 
+                      } 
+                    })}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': {
+                        color: '#4caf50',
+                        '&:hover': {
+                          backgroundColor: 'rgba(76, 175, 80, 0.08)'
+                        }
+                      },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        backgroundColor: '#4caf50'
+                      }
+                    }}
+                  />
+                </ListItem>
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                <ListItem>
+                  <ListItemText 
+                    primary={t('settings.savingsGoals')} 
+                    secondary={t('settings.savingsGoalsDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Switch 
+                    checked={appSettings.notifications?.savingsGoals || true} 
+                    onChange={e => updateAppSettings({ 
+                      notifications: { 
+                        ...appSettings.notifications, 
+                        savingsGoals: e.target.checked 
+                      } 
+                    })}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': {
+                        color: '#4caf50',
+                        '&:hover': {
+                          backgroundColor: 'rgba(76, 175, 80, 0.08)'
+                        }
+                      },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        backgroundColor: '#4caf50'
+                      }
+                    }}
+                  />
+                </ListItem>
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                <ListItem>
+                  <ListItemText 
+                    primary={t('settings.weeklyReports')} 
+                    secondary={t('settings.weeklyReportsDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Switch 
+                    checked={appSettings.notifications?.weeklyReports || true} 
+                    onChange={e => updateAppSettings({ 
+                      notifications: { 
+                        ...appSettings.notifications, 
+                        weeklyReports: e.target.checked 
+                      } 
+                    })}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': {
+                        color: '#4caf50',
+                        '&:hover': {
+                          backgroundColor: 'rgba(76, 175, 80, 0.08)'
+                        }
+                      },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        backgroundColor: '#4caf50'
+                      }
+                    }}
+                  />
+                </ListItem>
+              </List>
+            </Paper>
 
-      {activeTab === 2 && (
-        <Box>
-          {/* Authentification */}
-          <Paper sx={{ mb: 2 }}>
-            <List>
-              <ListItem>
-                <ListItemText 
-                  primary={t('settings.autoLock')} 
-                  secondary={t('settings.autoLockDescription')}
-                />
-                <Switch 
-                  checked={appSettings.privacy?.autoLock || true} 
-                  onChange={e => updateAppSettings({ 
-                    privacy: { 
-                      ...appSettings.privacy, 
-                      autoLock: e.target.checked 
-                    } 
-                  })} 
-                />
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemText 
-                  primary={t('settings.biometricAuth')} 
-                  secondary={t('settings.biometricAuthDescription')}
-                />
-                <Switch 
-                  checked={appSettings.privacy?.biometricAuth || false} 
-                  onChange={e => updateAppSettings({ 
-                    privacy: { 
-                      ...appSettings.privacy, 
-                      biometricAuth: e.target.checked 
-                    } 
-                  })} 
-                />
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemText 
-                  primary={t('settings.dataSharing')} 
-                  secondary={t('settings.dataSharingDescription')}
-                />
-                <Switch 
-                  checked={appSettings.privacy?.dataSharing || false} 
-                  onChange={e => updateAppSettings({ 
-                    privacy: { 
-                      ...appSettings.privacy, 
-                      dataSharing: e.target.checked 
-                    } 
-                  })} 
-                />
-              </ListItem>
-            </List>
-          </Paper>
-
-          {/* Changer le mot de passe */}
-          <Paper sx={{ mb: 2 }}>
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  <VpnKey color="primary" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={t('settings.changePassword')} 
-                  secondary={t('settings.changePasswordDescription')}
-                />
-                <Button variant="outlined" size="small">
-                  {t('settings.modify')}
-                </Button>
-              </ListItem>
-            </List>
-          </Paper>
-        </Box>
-      )}
-
-      {activeTab === 3 && (
-        <Box>
-          {/* Notifications */}
-          <Paper sx={{ mb: 2 }}>
-            <List>
-              <ListItem>
-                <ListItemText 
-                  primary={t('settings.budgetAlerts')} 
-                  secondary={t('settings.budgetAlertsDescription')}
-                />
-                <Switch 
-                  checked={appSettings.notifications?.budgetAlerts || true} 
-                  onChange={e => updateAppSettings({ 
-                    notifications: { 
-                      ...appSettings.notifications, 
-                      budgetAlerts: e.target.checked 
-                    } 
-                  })} 
-                />
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemText 
-                  primary={t('settings.billReminders')} 
-                  secondary={t('settings.billRemindersDescription')}
-                />
-                <Switch 
-                  checked={appSettings.notifications?.billReminders || true} 
-                  onChange={e => updateAppSettings({ 
-                    notifications: { 
-                      ...appSettings.notifications, 
-                      billReminders: e.target.checked 
-                    } 
-                  })} 
-                />
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemText 
-                  primary={t('settings.savingsGoals')} 
-                  secondary={t('settings.savingsGoalsDescription')}
-                />
-                <Switch 
-                  checked={appSettings.notifications?.savingsGoals || true} 
-                  onChange={e => updateAppSettings({ 
-                    notifications: { 
-                      ...appSettings.notifications, 
-                      savingsGoals: e.target.checked 
-                    } 
-                  })} 
-                />
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemText 
-                  primary={t('settings.weeklyReports')} 
-                  secondary={t('settings.weeklyReportsDescription')}
-                />
-                <Switch 
-                  checked={appSettings.notifications?.weeklyReports || true} 
-                  onChange={e => updateAppSettings({ 
-                    notifications: { 
-                      ...appSettings.notifications, 
-                      weeklyReports: e.target.checked 
-                    } 
-                  })} 
-                />
-              </ListItem>
-            </List>
-          </Paper>
-
-          {/* Export/Import */}
-          <Paper sx={{ mb: 2 }}>
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  <CloudDownload color="primary" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={t('settings.exportData')} 
-                  secondary={t('settings.exportDataDescription')}
-                />
-                <Button variant="outlined" size="small" onClick={handleExport}>
-                  {t('settings.export')}
-                </Button>
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemIcon>
-                  <CloudUpload color="primary" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={t('settings.importData')} 
-                  secondary={t('settings.importDataDescription')}
-                />
-                <Button variant="outlined" size="small" component="label">
-                  {t('settings.import')}
-                  <input type="file" hidden accept=".json" onChange={handleImport} />
-                </Button>
-              </ListItem>
-            </List>
-          </Paper>
-
-          {/* Abonnement */}
-          <Paper sx={{ mb: 2 }}>
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  <CardMembership color="primary" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={t('settings.subscription')} 
-                  secondary={`${t('settings.currentPlan')}: ${getCurrentPlan().name}`}
-                />
-                <Box sx={{ display: 'flex', gap: 1 }}>
+            {/* Export/Import glassmorphism */}
+            <Paper sx={{ 
+              mb: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <List>
+                <ListItem>
+                  <ListItemIcon>
+                    <CloudDownload sx={{ color: 'rgba(255, 255, 255, 0.8)' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={t('settings.exportData')} 
+                    secondary={t('settings.exportDataDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
                   <Button 
                     variant="outlined" 
                     size="small" 
-                    onClick={async () => {
-                      await fetchSubscriptionFromStripe();
-                      setSnack({ open: true, message: 'Vérification de l\'abonnement terminée', severity: 'info' });
+                    onClick={handleExport}
+                    sx={{
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      color: 'white',
+                      '&:hover': {
+                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                        background: 'rgba(255, 255, 255, 0.1)'
+                      }
                     }}
-                    startIcon={<Refresh />}
                   >
-                    Vérifier
+                    {t('settings.export')}
                   </Button>
+                </ListItem>
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                <ListItem>
+                  <ListItemIcon>
+                    <CloudUpload sx={{ color: 'rgba(255, 255, 255, 0.8)' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={t('settings.importData')} 
+                    secondary={t('settings.importDataDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
                   <Button 
-                    variant="contained" 
+                    variant="outlined" 
                     size="small" 
-                    onClick={() => navigate('/subscription')}
-                    startIcon={<Star />}
+                    component="label"
+                    sx={{
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      color: 'white',
+                      '&:hover': {
+                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                        background: 'rgba(255, 255, 255, 0.1)'
+                      }
+                    }}
                   >
-                    {t('settings.manageSubscription')}
+                    {t('settings.import')}
+                    <input type="file" hidden accept=".json" onChange={handleImport} />
                   </Button>
-                </Box>
-              </ListItem>
-              {hasSpecialAccess() && (
-                <>
-                  <Divider />
-                  <ListItem>
-                    <ListItemIcon>
-                      <CheckCircle color="success" />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary={t('settings.specialAccess')} 
-                      secondary={t('settings.specialAccessDescription')}
-                    />
-                    <Chip label={t('settings.developer')} color="success" size="small" />
-                  </ListItem>
-                </>
-              )}
-            </List>
-          </Paper>
+                </ListItem>
+              </List>
+            </Paper>
 
-          {/* Rechargement des données */}
-          <Paper sx={{ mb: 2 }}>
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  <CloudDownload color="info" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary="Recharger les données" 
-                  secondary="Récupérer les données depuis le serveur"
-                />
-                <Button 
-                  variant="outlined" 
-                  color="info" 
-                  size="small"
-                  onClick={async () => {
-                    await reloadBudgetData();
-                    setSnack({ open: true, message: 'Données rechargées', severity: 'info' });
-                  }}
-                  startIcon={<CloudDownload />}
-                >
-                  Recharger
-                </Button>
-              </ListItem>
-            </List>
-          </Paper>
+            {/* Abonnement glassmorphism */}
+            <Paper sx={{ 
+              mb: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <List>
+                <ListItem>
+                  <ListItemIcon>
+                    <CardMembership sx={{ color: 'rgba(255, 255, 255, 0.8)' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={t('settings.subscription')} 
+                    secondary={`${t('settings.currentPlan')}: ${getCurrentPlan().name}`}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button 
+                      variant="outlined" 
+                      size="small" 
+                      onClick={async () => {
+                        await fetchSubscriptionFromStripe();
+                        setSnack({ open: true, message: 'Vérification de l\'abonnement terminée', severity: 'info' });
+                      }}
+                      startIcon={<Refresh />}
+                      sx={{
+                        borderColor: 'rgba(255, 255, 255, 0.3)',
+                        color: 'white',
+                        '&:hover': {
+                          borderColor: 'rgba(255, 255, 255, 0.5)',
+                          background: 'rgba(255, 255, 255, 0.1)'
+                        }
+                      }}
+                    >
+                      Vérifier
+                    </Button>
+                    <Button 
+                      variant="contained" 
+                      size="small" 
+                      onClick={() => navigate('/subscription')}
+                      startIcon={<Star />}
+                      sx={{
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        '&:hover': {
+                          background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
+                        }
+                      }}
+                    >
+                      {t('settings.manageSubscription')}
+                    </Button>
+                  </Box>
+                </ListItem>
+                {hasSpecialAccess() && (
+                  <>
+                    <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                    <ListItem>
+                      <ListItemIcon>
+                        <CheckCircle sx={{ color: '#4caf50' }} />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary={t('settings.specialAccess')} 
+                        secondary={t('settings.specialAccessDescription')}
+                        sx={{
+                          '& .MuiListItemText-primary': {
+                            color: 'white',
+                            fontWeight: 'bold'
+                          },
+                          '& .MuiListItemText-secondary': {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                          }
+                        }}
+                      />
+                      <Chip 
+                        label={t('settings.developer')} 
+                        sx={{ 
+                          background: 'rgba(76, 175, 80, 0.2)',
+                          backdropFilter: 'blur(10px)',
+                          color: '#4caf50',
+                          border: '1px solid rgba(76, 175, 80, 0.3)'
+                        }} 
+                        size="small" 
+                      />
+                    </ListItem>
+                  </>
+                )}
+              </List>
+            </Paper>
 
-          {/* Réinitialisation des données */}
-          <Paper sx={{ mb: 2 }}>
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  <Refresh color="warning" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={t('settings.resetData')} 
-                  secondary={t('settings.resetDataDescription')}
-                />
-                <Button 
-                  variant="outlined" 
-                  color="warning" 
-                  size="small"
-                  onClick={() => setResetDialog(true)}
-                >
-                  {t('settings.reset')}
-                </Button>
-              </ListItem>
-            </List>
-          </Paper>
+            {/* Rechargement des données glassmorphism */}
+            <Paper sx={{ 
+              mb: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <List>
+                <ListItem>
+                  <ListItemIcon>
+                    <CloudDownload sx={{ color: '#03a9f4' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Recharger les données" 
+                    secondary="Récupérer les données depuis le serveur"
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Button 
+                    variant="outlined" 
+                    size="small"
+                    onClick={async () => {
+                      await reloadBudgetData();
+                      setSnack({ open: true, message: 'Données rechargées', severity: 'info' });
+                    }}
+                    startIcon={<CloudDownload />}
+                    sx={{
+                      borderColor: 'rgba(3, 169, 244, 0.3)',
+                      color: '#03a9f4',
+                      '&:hover': {
+                        borderColor: 'rgba(3, 169, 244, 0.5)',
+                        background: 'rgba(3, 169, 244, 0.1)'
+                      }
+                    }}
+                  >
+                    Recharger
+                  </Button>
+                </ListItem>
+              </List>
+            </Paper>
 
-          {/* Suppression des données */}
-          <Paper sx={{ mb: 2 }}>
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  <Delete color="error" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={t('settings.deleteData')} 
-                  secondary={t('settings.deleteDataDescription')}
-                />
-                <Button 
-                  variant="outlined" 
-                  color="error" 
-                  size="small"
-                  onClick={() => setDeleteDialog(true)}
-                >
-                  {t('settings.delete')}
-                </Button>
-              </ListItem>
-            </List>
-          </Paper>
+            {/* Réinitialisation des données glassmorphism */}
+            <Paper sx={{ 
+              mb: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <List>
+                <ListItem>
+                  <ListItemIcon>
+                    <Refresh sx={{ color: '#ff9800' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={t('settings.resetData')} 
+                    secondary={t('settings.resetDataDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Button 
+                    variant="outlined" 
+                    size="small"
+                    onClick={() => setResetDialog(true)}
+                    sx={{
+                      borderColor: 'rgba(255, 152, 0, 0.3)',
+                      color: '#ff9800',
+                      '&:hover': {
+                        borderColor: 'rgba(255, 152, 0, 0.5)',
+                        background: 'rgba(255, 152, 0, 0.1)'
+                      }
+                    }}
+                  >
+                    {t('settings.reset')}
+                  </Button>
+                </ListItem>
+              </List>
+            </Paper>
 
-          {/* Déconnexion */}
-          <Paper sx={{ mb: 2 }}>
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  <Logout color="primary" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={t('settings.logout')} 
-                  secondary={t('settings.logoutDescription')}
-                />
-                <Button 
-                  variant="outlined" 
-                  color="primary" 
-                  size="small"
-                  onClick={logout}
-                >
-                  {t('settings.logout')}
-                </Button>
-              </ListItem>
-            </List>
-          </Paper>
-        </Box>
-      )}
+            {/* Suppression des données glassmorphism */}
+            <Paper sx={{ 
+              mb: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <List>
+                <ListItem>
+                  <ListItemIcon>
+                    <Delete sx={{ color: '#f44336' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={t('settings.deleteData')} 
+                    secondary={t('settings.deleteDataDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Button 
+                    variant="outlined" 
+                    size="small"
+                    onClick={() => setDeleteDialog(true)}
+                    sx={{
+                      borderColor: 'rgba(244, 67, 54, 0.3)',
+                      color: '#f44336',
+                      '&:hover': {
+                        borderColor: 'rgba(244, 67, 54, 0.5)',
+                        background: 'rgba(244, 67, 54, 0.1)'
+                      }
+                    }}
+                  >
+                    {t('settings.delete')}
+                  </Button>
+                </ListItem>
+              </List>
+            </Paper>
 
-      {activeTab === 4 && (
-        <Box>
-          {/* Tutoriel */}
-          <Paper sx={{ mb: 2 }}>
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  <School color="primary" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={t('settings.tutorial')} 
-                  secondary={t('settings.tutorialDescription')}
-                />
-                <Button variant="outlined" size="small" onClick={handleRestartTutorial}>
-                  {t('settings.restart')}
-                </Button>
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemIcon>
-                  <Help color="primary" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={t('settings.helpCenter')} 
-                  secondary={t('settings.helpCenterDescription')}
-                />
-                <Button variant="outlined" size="small">
-                  {t('settings.visit')}
-                </Button>
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemIcon>
-                  <Feedback color="primary" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={t('settings.giveFeedback')} 
-                  secondary={t('settings.giveFeedbackDescription')}
-                />
-                <Button variant="outlined" size="small" onClick={() => setFeedbackDialog(true)}>
-                  {t('settings.feedback')}
-                </Button>
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemIcon>
-                  <BugReport color="primary" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={t('settings.reportBug')} 
-                  secondary={t('settings.reportBugDescription')}
-                />
-                <Button variant="outlined" size="small">
-                  {t('settings.report')}
-                </Button>
-              </ListItem>
-            </List>
-          </Paper>
-
-          {/* Informations sur l'app */}
-          <Paper sx={{ mb: 2 }}>
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  <Info color="primary" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={t('settings.appVersion')} 
-                  secondary={`Budget Gestion v${appVersion}`}
-                />
-                <Button variant="outlined" size="small" onClick={handleShowUpdates}>
-                  {t('settings.seeUpdates')}
-                </Button>
-              </ListItem>
-              <Divider />
-              <ListItem>
-                <ListItemIcon>
-                  <Star color="primary" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={t('settings.rateApp')} 
-                  secondary={t('settings.rateAppDescription')}
-                />
-                <Button variant="outlined" size="small">
-                  {t('settings.rate')}
-                </Button>
-              </ListItem>
-            </List>
-          </Paper>
-
-          {/* Contact */}
-          <Paper sx={{ mb: 2 }}>
-            <List>
-              <ListItem>
-                <ListItemIcon>
-                  <AccountCircle color="primary" />
-                </ListItemIcon>
-                <ListItemText 
-                  primary={t('settings.clientSupport')} 
-                  secondary={t('settings.clientSupportDescription')}
-                />
-                <Button variant="outlined" size="small">
-                  {t('settings.contact')}
-                </Button>
-              </ListItem>
-            </List>
-          </Paper>
-        </Box>
-      )}
-
-      {/* Dialog de profil */}
-      <Dialog open={profileDialog} onClose={() => setProfileDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>{t('settings.editProfile')}</DialogTitle>
-        <DialogContent>
-          <Box sx={{ pt: 1 }}>
-            <TextField
-              fullWidth
-              label={t('settings.firstName')}
-              value={profileForm.firstName}
-              onChange={(e) => setProfileForm({ ...profileForm, firstName: e.target.value })}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              label={t('settings.lastName')}
-              value={profileForm.lastName}
-              onChange={(e) => setProfileForm({ ...profileForm, lastName: e.target.value })}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              label={t('settings.email')}
-              type="email"
-              value={profileForm.email}
-              onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              label={t('settings.phone')}
-              value={profileForm.phone}
-              onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              fullWidth
-              label={t('settings.avatarURL')}
-              value={profileForm.avatar}
-              onChange={(e) => setProfileForm({ ...profileForm, avatar: e.target.value })}
-            />
+            {/* Déconnexion glassmorphism */}
+            <Paper sx={{ 
+              mb: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <List>
+                <ListItem>
+                  <ListItemIcon>
+                    <Logout sx={{ color: 'rgba(255, 255, 255, 0.8)' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={t('settings.logout')} 
+                    secondary={t('settings.logoutDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Button 
+                    variant="outlined" 
+                    size="small"
+                    onClick={logout}
+                    sx={{
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      color: 'white',
+                      '&:hover': {
+                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                        background: 'rgba(255, 255, 255, 0.1)'
+                      }
+                    }}
+                  >
+                    {t('settings.logout')}
+                  </Button>
+                </ListItem>
+              </List>
+            </Paper>
           </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setProfileDialog(false)}>{t('settings.cancel')}</Button>
-          <Button onClick={handleProfileSave} variant="contained">
-            {t('settings.save')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        )}
 
-      {/* Dialog de réinitialisation */}
-      <Dialog open={resetDialog} onClose={() => setResetDialog(false)}>
-        <DialogTitle>{t('settings.resetConfirmTitle')}</DialogTitle>
-        <DialogContent>
-          <Typography>
-            {t('settings.resetConfirmDescription')}
-          </Typography>
-          <Alert severity="warning" sx={{ mt: 2 }}>
-            <Typography variant="body2">
-              <strong>{t('settings.resetWarning')}</strong>
+        {activeTab === 4 && (
+          <Box>
+            {/* Tutoriel glassmorphism */}
+            <Paper sx={{ 
+              mb: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <List>
+                <ListItem>
+                  <ListItemIcon>
+                    <School sx={{ color: 'rgba(255, 255, 255, 0.8)' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={t('settings.tutorial')} 
+                    secondary={t('settings.tutorialDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Button 
+                    variant="outlined" 
+                    size="small" 
+                    onClick={handleRestartTutorial}
+                    sx={{
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      color: 'white',
+                      '&:hover': {
+                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                        background: 'rgba(255, 255, 255, 0.1)'
+                      }
+                    }}
+                  >
+                    {t('settings.restart')}
+                  </Button>
+                </ListItem>
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                <ListItem>
+                  <ListItemIcon>
+                    <Help sx={{ color: 'rgba(255, 255, 255, 0.8)' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={t('settings.helpCenter')} 
+                    secondary={t('settings.helpCenterDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Button 
+                    variant="outlined" 
+                    size="small"
+                    sx={{
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      color: 'white',
+                      '&:hover': {
+                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                        background: 'rgba(255, 255, 255, 0.1)'
+                      }
+                    }}
+                  >
+                    {t('settings.visit')}
+                  </Button>
+                </ListItem>
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                <ListItem>
+                  <ListItemIcon>
+                    <Feedback sx={{ color: 'rgba(255, 255, 255, 0.8)' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={t('settings.giveFeedback')} 
+                    secondary={t('settings.giveFeedbackDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Button 
+                    variant="outlined" 
+                    size="small" 
+                    onClick={() => setFeedbackDialog(true)}
+                    sx={{
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      color: 'white',
+                      '&:hover': {
+                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                        background: 'rgba(255, 255, 255, 0.1)'
+                      }
+                    }}
+                  >
+                    {t('settings.feedback')}
+                  </Button>
+                </ListItem>
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                <ListItem>
+                  <ListItemIcon>
+                    <BugReport sx={{ color: 'rgba(255, 255, 255, 0.8)' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={t('settings.reportBug')} 
+                    secondary={t('settings.reportBugDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Button 
+                    variant="outlined" 
+                    size="small"
+                    sx={{
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      color: 'white',
+                      '&:hover': {
+                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                        background: 'rgba(255, 255, 255, 0.1)'
+                      }
+                    }}
+                  >
+                    {t('settings.report')}
+                  </Button>
+                </ListItem>
+              </List>
+            </Paper>
+
+            {/* Informations sur l'app glassmorphism */}
+            <Paper sx={{ 
+              mb: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <List>
+                <ListItem>
+                  <ListItemIcon>
+                    <Info sx={{ color: 'rgba(255, 255, 255, 0.8)' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={t('settings.appVersion')} 
+                    secondary={`Budget Gestion v${appVersion}`}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Button 
+                    variant="outlined" 
+                    size="small" 
+                    onClick={handleShowUpdates}
+                    sx={{
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      color: 'white',
+                      '&:hover': {
+                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                        background: 'rgba(255, 255, 255, 0.1)'
+                      }
+                    }}
+                  >
+                    {t('settings.seeUpdates')}
+                  </Button>
+                </ListItem>
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                <ListItem>
+                  <ListItemIcon>
+                    <Star sx={{ color: 'rgba(255, 255, 255, 0.8)' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={t('settings.rateApp')} 
+                    secondary={t('settings.rateAppDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Button 
+                    variant="outlined" 
+                    size="small"
+                    sx={{
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      color: 'white',
+                      '&:hover': {
+                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                        background: 'rgba(255, 255, 255, 0.1)'
+                      }
+                    }}
+                  >
+                    {t('settings.rate')}
+                  </Button>
+                </ListItem>
+              </List>
+            </Paper>
+
+            {/* Contact glassmorphism */}
+            <Paper sx={{ 
+              mb: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <List>
+                <ListItem>
+                  <ListItemIcon>
+                    <AccountCircle sx={{ color: 'rgba(255, 255, 255, 0.8)' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={t('settings.clientSupport')} 
+                    secondary={t('settings.clientSupportDescription')}
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Button 
+                    variant="outlined" 
+                    size="small"
+                    sx={{
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      color: 'white',
+                      '&:hover': {
+                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                        background: 'rgba(255, 255, 255, 0.1)'
+                      }
+                    }}
+                  >
+                    {t('settings.contact')}
+                  </Button>
+                </ListItem>
+              </List>
+            </Paper>
+          </Box>
+        )}
+
+        {/* Dialog de profil glassmorphism */}
+        <Dialog 
+          open={profileDialog} 
+          onClose={() => setProfileDialog(false)} 
+          maxWidth="sm" 
+          fullWidth
+          PaperProps={{
+            sx: {
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }
+          }}
+        >
+          <DialogTitle sx={{ color: '#333', fontWeight: 'bold' }}>
+            {t('settings.editProfile')}
+          </DialogTitle>
+          <DialogContent>
+            <Box sx={{ pt: 1 }}>
+              <TextField
+                fullWidth
+                label={t('settings.firstName')}
+                value={profileForm.firstName}
+                onChange={(e) => setProfileForm({ ...profileForm, firstName: e.target.value })}
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                fullWidth
+                label={t('settings.lastName')}
+                value={profileForm.lastName}
+                onChange={(e) => setProfileForm({ ...profileForm, lastName: e.target.value })}
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                fullWidth
+                label={t('settings.email')}
+                type="email"
+                value={profileForm.email}
+                onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                fullWidth
+                label={t('settings.phone')}
+                value={profileForm.phone}
+                onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                sx={{ mb: 2 }}
+              />
+              <TextField
+                fullWidth
+                label={t('settings.avatarURL')}
+                value={profileForm.avatar}
+                onChange={(e) => setProfileForm({ ...profileForm, avatar: e.target.value })}
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button 
+              onClick={() => setProfileDialog(false)}
+              sx={{ color: '#666' }}
+            >
+              {t('settings.cancel')}
+            </Button>
+            <Button 
+              onClick={handleProfileSave} 
+              variant="contained"
+              sx={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
+                }
+              }}
+            >
+              {t('settings.save')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog de réinitialisation glassmorphism */}
+        <Dialog 
+          open={resetDialog} 
+          onClose={() => setResetDialog(false)}
+          PaperProps={{
+            sx: {
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }
+          }}
+        >
+          <DialogTitle sx={{ color: '#333', fontWeight: 'bold' }}>
+            {t('settings.resetConfirmTitle')}
+          </DialogTitle>
+          <DialogContent>
+            <Typography sx={{ color: '#333' }}>
+              {t('settings.resetConfirmDescription')}
             </Typography>
+            <Alert severity="warning" sx={{ mt: 2 }}>
+              <Typography variant="body2">
+                <strong>{t('settings.resetWarning')}</strong>
+              </Typography>
+            </Alert>
+          </DialogContent>
+          <DialogActions>
+            <Button 
+              onClick={() => setResetDialog(false)}
+              sx={{ color: '#666' }}
+            >
+              {t('settings.cancel')}
+            </Button>
+            <Button 
+              onClick={handleResetToDefaults} 
+              variant="contained"
+              sx={{
+                background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)'
+                }
+              }}
+            >
+              {t('settings.reset')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog de suppression glassmorphism */}
+        <Dialog 
+          open={deleteDialog} 
+          onClose={() => setDeleteDialog(false)}
+          PaperProps={{
+            sx: {
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }
+          }}
+        >
+          <DialogTitle sx={{ color: '#333', fontWeight: 'bold' }}>
+            {t('settings.deleteConfirmTitle')}
+          </DialogTitle>
+          <DialogContent>
+            <Typography sx={{ color: '#333' }}>
+              {t('settings.deleteConfirmDescription')}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button 
+              onClick={() => setDeleteDialog(false)}
+              sx={{ color: '#666' }}
+            >
+              {t('settings.cancel')}
+            </Button>
+            <Button 
+              onClick={handleDeleteData} 
+              variant="contained"
+              sx={{
+                background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)'
+                }
+              }}
+            >
+              {t('settings.delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Snackbar 
+          open={snack.open} 
+          autoHideDuration={3000} 
+          onClose={() => setSnack(s => ({ ...s, open: false }))} 
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert 
+            onClose={() => setSnack(s => ({ ...s, open: false }))} 
+            severity={snack.severity} 
+            sx={{ width: '100%' }}
+          >
+            {snack.message}
           </Alert>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setResetDialog(false)}>{t('settings.cancel')}</Button>
-          <Button 
-            onClick={handleResetToDefaults} 
-            color="warning" 
-            variant="contained"
-          >
-            {t('settings.reset')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Dialog de suppression */}
-      <Dialog open={deleteDialog} onClose={() => setDeleteDialog(false)}>
-        <DialogTitle>{t('settings.deleteConfirmTitle')}</DialogTitle>
-        <DialogContent>
-          <Typography>
-            {t('settings.deleteConfirmDescription')}
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialog(false)}>{t('settings.cancel')}</Button>
-          <Button 
-            onClick={handleDeleteData} 
-            color="error" 
-            variant="contained"
-          >
-            {t('settings.delete')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Snackbar 
-        open={snack.open} 
-        autoHideDuration={3000} 
-        onClose={() => setSnack(s => ({ ...s, open: false }))} 
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={() => setSnack(s => ({ ...s, open: false }))} severity={snack.severity} sx={{ width: '100%' }}>
-          {snack.message}
-        </Alert>
-      </Snackbar>
+        </Snackbar>
+      </Box>
     </Box>
   );
 };

@@ -210,8 +210,10 @@ const Subscription = () => {
             display: 'flex',
             flexDirection: 'column',
             position: 'relative',
-            border: isCurrentPlan ? `3px solid ${plan.color || '#1976d2'}` : '1px solid #e0e0e0',
-            boxShadow: isCurrentPlan ? '0 8px 32px rgba(0,0,0,0.2)' : '0 2px 8px rgba(0,0,0,0.1)',
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(20px)',
+            border: isCurrentPlan ? '2px solid rgba(255, 255, 255, 0.5)' : '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: isCurrentPlan ? '0 12px 40px rgba(0, 0, 0, 0.2)' : '0 8px 32px rgba(0, 0, 0, 0.1)',
             transform: isCurrentPlan ? 'scale(1.02)' : 'scale(1)',
             transition: 'all 0.3s ease'
           }}
@@ -219,46 +221,69 @@ const Subscription = () => {
           {isCurrentPlan && (
             <Chip
               label={t('subscription.currentPlan')}
-              color="primary"
               sx={{
                 position: 'absolute',
                 top: 16,
                 right: 16,
-                zIndex: 1
+                zIndex: 1,
+                background: 'rgba(76, 175, 80, 0.2)',
+                backdropFilter: 'blur(10px)',
+                color: '#4caf50',
+                border: '1px solid rgba(76, 175, 80, 0.3)'
               }}
             />
           )}
 
           <CardContent sx={{ flexGrow: 1, p: 3 }}>
             <Box sx={{ textAlign: 'center', mb: 3 }}>
-              <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
+              <Typography variant="h4" sx={{ 
+                fontWeight: 'bold', 
+                mb: 1,
+                color: 'white',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
                 {t(plan.name)}
               </Typography>
-              <Typography variant="h3" sx={{ fontWeight: 'bold', color: 'primary.main', mb: 1 }}>
+              <Typography variant="h3" sx={{ 
+                fontWeight: 'bold', 
+                color: '#4caf50', 
+                mb: 1,
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
                 {plan.price === 0 ? t('subscription.free') : `${plan.price}€`}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" sx={{ 
+                color: 'rgba(255, 255, 255, 0.7)',
+                textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+              }}>
                 {plan.price === 0 ? t('subscription.forever') : t('subscription.perMonth')}
               </Typography>
             </Box>
 
-            <Divider sx={{ my: 2 }} />
+            <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.1)' }} />
 
             <List sx={{ py: 0 }}>
               {Object.entries(plan.features).map(([feature, value]) => (
                 <ListItem key={feature} sx={{ px: 0, py: 1 }}>
                   <ListItemIcon sx={{ minWidth: 40 }}>
                     {value !== false && value !== 0 ? (
-                      <CheckCircle color="success" />
+                      <CheckCircle sx={{ color: '#4caf50' }} />
                     ) : (
-                      <Close color="disabled" />
+                      <Close sx={{ color: 'rgba(255, 255, 255, 0.3)' }} />
                     )}
                   </ListItemIcon>
                   <ListItemText
                     primary={getFeatureLabel(feature)}
                     secondary={getFeatureValue(plan, feature)}
-                    primaryTypographyProps={{ fontWeight: 500 }}
-                    secondaryTypographyProps={{ color: 'text.secondary' }}
+                    primaryTypographyProps={{ 
+                      fontWeight: 500,
+                      color: 'white',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                    }}
+                    secondaryTypographyProps={{ 
+                      color: 'rgba(255, 255, 255, 0.7)',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                    }}
                   />
                 </ListItem>
               ))}
@@ -272,9 +297,16 @@ const Subscription = () => {
                 <Button
                   fullWidth
                   variant="outlined"
-                  color="error"
                   onClick={() => setShowCancelDialog(true)}
                   startIcon={<Cancel />}
+                  sx={{
+                    borderColor: 'rgba(244, 67, 54, 0.3)',
+                    color: '#f44336',
+                    '&:hover': {
+                      borderColor: 'rgba(244, 67, 54, 0.5)',
+                      background: 'rgba(244, 67, 54, 0.1)'
+                    }
+                  }}
                 >
                   {t('subscription.cancel')}
                 </Button>
@@ -284,6 +316,10 @@ const Subscription = () => {
                   variant="outlined"
                   disabled
                   startIcon={<CheckCircle />}
+                  sx={{
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    color: 'rgba(255, 255, 255, 0.3)'
+                  }}
                 >
                   {t('subscription.currentPlan')}
                 </Button>
@@ -293,10 +329,22 @@ const Subscription = () => {
               <Button
                 fullWidth
                 variant={isUpgrade ? "contained" : "outlined"}
-                color={isUpgrade ? "primary" : "inherit"}
                 onClick={() => isUpgrade ? handleUpgrade(planKey) : handleDowngrade(planKey)}
                 startIcon={isUpgrade ? (isProcessing ? <CircularProgress size={20} /> : <Payment />) : <Edit />}
                 disabled={isProcessing}
+                sx={isUpgrade ? {
+                  background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #45a049 0%, #7cb342 100%)'
+                  }
+                } : {
+                  borderColor: 'rgba(255, 255, 255, 0.3)',
+                  color: 'white',
+                  '&:hover': {
+                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                    background: 'rgba(255, 255, 255, 0.1)'
+                  }
+                }}
               >
                 {isProcessing ? t('subscription.processing') : (isUpgrade ? t('subscription.upgrade', { plan: t(plan.name) }) : t('subscription.downgrade', { plan: t(plan.name) }))}
               </Button>
@@ -308,81 +356,221 @@ const Subscription = () => {
   };
 
   return (
-    <Box sx={{ p: 2, pb: 10 }}>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
-        {t('subscription.title')}
-      </Typography>
-      <Typography variant="h6" color="text.secondary" sx={{ mb: 3 }}>
-        {t('subscription.subtitle')}
-      </Typography>
-
-      {isSpecialAccess && (
-        <Alert severity="info" sx={{ mb: 3 }}>
-          {t('subscription.specialAccess')}
-        </Alert>
-      )}
-
-      {/* Plans d'abonnement */}
-      <Grid container spacing={3}>
-        {Object.entries(subscriptionPlans).map(([key, plan]) => (
-          <Grid item xs={12} md={4} key={key}>
-            {renderPlanCard(key, plan)}
-          </Grid>
+    <Box sx={{ 
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Particules animées */}
+      <Box sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: 'hidden',
+        zIndex: 0
+      }}>
+        {[...Array(20)].map((_, i) => (
+          <Box
+            key={i}
+            sx={{
+              position: 'absolute',
+              width: Math.random() * 4 + 2,
+              height: Math.random() * 4 + 2,
+              background: 'rgba(255, 255, 255, 0.3)',
+              borderRadius: '50%',
+              animation: `float ${Math.random() * 10 + 10}s linear infinite`,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              '@keyframes float': {
+                '0%': {
+                  transform: 'translateY(0px) rotate(0deg)',
+                  opacity: 0
+                },
+                '10%': {
+                  opacity: 1
+                },
+                '90%': {
+                  opacity: 1
+                },
+                '100%': {
+                  transform: 'translateY(-100vh) rotate(360deg)',
+                  opacity: 0
+                }
+              }
+            }}
+          />
         ))}
-      </Grid>
+      </Box>
 
-      {/* Informations importantes */}
-      <Paper sx={{ p: 3, mt: 4, bgcolor: 'info.light' }}>
-        <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Warning />
-          {t('subscription.importantInfo')}
+      <Box sx={{ p: 2, pb: 10, position: 'relative', zIndex: 1 }}>
+        <Typography variant="h4" sx={{ 
+          mb: 3, 
+          fontWeight: 'bold',
+          color: 'white',
+          textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+        }}>
+          {t('subscription.title')}
         </Typography>
-        <Typography variant="body2" sx={{ mb: 1 }}>
-          • {t('subscription.noRefund')}
+        <Typography variant="h6" sx={{ 
+          mb: 3,
+          color: 'rgba(255, 255, 255, 0.8)',
+          textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+        }}>
+          {t('subscription.subtitle')}
         </Typography>
-        <Typography variant="body2" sx={{ mb: 1 }}>
-          • {t('subscription.cancelAnytime')}
-        </Typography>
-        <Typography variant="body2">
-          • {t('subscription.downgradeInfo')}
-        </Typography>
-      </Paper>
 
-      {/* Dialog d'annulation */}
-      <Dialog open={showCancelDialog} onClose={() => setShowCancelDialog(false)}>
-        <DialogTitle>{t('subscription.cancelSubscription')}</DialogTitle>
-        <DialogContent>
-          <Typography>
-            {t('subscription.cancelConfirmation')}
+        {isSpecialAccess && (
+          <Alert severity="info" sx={{ 
+            mb: 3,
+            background: 'rgba(3, 169, 244, 0.1)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(3, 169, 244, 0.3)',
+            color: '#03a9f4'
+          }}>
+            {t('subscription.specialAccess')}
+          </Alert>
+        )}
+
+        {/* Plans d'abonnement */}
+        <Grid container spacing={3}>
+          {Object.entries(subscriptionPlans).map(([key, plan]) => (
+            <Grid item xs={12} md={4} key={key}>
+              {renderPlanCard(key, plan)}
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* Informations importantes glassmorphism */}
+        <Paper sx={{ 
+          p: 3, 
+          mt: 4, 
+          background: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+        }}>
+          <Typography variant="h6" sx={{ 
+            mb: 2, 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1,
+            color: 'white',
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          }}>
+            <Warning sx={{ color: '#ff9800' }} />
+            {t('subscription.importantInfo')}
           </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowCancelDialog(false)}>
-            {t('common.cancel')}
-          </Button>
-          <Button onClick={handleCancelSubscription} color="error" variant="contained">
-            {t('subscription.confirmCancel')}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Dialog de downgrade */}
-      <Dialog open={showDowngradeDialog} onClose={() => setShowDowngradeDialog(false)}>
-        <DialogTitle>{t('subscription.downgradeSubscription')}</DialogTitle>
-        <DialogContent>
-          <Typography>
-            {t('subscription.downgradeConfirmation')}
+          <Typography variant="body2" sx={{ 
+            mb: 1,
+            color: 'rgba(255, 255, 255, 0.8)',
+            textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+          }}>
+            • {t('subscription.noRefund')}
           </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowDowngradeDialog(false)}>
-            {t('common.cancel')}
-          </Button>
-          <Button onClick={confirmDowngrade} color="warning" variant="contained">
-            {t('subscription.confirmDowngrade', { plan: selectedPlan })}
-          </Button>
-        </DialogActions>
-      </Dialog>
+          <Typography variant="body2" sx={{ 
+            mb: 1,
+            color: 'rgba(255, 255, 255, 0.8)',
+            textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+          }}>
+            • {t('subscription.cancelAnytime')}
+          </Typography>
+          <Typography variant="body2" sx={{ 
+            color: 'rgba(255, 255, 255, 0.8)',
+            textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+          }}>
+            • {t('subscription.downgradeInfo')}
+          </Typography>
+        </Paper>
+
+        {/* Dialog d'annulation glassmorphism */}
+        <Dialog 
+          open={showCancelDialog} 
+          onClose={() => setShowCancelDialog(false)}
+          PaperProps={{
+            sx: {
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }
+          }}
+        >
+          <DialogTitle sx={{ color: '#333', fontWeight: 'bold' }}>
+            {t('subscription.cancelSubscription')}
+          </DialogTitle>
+          <DialogContent>
+            <Typography sx={{ color: '#333' }}>
+              {t('subscription.cancelConfirmation')}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button 
+              onClick={() => setShowCancelDialog(false)}
+              sx={{ color: '#666' }}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button 
+              onClick={handleCancelSubscription} 
+              variant="contained"
+              sx={{
+                background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)'
+                }
+              }}
+            >
+              {t('subscription.confirmCancel')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Dialog de downgrade glassmorphism */}
+        <Dialog 
+          open={showDowngradeDialog} 
+          onClose={() => setShowDowngradeDialog(false)}
+          PaperProps={{
+            sx: {
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }
+          }}
+        >
+          <DialogTitle sx={{ color: '#333', fontWeight: 'bold' }}>
+            {t('subscription.downgradeSubscription')}
+          </DialogTitle>
+          <DialogContent>
+            <Typography sx={{ color: '#333' }}>
+              {t('subscription.downgradeConfirmation')}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button 
+              onClick={() => setShowDowngradeDialog(false)}
+              sx={{ color: '#666' }}
+            >
+              {t('common.cancel')}
+            </Button>
+            <Button 
+              onClick={confirmDowngrade} 
+              variant="contained"
+              sx={{
+                background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)'
+                }
+              }}
+            >
+              {t('subscription.confirmDowngrade', { plan: selectedPlan })}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
     </Box>
   );
 };

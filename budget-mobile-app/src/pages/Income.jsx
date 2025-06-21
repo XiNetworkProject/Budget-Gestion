@@ -369,83 +369,245 @@ const Income = () => {
   const transactions = incomeTransactions.filter(inc => !activeAccount || inc.accountId === activeAccount.id);
 
   return (
-    <Box sx={{ p: 2, pb: 10 }}>
-      <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
+    <Box sx={{ 
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Particules animées en arrière-plan */}
+      <Box sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: 'radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%), radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%)',
+        animation: 'float 20s ease-in-out infinite',
+        '@keyframes float': {
+          '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+          '33%': { transform: 'translateY(-20px) rotate(1deg)' },
+          '66%': { transform: 'translateY(10px) rotate(-1deg)' }
+        }
+      }} />
+
+      <Typography variant="h4" sx={{ 
+        mb: 3, 
+        fontWeight: 'bold',
+        color: 'white',
+        textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+        p: 3,
+        pt: 4
+      }}>
         {t('income.title')}
       </Typography>
+      
       {/* AppBar */}
-      <AppBar position="static" elevation={0}>
+      <AppBar position="static" sx={{ 
+        background: 'rgba(255,255,255,0.1)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255,255,255,0.2)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+      }}>
         <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" sx={{ 
+            flexGrow: 1,
+            color: 'white',
+            fontWeight: 700,
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          }}>
             {t('income.title')}
           </Typography>
-          <IconButton color="inherit">
+          <IconButton color="inherit" sx={{
+            color: 'white',
+            '&:hover': {
+              background: 'rgba(255,255,255,0.1)'
+            }
+          }}>
             <Info />
           </IconButton>
         </Toolbar>
       </AppBar>
 
       {/* KPIs */}
-      <Box sx={{ p: 2 }}>
-        <Grid container spacing={2} sx={{ mb: 3 }}>
+      <Box sx={{ p: 3 }}>
+        <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={6}>
-            <Card sx={{ bgcolor: 'success.main', color: 'white' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <TrendingUp sx={{ mr: 1 }} />
-                  <Typography variant="h6">{t('income.total')}</Typography>
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {totalIncome.toLocaleString()}€
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                  Tous les revenus
-                </Typography>
-              </CardContent>
-            </Card>
+            <Box sx={{ 
+              p: 3,
+              borderRadius: 4,
+              background: 'rgba(255,255,255,0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease',
+              textAlign: 'center',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                background: 'rgba(255,255,255,0.15)',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+              }
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+                <TrendingUp sx={{ 
+                  fontSize: 32, 
+                  color: '#4caf50',
+                  filter: 'drop-shadow(0 2px 4px rgba(76, 175, 80, 0.3))'
+                }} />
+              </Box>
+              <Typography variant="h6" sx={{ 
+                fontWeight: 600,
+                color: '#4caf50',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                mb: 1
+              }}>
+                {t('income.total')}
+              </Typography>
+              <Typography variant="h4" sx={{ 
+                fontWeight: 900, 
+                color: '#4caf50',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                mb: 1
+              }}>
+                {totalIncome.toLocaleString()}€
+              </Typography>
+              <Typography variant="body2" sx={{ 
+                opacity: 0.8, 
+                fontWeight: 500,
+                color: 'rgba(255,255,255,0.9)'
+              }}>
+                Tous les revenus
+              </Typography>
+            </Box>
           </Grid>
           <Grid item xs={6}>
-            <Card sx={{ bgcolor: 'primary.main', color: 'white' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <CalendarToday sx={{ mr: 1 }} />
-                  <Typography variant="h6">{t('income.thisMonth')}</Typography>
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  {monthlyIncome.toLocaleString()}€
-                </Typography>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={Math.min((monthlyIncome / 5000) * 100, 100)} 
-                  sx={{ mt: 1, bgcolor: 'rgba(255,255,255,0.3)', '& .MuiLinearProgress-bar': { bgcolor: 'white' } }}
-                />
-              </CardContent>
-            </Card>
+            <Box sx={{ 
+              p: 3,
+              borderRadius: 4,
+              background: 'rgba(255,255,255,0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease',
+              textAlign: 'center',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                background: 'rgba(255,255,255,0.15)',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+              }
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+                <CalendarToday sx={{ 
+                  fontSize: 32, 
+                  color: '#2196f3',
+                  filter: 'drop-shadow(0 2px 4px rgba(33, 150, 243, 0.3))'
+                }} />
+              </Box>
+              <Typography variant="h6" sx={{ 
+                fontWeight: 600,
+                color: '#2196f3',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                mb: 1
+              }}>
+                {t('income.thisMonth')}
+              </Typography>
+              <Typography variant="h4" sx={{ 
+                fontWeight: 900, 
+                color: '#2196f3',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                mb: 1
+              }}>
+                {monthlyIncome.toLocaleString()}€
+              </Typography>
+              <LinearProgress 
+                variant="determinate" 
+                value={Math.min((monthlyIncome / 5000) * 100, 100)} 
+                sx={{ 
+                  mt: 1, 
+                  height: 6,
+                  borderRadius: 3,
+                  bgcolor: 'rgba(255,255,255,0.2)', 
+                  '& .MuiLinearProgress-bar': { 
+                    bgcolor: '#2196f3',
+                    borderRadius: 3
+                  } 
+                }}
+              />
+            </Box>
           </Grid>
         </Grid>
 
         {/* Tabs */}
-        <Paper sx={{ mb: 2 }}>
-          <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
+        <Box sx={{ 
+          mb: 3,
+          background: 'rgba(255,255,255,0.1)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: 4,
+          border: '1px solid rgba(255,255,255,0.2)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+          overflow: 'hidden'
+        }}>
+          <Tabs 
+            value={activeTab} 
+            onChange={(e, newValue) => setActiveTab(newValue)}
+            sx={{
+              '& .MuiTab-root': {
+                color: 'rgba(255,255,255,0.8)',
+                fontWeight: 600,
+                '&.Mui-selected': {
+                  color: 'white',
+                  background: 'rgba(255,255,255,0.1)'
+                }
+              },
+              '& .MuiTabs-indicator': {
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                height: 3
+              }
+            }}
+          >
             <Tab label={t('income.tabs.types')} />
             <Tab label={t('income.tabs.history')} />
             <Tab label={t('income.tabs.analytics')} />
           </Tabs>
-        </Paper>
+        </Box>
 
         {/* Tab Content */}
         {activeTab === 0 && (
-          <Paper>
-            <List>
+          <Box sx={{ 
+            background: 'rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 4,
+            border: '1px solid rgba(255,255,255,0.2)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+            overflow: 'hidden'
+          }}>
+            <List sx={{ p: 0 }}>
               {Object.keys(typeTotals).map((type, index) => (
                 <React.Fragment key={type}>
-                  <ListItem
+                  <ListItem sx={{ 
+                    p: 2,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      background: 'rgba(255,255,255,0.1)',
+                    }
+                  }}
                     secondaryAction={
                       <>
-                        <IconButton edge="end" aria-label="edit" onClick={() => handleEdit(index, typeTotals[type] || 0)}>
+                        <IconButton 
+                          edge="end" 
+                          aria-label="edit" 
+                          onClick={() => handleEdit(index, typeTotals[type] || 0)}
+                          sx={{ color: 'rgba(255,255,255,0.8)' }}
+                        >
                           <Edit />
                         </IconButton>
-                        <IconButton edge="end" aria-label="delete" color="error" onClick={() => setDeleteIdx(index)}>
+                        <IconButton 
+                          edge="end" 
+                          aria-label="delete" 
+                          color="error" 
+                          onClick={() => setDeleteIdx(index)}
+                          sx={{ color: '#f44336' }}
+                        >
                           <Delete />
                         </IconButton>
                       </>
@@ -457,7 +619,28 @@ const Income = () => {
                         value={editValue}
                         onChange={e => setEditValue(e.target.value)}
                         size="small"
-                        sx={{ width: 100, mr: 2 }}
+                        sx={{ 
+                          width: 100, 
+                          mr: 2,
+                          '& .MuiOutlinedInput-root': {
+                            color: 'white',
+                            '& fieldset': {
+                              borderColor: 'rgba(255,255,255,0.3)',
+                            },
+                            '&:hover fieldset': {
+                              borderColor: 'rgba(255,255,255,0.5)',
+                            },
+                            '&.Mui-focused fieldset': {
+                              borderColor: 'white',
+                            },
+                          },
+                          '& .MuiInputLabel-root': {
+                            color: 'rgba(255,255,255,0.7)',
+                          },
+                          '& .MuiInputAdornment-root': {
+                            color: 'rgba(255,255,255,0.7)',
+                          }
+                        }}
                         onBlur={() => handleEditSave(type)}
                         onKeyDown={e => { if (e.key === 'Enter') handleEditSave(type); }}
                         autoFocus
@@ -468,22 +651,45 @@ const Income = () => {
                     ) : (
                       <>
                         <ListItemText 
-                          primary={type} 
-                          secondary={`${(typeTotals[type] || 0).toLocaleString()}€ ce mois`}
+                          primary={
+                            <Typography sx={{ 
+                              color: 'white',
+                              fontWeight: 600,
+                              textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                            }}>
+                              {type}
+                            </Typography>
+                          }
+                          secondary={
+                            <Typography sx={{ 
+                              color: 'rgba(255,255,255,0.8)',
+                              fontWeight: 500
+                            }}>
+                              {`${transactions.filter(inc => inc.type === type).length} transactions`}
+                            </Typography>
+                          }
                         />
-                        <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold' }}>
+                        <Typography variant="h6" color="#4caf50" sx={{ 
+                          fontWeight: 900,
+                          textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                        }}>
                           {(typeTotals[type] || 0).toLocaleString()}€
                         </Typography>
                       </>
                     )}
                   </ListItem>
-                  {index < Object.keys(typeTotals).length - 1 && <Divider />}
+                  {index < Object.keys(typeTotals).length - 1 && (
+                    <Divider sx={{ 
+                      opacity: 0.3,
+                      borderColor: 'rgba(255,255,255,0.2)'
+                    }} />
+                  )}
                   
                   {/* Dialog de confirmation suppression */}
                   <Dialog open={deleteIdx === index} onClose={() => setDeleteIdx(null)}>
                     <DialogTitle>{t('income.confirmDeleteType')}</DialogTitle>
                     <DialogContent>
-                      Cette action supprimera <b>{type}</b> et toutes ses données.
+                      Cette action supprimera le type <b>{type}</b> et toutes ses données.
                     </DialogContent>
                     <DialogActions>
                       <Button onClick={() => setDeleteIdx(null)}>{t('common.cancel')}</Button>
@@ -493,82 +699,173 @@ const Income = () => {
                 </React.Fragment>
               ))}
             </List>
-          </Paper>
+          </Box>
         )}
 
         {activeTab === 1 && (
           <Box>
             {transactions.length === 0 ? (
-              <Paper sx={{ p: 4, textAlign: 'center' }}>
-                <Typography variant="h6" color="text.secondary" gutterBottom>
+              <Box sx={{ 
+                p: 4, 
+                textAlign: 'center',
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: 4,
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+              }}>
+                <Typography variant="h6" sx={{ 
+                  color: 'rgba(255,255,255,0.8)',
+                  fontWeight: 600,
+                  mb: 1
+                }} gutterBottom>
                   {t('income.noIncome')}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" component="span">
+                <Typography variant="body2" sx={{ 
+                  color: 'rgba(255,255,255,0.6)',
+                  fontWeight: 500
+                }}>
                   {t('income.addFirstIncome')}
                 </Typography>
-              </Paper>
+              </Box>
             ) : (
-              <List>
-                {transactions
-                  .sort((a, b) => new Date(b.date) - new Date(a.date)) // Trier par date décroissante
-                  .map((income, index) => {
-                    // Formater la date pour l'affichage
-                    const displayDate = new Date(income.date).toLocaleDateString('fr-FR', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric'
-                    });
-                    
-                    return (
-                  <React.Fragment key={income.id}>
-                    <ListItem>
-                      <ListItemText
-                        primary={income.type}
-                            secondary={`${displayDate} • ${income.description || 'Aucune description'}`}
-                      />
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant="h6" color="success.main" sx={{ fontWeight: 'bold' }}>
-                              +{income.amount.toLocaleString()}€
-                        </Typography>
-                        <IconButton 
-                          size="small" 
-                          color="error" 
-                          onClick={() => handleDeleteIncome(income.id)}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Box>
-                    </ListItem>
-                    {index < transactions.length - 1 && <Divider />}
-                  </React.Fragment>
-                    );
-                  })}
-              </List>
+              <Box sx={{ 
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: 4,
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                overflow: 'hidden'
+              }}>
+                <List sx={{ p: 0 }}>
+                  {transactions
+                    .sort((a, b) => new Date(b.date) - new Date(a.date)) // Trier par date décroissante
+                    .map((income, index) => {
+                      // Formater la date pour l'affichage
+                      const displayDate = new Date(income.date).toLocaleDateString('fr-FR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                      });
+                      
+                      return (
+                    <React.Fragment key={income.id}>
+                      <ListItem sx={{ 
+                        p: 2,
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          background: 'rgba(255,255,255,0.1)',
+                          transform: 'translateX(8px)',
+                        }
+                      }}>
+                        <ListItemText
+                          primary={
+                            <Typography sx={{ 
+                              color: 'white',
+                              fontWeight: 600,
+                              textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                            }}>
+                              {income.type}
+                            </Typography>
+                          }
+                          secondary={
+                            <Typography sx={{ 
+                              color: 'rgba(255,255,255,0.8)',
+                              fontWeight: 500
+                            }}>
+                              {`${displayDate} • ${income.description || 'Aucune description'}`}
+                            </Typography>
+                          }
+                        />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography variant="h6" color="#4caf50" sx={{ 
+                            fontWeight: 900,
+                            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                          }}>
+                            +{income.amount.toLocaleString()}€
+                          </Typography>
+                          <IconButton 
+                            size="small" 
+                            color="error" 
+                            onClick={() => handleDeleteIncome(income.id)}
+                            sx={{ color: '#f44336' }}
+                          >
+                            <Delete />
+                          </IconButton>
+                        </Box>
+                      </ListItem>
+                      {index < transactions.length - 1 && (
+                        <Divider sx={{ 
+                          opacity: 0.3,
+                          borderColor: 'rgba(255,255,255,0.2)'
+                        }} />
+                      )}
+                    </React.Fragment>
+                      );
+                    })}
+                </List>
+              </Box>
             )}
           </Box>
         )}
 
         {activeTab === 2 && (
-          <Grid container spacing={2}>
+          <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom>
+              <Box sx={{ 
+                p: 3,
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: 4,
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                }
+              }}>
+                <Typography variant="h6" sx={{ 
+                  gutterBottom: true,
+                  color: 'white',
+                  fontWeight: 700,
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  mb: 2
+                }}>
                   Répartition par type
                 </Typography>
                 <Box sx={{ height: 300 }}>
                   <Doughnut data={doughnutData} options={chartOptions} />
                 </Box>
-              </Paper>
+              </Box>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Paper sx={{ p: 2 }}>
-                <Typography variant="h6" gutterBottom>
+              <Box sx={{ 
+                p: 3,
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: 4,
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                }
+              }}>
+                <Typography variant="h6" sx={{ 
+                  gutterBottom: true,
+                  color: 'white',
+                  fontWeight: 700,
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  mb: 2
+                }}>
                   Évolution des revenus
                 </Typography>
                 <Box sx={{ height: 300 }}>
                   <Line data={lineData} options={lineOptions} />
                 </Box>
-              </Paper>
+              </Box>
             </Grid>
           </Grid>
         )}
@@ -578,10 +875,38 @@ const Income = () => {
       <Fab
         color="primary"
         aria-label="add"
-        sx={{ position: 'fixed', bottom: 80, right: 16 }}
         onClick={() => setShowAddDialog(true)}
+        sx={{
+          position: 'fixed',
+          bottom: 80,
+          right: 24,
+          zIndex: 1000,
+          background: 'rgba(255,255,255,0.15)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.3)',
+          color: 'white',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.1)',
+          width: 64,
+          height: 64,
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            background: 'rgba(255,255,255,0.25)',
+            transform: 'scale(1.1) translateY(-2px)',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.2)',
+          },
+          '&:active': {
+            transform: 'scale(0.95)',
+          },
+          '& .MuiFab-label': {
+            fontSize: 0,
+          },
+        }}
       >
-        <Add />
+        <Add sx={{ 
+          fontSize: 28,
+          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+          transition: 'all 0.3s ease'
+        }} />
       </Fab>
 
       {/* Dialog d'ajout de revenu */}
