@@ -22,7 +22,7 @@ import {
 } from '@mui/material';
 import { Close, Add, Remove, CalendarToday } from '@mui/icons-material';
 
-const QuickAdd = () => {
+const QuickAdd = ({ open: externalOpen, onClose: externalOnClose }) => {
   const { 
     months, 
     categories, 
@@ -52,9 +52,14 @@ const QuickAdd = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const amountRef = useRef();
 
+  // Utiliser les props externes si fournies (mode popup), sinon utiliser l'état local (mode page)
+  const isPopupMode = externalOpen !== undefined;
+  const currentOpen = isPopupMode ? externalOpen : open;
+  const setCurrentOpen = isPopupMode ? externalOnClose : setOpen;
+
   // Réinitialiser les valeurs quand la popup s'ouvre
   useEffect(() => {
-    if (open) {
+    if (currentOpen) {
       setCategory(categories[0] || '');
       setIncomeType(availableIncomeTypes[0] || '');
       setAmount('');
@@ -68,20 +73,20 @@ const QuickAdd = () => {
         }
       }, 500);
     }
-  }, [open]); // Seulement quand open change, pas quand categories ou availableIncomeTypes changent
+  }, [currentOpen]); // Seulement quand currentOpen change, pas quand categories ou availableIncomeTypes changent
 
   // Gérer les changements de catégories sans affecter le montant
   useEffect(() => {
-    if (open && categories.length > 0 && !category) {
+    if (currentOpen && categories.length > 0 && !category) {
       setCategory(categories[0]);
     }
-  }, [categories, open, category]);
+  }, [categories, currentOpen, category]);
 
   useEffect(() => {
-    if (open && availableIncomeTypes.length > 0 && !incomeType) {
+    if (currentOpen && availableIncomeTypes.length > 0 && !incomeType) {
       setIncomeType(availableIncomeTypes[0]);
     }
-  }, [availableIncomeTypes, open, incomeType]);
+  }, [availableIncomeTypes, currentOpen, incomeType]);
 
   const handleAdd = () => {
     const val = parseFloat(amount) || 0;
@@ -126,12 +131,12 @@ const QuickAdd = () => {
     setDescription('');
     setShowSuccess(true);
     setTimeout(() => {
-      setOpen(false);
+      setCurrentOpen(false);
     }, 1000);
   };
 
   const handleClose = () => {
-    setOpen(false);
+    setCurrentOpen(false);
   };
 
   const handleSuccessClose = () => {
@@ -149,27 +154,29 @@ const QuickAdd = () => {
       <Typography variant="h4" sx={{ mb: 3, fontWeight: 'bold' }}>
         {t('quickAdd.quickAddTitle')}
       </Typography>
-      {/* Bouton pour ouvrir la popup - CORRIGÉ : une seule icône */}
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => setOpen(true)}
-        sx={{ 
-          position: 'fixed', 
-          bottom: 80, 
-          right: 16, 
-          zIndex: 1000,
-          borderRadius: '50px',
-          minWidth: 'auto',
-          width: 56,
-          height: 56
-        }}
-      >
-        <Add />
-      </Button>
+      {/* Bouton pour ouvrir la popup - seulement en mode page, pas en mode popup */}
+      {!isPopupMode && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => setCurrentOpen(true)}
+          sx={{ 
+            position: 'fixed', 
+            bottom: 80, 
+            right: 16, 
+            zIndex: 1000,
+            borderRadius: '50px',
+            minWidth: 'auto',
+            width: 56,
+            height: 56
+          }}
+        >
+          <Add />
+        </Button>
+      )}
 
       {/* Popup QuickAdd */}
-      <Slide direction="up" in={open} mountOnEnter unmountOnExit>
+      <Slide direction="up" in={currentOpen} mountOnEnter unmountOnExit>
         <Paper
           sx={{
             position: 'fixed',

@@ -3118,18 +3118,32 @@ const Home = () => {
           bottom: 24,
           right: 24,
           zIndex: 1000,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'rgba(255,255,255,0.15)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.3)',
           color: 'white',
-          boxShadow: '0 8px 32px rgba(102, 126, 234, 0.4)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.1)',
           width: 64,
           height: 64,
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           '&:hover': {
-            background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
-            boxShadow: '0 12px 40px rgba(102, 126, 234, 0.6)',
+            background: 'rgba(255,255,255,0.25)',
+            transform: 'scale(1.1) translateY(-2px)',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.2)',
+          },
+          '&:active': {
+            transform: 'scale(0.95)',
+          },
+          '& .MuiFab-label': {
+            fontSize: 0,
           },
         }}
       >
-        <Add sx={{ fontSize: 32 }} />
+        <Add sx={{ 
+          fontSize: 28,
+          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+          transition: 'all 0.3s ease'
+        }} />
       </Fab>
       {/* Popup QuickAdd */}
       <QuickAdd open={showQuickAdd} onClose={() => setShowQuickAdd(false)} />
