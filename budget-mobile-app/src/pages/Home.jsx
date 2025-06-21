@@ -57,7 +57,8 @@ import {
   Notifications,
   Refresh,
   Savings,
-  MoreVert
+  MoreVert,
+  Info
 } from '@mui/icons-material';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { 
@@ -2013,7 +2014,7 @@ const Home = () => {
         </Grid>
 
         {/* Prévisions intelligentes avec design moderne */}
-        {hasPartialAI() && (
+        {isFeatureAvailable('aiAnalysis') && (
           <Paper sx={{ 
             p: 3, 
             mb: 4,
@@ -2032,28 +2033,28 @@ const Home = () => {
               <Box sx={{ 
                 p: 1.5, 
                 borderRadius: 3, 
-                background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
                 mr: 2,
-                boxShadow: '0 4px 12px rgba(255, 152, 0, 0.3)'
+                boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)'
               }}>
-                <AccountBalance sx={{ color: 'white', fontSize: 28 }} />
+                <Analytics sx={{ color: 'white', fontSize: 28 }} />
               </Box>
               <Typography variant="h5" sx={{ 
                 fontWeight: 700,
                 color: 'white',
                 textShadow: '0 2px 4px rgba(0,0,0,0.3)'
               }}>
-                Prévisions intelligentes {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
+                Prévisions intelligentes
               </Typography>
               <Chip 
                 label={t('home.ai')} 
                 size="small" 
                 sx={{ 
                   ml: 2,
-                  background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                  background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
                   color: 'white',
                   fontWeight: 600,
-                  boxShadow: '0 4px 12px rgba(255, 152, 0, 0.3)'
+                  boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)'
                 }}
               />
             </Box>
@@ -2061,8 +2062,8 @@ const Home = () => {
             <Alert severity="info" sx={{ 
               mb: 3,
               borderRadius: 3,
-              background: 'rgba(33, 150, 243, 0.1)',
-              border: '1px solid rgba(33, 150, 243, 0.2)',
+              background: 'rgba(156, 39, 176, 0.1)',
+              border: '1px solid rgba(156, 39, 176, 0.2)',
               color: 'white'
             }}>
               <AlertTitle sx={{ color: 'white' }}>Calcul intelligent</AlertTitle>
@@ -2080,6 +2081,10 @@ const Home = () => {
                   border: '1px solid rgba(255,255,255,0.2)',
                   boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
                   transition: 'all 0.3s ease',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
                   '&:hover': {
                     transform: 'translateY(-4px)',
                     background: 'rgba(255,255,255,0.15)',
@@ -2129,6 +2134,10 @@ const Home = () => {
                   border: '1px solid rgba(255,255,255,0.2)',
                   boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
                   transition: 'all 0.3s ease',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
                   '&:hover': {
                     transform: 'translateY(-4px)',
                     background: 'rgba(255,255,255,0.15)',
@@ -2178,6 +2187,10 @@ const Home = () => {
                   border: '1px solid rgba(255,255,255,0.2)',
                   boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
                   transition: 'all 0.3s ease',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
                   '&:hover': {
                     transform: 'translateY(-4px)',
                     background: 'rgba(255,255,255,0.15)',
@@ -2226,6 +2239,10 @@ const Home = () => {
                   border: '1px solid rgba(255,255,255,0.2)',
                   boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
                   transition: 'all 0.3s ease',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
                   '&:hover': {
                     transform: 'translateY(-4px)',
                     background: 'rgba(255,255,255,0.15)',
@@ -2379,7 +2396,7 @@ const Home = () => {
         )}
 
         {/* Recommandations intelligentes avec design moderne */}
-        {isFeatureAvailable('aiAnalysis') && (
+        {isFeatureAvailable('aiAnalysis') && recommendations.length > 0 && (
           <Paper sx={{ 
             p: 3, 
             mb: 4,
@@ -2442,254 +2459,111 @@ const Home = () => {
               border: '1px solid rgba(33, 150, 243, 0.2)',
               color: 'white'
             }}>
-              <AlertTitle sx={{ color: 'white' }}>Calcul intelligent</AlertTitle>
-              Ces prévisions utilisent l'IA pour analyser vos tendances et prédire vos finances du mois prochain.
+              <AlertTitle sx={{ color: 'white' }}>Conseils personnalisés</AlertTitle>
+              Ces recommandations sont basées sur l'analyse de vos données financières et vos tendances.
             </Alert>
             
-            <Grid container spacing={3} sx={{ mb: 3 }}>
-              <Grid item xs={12} sm={6} md={3}>
-                <Box sx={{ 
-                  textAlign: 'center', 
-                  p: 3, 
-                  background: 'rgba(255,255,255,0.1)',
-                  backdropFilter: 'blur(20px)',
-                  borderRadius: 4,
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    background: 'rgba(255,255,255,0.15)',
-                    boxShadow: '0 12px 35px rgba(0,0,0,0.15)',
-                  }
-                }}>
-                  <Typography variant="h6" sx={{ 
-                    fontWeight: 600, 
-                    mb: 1,
-                    color: '#4caf50',
-                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+            <Grid container spacing={3}>
+              {recommendations.slice(0, 4).map((recommendation, index) => (
+                <Grid item xs={12} sm={6} md={6} key={index}>
+                  <Box sx={{ 
+                    p: 3, 
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(20px)',
+                    borderRadius: 4,
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                    transition: 'all 0.3s ease',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      background: 'rgba(255,255,255,0.15)',
+                      boxShadow: '0 12px 35px rgba(0,0,0,0.15)',
+                    }
                   }}>
-                    Revenus prévus
-                  </Typography>
-                  <Typography variant="h4" sx={{ 
-                    fontWeight: 900, 
-                    mb: 2,
-                    color: '#4caf50',
-                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                  }}>
-                    {forecast.income.toLocaleString()}€
-                  </Typography>
-                  <Typography variant="body2" sx={{ 
-                    mb: 1, 
-                    fontWeight: 500,
-                    color: 'rgba(255,255,255,0.9)'
-                  }}>
-                    {forecast.incomeTrend > 0 ? <><TrendingUpIcon sx={{ fontSize: 16, color: '#4caf50', mr: 0.5 }} />+</> : forecast.incomeTrend < 0 ? <><TrendingDownIcon sx={{ fontSize: 16, color: '#f44336', mr: 0.5 }} /></> : <><RemoveIcon sx={{ fontSize: 16, color: '#ff9800', mr: 0.5 }} /></>}
-                    {Math.abs(forecast.incomeTrend).toLocaleString()}€ vs ce mois
-                  </Typography>
-                  <Typography variant="caption" sx={{ 
-                    display: 'block', 
-                    opacity: 0.9,
-                    color: 'rgba(255,255,255,0.8)'
-                  }}>
-                    Confiance: {Math.round(forecast.incomeConfidence * 100)}%
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <Box sx={{ 
-                  textAlign: 'center', 
-                  p: 3, 
-                  background: 'rgba(255,255,255,0.1)',
-                  backdropFilter: 'blur(20px)',
-                  borderRadius: 4,
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    background: 'rgba(255,255,255,0.15)',
-                    boxShadow: '0 12px 35px rgba(0,0,0,0.15)',
-                  }
-                }}>
-                  <Typography variant="h6" sx={{ 
-                    fontWeight: 600, 
-                    mb: 1,
-                    color: '#f44336',
-                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                  }}>
-                    Dépenses prévues
-                  </Typography>
-                  <Typography variant="h4" sx={{ 
-                    fontWeight: 900, 
-                    mb: 2,
-                    color: '#f44336',
-                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                  }}>
-                    {forecast.expenses.toLocaleString()}€
-                  </Typography>
-                  <Typography variant="body2" sx={{ 
-                    mb: 1, 
-                    fontWeight: 500,
-                    color: 'rgba(255,255,255,0.9)'
-                  }}>
-                    {forecast.expenseTrend > 0 ? <><TrendingUpIcon sx={{ fontSize: 16, color: '#f44336', mr: 0.5 }} />+</> : forecast.expenseTrend < 0 ? <><TrendingDownIcon sx={{ fontSize: 16, color: '#4caf50', mr: 0.5 }} /></> : <><RemoveIcon sx={{ fontSize: 16, color: '#ff9800', mr: 0.5 }} /></>}
-                    {Math.abs(forecast.expenseTrend).toLocaleString()}€ vs ce mois
-                  </Typography>
-                  <Typography variant="caption" sx={{ 
-                    display: 'block', 
-                    opacity: 0.9,
-                    color: 'rgba(255,255,255,0.8)'
-                  }}>
-                    Confiance: {Math.round(forecast.expenseConfidence * 100)}%
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <Box sx={{ 
-                  textAlign: 'center', 
-                  p: 3, 
-                  background: 'rgba(255,255,255,0.1)',
-                  backdropFilter: 'blur(20px)',
-                  borderRadius: 4,
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    background: 'rgba(255,255,255,0.15)',
-                    boxShadow: '0 12px 35px rgba(0,0,0,0.15)',
-                  }
-                }}>
-                  <Typography variant="h6" sx={{ 
-                    fontWeight: 600, 
-                    mb: 1,
-                    color: '#2196f3',
-                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                  }}>
-                    Économies prévues
-                  </Typography>
-                  <Typography variant="h4" sx={{ 
-                    fontWeight: 900, 
-                    mb: 2,
-                    color: '#2196f3',
-                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                  }}>
-                    {forecast.balance.toLocaleString()}€
-                  </Typography>
-                  <Typography variant="body2" sx={{ 
-                    mb: 1, 
-                    fontWeight: 500,
-                    color: 'rgba(255,255,255,0.9)'
-                  }}>
-                    {forecast.balance > 0 ? <><CheckCircle sx={{ fontSize: 16, color: '#4caf50', mr: 0.5 }} />Prévision positive</> : <><Warning sx={{ fontSize: 16, color: '#ff9800', mr: 0.5 }} />Attention nécessaire</>}
-                  </Typography>
-                  <Typography variant="caption" sx={{ 
-                    display: 'block', 
-                    opacity: 0.9,
-                    color: 'rgba(255,255,255,0.8)'
-                  }}>
-                    Inclut les tendances saisonnières
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <Box sx={{ 
-                  textAlign: 'center', 
-                  p: 3, 
-                  background: 'rgba(255,255,255,0.1)',
-                  backdropFilter: 'blur(20px)',
-                  borderRadius: 4,
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    background: 'rgba(255,255,255,0.15)',
-                    boxShadow: '0 12px 35px rgba(0,0,0,0.15)',
-                  }
-                }}>
-                  <Typography variant="h6" sx={{ 
-                    fontWeight: 600, 
-                    mb: 1,
-                    color: '#ff9800',
-                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                  }}>
-                    Taux d'épargne
-                  </Typography>
-                  <Typography variant="h4" sx={{ 
-                    fontWeight: 900, 
-                    mb: 2,
-                    color: '#ff9800',
-                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                  }}>
-                    {forecast.income > 0 ? Math.round((forecast.balance / forecast.income) * 100) : 0}%
-                  </Typography>
-                  <Typography variant="body2" sx={{ 
-                    mb: 1, 
-                    fontWeight: 500,
-                    color: 'rgba(255,255,255,0.9)'
-                  }}>
-                    Objectif recommandé: 20%
-                  </Typography>
-                  <Typography variant="caption" sx={{ 
-                    display: 'block', 
-                    opacity: 0.9,
-                    color: 'rgba(255,255,255,0.8)'
-                  }}>
-                    Basé sur les prévisions IA
-                  </Typography>
-                </Box>
-              </Grid>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
+                      <Box sx={{ 
+                        p: 1, 
+                        borderRadius: 2, 
+                        background: recommendation.type === 'success' ? 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)' :
+                                   recommendation.type === 'warning' ? 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)' :
+                                   recommendation.type === 'error' ? 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)' :
+                                   'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                        mr: 2,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                      }}>
+                        {recommendation.type === 'success' ? <CheckCircle sx={{ color: 'white', fontSize: 20 }} /> :
+                         recommendation.type === 'warning' ? <Warning sx={{ color: 'white', fontSize: 20 }} /> :
+                         recommendation.type === 'error' ? <Warning sx={{ color: 'white', fontSize: 20 }} /> :
+                         <Info sx={{ color: 'white', fontSize: 20 }} />}
+                      </Box>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="h6" sx={{ 
+                          fontWeight: 600,
+                          color: 'white',
+                          textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                          mb: 1
+                        }}>
+                          {recommendation.title}
+                        </Typography>
+                        <Typography variant="body2" sx={{ 
+                          color: 'rgba(255,255,255,0.9)',
+                          mb: 2,
+                          lineHeight: 1.5
+                        }}>
+                          {recommendation.message}
+                        </Typography>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          onClick={() => handleRecommendationAction(recommendation.actionType, recommendation)}
+                          sx={{
+                            background: recommendation.type === 'success' ? 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)' :
+                                       recommendation.type === 'warning' ? 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)' :
+                                       recommendation.type === 'error' ? 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)' :
+                                       'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                            '&:hover': {
+                              background: recommendation.type === 'success' ? 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)' :
+                                         recommendation.type === 'warning' ? 'linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)' :
+                                         recommendation.type === 'error' ? 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)' :
+                                         'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                            },
+                            borderRadius: 2,
+                            px: 2,
+                            py: 0.5,
+                            fontSize: '0.75rem',
+                            fontWeight: 600
+                          }}
+                        >
+                          {recommendation.action}
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Grid>
+              ))}
             </Grid>
             
-            {/* Détails du calcul amélioré */}
-            <Collapse in={true}>
-              <Box sx={{ 
-                mt: 3, 
-                p: 3, 
-                background: 'rgba(33, 150, 243, 0.05)',
-                borderRadius: 3,
-                border: '1px solid rgba(33, 150, 243, 0.1)'
-              }}>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: '#1976d2' }}>
-                  <Psychology sx={{ fontSize: 20, mr: 1, verticalAlign: 'middle' }} />
-                  Détails du calcul intelligent:
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                      • Revenus: Moyenne pondérée des 3 derniers mois + ajustement tendance
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                      • Dépenses: Analyse des tendances + ajustements saisonniers
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                      • Pondération: 50% mois récent, 30% avant-dernier, 20% troisième
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                      • Précision: Améliore avec plus de données historiques
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                      • Volatilité: Mesure de la stabilité des données
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                      • Confiance: Indicateur de fiabilité des prévisions
-                    </Typography>
-                  </Grid>
-                </Grid>
+            {recommendations.length > 4 && (
+              <Box sx={{ mt: 3, textAlign: 'center' }}>
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate('/action-plans')}
+                  sx={{
+                    borderColor: 'rgba(255,255,255,0.3)',
+                    color: 'white',
+                    '&:hover': {
+                      borderColor: 'white',
+                      background: 'rgba(255,255,255,0.1)'
+                    }
+                  }}
+                >
+                  Voir toutes les recommandations ({recommendations.length})
+                </Button>
               </Box>
-            </Collapse>
+            )}
           </Paper>
         )}
 
