@@ -1099,894 +1099,1525 @@ const Home = () => {
   };
 
   return (
-    <Box sx={{ p: 2 }}>
-      {/* Styles CSS pour l'animation pulse */}
+    <Box sx={{ 
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Particules d'arrière-plan animées */}
+      <Box sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        opacity: 0.1,
+        backgroundImage: `
+          radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+          radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%)
+        `,
+        animation: 'float 20s ease-in-out infinite'
+      }} />
+      
       <style>
         {`
+          @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(1deg); }
+            66% { transform: translateY(10px) rotate(-1deg); }
+          }
           @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+          }
+          @keyframes slideInUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
           }
         `}
       </style>
-      
-      {/* Alerte de connexion */}
-      {!isAuthenticated && (
-        <Alert severity="warning" sx={{ mb: 2 }}>
-          <AlertTitle>{t('home.notConnected')}</AlertTitle>
-          {t('home.notConnectedMessage')}
-          <Button 
-            color="inherit" 
-            size="small" 
-            sx={{ ml: 1 }}
-            onClick={() => window.location.href = '/login'}
-          >
-            {t('home.connect')}
-          </Button>
-        </Alert>
-      )}
-      
-      {isAuthenticated && !serverConnected && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          <AlertTitle>{t('home.offlineMode')}</AlertTitle>
-          {t('home.offlineModeMessage')}
-        </Alert>
-      )}
-      
-      {/* En-tête avec avatar et salutation */}
-      <Fade in timeout={500}>
-        <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Box>
-              <Typography 
-                variant="h4" 
-                sx={{ 
-                  fontWeight: 'bold',
-                  fontSize: { xs: '1.8rem', sm: '2.1rem', md: '2.4rem' },
-                  color: '#ffffff',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                  background: 'linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  letterSpacing: '0.5px',
-                  mb: 0.5
-                }}
-              >
-                {t('home.hello')}{user?.name ? `, ${user.name}` : ''}
-              </Typography>
-            </Box>
-            <Box>
-              <IconButton>
-                <Notifications />
-              </IconButton>
-              <IconButton>
-                <Refresh />
-              </IconButton>
-              {/* Indicateur d'abonnement */}
-              <IconButton
-                onClick={() => navigate('/subscription')}
-                sx={{
-                  color: getSubscriptionColor(),
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.1)',
-                    transform: 'scale(1.1)',
-                    transition: 'all 0.2s ease'
-                  }
-                }}
-                title={`${t('subscription.currentPlan')}: ${getSubscriptionText()}`}
-              >
-                {getSubscriptionIcon()}
-              </IconButton>
-              {/* Indicateur de statut de connexion */}
-              <IconButton
-                sx={{
-                  color: serverConnected ? 'success.main' : 'warning.main',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.1)'
-                  }
-                }}
-                title={serverConnected ? t('home.connectedToServer') : t('home.offlineModeData')}
-              >
-                {serverConnected ? (
-                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'currentColor' }} />
-                ) : (
-                  <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'currentColor', animation: 'pulse 2s infinite' }} />
-                )}
-              </IconButton>
-              {/* Bouton de déconnexion */}
-              <IconButton
-                onClick={() => {
-                  if (window.confirm(t('home.confirmLogout'))) {
-                    logout();
-                  }
-                }}
-                sx={{
-                  color: 'error.main',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255,255,255,0.1)'
-                  }
-                }}
-                title={t('logout')}
-              >
-                <Logout />
-              </IconButton>
-            </Box>
-          </Box>
 
-          {/* Sélecteur de mois */}
-          <Paper sx={{ p: 2, mb: 2, background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
-                {getMonthName(selectedMonth, selectedYear)}
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <IconButton 
-                  onClick={() => navigateMonth('prev')}
-                  sx={{ color: 'white' }}
-                >
-                  <ArrowBack />
-                </IconButton>
-                <IconButton 
-                  onClick={() => navigateMonth('next')}
-                  sx={{ color: 'white' }}
-                >
-                  <ArrowForward />
-                </IconButton>
-              </Box>
-            </Box>
-          </Paper>
-
-          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Box
+      <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, position: 'relative', zIndex: 1 }}>
+        {/* Alerte de connexion */}
+        {!isAuthenticated && (
+          <Fade in timeout={800}>
+            <Alert 
+              severity="warning" 
               sx={{ 
-                position: 'relative',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                p: 3,
-                borderRadius: '50%',
-                background: `linear-gradient(135deg, ${getBalanceColor(selectedMonthSaved)} 0%, ${getBalanceColor(selectedMonthSaved)}dd 100%)`,
-                boxShadow: `0 8px 32px ${getBalanceColor(selectedMonthSaved)}40`,
-                minWidth: { xs: 140, sm: 160, md: 180 },
-                minHeight: { xs: 140, sm: 160, md: 180 },
-                justifyContent: 'center',
-                textAlign: 'center',
-                border: `3px solid ${getBalanceColor(selectedMonthSaved)}30`,
-                transition: 'all 0.3s ease',
-                '&:hover': {
-                  transform: 'scale(1.05)',
-                  boxShadow: `0 12px 40px ${getBalanceColor(selectedMonthSaved)}60`,
-                }
+                mb: 3,
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: 3,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                border: '1px solid rgba(255,255,255,0.2)'
               }}
             >
-              <Typography
-                variant="h3"
-                sx={{
-                  fontWeight: 'bold',
-                  color: 'white',
-                  fontSize: {
-                    xs: selectedMonthSaved >= 1000000 ? '1.5rem' : selectedMonthSaved >= 100000 ? '1.8rem' : '2.2rem',
-                    sm: selectedMonthSaved >= 1000000 ? '1.8rem' : selectedMonthSaved >= 100000 ? '2.1rem' : '2.5rem',
-                    md: selectedMonthSaved >= 1000000 ? '2.1rem' : selectedMonthSaved >= 100000 ? '2.4rem' : '2.8rem'
-                  },
-                  lineHeight: 1.2,
-                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                  wordBreak: 'break-word',
-                  maxWidth: '90%'
-              }}
-            >
-                <CurrencyFormatter amount={selectedMonthSaved} />
-              </Typography>
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: -8,
-                  right: -8,
-                  width: 24,
-                  height: 24,
-                  borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.9)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-                }}
+              <AlertTitle>{t('home.notConnected')}</AlertTitle>
+              {t('home.notConnectedMessage')}
+              <Button 
+                color="inherit" 
+                size="small" 
+                sx={{ ml: 1, borderRadius: 2 }}
+                onClick={() => window.location.href = '/login'}
               >
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontSize: '0.7rem',
-                    fontWeight: 'bold',
-                    color: getBalanceColor(selectedMonthSaved)
+                {t('home.connect')}
+              </Button>
+            </Alert>
+          </Fade>
+        )}
+        
+        {isAuthenticated && !serverConnected && (
+          <Fade in timeout={800}>
+            <Alert 
+              severity="info" 
+              sx={{ 
+                mb: 3,
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: 3,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                border: '1px solid rgba(255,255,255,0.2)'
+              }}
+            >
+              <AlertTitle>{t('home.offlineMode')}</AlertTitle>
+              {t('home.offlineModeMessage')}
+            </Alert>
+          </Fade>
+        )}
+        
+        {/* En-tête moderne avec salutation */}
+        <Fade in timeout={1000}>
+          <Box sx={{ mb: 4 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'flex-start', 
+              mb: 3,
+              flexWrap: 'wrap',
+              gap: 2
+            }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography 
+                  variant="h3" 
+                  sx={{ 
+                    fontWeight: 800,
+                    fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+                    color: 'white',
+                    textShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                    background: 'linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    letterSpacing: '-0.5px',
+                    lineHeight: 1.2,
+                    mb: 1
                   }}
                 >
-                  {selectedMonthSaved >= 0 ? '✓' : '!'}
+                  {t('home.hello')}{user?.name ? `, ${user.name}` : ''}
                 </Typography>
-          </Box>
-            </Box>
-          </Box>
-          <Typography 
-            variant="body2" 
-            textAlign="center" 
-            color="text.secondary" 
-            sx={{ 
-              mt: 2,
-              fontSize: '0.9rem',
-              fontWeight: '500',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              opacity: 0.8
-            }} 
-            component="span"
-          >
-            {t('home.balance')} {getMonthName(selectedMonth, selectedYear)}
-          </Typography>
-        </Box>
-      </Fade>
-
-      {/* KPIs principaux */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Zoom in timeout={600}>
-            <Card sx={{ bgcolor: 'success.main', color: 'white' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <TrendingUp sx={{ mr: 1 }} />
-                  <Typography variant="h6">{t('home.revenues')}</Typography>
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  <CurrencyFormatter amount={selectedMonthIncome} />
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                  {getMonthName(selectedMonth, selectedYear)}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Zoom>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Zoom in timeout={700}>
-            <Card sx={{ bgcolor: 'error.main', color: 'white' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <TrendingDown sx={{ mr: 1 }} />
-                  <Typography variant="h6">{t('home.expenses')}</Typography>
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  <CurrencyFormatter amount={selectedMonthExpense} />
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                  {getMonthName(selectedMonth, selectedYear)}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Zoom>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Zoom in timeout={800}>
-            <Card sx={{ bgcolor: 'primary.main', color: 'white' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <Savings sx={{ mr: 1 }} />
-                  <Typography variant="h6">{t('home.savings')}</Typography>
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  <CurrencyFormatter amount={selectedMonthSaved} />
-                </Typography>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={getProgressValue(selectedMonthSaved, selectedMonthIncome)} 
-                  sx={{ mt: 1, bgcolor: 'rgba(255,255,255,0.3)', '& .MuiLinearProgress-bar': { bgcolor: 'white' } }}
-                />
-              </CardContent>
-            </Card>
-          </Zoom>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Zoom in timeout={900}>
-            <Card sx={{ bgcolor: 'warning.main', color: 'white' }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                  <AccountBalance sx={{ mr: 1 }} />
-                  <Typography variant="h6">{t('home.forecasts')}</Typography>
-                </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-                  <CurrencyFormatter amount={nextMonthProjected} />
-                </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
-                  {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Zoom>
-        </Grid>
-      </Grid>
-
-      {/* Actions rapides */}
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          {t('home.quickActions')}
-        </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={6} sm={3}>
-            <Button
-              component={RouterLink}
-              to="/action-plans"
-              variant="contained"
-              startIcon={<Assignment />}
-              fullWidth
-              sx={{ py: 1.5 }}
-            >
-              Plans d'actions
-            </Button>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Button
-              component={RouterLink}
-              to="/expenses"
-              variant="outlined"
-              fullWidth
-              sx={{ py: 1.5 }}
-            >
-              Dépenses
-            </Button>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Button
-              component={RouterLink}
-              to="/income"
-              variant="outlined"
-              fullWidth
-              sx={{ py: 1.5 }}
-            >
-              Revenus
-            </Button>
-          </Grid>
-          <Grid item xs={6} sm={3}>
-            <Button
-              component={RouterLink}
-              to="/analytics"
-              variant="outlined"
-              fullWidth
-              sx={{ py: 1.5 }}
-            >
-              Analytics
-            </Button>
-          </Grid>
-        </Grid>
-      </Paper>
-
-      {/* Graphiques */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              {t('home.financialEvolution')}
-            </Typography>
-            <Box sx={{ height: 300 }}>
-              <Line data={lineData} options={lineOptions} />
-            </Box>
-          </Paper>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              {t('home.expenseBreakdown')}
-            </Typography>
-            <Box sx={{ height: 300 }}>
-              <Doughnut data={doughnutData} options={chartOptions} />
-            </Box>
-          </Paper>
-        </Grid>
-      </Grid>
-
-      {/* Prévisions intelligentes */}
-      {hasPartialAI() && (
-        <Paper sx={{ p: 2, mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <AccountBalance sx={{ mr: 1, color: 'warning.main' }} />
-            <Typography variant="h6">
-              Prévisions intelligentes {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
-            </Typography>
-            <Chip 
-              label={t('home.ai')} 
-              size="small" 
-              color="warning" 
-              variant="outlined"
-              sx={{ ml: 1 }}
-            />
-          </Box>
-          
-          <Alert severity="info" sx={{ mb: 2 }}>
-            <AlertTitle>Calcul intelligent</AlertTitle>
-            Ces prévisions utilisent l'IA pour analyser vos tendances et prédire vos finances du mois prochain.
-          </Alert>
-          
-          <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={12} sm={6} md={3}>
-              <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'success.light', borderRadius: 2 }}>
-                <Typography variant="h6" color="success.dark">
-                  Revenus prévus
-                </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'success.dark' }}>
-                  {forecast.income.toLocaleString()}€
-                </Typography>
-                <Typography variant="body2" color="success.dark" sx={{ mt: 1 }}>
-                  {forecast.incomeTrend > 0 ? '📈 +' : forecast.incomeTrend < 0 ? '📉 ' : '➡️ '}
-                  {Math.abs(forecast.incomeTrend).toLocaleString()}€ vs ce mois
-                </Typography>
-                <Typography variant="caption" color="success.dark" sx={{ display: 'block', mt: 0.5 }}>
-                  Confiance: {Math.round(forecast.incomeConfidence * 100)}%
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'error.light', borderRadius: 2 }}>
-                <Typography variant="h6" color="error.dark">
-                  Dépenses prévues
-                </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'error.dark' }}>
-                  {forecast.expenses.toLocaleString()}€
-                </Typography>
-                <Typography variant="body2" color="error.dark" sx={{ mt: 1 }}>
-                  {forecast.expenseTrend > 0 ? '📈 +' : forecast.expenseTrend < 0 ? '📉 ' : '➡️ '}
-                  {Math.abs(forecast.expenseTrend).toLocaleString()}€ vs ce mois
-                </Typography>
-                <Typography variant="caption" color="error.dark" sx={{ display: 'block', mt: 0.5 }}>
-                  Confiance: {Math.round(forecast.expenseConfidence * 100)}%
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'primary.light', borderRadius: 2 }}>
-                <Typography variant="h6" color="primary.dark">
-                  Économies prévues
-                </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.dark' }}>
-                  {forecast.balance.toLocaleString()}€
-                </Typography>
-                <Typography variant="body2" color="primary.dark" sx={{ mt: 1 }}>
-                  {forecast.balance > 0 ? '✅ Prévision positive' : '⚠️ Attention nécessaire'}
-                </Typography>
-                <Typography variant="caption" color="primary.dark" sx={{ display: 'block', mt: 0.5 }}>
-                  Inclut les tendances saisonnières
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={6} md={3}>
-              <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'warning.light', borderRadius: 2 }}>
-                <Typography variant="h6" color="warning.dark">
-                  Taux d'épargne
-                </Typography>
-                <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'warning.dark' }}>
-                  {forecast.income > 0 ? Math.round((forecast.balance / forecast.income) * 100) : 0}%
-                </Typography>
-                <Typography variant="body2" color="warning.dark" sx={{ mt: 1 }}>
-                  Objectif recommandé: 20%
-                </Typography>
-                <Typography variant="caption" color="warning.dark" sx={{ display: 'block', mt: 0.5 }}>
-                  Basé sur les prévisions IA
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-          
-          {/* Détails du calcul amélioré */}
-          <Collapse in={true}>
-            <Box sx={{ mt: 2, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
-              <Typography variant="subtitle2" gutterBottom>
-                🧠 Détails du calcul intelligent:
-              </Typography>
-              <Grid container spacing={1}>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    • Revenus: Moyenne pondérée des 3 derniers mois + ajustement tendance
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    • Dépenses: Analyse des tendances + ajustements saisonniers
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    • Pondération: 50% mois récent, 30% avant-dernier, 20% troisième
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    • Précision: Améliore avec plus de données historiques
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    • Volatilité: Mesure de la stabilité des données
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Typography variant="body2" color="text.secondary">
-                    • Confiance: Indicateur de fiabilité des prévisions
-                  </Typography>
-                </Grid>
-              </Grid>
-            </Box>
-          </Collapse>
-        </Paper>
-      )}
-
-      {/* Message pour les utilisateurs gratuits - Prévisions intelligentes */}
-      {!hasPartialAI() && (
-        <Paper sx={{ p: 2, mb: 3, bgcolor: 'warning.light' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <AccountBalance sx={{ mr: 1, color: 'warning.main' }} />
-            <Typography variant="h6">
-              {t('home.upgradeForIntelligentForecasts')}
-            </Typography>
-            <Chip 
-              label={t('home.premium')} 
-              size="small" 
-              color="warning" 
-              variant="outlined"
-              sx={{ ml: 1 }}
-            />
-          </Box>
-          <Typography variant="body2" sx={{ mb: 2 }}>
-            {t('home.intelligentForecastsDescription')}
-          </Typography>
-          <Button 
-            variant="contained" 
-            color="warning"
-            onClick={() => navigate('/subscription')}
-            startIcon={<AccountBalance />}
-          >
-            {t('home.upgradeNow')}
-          </Button>
-        </Paper>
-      )}
-
-      {/* Recommandations intelligentes */}
-      {isFeatureAvailable('aiAnalysis') && (
-        <Paper sx={{ p: 2, mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Lightbulb sx={{ mr: 1, color: 'info.main' }} />
-            <Typography variant="h6">
-              Recommandations intelligentes
-            </Typography>
-            <Chip 
-              label={t('home.ai')} 
-              size="small" 
-              color="info" 
-              variant="outlined"
-              sx={{ ml: 1 }}
-            />
-            <Chip 
-              label={`${recommendations.length} conseils`}
-              size="small" 
-              color="secondary" 
-              variant="outlined"
-              sx={{ ml: 1 }}
-            />
-          </Box>
-          
-          {recommendations.map((rec, index) => (
-            <Alert 
-              key={index}
-              severity={rec.type} 
-              sx={{ mb: 2 }}
-              action={
-                <Button 
-                  color="inherit" 
-                  size="small"
-                  onClick={() => handleRecommendationAction(rec.actionType, rec)}
-                  variant="outlined"
+                <Typography 
+                  variant="h6" 
                   sx={{ 
-                    borderColor: 'currentColor',
+                    color: 'rgba(255,255,255,0.8)',
+                    fontWeight: 400,
+                    letterSpacing: '0.5px'
+                  }}
+                >
+                  {getMonthName(selectedMonth, selectedYear)}
+                </Typography>
+              </Box>
+              
+              {/* Actions rapides en haut */}
+              <Box sx={{ 
+                display: 'flex', 
+                gap: 1,
+                flexWrap: 'wrap'
+              }}>
+                <IconButton
+                  sx={{
+                    color: 'white',
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)',
                     '&:hover': {
-                      bgcolor: 'rgba(255,255,255,0.1)'
+                      background: 'rgba(255,255,255,0.2)',
+                      transform: 'scale(1.1)',
+                      transition: 'all 0.2s ease'
                     }
                   }}
                 >
-                  {rec.action}
-                </Button>
-              }
-            >
-              <AlertTitle sx={{ display: 'flex', alignItems: 'center' }}>
-                {rec.title}
-                {rec.priority === 'high' && <Chip label={t('home.priority')} size="small" color="error" sx={{ ml: 1, height: 20 }} />}
-                {rec.priority === 'medium' && <Chip label={t('home.important')} size="small" color="warning" sx={{ ml: 1, height: 20 }} />}
-              </AlertTitle>
-              <Typography variant="body2">
-                {rec.message}
-              </Typography>
-              
-              {/* Afficher le plan suggéré s'il existe */}
-              {rec.suggestedPlan && (
-                <Box sx={{ mt: 1, p: 1, bgcolor: 'rgba(255,255,255,0.1)', borderRadius: 1 }}>
-                  <Typography variant="subtitle2" sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                    💡 {t('ai.suggestedPlan')} : {rec.suggestedPlan.title}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {rec.suggestedPlan.description}
-                  </Typography>
-                  <Box sx={{ display: 'flex', gap: 1, mt: 0.5 }}>
-                    <Chip 
-                      label={`${t('ai.savings')}: ${rec.suggestedPlan.savings || 0}${t('ai.perMonth')}`}
-                      size="small" 
-                      color="success"
-                      variant="outlined"
-                    />
-                    <Chip 
-                      label={`${t('ai.effort')}: ${rec.suggestedPlan.effort || t('ai.lowEffort')}`}
-                      size="small" 
-                      color="info"
-                      variant="outlined"
-                    />
-                  </Box>
-                </Box>
-              )}
-            </Alert>
-          ))}
-        </Paper>
-      )}
+                  <Notifications />
+                </IconButton>
+                <IconButton
+                  sx={{
+                    color: 'white',
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    '&:hover': {
+                      background: 'rgba(255,255,255,0.2)',
+                      transform: 'scale(1.1)',
+                      transition: 'all 0.2s ease'
+                    }
+                  }}
+                >
+                  <Refresh />
+                </IconButton>
+                <IconButton
+                  onClick={() => navigate('/subscription')}
+                  sx={{
+                    color: getSubscriptionColor(),
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    '&:hover': {
+                      background: 'rgba(255,255,255,0.2)',
+                      transform: 'scale(1.1)',
+                      transition: 'all 0.2s ease'
+                    }
+                  }}
+                  title={`${t('subscription.currentPlan')}: ${getSubscriptionText()}`}
+                >
+                  {getSubscriptionIcon()}
+                </IconButton>
+                <IconButton
+                  sx={{
+                    color: serverConnected ? '#4caf50' : '#ff9800',
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    '&:hover': {
+                      background: 'rgba(255,255,255,0.2)',
+                      transform: 'scale(1.1)',
+                      transition: 'all 0.2s ease'
+                    }
+                  }}
+                  title={serverConnected ? t('home.connectedToServer') : t('home.offlineModeData')}
+                >
+                  <Box sx={{ 
+                    width: 8, 
+                    height: 8, 
+                    borderRadius: '50%', 
+                    bgcolor: 'currentColor',
+                    animation: serverConnected ? 'none' : 'pulse 2s infinite'
+                  }} />
+                </IconButton>
+                <IconButton
+                  onClick={() => {
+                    if (window.confirm(t('home.confirmLogout'))) {
+                      logout();
+                    }
+                  }}
+                  sx={{
+                    color: '#f44336',
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    '&:hover': {
+                      background: 'rgba(255,255,255,0.2)',
+                      transform: 'scale(1.1)',
+                      transition: 'all 0.2s ease'
+                    }
+                  }}
+                  title={t('logout')}
+                >
+                  <Logout />
+                </IconButton>
+              </Box>
+            </Box>
 
-      {/* Message pour les utilisateurs gratuits */}
-      {!isFeatureAvailable('aiAnalysis') && (
-        <Paper sx={{ p: 2, mb: 3, bgcolor: 'info.light' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Lightbulb sx={{ mr: 1, color: 'info.main' }} />
-            <Typography variant="h6">
-              {t('home.upgradeForAI')}
-            </Typography>
-            <Chip 
-              label={t('home.premium')} 
-              size="small" 
-              color="primary" 
-              variant="outlined"
-              sx={{ ml: 1 }}
-            />
-          </Box>
-          <Typography variant="body2" sx={{ mb: 2 }}>
-            {t('home.aiFeaturesDescription')}
-          </Typography>
-          <Button 
-            variant="contained" 
-            color="primary"
-            onClick={() => navigate('/subscription')}
-            startIcon={<Star />}
-          >
-            {t('home.upgradeNow')}
-          </Button>
-        </Paper>
-      )}
-
-      {/* Analyse détaillée par catégorie - AMÉLIORÉE */}
-      {isFeatureAvailable('basicAnalytics') && (
-        <Paper sx={{ p: 2, mb: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Analytics sx={{ mr: 1, color: 'secondary.main' }} />
-            <Typography variant="h6">
-              {t('home.categoryAnalysis')}
-            </Typography>
-            <Chip 
-              label={t('home.intelligent')} 
-              size="small" 
-              color="secondary" 
-              variant="outlined"
-              sx={{ ml: 1 }}
-            />
-            <Chip 
-              label={`${categoryForecastAnalysis.length} ${t('home.categories')}`}
-              size="small" 
-              color="info" 
-              variant="outlined"
-              sx={{ ml: 1 }}
-            />
-          </Box>
-          
-          {categoryForecastAnalysis.length > 0 ? (
-            <Grid container spacing={2}>
-              {categoryForecastAnalysis.map((cat, index) => (
-                <Grid item xs={12} sm={6} md={4} key={index}>
-                  <Card 
-                    variant="outlined" 
+            {/* Navigation des mois moderne */}
+            <Paper sx={{ 
+              p: 2, 
+              mb: 3, 
+              background: 'rgba(255,255,255,0.1)', 
+              backdropFilter: 'blur(20px)',
+              borderRadius: 4,
+              border: '1px solid rgba(255,255,255,0.2)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+            }}>
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 2
+              }}>
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    color: 'white', 
+                    fontWeight: 700,
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                >
+                  {getMonthName(selectedMonth, selectedYear)}
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <IconButton 
+                    onClick={() => navigateMonth('prev')}
                     sx={{ 
-                      height: '100%',
-                      borderColor: cat.isImportant ? `${cat.statusColor}.main` : 'grey.300',
-                      borderWidth: cat.isImportant ? 2 : 1,
-                      position: 'relative',
+                      color: 'white',
+                      background: 'rgba(255,255,255,0.1)',
                       '&:hover': {
-                        boxShadow: 2,
-                        transform: 'translateY(-2px)',
-                        transition: 'all 0.2s ease-in-out'
+                        background: 'rgba(255,255,255,0.2)',
+                        transform: 'scale(1.1)',
+                        transition: 'all 0.2s ease'
                       }
                     }}
                   >
-                    {cat.isImportant && (
-                      <Box sx={{ 
-                        position: 'absolute', 
-                        top: -8, 
-                        right: 8,
-                        zIndex: 1
-                      }}>
-                        <Chip 
-                          label={t('home.important')} 
-                          size="small" 
-                          color={cat.statusColor}
-                          sx={{ height: 20, fontSize: '0.7rem' }}
-                        />
-                      </Box>
-                    )}
-                    
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
-                        {cat.category}
-                        <Chip 
-                          label={cat.status === 'augmentation' ? '📈' : cat.status === 'diminution' ? '📉' : '➡️'}
-                          size="small" 
-                          color={cat.statusColor}
-                          sx={{ ml: 1, height: 20 }}
-                        />
-                      </Typography>
-                      
-                      {/* Montant actuel */}
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body2" color="text.secondary">
-                          {t('home.thisMonth')}:
-                        </Typography>
-                        <Typography variant="body2" fontWeight="bold">
-                          {(cat.current || 0).toLocaleString()}€
-                        </Typography>
-                      </Box>
-                      
-                      {/* Pourcentage du budget */}
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body2" color="text.secondary">
-                          {t('home.budgetPercentage')}:
-                        </Typography>
-                        <Typography variant="body2" fontWeight="bold" color={(cat.budgetPercentage || 0) > 30 ? 'error.main' : 'text.primary'}>
-                          {Math.round(cat.budgetPercentage || 0)}%
-                        </Typography>
-                      </Box>
-                      
-                      {/* Prévision */}
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body2" color="text.secondary">
-                          {t('home.forecast')}:
-                        </Typography>
-                        <Typography variant="body2" fontWeight="bold" color="warning.main">
-                          {(cat.forecast || 0).toLocaleString()}€
-                        </Typography>
-                      </Box>
-                      
-                      {/* Changement prévu */}
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                        <Typography variant="body2" color="text.secondary">
-                          Changement:
-                        </Typography>
-                        <Typography variant="body2" fontWeight="bold" color={cat.trend > 0 ? 'error.main' : 'success.main'}>
-                          {cat.trend > 0 ? '+' : ''}{(cat.trend || 0).toLocaleString()}€
-                        </Typography>
-                      </Box>
-                      
-                      {/* Barre de progression */}
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={Math.min(cat.budgetPercentage || 0, 100)} 
-                        sx={{ 
-                          height: 8, 
-                          borderRadius: 4,
-                          bgcolor: 'grey.200',
-                          '& .MuiLinearProgress-bar': { 
-                            bgcolor: (cat.budgetPercentage || 0) > 30 ? 'error.main' : 'success.main',
-                            borderRadius: 4
-                          }
-                        }} 
-                      />
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          ) : (
-            <Box sx={{ textAlign: 'center', py: 3 }}>
-              <Typography variant="body1" color="text.secondary">
-                {t('home.noCategoryData')}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {t('home.addExpensesToSeeAnalysis')}
-              </Typography>
-            </Box>
-          )}
-        </Paper>
-      )}
-
-      {/* Message pour les utilisateurs gratuits - Analytics */}
-      {!isFeatureAvailable('basicAnalytics') && (
-        <Paper sx={{ p: 2, mb: 3, bgcolor: 'secondary.light' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Analytics sx={{ mr: 1, color: 'secondary.main' }} />
-            <Typography variant="h6">
-              {t('home.upgradeForAnalytics')}
-            </Typography>
-            <Chip 
-              label={t('home.premium')} 
-              size="small" 
-              color="secondary" 
-              variant="outlined"
-              sx={{ ml: 1 }}
-            />
-          </Box>
-          <Typography variant="body2" sx={{ mb: 2 }}>
-            {t('home.analyticsFeaturesDescription')}
-          </Typography>
-          <Button 
-            variant="contained" 
-            color="secondary"
-            onClick={() => navigate('/subscription')}
-            startIcon={<Analytics />}
-          >
-            {t('home.upgradeNow')}
-          </Button>
-        </Paper>
-      )}
-
-      {/* Transactions récentes */}
-      <Paper sx={{ p: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6">
-            {t('home.recentTransactions')}
-          </Typography>
-          <Button
-            component={RouterLink}
-            to="/history"
-            size="small"
-            endIcon={<MoreVert />}
-          >
-            {t('home.seeAll')}
-          </Button>
-        </Box>
-        
-        <List>
-          {recentTransactions.map((transaction, index) => (
-            <React.Fragment key={transaction.id}>
-              <ListItem>
-                <ListItemAvatar>
-                  <Avatar sx={{ bgcolor: transaction.type === 'income' ? 'success.main' : 'error.main' }}>
-                    {transaction.icon}
-                  </Avatar>
-                </ListItemAvatar>
-                <ListItemText
-                  primary={transaction.category}
-                  secondary={transaction.date}
-                />
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <Typography 
-                    variant="h6" 
-                    color={transaction.type === 'income' ? 'success.main' : 'error.main'}
-                    sx={{ fontWeight: 'bold' }}
+                    <ArrowBack />
+                  </IconButton>
+                  <IconButton 
+                    onClick={() => navigateMonth('next')}
+                    sx={{ 
+                      color: 'white',
+                      background: 'rgba(255,255,255,0.1)',
+                      '&:hover': {
+                        background: 'rgba(255,255,255,0.2)',
+                        transform: 'scale(1.1)',
+                        transition: 'all 0.2s ease'
+                      }
+                    }}
                   >
-                    {transaction.type === 'income' ? '+' : '-'}{(transaction.amount || 0).toLocaleString()}€
-                  </Typography>
-                  <Chip 
-                    label={transaction.type === 'income' ? t('home.income') : t('home.expense')} 
-                    size="small" 
-                    color={transaction.type === 'income' ? 'success' : 'error'}
-                    variant="outlined"
-                    sx={{ ml: 1 }}
-                  />
+                    <ArrowForward />
+                  </IconButton>
                 </Box>
-              </ListItem>
-              {index < recentTransactions.length - 1 && <Divider />}
-            </React.Fragment>
-          ))}
-        </List>
-      </Paper>
+              </Box>
+            </Paper>
+
+            {/* Solde principal avec design moderne */}
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+              <Box
+                sx={{ 
+                  position: 'relative',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  p: 4,
+                  borderRadius: '50%',
+                  background: `linear-gradient(135deg, ${getBalanceColor(selectedMonthSaved)} 0%, ${getBalanceColor(selectedMonthSaved)}dd 100%)`,
+                  boxShadow: `0 20px 60px ${getBalanceColor(selectedMonthSaved)}40`,
+                  minWidth: { xs: 160, sm: 200, md: 240 },
+                  minHeight: { xs: 160, sm: 200, md: 240 },
+                  justifyContent: 'center',
+                  textAlign: 'center',
+                  border: `4px solid ${getBalanceColor(selectedMonthSaved)}30`,
+                  transition: 'all 0.4s ease',
+                  animation: 'pulse 3s ease-in-out infinite',
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                    boxShadow: `0 30px 80px ${getBalanceColor(selectedMonthSaved)}60`,
+                  }
+                }}
+              >
+                <Typography
+                  variant="h2"
+                  sx={{
+                    fontWeight: 900,
+                    color: 'white',
+                    fontSize: {
+                      xs: selectedMonthSaved >= 1000000 ? '1.8rem' : selectedMonthSaved >= 100000 ? '2.2rem' : '2.6rem',
+                      sm: selectedMonthSaved >= 1000000 ? '2.2rem' : selectedMonthSaved >= 100000 ? '2.6rem' : '3rem',
+                      md: selectedMonthSaved >= 1000000 ? '2.6rem' : selectedMonthSaved >= 100000 ? '3rem' : '3.5rem'
+                    },
+                    lineHeight: 1.1,
+                    textShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                    wordBreak: 'break-word',
+                    maxWidth: '90%'
+                  }}
+                >
+                  <CurrencyFormatter amount={selectedMonthSaved} />
+                </Typography>
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: -12,
+                    right: -12,
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.95)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                    border: '2px solid white'
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: '0.8rem',
+                      fontWeight: 900,
+                      color: getBalanceColor(selectedMonthSaved)
+                    }}
+                  >
+                    {selectedMonthSaved >= 0 ? '✓' : '!'}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+            <Typography 
+              variant="h6" 
+              textAlign="center" 
+              sx={{ 
+                color: 'rgba(255,255,255,0.9)',
+                fontSize: '1rem',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }} 
+              component="span"
+            >
+              {t('home.balance')} {getMonthName(selectedMonth, selectedYear)}
+            </Typography>
+          </Box>
+        </Fade>
+
+        {/* KPIs principaux avec design moderne */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Zoom in timeout={600}>
+              <Card sx={{ 
+                background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+                color: 'white',
+                borderRadius: 4,
+                boxShadow: '0 12px 40px rgba(76, 175, 80, 0.3)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 20px 60px rgba(76, 175, 80, 0.4)',
+                }
+              }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Box sx={{ 
+                      p: 1, 
+                      borderRadius: 2, 
+                      background: 'rgba(255,255,255,0.2)',
+                      mr: 2
+                    }}>
+                      <TrendingUp sx={{ fontSize: 28 }} />
+                    </Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      {t('home.revenues')}
+                    </Typography>
+                  </Box>
+                  <Typography variant="h3" sx={{ fontWeight: 900, mb: 1 }}>
+                    <CurrencyFormatter amount={selectedMonthIncome} />
+                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
+                    {getMonthName(selectedMonth, selectedYear)}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Zoom>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Zoom in timeout={700}>
+              <Card sx={{ 
+                background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+                color: 'white',
+                borderRadius: 4,
+                boxShadow: '0 12px 40px rgba(244, 67, 54, 0.3)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 20px 60px rgba(244, 67, 54, 0.4)',
+                }
+              }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Box sx={{ 
+                      p: 1, 
+                      borderRadius: 2, 
+                      background: 'rgba(255,255,255,0.2)',
+                      mr: 2
+                    }}>
+                      <TrendingDown sx={{ fontSize: 28 }} />
+                    </Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      {t('home.expenses')}
+                    </Typography>
+                  </Box>
+                  <Typography variant="h3" sx={{ fontWeight: 900, mb: 1 }}>
+                    <CurrencyFormatter amount={selectedMonthExpense} />
+                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
+                    {getMonthName(selectedMonth, selectedYear)}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Zoom>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Zoom in timeout={800}>
+              <Card sx={{ 
+                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                color: 'white',
+                borderRadius: 4,
+                boxShadow: '0 12px 40px rgba(33, 150, 243, 0.3)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 20px 60px rgba(33, 150, 243, 0.4)',
+                }
+              }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Box sx={{ 
+                      p: 1, 
+                      borderRadius: 2, 
+                      background: 'rgba(255,255,255,0.2)',
+                      mr: 2
+                    }}>
+                      <Savings sx={{ fontSize: 28 }} />
+                    </Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      {t('home.savings')}
+                    </Typography>
+                  </Box>
+                  <Typography variant="h3" sx={{ fontWeight: 900, mb: 1 }}>
+                    <CurrencyFormatter amount={selectedMonthSaved} />
+                  </Typography>
+                  <LinearProgress 
+                    variant="determinate" 
+                    value={getProgressValue(selectedMonthSaved, selectedMonthIncome)} 
+                    sx={{ 
+                      mt: 1, 
+                      height: 8,
+                      borderRadius: 4,
+                      bgcolor: 'rgba(255,255,255,0.3)', 
+                      '& .MuiLinearProgress-bar': { 
+                        bgcolor: 'white',
+                        borderRadius: 4
+                      } 
+                    }}
+                  />
+                </CardContent>
+              </Card>
+            </Zoom>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Zoom in timeout={900}>
+              <Card sx={{ 
+                background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                color: 'white',
+                borderRadius: 4,
+                boxShadow: '0 12px 40px rgba(255, 152, 0, 0.3)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-8px)',
+                  boxShadow: '0 20px 60px rgba(255, 152, 0, 0.4)',
+                }
+              }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Box sx={{ 
+                      p: 1, 
+                      borderRadius: 2, 
+                      background: 'rgba(255,255,255,0.2)',
+                      mr: 2
+                    }}>
+                      <AccountBalance sx={{ fontSize: 28 }} />
+                    </Box>
+                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                      {t('home.forecasts')}
+                    </Typography>
+                  </Box>
+                  <Typography variant="h3" sx={{ fontWeight: 900, mb: 1 }}>
+                    <CurrencyFormatter amount={nextMonthProjected} />
+                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 500 }}>
+                    {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Zoom>
+          </Grid>
+        </Grid>
+
+        {/* Actions rapides modernes */}
+        <Paper sx={{ 
+          p: 3, 
+          mb: 4,
+          background: 'rgba(255,255,255,0.95)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: 4,
+          border: '1px solid rgba(255,255,255,0.2)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+        }}>
+          <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
+            {t('home.quickActions')}
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={6} sm={3}>
+              <Button
+                component={RouterLink}
+                to="/action-plans"
+                variant="contained"
+                startIcon={<Assignment />}
+                fullWidth
+                sx={{ 
+                  py: 2,
+                  borderRadius: 3,
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 12px 35px rgba(102, 126, 234, 0.4)',
+                  }
+                }}
+              >
+                Plans d'actions
+              </Button>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Button
+                component={RouterLink}
+                to="/expenses"
+                variant="outlined"
+                fullWidth
+                sx={{ 
+                  py: 2,
+                  borderRadius: 3,
+                  borderColor: '#f44336',
+                  color: '#f44336',
+                  borderWidth: 2,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: '#f44336',
+                    color: 'white',
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 12px 35px rgba(244, 67, 54, 0.3)',
+                  }
+                }}
+              >
+                Dépenses
+              </Button>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Button
+                component={RouterLink}
+                to="/income"
+                variant="outlined"
+                fullWidth
+                sx={{ 
+                  py: 2,
+                  borderRadius: 3,
+                  borderColor: '#4caf50',
+                  color: '#4caf50',
+                  borderWidth: 2,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: '#4caf50',
+                    color: 'white',
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 12px 35px rgba(76, 175, 80, 0.3)',
+                  }
+                }}
+              >
+                Revenus
+              </Button>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Button
+                component={RouterLink}
+                to="/analytics"
+                variant="outlined"
+                fullWidth
+                sx={{ 
+                  py: 2,
+                  borderRadius: 3,
+                  borderColor: '#2196f3',
+                  color: '#2196f3',
+                  borderWidth: 2,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: '#2196f3',
+                    color: 'white',
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 12px 35px rgba(33, 150, 243, 0.3)',
+                  }
+                }}
+              >
+                Analytics
+              </Button>
+            </Grid>
+          </Grid>
+        </Paper>
+
+        {/* Graphiques avec design moderne */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} md={8}>
+            <Paper sx={{ 
+              p: 3,
+              background: 'rgba(255,255,255,0.95)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: 4,
+              border: '1px solid rgba(255,255,255,0.2)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+              }
+            }}>
+              <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
+                {t('home.financialEvolution')}
+              </Typography>
+              <Box sx={{ height: 350 }}>
+                <Line data={lineData} options={lineOptions} />
+              </Box>
+            </Paper>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ 
+              p: 3,
+              background: 'rgba(255,255,255,0.95)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: 4,
+              border: '1px solid rgba(255,255,255,0.2)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+              }
+            }}>
+              <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
+                {t('home.expenseBreakdown')}
+              </Typography>
+              <Box sx={{ height: 350 }}>
+                <Doughnut data={doughnutData} options={chartOptions} />
+              </Box>
+            </Paper>
+          </Grid>
+        </Grid>
+
+        {/* Prévisions intelligentes avec design moderne */}
+        {hasPartialAI() && (
+          <Paper sx={{ 
+            p: 3, 
+            mb: 4,
+            background: 'rgba(255,255,255,0.95)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 4,
+            border: '1px solid rgba(255,255,255,0.2)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+            }
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <Box sx={{ 
+                p: 1.5, 
+                borderRadius: 3, 
+                background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                mr: 2,
+                boxShadow: '0 4px 12px rgba(255, 152, 0, 0.3)'
+              }}>
+                <AccountBalance sx={{ color: 'white', fontSize: 28 }} />
+              </Box>
+              <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                Prévisions intelligentes {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
+              </Typography>
+              <Chip 
+                label={t('home.ai')} 
+                size="small" 
+                sx={{ 
+                  ml: 2,
+                  background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                  color: 'white',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(255, 152, 0, 0.3)'
+                }}
+              />
+            </Box>
+            
+            <Alert severity="info" sx={{ 
+              mb: 3,
+              borderRadius: 3,
+              background: 'rgba(33, 150, 243, 0.1)',
+              border: '1px solid rgba(33, 150, 243, 0.2)'
+            }}>
+              <AlertTitle>Calcul intelligent</AlertTitle>
+              Ces prévisions utilisent l'IA pour analyser vos tendances et prédire vos finances du mois prochain.
+            </Alert>
+            
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  p: 3, 
+                  background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+                  borderRadius: 4,
+                  color: 'white',
+                  boxShadow: '0 8px 25px rgba(76, 175, 80, 0.3)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 12px 35px rgba(76, 175, 80, 0.4)',
+                  }
+                }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                    Revenus prévus
+                  </Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 900, mb: 2 }}>
+                    {forecast.income.toLocaleString()}€
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                    {forecast.incomeTrend > 0 ? '📈 +' : forecast.incomeTrend < 0 ? '📉 ' : '➡️ '}
+                    {Math.abs(forecast.incomeTrend).toLocaleString()}€ vs ce mois
+                  </Typography>
+                  <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
+                    Confiance: {Math.round(forecast.incomeConfidence * 100)}%
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  p: 3, 
+                  background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+                  borderRadius: 4,
+                  color: 'white',
+                  boxShadow: '0 8px 25px rgba(244, 67, 54, 0.3)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 12px 35px rgba(244, 67, 54, 0.4)',
+                  }
+                }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                    Dépenses prévues
+                  </Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 900, mb: 2 }}>
+                    {forecast.expenses.toLocaleString()}€
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                    {forecast.expenseTrend > 0 ? '📈 +' : forecast.expenseTrend < 0 ? '📉 ' : '➡️ '}
+                    {Math.abs(forecast.expenseTrend).toLocaleString()}€ vs ce mois
+                  </Typography>
+                  <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
+                    Confiance: {Math.round(forecast.expenseConfidence * 100)}%
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  p: 3, 
+                  background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                  borderRadius: 4,
+                  color: 'white',
+                  boxShadow: '0 8px 25px rgba(33, 150, 243, 0.3)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 12px 35px rgba(33, 150, 243, 0.4)',
+                  }
+                }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                    Économies prévues
+                  </Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 900, mb: 2 }}>
+                    {forecast.balance.toLocaleString()}€
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                    {forecast.balance > 0 ? '✅ Prévision positive' : '⚠️ Attention nécessaire'}
+                  </Typography>
+                  <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
+                    Inclut les tendances saisonnières
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  p: 3, 
+                  background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                  borderRadius: 4,
+                  color: 'white',
+                  boxShadow: '0 8px 25px rgba(255, 152, 0, 0.3)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 12px 35px rgba(255, 152, 0, 0.4)',
+                  }
+                }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                    Taux d'épargne
+                  </Typography>
+                  <Typography variant="h4" sx={{ fontWeight: 900, mb: 2 }}>
+                    {forecast.income > 0 ? Math.round((forecast.balance / forecast.income) * 100) : 0}%
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                    Objectif recommandé: 20%
+                  </Typography>
+                  <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
+                    Basé sur les prévisions IA
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+            
+            {/* Détails du calcul amélioré */}
+            <Collapse in={true}>
+              <Box sx={{ 
+                mt: 3, 
+                p: 3, 
+                background: 'rgba(33, 150, 243, 0.05)',
+                borderRadius: 3,
+                border: '1px solid rgba(33, 150, 243, 0.1)'
+              }}>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: '#1976d2' }}>
+                  🧠 Détails du calcul intelligent:
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      • Revenus: Moyenne pondérée des 3 derniers mois + ajustement tendance
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      • Dépenses: Analyse des tendances + ajustements saisonniers
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      • Pondération: 50% mois récent, 30% avant-dernier, 20% troisième
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      • Précision: Améliore avec plus de données historiques
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      • Volatilité: Mesure de la stabilité des données
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      • Confiance: Indicateur de fiabilité des prévisions
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Box>
+            </Collapse>
+          </Paper>
+        )}
+
+        {/* Message pour les utilisateurs gratuits - Prévisions intelligentes */}
+        {!hasPartialAI() && (
+          <Paper sx={{ 
+            p: 3, 
+            mb: 4,
+            background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(245, 124, 0, 0.1) 100%)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 4,
+            border: '1px solid rgba(255, 152, 0, 0.2)',
+            boxShadow: '0 8px 32px rgba(255, 152, 0, 0.1)'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <Box sx={{ 
+                p: 1.5, 
+                borderRadius: 3, 
+                background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                mr: 2,
+                boxShadow: '0 4px 12px rgba(255, 152, 0, 0.3)'
+              }}>
+                <AccountBalance sx={{ color: 'white', fontSize: 28 }} />
+              </Box>
+              <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                {t('home.upgradeForIntelligentForecasts')}
+              </Typography>
+              <Chip 
+                label={t('home.premium')} 
+                size="small" 
+                sx={{ 
+                  ml: 2,
+                  background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                  color: 'white',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(255, 152, 0, 0.3)'
+                }}
+              />
+            </Box>
+            <Typography variant="body1" sx={{ mb: 3, fontWeight: 500 }}>
+              {t('home.intelligentForecastsDescription')}
+            </Typography>
+            <Button 
+              variant="contained" 
+              sx={{
+                background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                borderRadius: 3,
+                px: 4,
+                py: 1.5,
+                fontWeight: 600,
+                boxShadow: '0 8px 25px rgba(255, 152, 0, 0.3)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 12px 35px rgba(255, 152, 0, 0.4)',
+                }
+              }}
+              onClick={() => navigate('/subscription')}
+              startIcon={<AccountBalance />}
+            >
+              {t('home.upgradeNow')}
+            </Button>
+          </Paper>
+        )}
+
+        {/* Recommandations intelligentes avec design moderne */}
+        {isFeatureAvailable('aiAnalysis') && (
+          <Paper sx={{ 
+            p: 3, 
+            mb: 4,
+            background: 'rgba(255,255,255,0.95)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 4,
+            border: '1px solid rgba(255,255,255,0.2)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+            }
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <Box sx={{ 
+                p: 1.5, 
+                borderRadius: 3, 
+                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                mr: 2,
+                boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
+              }}>
+                <Lightbulb sx={{ color: 'white', fontSize: 28 }} />
+              </Box>
+              <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                Recommandations intelligentes
+              </Typography>
+              <Chip 
+                label={t('home.ai')} 
+                size="small" 
+                sx={{ 
+                  ml: 2,
+                  background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                  color: 'white',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
+                }}
+              />
+              <Chip 
+                label={`${recommendations.length} conseils`}
+                size="small" 
+                sx={{ 
+                  ml: 2,
+                  background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
+                  color: 'white',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)'
+                }}
+              />
+            </Box>
+            
+            {recommendations.map((rec, index) => (
+              <Alert 
+                key={index}
+                severity={rec.type} 
+                sx={{ 
+                  mb: 2,
+                  borderRadius: 3,
+                  border: 'none',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  '& .MuiAlert-icon': {
+                    fontSize: 28
+                  }
+                }}
+                action={
+                  <Button 
+                    color="inherit" 
+                    size="small"
+                    onClick={() => handleRecommendationAction(rec.actionType, rec)}
+                    variant="outlined"
+                    sx={{ 
+                      borderRadius: 2,
+                      borderColor: 'currentColor',
+                      fontWeight: 600,
+                      '&:hover': {
+                        bgcolor: 'rgba(255,255,255,0.1)',
+                        transform: 'scale(1.05)',
+                        transition: 'all 0.2s ease'
+                      }
+                    }}
+                  >
+                    {rec.action}
+                  </Button>
+                }
+              >
+                <AlertTitle sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  fontWeight: 700,
+                  fontSize: '1.1rem'
+                }}>
+                  {rec.title}
+                  {rec.priority === 'high' && (
+                    <Chip 
+                      label={t('home.priority')} 
+                      size="small" 
+                      sx={{ 
+                        ml: 2, 
+                        height: 24,
+                        background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+                        color: 'white',
+                        fontWeight: 600,
+                        boxShadow: '0 2px 8px rgba(244, 67, 54, 0.3)'
+                      }} 
+                    />
+                  )}
+                  {rec.priority === 'medium' && (
+                    <Chip 
+                      label={t('home.important')} 
+                      size="small" 
+                      sx={{ 
+                        ml: 2, 
+                        height: 24,
+                        background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                        color: 'white',
+                        fontWeight: 600,
+                        boxShadow: '0 2px 8px rgba(255, 152, 0, 0.3)'
+                      }} 
+                    />
+                  )}
+                </AlertTitle>
+                <Typography variant="body1" sx={{ fontWeight: 500, mt: 1 }}>
+                  {rec.message}
+                </Typography>
+                
+                {/* Afficher le plan suggéré s'il existe */}
+                {rec.suggestedPlan && (
+                  <Box sx={{ 
+                    mt: 2, 
+                    p: 2, 
+                    background: 'rgba(255,255,255,0.1)', 
+                    borderRadius: 3,
+                    border: '1px solid rgba(255,255,255,0.2)'
+                  }}>
+                    <Typography variant="h6" sx={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      mb: 1,
+                      fontWeight: 600,
+                      color: 'primary.main'
+                    }}>
+                      💡 {t('ai.suggestedPlan')} : {rec.suggestedPlan.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontWeight: 500 }}>
+                      {rec.suggestedPlan.description}
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                      <Chip 
+                        label={`${t('ai.savings')}: ${rec.suggestedPlan.savings || 0}${t('ai.perMonth')}`}
+                        size="small" 
+                        sx={{
+                          background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+                          color: 'white',
+                          fontWeight: 600,
+                          boxShadow: '0 2px 8px rgba(76, 175, 80, 0.3)'
+                        }}
+                      />
+                      <Chip 
+                        label={`${t('ai.effort')}: ${rec.suggestedPlan.effort || t('ai.lowEffort')}`}
+                        size="small" 
+                        sx={{
+                          background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                          color: 'white',
+                          fontWeight: 600,
+                          boxShadow: '0 2px 8px rgba(33, 150, 243, 0.3)'
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                )}
+              </Alert>
+            ))}
+          </Paper>
+        )}
+
+        {/* Message pour les utilisateurs gratuits - Recommandations IA */}
+        {!isFeatureAvailable('aiAnalysis') && (
+          <Paper sx={{ 
+            p: 3, 
+            mb: 4,
+            background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(25, 118, 210, 0.1) 100%)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 4,
+            border: '1px solid rgba(33, 150, 243, 0.2)',
+            boxShadow: '0 8px 32px rgba(33, 150, 243, 0.1)'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <Box sx={{ 
+                p: 1.5, 
+                borderRadius: 3, 
+                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                mr: 2,
+                boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
+              }}>
+                <Lightbulb sx={{ color: 'white', fontSize: 28 }} />
+              </Box>
+              <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                {t('home.upgradeForAI')}
+              </Typography>
+              <Chip 
+                label={t('home.premium')} 
+                size="small" 
+                sx={{ 
+                  ml: 2,
+                  background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                  color: 'white',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
+                }}
+              />
+            </Box>
+            <Typography variant="body1" sx={{ mb: 3, fontWeight: 500 }}>
+              {t('home.aiFeaturesDescription')}
+            </Typography>
+            <Button 
+              variant="contained" 
+              sx={{
+                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                borderRadius: 3,
+                px: 4,
+                py: 1.5,
+                fontWeight: 600,
+                boxShadow: '0 8px 25px rgba(33, 150, 243, 0.3)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 12px 35px rgba(33, 150, 243, 0.4)',
+                }
+              }}
+              onClick={() => navigate('/subscription')}
+              startIcon={<Star />}
+            >
+              {t('home.upgradeNow')}
+            </Button>
+          </Paper>
+        )}
+
+        {/* Analyse détaillée par catégorie - AMÉLIORÉE */}
+        {isFeatureAvailable('basicAnalytics') && (
+          <Paper sx={{ p: 2, mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Analytics sx={{ mr: 1, color: 'secondary.main' }} />
+              <Typography variant="h6">
+                {t('home.categoryAnalysis')}
+              </Typography>
+              <Chip 
+                label={t('home.intelligent')} 
+                size="small" 
+                color="secondary" 
+                variant="outlined"
+                sx={{ ml: 1 }}
+              />
+              <Chip 
+                label={`${categoryForecastAnalysis.length} ${t('home.categories')}`}
+                size="small" 
+                color="info" 
+                variant="outlined"
+                sx={{ ml: 1 }}
+              />
+            </Box>
+            
+            {categoryForecastAnalysis.length > 0 ? (
+              <Grid container spacing={2}>
+                {categoryForecastAnalysis.map((cat, index) => (
+                  <Grid item xs={12} sm={6} md={4} key={index}>
+                    <Card 
+                      variant="outlined" 
+                      sx={{ 
+                        height: '100%',
+                        borderColor: cat.isImportant ? `${cat.statusColor}.main` : 'grey.300',
+                        borderWidth: cat.isImportant ? 2 : 1,
+                        position: 'relative',
+                        '&:hover': {
+                          boxShadow: 2,
+                          transform: 'translateY(-2px)',
+                          transition: 'all 0.2s ease-in-out'
+                        }
+                      }}
+                    >
+                      {cat.isImportant && (
+                        <Box sx={{ 
+                          position: 'absolute', 
+                          top: -8, 
+                          right: 8,
+                          zIndex: 1
+                        }}>
+                          <Chip 
+                            label={t('home.important')} 
+                            size="small" 
+                            color={cat.statusColor}
+                            sx={{ height: 20, fontSize: '0.7rem' }}
+                          />
+                        </Box>
+                      )}
+                      
+                      <CardContent>
+                        <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                          {cat.category}
+                          <Chip 
+                            label={cat.status === 'augmentation' ? '📈' : cat.status === 'diminution' ? '📉' : '➡️'}
+                            size="small" 
+                            color={cat.statusColor}
+                            sx={{ ml: 1, height: 20 }}
+                          />
+                        </Typography>
+                        
+                        {/* Montant actuel */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            {t('home.thisMonth')}:
+                          </Typography>
+                          <Typography variant="body2" fontWeight="bold">
+                            {(cat.current || 0).toLocaleString()}€
+                          </Typography>
+                        </Box>
+                        
+                        {/* Pourcentage du budget */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            {t('home.budgetPercentage')}:
+                          </Typography>
+                          <Typography variant="body2" fontWeight="bold" color={(cat.budgetPercentage || 0) > 30 ? 'error.main' : 'text.primary'}>
+                            {Math.round(cat.budgetPercentage || 0)}%
+                          </Typography>
+                        </Box>
+                        
+                        {/* Prévision */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            {t('home.forecast')}:
+                          </Typography>
+                          <Typography variant="body2" fontWeight="bold" color="warning.main">
+                            {(cat.forecast || 0).toLocaleString()}€
+                          </Typography>
+                        </Box>
+                        
+                        {/* Changement prévu */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            Changement:
+                          </Typography>
+                          <Typography variant="body2" fontWeight="bold" color={cat.trend > 0 ? 'error.main' : 'success.main'}>
+                            {cat.trend > 0 ? '+' : ''}{(cat.trend || 0).toLocaleString()}€
+                          </Typography>
+                        </Box>
+                        
+                        {/* Barre de progression */}
+                        <LinearProgress 
+                          variant="determinate" 
+                          value={Math.min(cat.budgetPercentage || 0, 100)} 
+                          sx={{ 
+                            height: 8, 
+                            borderRadius: 4,
+                            bgcolor: 'grey.200',
+                            '& .MuiLinearProgress-bar': { 
+                              bgcolor: (cat.budgetPercentage || 0) > 30 ? 'error.main' : 'success.main',
+                              borderRadius: 4
+                            }
+                          }} 
+                        />
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 3 }}>
+                <Typography variant="body1" color="text.secondary">
+                  {t('home.noCategoryData')}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {t('home.addExpensesToSeeAnalysis')}
+                </Typography>
+              </Box>
+            )}
+          </Paper>
+        )}
+
+        {/* Message pour les utilisateurs gratuits - Analytics */}
+        {!isFeatureAvailable('basicAnalytics') && (
+          <Paper sx={{ p: 2, mb: 3, bgcolor: 'secondary.light' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Analytics sx={{ mr: 1, color: 'secondary.main' }} />
+              <Typography variant="h6">
+                {t('home.upgradeForAnalytics')}
+              </Typography>
+              <Chip 
+                label={t('home.premium')} 
+                size="small" 
+                color="secondary" 
+                variant="outlined"
+                sx={{ ml: 1 }}
+              />
+            </Box>
+            <Typography variant="body2" sx={{ mb: 2 }}>
+              {t('home.analyticsFeaturesDescription')}
+            </Typography>
+            <Button 
+              variant="contained" 
+              color="secondary"
+              onClick={() => navigate('/subscription')}
+              startIcon={<Analytics />}
+            >
+              {t('home.upgradeNow')}
+            </Button>
+          </Paper>
+        )}
+
+        {/* Transactions récentes avec design moderne */}
+        <Paper sx={{ 
+          p: 3,
+          background: 'rgba(255,255,255,0.95)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: 4,
+          border: '1px solid rgba(255,255,255,0.2)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+          }
+        }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              {t('home.recentTransactions')}
+            </Typography>
+            <Button
+              component={RouterLink}
+              to="/history"
+              size="small"
+              endIcon={<MoreVert />}
+              sx={{
+                borderRadius: 2,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                fontWeight: 600,
+                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 20px rgba(102, 126, 234, 0.4)',
+                }
+              }}
+            >
+              {t('home.seeAll')}
+            </Button>
+          </Box>
+          
+          <List sx={{ p: 0 }}>
+            {recentTransactions.map((transaction, index) => (
+              <React.Fragment key={transaction.id}>
+                <ListItem sx={{ 
+                  p: 2,
+                  borderRadius: 2,
+                  mb: 1,
+                  background: 'rgba(255,255,255,0.5)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'rgba(255,255,255,0.8)',
+                    transform: 'translateX(8px)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  }
+                }}>
+                  <ListItemAvatar>
+                    <Avatar sx={{ 
+                      bgcolor: transaction.type === 'income' ? 'success.main' : 'error.main',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                      width: 48,
+                      height: 48
+                    }}>
+                      {transaction.icon}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={
+                      <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                        {transaction.category}
+                      </Typography>
+                    }
+                    secondary={
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                        {transaction.date}
+                      </Typography>
+                    }
+                  />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Typography 
+                      variant="h6" 
+                      color={transaction.type === 'income' ? 'success.main' : 'error.main'}
+                      sx={{ 
+                        fontWeight: 900,
+                        fontSize: '1.2rem'
+                      }}
+                    >
+                      {transaction.type === 'income' ? '+' : '-'}{(transaction.amount || 0).toLocaleString()}€
+                    </Typography>
+                    <Chip 
+                      label={transaction.type === 'income' ? t('home.income') : t('home.expense')} 
+                      size="small" 
+                      sx={{
+                        background: transaction.type === 'income' 
+                          ? 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)'
+                          : 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+                        color: 'white',
+                        fontWeight: 600,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                      }}
+                    />
+                  </Box>
+                </ListItem>
+                {index < recentTransactions.length - 1 && (
+                  <Divider sx={{ 
+                    my: 1,
+                    opacity: 0.3,
+                    borderColor: 'rgba(0,0,0,0.1)'
+                  }} />
+                )}
+              </React.Fragment>
+            ))}
+          </List>
+        </Paper>
+      </Box>
     </Box>
   );
 };
