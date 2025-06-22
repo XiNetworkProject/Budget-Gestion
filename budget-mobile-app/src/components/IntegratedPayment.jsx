@@ -45,7 +45,17 @@ const PaymentForm = ({ planId, plan, onSuccess, onCancel }) => {
       setClientSecret(secret);
     } catch (error) {
       console.error('Erreur création payment intent:', error);
-      setError(error.message);
+      
+      // Si l'erreur vient de l'authentification ou de l'API, proposer le fallback
+      if (error.message.includes('non connecté') || error.message.includes('Unexpected token')) {
+        setError('Paiement intégré non disponible. Redirection vers Stripe...');
+        // Attendre 2 secondes puis rediriger vers Stripe Checkout
+        setTimeout(() => {
+          stripeService.createCheckoutSession(planId);
+        }, 2000);
+      } else {
+        setError(error.message);
+      }
     } finally {
       setIsProcessing(false);
     }
@@ -168,7 +178,7 @@ const PaymentForm = ({ planId, plan, onSuccess, onCancel }) => {
 
 const IntegratedPayment = ({ open, onClose, planId, plan }) => {
   const { t } = useTranslation();
-  const { updateSubscription } = useStore();
+  const { updateSubscription, user, token } = useStore();
 
   const handleSuccess = (subscription) => {
     // Mettre à jour l'abonnement dans le store
@@ -179,6 +189,13 @@ const IntegratedPayment = ({ open, onClose, planId, plan }) => {
   const handleCancel = () => {
     onClose();
   };
+
+  const handleExternalPayment = () => {
+    stripeService.createCheckoutSession(planId);
+  };
+
+  // Vérifier si l'utilisateur est connecté
+  const isUserConnected = user && token;
 
   return (
     <Dialog 
@@ -203,17 +220,25 @@ const IntegratedPayment = ({ open, onClose, planId, plan }) => {
         fontWeight: 'bold'
       }}>
         <Payment sx={{ color: '#4caf50' }} />
-        {t('subscription.paymentTitle', { plan: plan.name })}
+        {t('subscription.paymentTitle', { plan: t(plan.name) })}
       </DialogTitle>
       
       <DialogContent>
         <Box sx={{ mb: 3 }}>
           <Typography variant="h6" sx={{ mb: 1, color: '#333' }}>
-            {plan.name} - {plan.price}€/mois
+            {t(plan.name)} - {plan.price}€/mois
           </Typography>
           <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
-            {t('subscription.paymentDescription')}
+            {t('subscription.paymentDescription', { plan: t(plan.name) })}
           </Typography>
+          
+          {!isUserConnected && (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              <Typography variant="body2">
+                Vous devez être connecté pour utiliser le paiement intégré.
+              </Typography>
+            </Alert>
+          )}
           
           <Alert severity="info" sx={{ 
             mb: 2,
@@ -231,14 +256,34 @@ const IntegratedPayment = ({ open, onClose, planId, plan }) => {
 
         <Divider sx={{ my: 2 }} />
 
-        <Elements stripe={stripePromise}>
-          <PaymentForm 
-            planId={planId}
-            plan={plan}
-            onSuccess={handleSuccess}
-            onCancel={handleCancel}
-          />
-        </Elements>
+        {isUserConnected ? (
+          <Elements stripe={stripePromise}>
+            <PaymentForm 
+              planId={planId}
+              plan={plan}
+              onSuccess={handleSuccess}
+              onCancel={handleCancel}
+            />
+          </Elements>
+        ) : (
+          <Box sx={{ textAlign: 'center', py: 3 }}>
+            <Typography variant="body1" sx={{ mb: 2, color: '#666' }}>
+              Utilisez le paiement externe Stripe
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={handleExternalPayment}
+              sx={{
+                background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)'
+                }
+              }}
+            >
+              {t('subscription.pay')} {plan.price}€ avec Stripe
+            </Button>
+          </Box>
+        )}
       </DialogContent>
     </Dialog>
   );
