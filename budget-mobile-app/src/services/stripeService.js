@@ -97,6 +97,30 @@ export const stripeService = {
     }
   },
 
+  // Créer un payment intent local pour les tests (sans backend)
+  async createLocalPaymentIntent(planId) {
+    try {
+      // Simuler un payment intent local
+      const plan = {
+        PREMIUM: { price: 1.99 },
+        PRO: { price: 5.99 }
+      }[planId];
+
+      if (!plan) {
+        throw new Error('Plan invalide');
+      }
+
+      // Retourner un client secret simulé
+      return {
+        clientSecret: `pi_local_${Date.now()}_secret_${Math.random().toString(36).substr(2, 9)}`,
+        paymentIntentId: `pi_local_${Date.now()}`
+      };
+    } catch (error) {
+      console.error('Erreur création payment intent local:', error);
+      throw error;
+    }
+  },
+
   // Confirmer un paiement avec Stripe Elements
   async confirmPayment(paymentIntentId, paymentMethod) {
     try {

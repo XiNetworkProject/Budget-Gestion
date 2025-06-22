@@ -179,6 +179,7 @@ const PaymentForm = ({ planId, plan, onSuccess, onCancel }) => {
 const IntegratedPayment = ({ open, onClose, planId, plan }) => {
   const { t } = useTranslation();
   const { updateSubscription, user, token } = useStore();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleSuccess = (subscription) => {
     // Mettre à jour l'abonnement dans le store
@@ -192,6 +193,16 @@ const IntegratedPayment = ({ open, onClose, planId, plan }) => {
 
   const handleExternalPayment = () => {
     stripeService.createCheckoutSession(planId);
+  };
+
+  // Fonction pour simuler un paiement réussi (pour les tests)
+  const simulatePayment = () => {
+    setIsProcessing(true);
+    setTimeout(() => {
+      toast.success('Paiement simulé avec succès !');
+      onSuccess({ id: 'simulated_subscription' });
+      setIsProcessing(false);
+    }, 2000);
   };
 
   // Vérifier si l'utilisateur est connecté
@@ -268,20 +279,46 @@ const IntegratedPayment = ({ open, onClose, planId, plan }) => {
         ) : (
           <Box sx={{ textAlign: 'center', py: 3 }}>
             <Typography variant="body1" sx={{ mb: 2, color: '#666' }}>
-              Utilisez le paiement externe Stripe
+              Choisissez votre méthode de paiement
             </Typography>
-            <Button
-              variant="contained"
-              onClick={handleExternalPayment}
-              sx={{
-                background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)'
-                }
-              }}
-            >
-              {t('subscription.pay')} {plan.price}€ avec Stripe
-            </Button>
+            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Button
+                variant="contained"
+                onClick={handleExternalPayment}
+                sx={{
+                  background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)'
+                  }
+                }}
+              >
+                {t('subscription.pay')} {plan.price}€ avec Stripe
+              </Button>
+              
+              {/* Bouton de test pour simuler le paiement */}
+              <Button
+                variant="outlined"
+                onClick={simulatePayment}
+                disabled={isProcessing}
+                sx={{
+                  borderColor: '#ff9800',
+                  color: '#ff9800',
+                  '&:hover': {
+                    borderColor: '#f57c00',
+                    background: 'rgba(255, 152, 0, 0.1)'
+                  }
+                }}
+              >
+                {isProcessing ? (
+                  <CircularProgress size={20} sx={{ color: '#ff9800' }} />
+                ) : (
+                  'Test (Simuler)'
+                )}
+              </Button>
+            </Box>
+            <Typography variant="caption" sx={{ color: '#999', mt: 1, display: 'block' }}>
+              Le bouton "Test" simule un paiement réussi pour tester l'interface
+            </Typography>
           </Box>
         )}
       </DialogContent>
