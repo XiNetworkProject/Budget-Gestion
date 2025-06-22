@@ -41,6 +41,13 @@ const PaymentForm = ({ planId, plan, onSuccess, onCancel }) => {
       setIsProcessing(true);
       setError(null);
       
+      // Si l'utilisateur n'est pas connecté, utiliser le mode local
+      if (!isUserConnected) {
+        const { clientSecret: secret } = await stripeService.createLocalPaymentIntent(planId);
+        setClientSecret(secret);
+        return;
+      }
+      
       const { clientSecret: secret } = await stripeService.createPaymentIntent(planId);
       setClientSecret(secret);
     } catch (error) {
@@ -51,7 +58,7 @@ const PaymentForm = ({ planId, plan, onSuccess, onCancel }) => {
         setError('Paiement intégré non disponible. Redirection vers Stripe...');
         // Attendre 2 secondes puis rediriger vers Stripe Checkout
         setTimeout(() => {
-          stripeService.createCheckoutSession(planId);
+          handleExternalPayment();
         }, 2000);
       } else {
         setError(error.message);
@@ -192,7 +199,14 @@ const IntegratedPayment = ({ open, onClose, planId, plan }) => {
   };
 
   const handleExternalPayment = () => {
-    stripeService.createCheckoutSession(planId);
+    // Utiliser directement les URLs Stripe si l'utilisateur n'est pas connecté
+    const directUrl = stripeService.getDirectUrl(planId);
+    if (directUrl) {
+      window.location.href = directUrl;
+    } else {
+      // Fallback vers l'API (qui échouera probablement)
+      stripeService.createCheckoutSession(planId);
+    }
   };
 
   // Fonction pour simuler un paiement réussi (pour les tests)
@@ -279,7 +293,7 @@ const IntegratedPayment = ({ open, onClose, planId, plan }) => {
         ) : (
           <Box sx={{ textAlign: 'center', py: 3 }}>
             <Typography variant="body1" sx={{ mb: 2, color: '#666' }}>
-              Choisissez votre méthode de paiement
+              Mode hors ligne - Choisissez votre méthode de paiement
             </Typography>
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
               <Button
