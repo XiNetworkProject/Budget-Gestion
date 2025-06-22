@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { Box, BottomNavigation, BottomNavigationAction, Chip, Tooltip } from '@mui/material';
-import { Home as HomeIcon, BarChart as BarChartIcon, Savings as SavingsIcon, Settings as SettingsIcon, Star as StarIcon, Diamond as DiamondIcon } from '@mui/icons-material';
+import { Home as HomeIcon, BarChart as BarChartIcon, Savings as SavingsIcon, Settings as SettingsIcon, Star as StarIcon, Diamond as DiamondIcon, CardMembership } from '@mui/icons-material';
 import Tutorial from './Tutorial';
 import UpdateDialog from './UpdateDialog';
 import toast from 'react-hot-toast';
@@ -121,12 +121,17 @@ const Layout = () => {
   const getSubscriptionIcon = () => {
     const currentPlan = getCurrentPlan();
     
+    // Gérer le cas où currentPlan est undefined
+    if (!currentPlan) {
+      return <CardMembership sx={{ color: '#9E9E9E' }} />;
+    }
+    
     if (currentPlan.id === 'premium') {
       return <StarIcon sx={{ color: '#FFD700' }} />;
     } else if (currentPlan.id === 'pro') {
       return <DiamondIcon sx={{ color: '#00D4FF' }} />;
     }
-    return null;
+    return <CardMembership sx={{ color: '#9E9E9E' }} />;
   };
 
   // Fonction pour obtenir le texte de l'abonnement

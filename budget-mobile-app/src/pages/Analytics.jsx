@@ -203,6 +203,11 @@ const Analytics = () => {
   const getSubscriptionIcon = () => {
     const currentPlan = getCurrentPlan();
     
+    // Gérer le cas où currentPlan est undefined
+    if (!currentPlan) {
+      return <CardMembership sx={{ color: '#9E9E9E' }} />;
+    }
+    
     if (currentPlan.id === 'premium') {
       return <Star sx={{ color: '#FFD700' }} />;
     } else if (currentPlan.id === 'pro') {

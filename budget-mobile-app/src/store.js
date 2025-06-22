@@ -1275,7 +1275,10 @@ const useStore = create(
         if (state.hasSpecialAccess()) {
           return { ...state.subscriptionPlans.PRO, name: 'Développeur' };
         }
-        return state.subscriptionPlans[state.subscription.currentPlan];
+        
+        // Si pas de plan défini, retourner le plan gratuit par défaut
+        const currentPlanId = state.subscription?.currentPlan || 'FREE';
+        return state.subscriptionPlans[currentPlanId] || state.subscriptionPlans.FREE;
       },
 
       // Vérifier si une fonctionnalité est disponible

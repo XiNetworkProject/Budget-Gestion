@@ -1076,6 +1076,11 @@ const Home = () => {
   const getSubscriptionIcon = () => {
     const currentPlan = getCurrentPlan();
     
+    // Gérer le cas où currentPlan est undefined
+    if (!currentPlan) {
+      return <CardMembership sx={{ color: '#9E9E9E' }} />;
+    }
+    
     if (currentPlan.id === 'premium') {
       return <Star sx={{ color: '#FFD700' }} />;
     } else if (currentPlan.id === 'pro') {
@@ -1088,6 +1093,11 @@ const Home = () => {
   const getSubscriptionText = () => {
     const currentPlan = getCurrentPlan();
     
+    // Gérer le cas où currentPlan est undefined
+    if (!currentPlan) {
+      return t('subscription.free');
+    }
+    
     if (currentPlan.id === 'premium') {
       return t('subscription.premium');
     } else if (currentPlan.id === 'pro') {
@@ -1099,6 +1109,11 @@ const Home = () => {
   // Fonction pour obtenir la couleur de l'abonnement
   const getSubscriptionColor = () => {
     const currentPlan = getCurrentPlan();
+    
+    // Gérer le cas où currentPlan est undefined
+    if (!currentPlan) {
+      return '#9E9E9E';
+    }
     
     if (currentPlan.id === 'premium') {
       return '#FFD700';
