@@ -261,8 +261,22 @@ const Savings = () => {
   };
 
   const getDaysUntilDeadline = (deadline) => {
-    const days = Math.ceil((new Date(deadline) - new Date()) / (1000 * 60 * 60 * 24));
-    return days > 0 ? days : 0;
+    if (!deadline) return null;
+    const today = new Date();
+    const deadlineDate = new Date(deadline);
+    const diffTime = deadlineDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 0 ? diffDays : 0;
+  };
+
+  // Fonction pour gérer l'affichage sécurisé de l'icône
+  const getSafeIcon = (icon) => {
+    // Si l'icône est un élément React valide, l'utiliser
+    if (React.isValidElement(icon)) {
+      return icon;
+    }
+    // Sinon, retourner l'icône par défaut
+    return <AttachMoney sx={{ fontSize: 24 }} />;
   };
 
   return (
@@ -535,7 +549,7 @@ const Savings = () => {
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
                             <Typography variant="h3" sx={{ mr: 1, color: 'white' }}>
-                              {goal.icon || <AttachMoney sx={{ fontSize: 24 }} />}
+                              {getSafeIcon(goal.icon)}
                             </Typography>
                             <Box>
                               <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
@@ -552,7 +566,13 @@ const Savings = () => {
                               size="small" 
                               onClick={() => {
                                 setSelectedGoal(goal);
-                                setNewGoal({ name: goal.name, target: goal.target, current: goal.current || 0, icon: goal.icon || <AttachMoney sx={{ fontSize: 24 }} />, deadline: goal.deadline });
+                                setNewGoal({ 
+                                  name: goal.name, 
+                                  target: goal.target, 
+                                  current: goal.current || 0, 
+                                  icon: getSafeIcon(goal.icon), 
+                                  deadline: goal.deadline 
+                                });
                                 setEditDialog(true);
                               }}
                               sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
