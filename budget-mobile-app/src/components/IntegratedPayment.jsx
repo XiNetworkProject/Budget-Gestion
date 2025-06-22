@@ -23,7 +23,7 @@ import { toast } from 'react-hot-toast';
 // Charger Stripe avec votre clé publique
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
-const PaymentForm = ({ planId, plan, onSuccess, onCancel }) => {
+const PaymentForm = ({ planId, plan, onSuccess, onCancel, isUserConnected }) => {
   const { t } = useTranslation();
   const stripe = useStripe();
   const elements = useElements();
@@ -288,6 +288,7 @@ const IntegratedPayment = ({ open, onClose, planId, plan }) => {
               plan={plan}
               onSuccess={handleSuccess}
               onCancel={handleCancel}
+              isUserConnected={isUserConnected}
             />
           </Elements>
         ) : (
