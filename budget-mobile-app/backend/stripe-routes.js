@@ -279,6 +279,123 @@ router.post('/update-payment-method', async (req, res) => {
   }
 });
 
+// Créer un payment intent pour Stripe Elements
+router.post('/create-payment-intent', async (req, res) => {
+  try {
+    const { planId, userId, userEmail } = req.body;
+
+    // Vérifier que l'utilisateur est connecté
+    if (!req.user || req.user.id !== userId) {
+      return res.status(401).json({ message: 'Non autorisé' });
+    }
+
+    // Vérifier le plan
+    const plan = STRIPE_PLANS[planId];
+    if (!plan) {
+      return res.status(400).json({ message: 'Plan invalide' });
+    }
+
+    // Créer un payment intent
+    const paymentIntent = await stripeInstance.paymentIntents.create({
+      amount: Math.round(plan.price * 100), // Stripe utilise les centimes
+      currency: 'eur',
+      metadata: {
+        userId: userId,
+        planId: planId,
+        userEmail: userEmail
+      },
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
+
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id
+    });
+
+  } catch (error) {
+    console.error('Erreur création payment intent:', error);
+    res.status(500).json({ message: 'Erreur lors de la création du paiement' });
+  }
+});
+
+// Confirmer un paiement
+router.post('/confirm-payment', async (req, res) => {
+  try {
+    const { paymentIntentId, paymentMethod } = req.body;
+    
+    if (!req.user) {
+      return res.status(401).json({ message: 'Non autorisé' });
+    }
+
+    // Confirmer le payment intent
+    const paymentIntent = await stripeInstance.paymentIntents.confirm(paymentIntentId, {
+      payment_method: paymentMethod,
+    });
+
+    if (paymentIntent.status === 'succeeded') {
+      // Créer l'abonnement
+      const planId = paymentIntent.metadata.planId;
+      const userId = paymentIntent.metadata.userId;
+      const plan = STRIPE_PLANS[planId];
+
+      // Créer ou récupérer le customer
+      let customer = await stripeInstance.customers.list({
+        email: paymentIntent.metadata.userEmail,
+        limit: 1
+      });
+
+      if (customer.data.length === 0) {
+        customer = await stripeInstance.customers.create({
+          email: paymentIntent.metadata.userEmail,
+          metadata: {
+            userId: userId
+          }
+        });
+      } else {
+        customer = customer.data[0];
+      }
+
+      // Créer l'abonnement
+      const subscription = await stripeInstance.subscriptions.create({
+        customer: customer.id,
+        items: [{ price: plan.priceId }],
+        metadata: {
+          userId: userId,
+          planId: planId
+        }
+      });
+
+      // Mettre à jour la base de données
+      await updateUserSubscription(userId, {
+        planId: planId,
+        status: 'active',
+        stripeSubscriptionId: subscription.id,
+        stripeCustomerId: customer.id,
+        startDate: new Date(),
+        endDate: new Date(subscription.current_period_end * 1000)
+      });
+
+      res.json({
+        success: true,
+        subscription: subscription,
+        message: 'Paiement confirmé et abonnement créé'
+      });
+    } else {
+      res.json({
+        success: false,
+        status: paymentIntent.status,
+        message: 'Paiement en attente de confirmation'
+      });
+    }
+
+  } catch (error) {
+    console.error('Erreur confirmation paiement:', error);
+    res.status(500).json({ message: 'Erreur lors de la confirmation du paiement' });
+  }
+});
+
 // Fonctions utilitaires pour la base de données
 async function handleCheckoutSessionCompleted(session) {
   const { userId, planId } = session.metadata;

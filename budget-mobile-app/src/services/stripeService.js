@@ -60,6 +60,78 @@ export const stripeService = {
     }
   },
 
+  // Créer un paiement intégré avec Stripe Elements
+  async createPaymentIntent(planId) {
+    try {
+      const token = useStore.getState().token;
+      const user = useStore.getState().user;
+      
+      if (!token || !user) {
+        throw new Error('Utilisateur non connecté');
+      }
+
+      const headers = { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+
+      const response = await fetch(`${API_URL}/api/stripe/create-payment-intent`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          planId,
+          userId: user.id,
+          userEmail: user.email
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erreur lors de la création du paiement');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Erreur création payment intent:', error);
+      throw error;
+    }
+  },
+
+  // Confirmer un paiement avec Stripe Elements
+  async confirmPayment(paymentIntentId, paymentMethod) {
+    try {
+      const token = useStore.getState().token;
+      
+      if (!token) {
+        throw new Error('Utilisateur non connecté');
+      }
+
+      const headers = { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+
+      const response = await fetch(`${API_URL}/api/stripe/confirm-payment`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          paymentIntentId,
+          paymentMethod
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erreur lors de la confirmation du paiement');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Erreur confirmation paiement:', error);
+      throw error;
+    }
+  },
+
   // Vérifier le statut d'un paiement
   async checkPaymentStatus(sessionId) {
     try {

@@ -874,7 +874,16 @@
     "downgradeSubscription": "Passer au plan {{plan}}",
     "cancelSubscription": "Annuler l'abonnement",
     "specialAccess": "Vous avez un accès spécial avec période d'essai de 30 jours",
-    "processing": "Traitement en cours..."
+    "processing": "Traitement en cours...",
+    "paymentSuccess": "Paiement réussi ! Votre abonnement a été activé.",
+    "paymentFailed": "Le paiement a échoué. Veuillez réessayer.",
+    "paymentCanceled": "Paiement annulé. Vous pouvez réessayer à tout moment.",
+    "paymentVerificationError": "Erreur lors de la vérification du paiement. Contactez le support.",
+    "paymentTitle": "Paiement - {{plan}}",
+    "paymentDescription": "Entrez vos informations de paiement pour activer votre abonnement {{plan}}.",
+    "securePayment": "Paiement sécurisé par Stripe",
+    "paymentDetails": "Détails du paiement",
+    "pay": "Payer"
   },
   "ai": {
     "recommendations": "Recommandations intelligentes",

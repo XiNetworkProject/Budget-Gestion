@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { stripeService } from '../services/stripeService';
+import { useLocation, useNavigate } from 'react-router-dom';
+import IntegratedPayment from '../components/IntegratedPayment';
 import {
   Box,
   Typography,
@@ -52,6 +54,8 @@ import { toast } from 'react-hot-toast';
 
 const Subscription = () => {
   const { t } = useTranslation();
+  const location = useLocation();
+  const navigate = useNavigate();
   const {
     subscription,
     subscriptionPlans,
@@ -66,9 +70,56 @@ const Subscription = () => {
   const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
+  const [paymentPlan, setPaymentPlan] = useState(null);
 
   const currentPlan = getCurrentPlan() || subscriptionPlans.FREE;
   const isSpecialAccess = hasSpecialAccess();
+
+  // Gérer le retour de paiement Stripe
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const success = searchParams.get('success');
+    const canceled = searchParams.get('canceled');
+    const sessionId = searchParams.get('session_id');
+
+    if (success === 'true' && sessionId) {
+      // Paiement réussi
+      handlePaymentSuccess(sessionId);
+    } else if (canceled === 'true') {
+      // Paiement annulé
+      toast.error(t('subscription.paymentCanceled'));
+      // Nettoyer l'URL
+      navigate('/subscription', { replace: true });
+    }
+  }, [location.search, navigate, t]);
+
+  const handlePaymentSuccess = async (sessionId) => {
+    try {
+      setIsProcessing(true);
+      
+      // Vérifier le statut du paiement
+      const paymentStatus = await stripeService.checkPaymentStatus(sessionId);
+      
+      if (paymentStatus.status === 'paid') {
+        // Mettre à jour l'abonnement dans le store
+        // Le plan sera déterminé par le webhook Stripe
+        toast.success(t('subscription.paymentSuccess'));
+        
+        // Rediriger vers la page d'accueil
+        navigate('/', { replace: true });
+      } else {
+        toast.error(t('subscription.paymentFailed'));
+      }
+    } catch (error) {
+      console.error('Erreur vérification paiement:', error);
+      toast.error(t('subscription.paymentVerificationError'));
+    } finally {
+      setIsProcessing(false);
+      // Nettoyer l'URL
+      navigate('/subscription', { replace: true });
+    }
+  };
 
   // Calculer l'utilisation actuelle
   const currentUsage = {
@@ -81,16 +132,31 @@ const Subscription = () => {
     try {
       setIsProcessing(true);
       
-      // Utiliser le service Stripe
-      await stripeService.createCheckoutSession(planId);
+      // Option 1: Paiement intégré (recommandé)
+      setPaymentPlan({ id: planId, ...subscriptionPlans[planId] });
+      setShowPaymentDialog(true);
       
-      // La redirection se fait automatiquement dans le service
+      // Option 2: Redirection vers Stripe Checkout (fallback)
+      // await stripeService.createCheckoutSession(planId);
+      
     } catch (error) {
       console.error('Erreur lors de l\'upgrade:', error);
       toast.error(error.message || 'Erreur lors de la création du paiement');
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  const handleIntegratedPaymentSuccess = (subscription) => {
+    // L'abonnement est déjà mis à jour dans le composant IntegratedPayment
+    toast.success(t('subscription.upgradeSuccess'));
+    setShowPaymentDialog(false);
+    setPaymentPlan(null);
+  };
+
+  const handleIntegratedPaymentCancel = () => {
+    setShowPaymentDialog(false);
+    setPaymentPlan(null);
   };
 
   const handleDowngrade = (planId) => {
@@ -572,6 +638,17 @@ const Subscription = () => {
           </DialogActions>
         </Dialog>
       </Box>
+
+      {/* Modal de paiement intégré */}
+      {paymentPlan && (
+        <IntegratedPayment
+          open={showPaymentDialog}
+          onClose={handleIntegratedPaymentCancel}
+          planId={paymentPlan.id}
+          plan={paymentPlan}
+          onSuccess={handleIntegratedPaymentSuccess}
+        />
+      )}
     </Box>
   );
 };

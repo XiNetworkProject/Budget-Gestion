@@ -871,9 +871,18 @@
     "confirmDowngrade": "Are you sure you want to switch to the {{plan}} plan?",
     "confirmCancel": "Are you sure you want to cancel your subscription?",
     "downgradeSubscription": "Switch to {{plan}} plan",
-    "cancelSubscription": "Cancel Subscription",
+    "cancelSubscription": "Cancel subscription",
     "specialAccess": "You have special access with a 30-day trial period",
-    "processing": "Processing..."
+    "processing": "Processing...",
+    "paymentSuccess": "Payment successful! Your subscription has been activated.",
+    "paymentFailed": "Payment failed. Please try again.",
+    "paymentCanceled": "Payment canceled. You can try again anytime.",
+    "paymentVerificationError": "Error verifying payment. Please contact support.",
+    "paymentTitle": "Payment - {{plan}}",
+    "paymentDescription": "Enter your payment information to activate your {{plan}} subscription.",
+    "securePayment": "Secure payment by Stripe",
+    "paymentDetails": "Payment details",
+    "pay": "Pay"
   },
   "ai": {
     "recommendations": "Smart Recommendations",
