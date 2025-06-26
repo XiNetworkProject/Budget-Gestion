@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { stripeService } from '../services/stripeService';
 import { useLocation, useNavigate } from 'react-router-dom';
-import IntegratedPayment from '../components/IntegratedPayment';
 import {
   Box,
   Typography,
@@ -70,8 +69,6 @@ const Subscription = () => {
   const [showDowngradeDialog, setShowDowngradeDialog] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
-  const [paymentPlan, setPaymentPlan] = useState(null);
 
   const currentPlan = getCurrentPlan() || subscriptionPlans.FREE;
   const isSpecialAccess = hasSpecialAccess();
@@ -128,35 +125,15 @@ const Subscription = () => {
     actionPlans: 0 // À calculer depuis les vraies données
   };
 
-  const handleUpgrade = async (planId) => {
-    try {
-      setIsProcessing(true);
-      
-      // Option 1: Paiement intégré (recommandé)
-      setPaymentPlan({ id: planId, ...subscriptionPlans[planId] });
-      setShowPaymentDialog(true);
-      
-      // Option 2: Redirection vers Stripe Checkout (fallback)
-      // await stripeService.createCheckoutSession(planId);
-      
-    } catch (error) {
-      console.error('Erreur lors de l\'upgrade:', error);
-      toast.error(error.message || 'Erreur lors de la création du paiement');
-    } finally {
-      setIsProcessing(false);
+  const handleUpgrade = (planId) => {
+    // Redirection directe vers Stripe
+    const directUrl = stripeService.getDirectUrl(planId);
+    if (directUrl) {
+      window.location.href = directUrl;
+    } else {
+      // Fallback vers l'API si pas d'URL directe
+      stripeService.createCheckoutSession(planId);
     }
-  };
-
-  const handleIntegratedPaymentSuccess = (subscription) => {
-    // L'abonnement est déjà mis à jour dans le composant IntegratedPayment
-    toast.success(t('subscription.upgradeSuccess'));
-    setShowPaymentDialog(false);
-    setPaymentPlan(null);
-  };
-
-  const handleIntegratedPaymentCancel = () => {
-    setShowPaymentDialog(false);
-    setPaymentPlan(null);
   };
 
   const handleDowngrade = (planId) => {
@@ -638,17 +615,6 @@ const Subscription = () => {
           </DialogActions>
         </Dialog>
       </Box>
-
-      {/* Modal de paiement intégré */}
-      {paymentPlan && (
-        <IntegratedPayment
-          open={showPaymentDialog}
-          onClose={handleIntegratedPaymentCancel}
-          planId={paymentPlan.id}
-          plan={paymentPlan}
-          onSuccess={handleIntegratedPaymentSuccess}
-        />
-      )}
     </Box>
   );
 };

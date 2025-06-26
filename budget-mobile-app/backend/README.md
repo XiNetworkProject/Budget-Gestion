@@ -17,7 +17,7 @@ cp env.example .env
 3. **Modifier le fichier `.env` avec vos vraies clés :**
 ```env
 # Vos clés Stripe LIVE (pas de test !)
-STRIPE_SECRET_KEY=sk_live_votre_cle_secrete_ici
+    STRIPE_SECRET_KEY=sk_live_votre_cle_secrete_ici
 STRIPE_PUBLISHABLE_KEY=pk_live_votre_cle_publique_ici
 
 # URL de votre frontend
