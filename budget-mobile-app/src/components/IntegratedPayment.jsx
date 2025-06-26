@@ -41,12 +41,27 @@ const PaymentForm = ({ planId, plan, onSuccess, onCancel, isUserConnected }) => 
     setError(null);
 
     try {
-      // Simuler un paiement réussi pour les tests
-      toast.success('Paiement simulé avec succès !');
-      onSuccess({ id: 'simulated_subscription' });
+      // Créer un payment intent
+      const { clientSecret } = await stripeService.createPaymentIntent(planId);
+
+      // Confirmer le paiement avec Stripe
+      const { error: paymentError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+        }
+      });
+
+      if (paymentError) {
+        setError(paymentError.message || 'Erreur lors du paiement');
+      } else if (paymentIntent.status === 'succeeded') {
+        toast.success(t('subscription.paymentSuccess'));
+        onSuccess(paymentIntent);
+      } else {
+        setError('Le paiement n\'a pas pu être traité');
+      }
     } catch (error) {
       console.error('Erreur paiement:', error);
-      setError('Erreur lors du paiement');
+      setError(error.message || 'Erreur lors du paiement');
     } finally {
       setIsProcessing(false);
     }
@@ -135,27 +150,6 @@ const IntegratedPayment = ({ open, onClose, planId, plan }) => {
     onClose();
   };
 
-  const handleExternalPayment = () => {
-    // Utiliser directement les URLs Stripe
-    const directUrl = stripeService.getDirectUrl(planId);
-    if (directUrl) {
-      window.location.href = directUrl;
-    } else {
-      // Fallback vers l'API (qui échouera probablement)
-      stripeService.createCheckoutSession(planId);
-    }
-  };
-
-  // Fonction pour simuler un paiement réussi (pour les tests)
-  const simulatePayment = () => {
-    setIsProcessing(true);
-    setTimeout(() => {
-      toast.success('Paiement simulé avec succès !');
-      handleSuccess({ id: 'simulated_subscription' });
-      setIsProcessing(false);
-    }, 2000);
-  };
-
   // Vérifier si l'utilisateur est connecté
   const isUserConnected = user && token;
 
@@ -210,49 +204,15 @@ const IntegratedPayment = ({ open, onClose, planId, plan }) => {
 
         <Divider sx={{ my: 2 }} />
 
-        <Box sx={{ textAlign: 'center', py: 3 }}>
-          <Typography variant="body1" sx={{ mb: 2, color: '#666' }}>
-            Choisissez votre méthode de paiement
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Button
-              variant="contained"
-              onClick={handleExternalPayment}
-              sx={{
-                background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)'
-                }
-              }}
-            >
-              {t('subscription.pay')} {plan.price}€ avec Stripe
-            </Button>
-            
-            {/* Bouton de test pour simuler le paiement */}
-            <Button
-              variant="outlined"
-              onClick={simulatePayment}
-              disabled={isProcessing}
-              sx={{
-                borderColor: '#ff9800',
-                color: '#ff9800',
-                '&:hover': {
-                  borderColor: '#f57c00',
-                  background: 'rgba(255, 152, 0, 0.1)'
-                }
-              }}
-            >
-              {isProcessing ? (
-                <CircularProgress size={20} sx={{ color: '#ff9800' }} />
-              ) : (
-                'Test (Simuler)'
-              )}
-            </Button>
-          </Box>
-          <Typography variant="caption" sx={{ color: '#999', mt: 1, display: 'block' }}>
-            Le bouton "Test" simule un paiement réussi pour tester l'interface
-          </Typography>
-        </Box>
+        <Elements stripe={stripePromise}>
+          <PaymentForm
+            planId={planId}
+            plan={plan}
+            onSuccess={handleSuccess}
+            onCancel={handleCancel}
+            isUserConnected={isUserConnected}
+          />
+        </Elements>
       </DialogContent>
     </Dialog>
   );
