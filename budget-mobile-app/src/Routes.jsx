@@ -11,6 +11,7 @@ import Login from './components/Login';
 import Onboarding from './pages/Onboarding';
 import Layout from './components/Layout';
 import Home from './pages/Home';
+import HomeOptimized from './pages/HomeOptimized';
 import Analytics from './pages/Analytics';
 import History from './pages/History';
 import Settings from './pages/Settings';
@@ -126,7 +127,7 @@ function ThemedAppRoutes() {
               <Layout />
             </OnboardingGuard>
           }>
-          <Route path="/home" element={<Home />} />
+          <Route path="/home" element={<HomeOptimized />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/history" element={<History />} />
           <Route path="/settings" element={<Settings />} />
