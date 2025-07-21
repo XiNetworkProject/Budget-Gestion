@@ -3,7 +3,18 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { Box, BottomNavigation, BottomNavigationAction, Chip, Tooltip } from '@mui/material';
-import { Home as HomeIcon, BarChart as BarChartIcon, Savings as SavingsIcon, Settings as SettingsIcon, Star as StarIcon, Diamond as DiamondIcon, CardMembership } from '@mui/icons-material';
+import { 
+  Home as HomeIcon, 
+  BarChart as BarChartIcon, 
+  Savings as SavingsIcon, 
+  Settings as SettingsIcon, 
+  Star as StarIcon, 
+  Diamond as DiamondIcon, 
+  CardMembership,
+  AttachMoney as MoneyIcon,
+  TrendingUp as IncomeIcon,
+  AccountBalance as BalanceIcon
+} from '@mui/icons-material';
 import Tutorial from './Tutorial';
 import UpdateDialog from './UpdateDialog';
 import toast from 'react-hot-toast';
@@ -36,8 +47,8 @@ const Layout = () => {
     fetchSubscriptionFromStripe
   } = useStore();
   
-  // map path to nav value
-  const paths = ['/home', '/analytics', '/savings', '/settings'];
+  // map path to nav value - navigation étendue
+  const paths = ['/home', '/expenses', '/income', '/analytics', '/savings', '/settings'];
   const [value, setValue] = useState(paths.indexOf(location.pathname) !== -1 ? paths.indexOf(location.pathname) : 0);
   const [showTutorial, setShowTutorial] = useState(false);
 
@@ -174,12 +185,90 @@ const Layout = () => {
           navigate(paths[newValue]);
         }}
         showLabels
-        sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000 }}
+        sx={{ 
+          position: 'fixed', 
+          bottom: 0, 
+          left: 0, 
+          right: 0, 
+          zIndex: 1000,
+          background: 'rgba(255,255,255,0.95)',
+          backdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(0,0,0,0.1)',
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.1)'
+        }}
       >
-        <BottomNavigationAction label="Home" icon={<HomeIcon />} />
-        <BottomNavigationAction label="Analytics" icon={<BarChartIcon />} />
-        <BottomNavigationAction label="Savings" icon={<SavingsIcon />} />
-        <BottomNavigationAction label="Settings" icon={<SettingsIcon />} />
+        <BottomNavigationAction 
+          label={t('navigation.home')} 
+          icon={<HomeIcon />} 
+          sx={{ 
+            '&.Mui-selected': { 
+              color: '#2196f3',
+              '& .MuiBottomNavigationAction-label': {
+                color: '#2196f3'
+              }
+            }
+          }}
+        />
+        <BottomNavigationAction 
+          label={t('navigation.expenses')} 
+          icon={<MoneyIcon />} 
+          sx={{ 
+            '&.Mui-selected': { 
+              color: '#f44336',
+              '& .MuiBottomNavigationAction-label': {
+                color: '#f44336'
+              }
+            }
+          }}
+        />
+        <BottomNavigationAction 
+          label={t('navigation.income')} 
+          icon={<IncomeIcon />} 
+          sx={{ 
+            '&.Mui-selected': { 
+              color: '#4caf50',
+              '& .MuiBottomNavigationAction-label': {
+                color: '#4caf50'
+              }
+            }
+          }}
+        />
+        <BottomNavigationAction 
+          label={t('navigation.analytics')} 
+          icon={<BarChartIcon />} 
+          sx={{ 
+            '&.Mui-selected': { 
+              color: '#ff9800',
+              '& .MuiBottomNavigationAction-label': {
+                color: '#ff9800'
+              }
+            }
+          }}
+        />
+        <BottomNavigationAction 
+          label={t('navigation.savings')} 
+          icon={<SavingsIcon />} 
+          sx={{ 
+            '&.Mui-selected': { 
+              color: '#9c27b0',
+              '& .MuiBottomNavigationAction-label': {
+                color: '#9c27b0'
+              }
+            }
+          }}
+        />
+        <BottomNavigationAction 
+          label={t('navigation.settings')} 
+          icon={<SettingsIcon />} 
+          sx={{ 
+            '&.Mui-selected': { 
+              color: '#607d8b',
+              '& .MuiBottomNavigationAction-label': {
+                color: '#607d8b'
+              }
+            }
+          }}
+        />
       </BottomNavigation>
 
       {/* Indicateur d'abonnement discret */}

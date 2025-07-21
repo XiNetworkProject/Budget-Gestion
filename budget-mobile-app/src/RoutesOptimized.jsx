@@ -57,19 +57,17 @@ const AppRoutesOptimized = () => {
         {/* Route racine - redirection vers Home */}
         <Route path="/" element={<Navigate to="/home" replace />} />
         
-        {/* Page d'accueil optimisée */}
-        <Route 
-          path="/home" 
-          element={
-            <LazyPage 
-              component={HomeOptimized} 
-              fallbackMessage="Chargement du tableau de bord..." 
-            />
-          } 
-        />
-        
         {/* Pages principales avec Layout */}
         <Route path="/" element={<Layout />}>
+          <Route 
+            path="home" 
+            element={
+              <LazyPage 
+                component={HomeOptimized} 
+                fallbackMessage="Chargement du tableau de bord..." 
+              />
+            } 
+          />
           <Route 
             path="expenses" 
             element={

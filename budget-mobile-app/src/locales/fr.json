@@ -120,6 +120,8 @@
   },
   "navigation": {
     "home": "Accueil",
+    "expenses": "Dépenses",
+    "income": "Revenus",
     "analytics": "Analytics",
     "savings": "Épargne",
     "settings": "Paramètres"

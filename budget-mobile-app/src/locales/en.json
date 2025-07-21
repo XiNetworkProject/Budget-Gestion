@@ -117,6 +117,8 @@
   },
   "navigation": {
     "home": "Home",
+    "expenses": "Expenses",
+    "income": "Income",
     "analytics": "Analytics",
     "savings": "Savings",
     "settings": "Settings"
