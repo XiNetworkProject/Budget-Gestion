@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import './index.css'
 import './i18n'
@@ -32,7 +33,7 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
       <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-        <>
+        <BrowserRouter>
           <AppRoutesOptimized />
           <Toaster 
             position="bottom-right"
@@ -47,7 +48,7 @@ createRoot(document.getElementById('root')).render(
               }
             }}
           />
-        </>
+        </BrowserRouter>
       </GoogleOAuthProvider>
     </ErrorBoundary>
   </StrictMode>,
