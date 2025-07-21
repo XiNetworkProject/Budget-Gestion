@@ -169,25 +169,28 @@ const HomeUltraOptimized = () => {
         />
         
         {/* Snackbar pour les notifications */}
-        <Snackbar
-          open={showSnackbar}
-          autoHideDuration={4000}
-          onClose={handleSnackbarClose}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert 
-            onClose={handleSnackbarClose} 
-            severity={snackbarSeverity}
-            sx={{ 
-              background: 'rgba(0,0,0,0.9)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              color: 'white'
-            }}
+        {showSnackbar && (
+          <Snackbar
+            open={showSnackbar}
+            autoHideDuration={4000}
+            onClose={handleSnackbarClose}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            TransitionComponent={undefined}
           >
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
+            <Alert 
+              onClose={handleSnackbarClose} 
+              severity={snackbarSeverity}
+              sx={{ 
+                background: 'rgba(0,0,0,0.9)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                color: 'white'
+              }}
+            >
+              {snackbarMessage}
+            </Alert>
+          </Snackbar>
+        )}
         
         {/* Styles CSS pour les animations */}
         <style>
