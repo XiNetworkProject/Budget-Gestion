@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react';
-import { Box, Typography, LinearProgress, Zoom, Fade } from '@mui/material';
+import { Box, Typography, LinearProgress } from '@mui/material';
 import CurrencyFormatter from '../CurrencyFormatter';
 
 const KPICard = memo(({ 
@@ -148,44 +148,47 @@ const KPICard = memo(({
 
   if (loading) {
     return (
-      <Fade in timeout={300}>
-        <Box sx={styles.container}>
-          <Box sx={{ 
-            width: styles.icon.fontSize, 
-            height: styles.icon.fontSize, 
-            borderRadius: '50%', 
-            bgcolor: 'rgba(255,255,255,0.2)', 
-            mb: 2,
-            animation: 'pulse 1.5s ease-in-out infinite'
-          }} />
-          <Box sx={{ 
-            width: '60%', 
-            height: 20, 
-            bgcolor: 'rgba(255,255,255,0.2)', 
-            borderRadius: 1,
-            mb: 1,
-            animation: 'pulse 1.5s ease-in-out infinite'
-          }} />
-          <Box sx={{ 
-            width: '40%', 
-            height: 16, 
-            bgcolor: 'rgba(255,255,255,0.1)', 
-            borderRadius: 1,
-            animation: 'pulse 1.5s ease-in-out infinite'
-          }} />
-        </Box>
-      </Fade>
+      <Box sx={{
+        ...styles.container,
+        animation: 'fadeIn 0.3s ease-out'
+      }}>
+        <Box sx={{ 
+          width: styles.icon.fontSize, 
+          height: styles.icon.fontSize, 
+          borderRadius: '50%', 
+          bgcolor: 'rgba(255,255,255,0.2)', 
+          mb: 2,
+          animation: 'pulse 1.5s ease-in-out infinite'
+        }} />
+        <Box sx={{ 
+          width: '60%', 
+          height: 20, 
+          bgcolor: 'rgba(255,255,255,0.2)', 
+          borderRadius: 1,
+          mb: 1,
+          animation: 'pulse 1.5s ease-in-out infinite'
+        }} />
+        <Box sx={{ 
+          width: '40%', 
+          height: 16, 
+          bgcolor: 'rgba(255,255,255,0.1)', 
+          borderRadius: 1,
+          animation: 'pulse 1.5s ease-in-out infinite'
+        }} />
+      </Box>
     );
   }
 
   return (
-    <Zoom in timeout={600}>
-      <Box
-        sx={styles.container}
-        onClick={onClick}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
+    <Box
+      sx={{
+        ...styles.container,
+        animation: 'fadeInUp 0.6s ease-out'
+      }}
+      onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
         <Box sx={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -252,7 +255,6 @@ const KPICard = memo(({
           `}
         </style>
       </Box>
-    </Zoom>
   );
 });
 

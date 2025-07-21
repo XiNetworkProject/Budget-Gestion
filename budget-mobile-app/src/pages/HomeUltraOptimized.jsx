@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'reac
 import { useStore } from '../store';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Box, Fade, Snackbar, Alert } from '@mui/material';
+import { Box, Snackbar, Alert } from '@mui/material';
 
 // Composants optimisés ultra-améliorés
 import ErrorBoundary from '../components/optimized/ErrorBoundary';

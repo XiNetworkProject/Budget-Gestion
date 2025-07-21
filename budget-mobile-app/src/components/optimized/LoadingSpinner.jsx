@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, CircularProgress, Typography, Fade } from '@mui/material';
+import { Box, CircularProgress, Typography } from '@mui/material';
 
 const LoadingSpinner = ({ 
   message = "Chargement en cours...", 
@@ -69,8 +69,10 @@ const LoadingSpinner = ({
   const styles = getVariantStyles();
 
   return (
-    <Fade in timeout={300}>
-      <Box sx={styles.container}>
+    <Box sx={{
+      ...styles.container,
+      animation: 'fadeIn 0.3s ease-out'
+    }}>
         <Box sx={{ position: 'relative' }}>
           <CircularProgress
             size={size}
@@ -118,7 +120,6 @@ const LoadingSpinner = ({
           `}
         </style>
       </Box>
-    </Fade>
   );
 };
 
