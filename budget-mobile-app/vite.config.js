@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
-import { compression } from 'vite-plugin-compression'
+import viteCompression from 'vite-plugin-compression'
 import { visualizer } from 'rollup-plugin-visualizer'
 
 // https://vitejs.dev/config/
@@ -53,7 +53,7 @@ export default defineConfig(({ command, mode }) => {
         }
       }),
       // Compression pour la production
-      isProduction && compression({
+      isProduction && viteCompression({
         algorithm: 'gzip',
         ext: '.gz'
       }),
