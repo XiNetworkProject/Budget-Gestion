@@ -16,11 +16,12 @@ import {
 import {
   Star,
   Diamond,
+  Trophy,
   EmojiEvents,
   TrendingUp,
   Savings,
   AttachMoney,
-  Flag,
+  Target,
   CheckCircle,
   Lock,
   Bolt,
@@ -59,7 +60,7 @@ const GOAL_CONFIG = {
     borderColor: '#2196f3'
   },
   [GOAL_TYPES.CATEGORY]: {
-            icon: <Flag />,
+    icon: <Target />,
     color: '#9c27b0',
     bgColor: 'rgba(156, 39, 176, 0.1)',
     borderColor: '#9c27b0'
@@ -244,7 +245,7 @@ const GoalCard = memo(({ goal, progress, onComplete }) => {
             
             {goal.reward && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <EmojiEvents sx={{ color: '#ffd700', fontSize: 20 }} />
+                <Trophy sx={{ color: '#ffd700', fontSize: 20 }} />
                 <Typography variant="body2" sx={{ color: '#ffd700', fontWeight: 600 }}>
                   {goal.reward.name}
                 </Typography>
@@ -269,7 +270,7 @@ const UserProfile = memo(({ userStats }) => {
       { name: 'Débutant', color: '#9e9e9e', icon: <Star /> },
       { name: 'Intermédiaire', color: '#4caf50', icon: <Star /> },
       { name: 'Avancé', color: '#2196f3', icon: <Diamond /> },
-      { name: 'Expert', color: '#9c27b0', icon: <EmojiEvents /> },
+      { name: 'Expert', color: '#9c27b0', icon: <Trophy /> },
       { name: 'Maître', color: '#ffd700', icon: <EmojiEvents /> }
     ];
     return levels[Math.min(level - 1, levels.length - 1)];

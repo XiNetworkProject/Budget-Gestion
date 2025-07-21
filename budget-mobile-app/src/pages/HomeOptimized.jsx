@@ -1,653 +1,979 @@
-import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, Suspense } from 'react';
+import { useStore } from '../store';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import CurrencyFormatter from '../components/CurrencyFormatter';
+import { useTranslation } from 'react-i18next';
 import { 
   Box, 
-  Grid, 
-  Card, 
-  CardContent, 
   Typography, 
-  Chip, 
+  Grid, 
+  Paper, 
+  Button, 
   IconButton, 
-  LinearProgress,
-  Avatar,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  ListItemSecondaryAction,
-  Divider,
-  Button,
-  useTheme,
+  Chip,
+  Alert,
+  AlertTitle,
+  Collapse,
+  Fab,
   Fade,
-  Zoom,
-  Slide
+  Zoom
 } from '@mui/material';
 import {
   TrendingUp,
   TrendingDown,
-  AttachMoney,
-  Savings,
-  AccountBalance,
-  Notifications,
+  Remove,
   Add,
-  MoreVert,
-  Star,
+  ArrowBack,
+  ArrowForward,
+  AccountBalance,
   TrendingUp as TrendingUpIcon,
   TrendingDown as TrendingDownIcon,
   Remove as RemoveIcon,
   CheckCircle,
   Warning,
-  Info,
-  SmartToy,
-  Psychology
+  Psychology,
+  AttachMoney,
+  MoneyOff,
+  Lightbulb,
+  Analytics,
+  Logout,
+  Assignment,
+  Star,
+  Diamond,
+  CardMembership,
+  Notifications,
+  Refresh,
+  Savings,
+  MoreVert,
+  Info
 } from '@mui/icons-material';
-import { useStore } from '../store';
-import { useTranslation } from 'react-i18next';
-import CurrencyFormatter from '../components/CurrencyFormatter';
-import { DESIGN_SYSTEM } from '../theme/designSystem';
+
+// Composants optimisés
+import ErrorBoundary from '../components/optimized/ErrorBoundary';
+import LoadingSpinner from '../components/optimized/LoadingSpinner';
+import KPICard from '../components/optimized/KPICard';
+import { VirtualizedTransactions, VirtualizedRecommendations } from '../components/optimized/VirtualizedList';
 import { FinancialCharts } from '../components/optimized/OptimizedCharts';
+
+// Hooks optimisés
 import useOptimizedData from '../hooks/useOptimizedData';
 
-// Composant de carte de métrique moderne
-const ModernMetricCard = memo(({ 
-  title, 
-  value, 
-  subtitle, 
-  icon: Icon, 
-  color, 
-  gradient, 
-  trend, 
-  trendValue, 
-  onClick 
-}) => {
-  const theme = useTheme();
+// Composants
+import QuickAdd from './QuickAdd';
+
+// Configuration
+import { ACTIVE_CONFIG } from '../config/environment';
+import { PerformanceUtils } from '../config/performance';
+
+// Composant de particules d'arrière-plan optimisé
+const BackgroundParticles = React.memo(() => (
+  <Box sx={{
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0,
+    overflow: 'hidden'
+  }}>
+    {[...Array(20)].map((_, index) => (
+      <Box
+        key={index}
+        sx={{
+          position: 'absolute',
+          width: Math.random() * 4 + 2,
+          height: Math.random() * 4 + 2,
+          background: `rgba(${Math.random() * 255}, ${Math.random() * 255}, 255, ${Math.random() * 0.3 + 0.1})`,
+          borderRadius: '50%',
+          left: `${Math.random() * 100}%`,
+          top: `${Math.random() * 100}%`,
+          animation: `floatParticle ${Math.random() * 10 + 10}s linear infinite`,
+          animationDelay: `${Math.random() * 5}s`,
+          filter: 'blur(0.5px)',
+          boxShadow: '0 0 10px rgba(255,255,255,0.3)'
+        }}
+      />
+    ))}
+    
+    {[...Array(8)].map((_, index) => (
+      <Box
+        key={`large-${index}`}
+        sx={{
+          position: 'absolute',
+          width: Math.random() * 8 + 4,
+          height: Math.random() * 8 + 4,
+          background: `rgba(255, ${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 0.2 + 0.05})`,
+          borderRadius: '50%',
+          left: `${Math.random() * 100}%`,
+          top: `${Math.random() * 100}%`,
+          animation: `floatParticleLarge ${Math.random() * 15 + 20}s linear infinite`,
+          animationDelay: `${Math.random() * 10}s`,
+          filter: 'blur(1px)',
+          boxShadow: '0 0 20px rgba(255,255,255,0.2)'
+        }}
+      />
+    ))}
+  </Box>
+));
+
+// Composant d'en-tête optimisé
+const HeaderSection = React.memo(({ user, selectedMonth, selectedYear, navigateMonth, getMonthName, getSubscriptionIcon, getSubscriptionText, getSubscriptionColor, serverConnected, logout, t }) => {
+  const navigate = useNavigate();
 
   return (
-    <Zoom in timeout={600}>
-      <Card
-        onClick={onClick}
-        sx={{
-          height: '100%',
-          background: gradient || theme.palette.background.paper,
-          borderRadius: DESIGN_SYSTEM.borderRadius['2xl'],
-          boxShadow: DESIGN_SYSTEM.shadows.md,
-          border: `1px solid ${theme.palette.divider}`,
-          cursor: onClick ? 'pointer' : 'default',
-          transition: `all ${DESIGN_SYSTEM.transitions.duration.normal} ${DESIGN_SYSTEM.transitions.easing.ease}`,
-          '&:hover': {
-            transform: 'translateY(-8px)',
-            boxShadow: DESIGN_SYSTEM.shadows.xl,
-          },
+    <Fade in timeout={1000}>
+      <Box sx={{ mb: 4 }}>
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'flex-start', 
+          mb: 3,
+          flexWrap: 'wrap',
+          gap: 2
+        }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography 
+              variant="h3" 
+              sx={{ 
+                fontWeight: 800,
+                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+                color: 'white',
+                textShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                background: 'linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                letterSpacing: '-0.5px',
+                lineHeight: 1.2,
+                mb: 1
+              }}
+            >
+              {t('home.hello')}{user?.name ? `, ${user.name}` : ''}
+            </Typography>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                color: 'rgba(255,255,255,0.8)',
+                fontWeight: 400,
+                letterSpacing: '0.5px'
+              }}
+            >
+              {getMonthName(selectedMonth, selectedYear)}
+            </Typography>
+          </Box>
+          
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 1,
+            flexWrap: 'wrap'
+          }}>
+            <IconButton
+              sx={{
+                color: 'white',
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                '&:hover': {
+                  background: 'rgba(255,255,255,0.2)',
+                  transform: 'scale(1.1)',
+                  transition: 'all 0.2s ease'
+                }
+              }}
+            >
+              <Notifications />
+            </IconButton>
+            <IconButton
+              sx={{
+                color: 'white',
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                '&:hover': {
+                  background: 'rgba(255,255,255,0.2)',
+                  transform: 'scale(1.1)',
+                  transition: 'all 0.2s ease'
+                }
+              }}
+            >
+              <Refresh />
+            </IconButton>
+            <IconButton
+              onClick={() => navigate('/subscription')}
+              sx={{
+                color: getSubscriptionColor(),
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                '&:hover': {
+                  background: 'rgba(255,255,255,0.2)',
+                  transform: 'scale(1.1)',
+                  transition: 'all 0.2s ease'
+                }
+              }}
+              title={`${t('subscription.currentPlan')}: ${getSubscriptionText()}`}
+            >
+              {getSubscriptionIcon()}
+            </IconButton>
+            <IconButton
+              sx={{
+                color: serverConnected ? '#4caf50' : '#ff9800',
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                '&:hover': {
+                  background: 'rgba(255,255,255,0.2)',
+                  transform: 'scale(1.1)',
+                  transition: 'all 0.2s ease'
+                }
+              }}
+              title={serverConnected ? t('home.connectedToServer') : t('home.offlineModeData')}
+            >
+              <Box sx={{ 
+                width: 8, 
+                height: 8, 
+                borderRadius: '50%', 
+                bgcolor: 'currentColor',
+                animation: serverConnected ? 'none' : 'pulse 2s infinite'
+              }} />
+            </IconButton>
+            <IconButton
+              onClick={() => {
+                if (window.confirm(t('home.confirmLogout'))) {
+                  logout();
+                }
+              }}
+              sx={{
+                color: '#f44336',
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                '&:hover': {
+                  background: 'rgba(255,255,255,0.2)',
+                  transform: 'scale(1.1)',
+                  transition: 'all 0.2s ease'
+                }
+              }}
+              title={t('logout')}
+            >
+              <Logout />
+            </IconButton>
+          </Box>
+        </Box>
+
+        <Paper sx={{ 
+          p: 2, 
+          mb: 3, 
+          background: 'rgba(255,255,255,0.1)', 
+          backdropFilter: 'blur(20px)',
+          borderRadius: 4,
+          border: '1px solid rgba(255,255,255,0.2)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+        }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: 2
+          }}>
+            <Typography 
+              variant="h5" 
+              sx={{ 
+                color: 'white', 
+                fontWeight: 700,
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}
+            >
+              {getMonthName(selectedMonth, selectedYear)}
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <IconButton 
+                onClick={() => navigateMonth('prev')}
+                sx={{ 
+                  color: 'white',
+                  background: 'rgba(255,255,255,0.1)',
+                  '&:hover': {
+                    background: 'rgba(255,255,255,0.2)',
+                    transform: 'scale(1.1)',
+                    transition: 'all 0.2s ease'
+                  }
+                }}
+              >
+                <ArrowBack />
+              </IconButton>
+              <IconButton 
+                onClick={() => navigateMonth('next')}
+                sx={{ 
+                  color: 'white',
+                  background: 'rgba(255,255,255,0.1)',
+                  '&:hover': {
+                    background: 'rgba(255,255,255,0.2)',
+                    transform: 'scale(1.1)',
+                    transition: 'all 0.2s ease'
+                  }
+                }}
+              >
+                <ArrowForward />
+              </IconButton>
+            </Box>
+          </Box>
+        </Paper>
+      </Box>
+    </Fade>
+  );
+});
+
+// Composant de solde principal optimisé
+const BalanceSection = React.memo(({ selectedMonthSaved, getMonthName, selectedMonth, selectedYear, t }) => (
+  <Fade in timeout={1000}>
+    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+      <Box
+        sx={{ 
           position: 'relative',
-          overflow: 'hidden',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '4px',
-            background: color,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          p: 4,
+          borderRadius: '50%',
+          background: selectedMonthSaved >= 0 
+            ? 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)'
+            : 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+          boxShadow: selectedMonthSaved >= 0
+            ? '0 20px 60px rgba(76, 175, 80, 0.4)'
+            : '0 20px 60px rgba(244, 67, 54, 0.4)',
+          minWidth: { xs: 160, sm: 200, md: 240 },
+          minHeight: { xs: 160, sm: 200, md: 240 },
+          justifyContent: 'center',
+          textAlign: 'center',
+          border: selectedMonthSaved >= 0
+            ? '4px solid rgba(76, 175, 80, 0.3)'
+            : '4px solid rgba(244, 67, 54, 0.3)',
+          transition: 'all 0.4s ease',
+          animation: 'pulse 3s ease-in-out infinite',
+          '&:hover': {
+            transform: 'scale(1.05)',
+            boxShadow: selectedMonthSaved >= 0
+              ? '0 30px 80px rgba(76, 175, 80, 0.6)'
+              : '0 30px 80px rgba(244, 67, 54, 0.6)',
           }
         }}
       >
-        <CardContent sx={{ p: 3 }}>
-          <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
-            <Box>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: gradient ? 'white' : theme.palette.text.secondary,
-                  fontWeight: DESIGN_SYSTEM.typography.fontWeight.medium,
-                  mb: 1,
-                  opacity: 0.8,
-                }}
-              >
-                {title}
-              </Typography>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: DESIGN_SYSTEM.typography.fontWeight.bold,
-                  color: gradient ? 'white' : theme.palette.text.primary,
-                  mb: 1,
-                }}
-              >
-                {value}
-              </Typography>
-              {subtitle && (
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: gradient ? 'rgba(255,255,255,0.8)' : theme.palette.text.secondary,
-                    fontWeight: DESIGN_SYSTEM.typography.fontWeight.medium,
-                  }}
-                >
-                  {subtitle}
-                </Typography>
-              )}
-            </Box>
-            <Avatar
-              sx={{
-                width: 56,
-                height: 56,
-                background: gradient ? 'rgba(255,255,255,0.2)' : color,
-                color: gradient ? 'white' : 'white',
-                backdropFilter: 'blur(10px)',
-              }}
-            >
-              <Icon />
-            </Avatar>
-          </Box>
-
-          {trend && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              {trend === 'up' ? (
-                <TrendingUpIcon sx={{ color: '#10b981', fontSize: 20 }} />
-              ) : trend === 'down' ? (
-                <TrendingDownIcon sx={{ color: '#ef4444', fontSize: 20 }} />
-              ) : (
-                <RemoveIcon sx={{ color: '#6b7280', fontSize: 20 }} />
-              )}
-              <Typography
-                variant="body2"
-                sx={{
-                  color: gradient ? 'rgba(255,255,255,0.9)' : theme.palette.text.secondary,
-                  fontWeight: DESIGN_SYSTEM.typography.fontWeight.medium,
-                }}
-              >
-                {trendValue}
-              </Typography>
-            </Box>
-          )}
-        </CardContent>
-      </Card>
-    </Zoom>
-  );
-});
-
-ModernMetricCard.displayName = 'ModernMetricCard';
-
-// Composant de carte d'action rapide
-const QuickActionCard = memo(({ title, description, icon: Icon, color, gradient, onClick }) => {
-  const theme = useTheme();
-
-  return (
-    <Slide direction="up" in timeout={800}>
-      <Card
-        onClick={onClick}
-        sx={{
-          background: gradient || theme.palette.background.paper,
-          borderRadius: DESIGN_SYSTEM.borderRadius.xl,
-          boxShadow: DESIGN_SYSTEM.shadows.md,
-          border: `1px solid ${theme.palette.divider}`,
-          cursor: 'pointer',
-          transition: `all ${DESIGN_SYSTEM.transitions.duration.normal} ${DESIGN_SYSTEM.transitions.easing.ease}`,
-          '&:hover': {
-            transform: 'translateY(-4px)',
-            boxShadow: DESIGN_SYSTEM.shadows.lg,
-          },
-        }}
-      >
-        <CardContent sx={{ p: 3, textAlign: 'center' }}>
-          <Avatar
-            sx={{
-              width: 64,
-              height: 64,
-              background: gradient || color,
-              color: 'white',
-              mx: 'auto',
-              mb: 2,
-              boxShadow: DESIGN_SYSTEM.shadows.md,
-            }}
-          >
-            <Icon />
-          </Avatar>
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: DESIGN_SYSTEM.typography.fontWeight.semibold,
-              color: gradient ? 'white' : theme.palette.text.primary,
-              mb: 1,
-            }}
-          >
-            {title}
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              color: gradient ? 'rgba(255,255,255,0.8)' : theme.palette.text.secondary,
-              fontWeight: DESIGN_SYSTEM.typography.fontWeight.medium,
-            }}
-          >
-            {description}
-          </Typography>
-        </CardContent>
-      </Card>
-    </Slide>
-  );
-});
-
-QuickActionCard.displayName = 'QuickActionCard';
-
-// Composant de transaction récente
-const RecentTransaction = memo(({ transaction }) => {
-  const theme = useTheme();
-  const isExpense = transaction.type === 'expense';
-
-  return (
-    <ListItem sx={{ px: 0, py: 1 }}>
-      <ListItemAvatar>
-        <Avatar
-          sx={{
-            background: isExpense 
-              ? DESIGN_SYSTEM.gradients.error 
-              : DESIGN_SYSTEM.gradients.success,
-            color: 'white',
-          }}
-        >
-          {isExpense ? <TrendingDown /> : <TrendingUp />}
-        </Avatar>
-      </ListItemAvatar>
-      <ListItemText
-        primary={transaction.description}
-        secondary={transaction.category}
-        primaryTypographyProps={{
-          fontWeight: DESIGN_SYSTEM.typography.fontWeight.medium,
-          color: theme.palette.text.primary,
-        }}
-        secondaryTypographyProps={{
-          color: theme.palette.text.secondary,
-        }}
-      />
-      <ListItemSecondaryAction>
         <Typography
-          variant="body1"
+          variant="h2"
           sx={{
-            fontWeight: DESIGN_SYSTEM.typography.fontWeight.semibold,
-            color: isExpense ? '#ef4444' : '#10b981',
+            fontWeight: 900,
+            color: 'white',
+            fontSize: {
+              xs: selectedMonthSaved >= 1000000 ? '1.8rem' : selectedMonthSaved >= 100000 ? '2.2rem' : '2.6rem',
+              sm: selectedMonthSaved >= 1000000 ? '2.2rem' : selectedMonthSaved >= 100000 ? '2.6rem' : '3rem',
+              md: selectedMonthSaved >= 1000000 ? '2.6rem' : selectedMonthSaved >= 100000 ? '3rem' : '3.5rem'
+            },
+            lineHeight: 1.1,
+            textShadow: '0 4px 8px rgba(0,0,0,0.3)',
+            wordBreak: 'break-word',
+            maxWidth: '90%'
           }}
         >
-          {isExpense ? '-' : '+'}
-          <CurrencyFormatter value={transaction.amount} />
+          <CurrencyFormatter amount={selectedMonthSaved} />
         </Typography>
-      </ListItemSecondaryAction>
-    </ListItem>
-  );
-});
+        <Box
+          sx={{
+            position: 'absolute',
+            top: -12,
+            right: -12,
+            width: 32,
+            height: 32,
+            borderRadius: '50%',
+            background: 'rgba(255,255,255,0.95)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            border: '2px solid white'
+          }}
+        >
+          <Typography
+            variant="caption"
+            sx={{
+              fontSize: '0.8rem',
+              fontWeight: 900,
+              color: selectedMonthSaved >= 0 ? '#4caf50' : '#f44336'
+            }}
+          >
+            {selectedMonthSaved >= 0 ? '✓' : '!'}
+          </Typography>
+        </Box>
+      </Box>
+    </Box>
+  </Fade>
+));
 
-RecentTransaction.displayName = 'RecentTransaction';
-
-// Composant principal de la page Home moderne
-const HomeOptimized = memo(() => {
-  const theme = useTheme();
-  const { t } = useTranslation();
-  const store = useStore();
-  const optimizedData = useOptimizedData();
-
-  const {
+// Composant principal optimisé
+const HomeOptimized = () => {
+  const { 
+    selectedMonth, 
+    selectedYear, 
+    setSelectedMonth, 
+    setSelectedYear,
+    isAuthenticated,
     user,
-    selectedMonth,
-    selectedYear,
-    expenses,
-    incomeTransactions,
-    selectedMonthSaved,
-    serverConnected,
     logout,
-    getMonthName,
-    getSubscriptionIcon,
-    getSubscriptionText,
-    getSubscriptionColor,
-    navigateMonth
-  } = store;
+    serverConnected,
+    getCurrentPlan,
+    isFeatureAvailable
+  } = useStore();
+  
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
 
-  // Calculer les métriques
-  const metrics = useMemo(() => {
-    const currentMonthExpenses = expenses.filter(e => {
-      const expenseDate = new Date(e.date);
-      return expenseDate.getMonth() === selectedMonth && expenseDate.getFullYear() === selectedYear;
-    });
+  // Utilisation du hook optimisé pour les données
+  const { 
+    selectedMonthData, 
+    forecast, 
+    recommendations, 
+    isCalculating, 
+    hasData 
+  } = useOptimizedData();
 
-    const currentMonthIncome = incomeTransactions.filter(i => {
-      const incomeDate = new Date(i.date);
-      return incomeDate.getMonth() === selectedMonth && incomeDate.getFullYear() === selectedYear;
-    });
+  // Fonctions memoizées
+  const getMonthName = useCallback((month, year) => {
+    const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+                       'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+    return `${monthNames[month]} ${year}`;
+  }, []);
 
-    const totalExpenses = currentMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
-    const totalIncome = currentMonthIncome.reduce((sum, i) => sum + i.amount, 0);
-    const savings = totalIncome - totalExpenses;
-    const savingsRate = totalIncome > 0 ? (savings / totalIncome) * 100 : 0;
-
-    return {
-      totalIncome,
-      totalExpenses,
-      savings,
-      savingsRate,
-      transactionsCount: currentMonthExpenses.length + currentMonthIncome.length
-    };
-  }, [expenses, incomeTransactions, selectedMonth, selectedYear]);
-
-  // Actions rapides
-  const quickActions = [
-    {
-      title: t('home.quickActions.addExpense'),
-      description: t('home.quickActions.addExpenseDesc'),
-      icon: TrendingDown,
-      color: '#ef4444',
-      gradient: DESIGN_SYSTEM.gradients.error,
-      action: () => console.log('Add Expense')
-    },
-    {
-      title: t('home.quickActions.addIncome'),
-      description: t('home.quickActions.addIncomeDesc'),
-      icon: TrendingUp,
-      color: '#10b981',
-      gradient: DESIGN_SYSTEM.gradients.success,
-      action: () => console.log('Add Income')
-    },
-    {
-      title: t('home.quickActions.aiAnalysis'),
-      description: t('home.quickActions.aiAnalysisDesc'),
-      icon: SmartToy,
-      color: '#8b5cf6',
-      gradient: DESIGN_SYSTEM.gradients.secondary,
-      action: () => console.log('AI Analysis')
-    },
-    {
-      title: t('home.quickActions.gamification'),
-      description: t('home.quickActions.gamificationDesc'),
-      icon: Psychology,
-      color: '#ec4899',
-      gradient: 'linear-gradient(135deg, #ec4899 0%, #db2777 100%)',
-      action: () => console.log('Gamification')
-    }
-  ];
-
-  // Transactions récentes
-  const recentTransactions = useMemo(() => {
-    const allTransactions = [
-      ...expenses.map(e => ({ ...e, type: 'expense' })),
-      ...incomeTransactions.map(i => ({ ...i, type: 'income' }))
-    ];
+  const navigateMonth = useCallback((direction) => {
+    let newMonth = selectedMonth;
+    let newYear = selectedYear;
     
-    return allTransactions
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 5);
-  }, [expenses, incomeTransactions]);
+    if (direction === 'next') {
+      newMonth = (newMonth + 1) % 12;
+      if (newMonth === 0) newYear++;
+    } else {
+      newMonth = (newMonth - 1 + 12) % 12;
+      if (newMonth === 11) newYear--;
+    }
+    
+    setSelectedMonth(newMonth, newYear);
+  }, [selectedMonth, selectedYear, setSelectedMonth]);
+
+  const getSubscriptionIcon = useCallback(() => {
+    const currentPlan = getCurrentPlan();
+    if (!currentPlan) return <CardMembership sx={{ color: '#9E9E9E' }} />;
+    
+    if (currentPlan.id === 'premium') return <Star sx={{ color: '#FFD700' }} />;
+    if (currentPlan.id === 'pro') return <Diamond sx={{ color: '#00D4FF' }} />;
+    return <CardMembership sx={{ color: '#9E9E9E' }} />;
+  }, [getCurrentPlan]);
+
+  const getSubscriptionText = useCallback(() => {
+    const currentPlan = getCurrentPlan();
+    if (!currentPlan) return t('subscription.free');
+    
+    if (currentPlan.id === 'premium') return t('subscription.premium');
+    if (currentPlan.id === 'pro') return t('subscription.pro');
+    return t('subscription.free');
+  }, [getCurrentPlan, t]);
+
+  const getSubscriptionColor = useCallback(() => {
+    const currentPlan = getCurrentPlan();
+    if (!currentPlan) return '#9E9E9E';
+    
+    if (currentPlan.id === 'premium') return '#FFD700';
+    if (currentPlan.id === 'pro') return '#00D4FF';
+    return '#9E9E9E';
+  }, [getCurrentPlan]);
+
+  // Données pour les graphiques memoizées
+  const chartData = useMemo(() => {
+    if (!hasData) return { lineData: null, doughnutData: null };
+
+    // Données pour le graphique en ligne (6 derniers mois)
+    const last6Months = [];
+    const revenuesByMonth = [];
+    const expensesByMonth = [];
+
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(selectedYear, selectedMonth - i, 1);
+      last6Months.push(getMonthName(date.getMonth(), date.getFullYear()));
+      
+      // Données simulées pour l'exemple
+      revenuesByMonth.push(Math.random() * 5000 + 2000);
+      expensesByMonth.push(Math.random() * 4000 + 1500);
+    }
+
+    const lineData = {
+      labels: last6Months,
+      datasets: [
+        {
+          label: 'Revenus',
+          data: revenuesByMonth,
+          borderColor: 'rgba(75, 192, 192, 1)',
+          backgroundColor: 'rgba(75, 192, 192, 0.1)',
+          tension: 0.4
+        },
+        {
+          label: 'Dépenses',
+          data: expensesByMonth,
+          borderColor: 'rgba(255, 99, 132, 1)',
+          backgroundColor: 'rgba(255, 99, 132, 0.1)',
+          tension: 0.4
+        }
+      ]
+    };
+
+    const doughnutData = {
+      labels: ['Alimentation', 'Transport', 'Loisirs', 'Logement', 'Santé', 'Autres'],
+      datasets: [{
+        data: [30, 20, 15, 25, 5, 5],
+        backgroundColor: [
+          '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+        ],
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    };
+
+    return { lineData, doughnutData };
+  }, [hasData, selectedMonth, selectedYear, getMonthName]);
+
+  // Gestion des actions des recommandations
+  const handleRecommendationAction = useCallback((recommendation) => {
+    switch (recommendation.actionType) {
+      case 'review_expenses':
+      case 'analyze_expenses':
+        navigate('/analytics');
+        break;
+      case 'create_savings_plan':
+      case 'optimize_investment':
+        navigate('/action-plans');
+        break;
+      default:
+        console.log('Action non reconnue:', recommendation.actionType);
+    }
+  }, [navigate]);
+
+  // Si les données ne sont pas encore chargées
+  if (!hasData && isCalculating) {
+    return (
+      <Box sx={{ 
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #10131a 0%, #232946 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <LoadingSpinner 
+          message="Chargement des données optimisées..." 
+          variant="elegant" 
+          fullScreen 
+        />
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={{ minHeight: '100vh' }}>
-      {/* En-tête avec informations utilisateur */}
-      <Fade in timeout={300}>
-        <Card
-          sx={{
-            mb: 4,
-            background: DESIGN_SYSTEM.gradients.primary,
-            borderRadius: DESIGN_SYSTEM.borderRadius['2xl'],
-            boxShadow: DESIGN_SYSTEM.shadows.lg,
-            color: 'white',
-            position: 'relative',
-            overflow: 'hidden',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+    <ErrorBoundary>
+      <Box sx={{ 
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #10131a 0%, #232946 100%)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        <BackgroundParticles />
+        
+        <style>
+          {`
+            @keyframes floatParticle {
+              0% { 
+                transform: translateY(100vh) translateX(0px) rotate(0deg);
+                opacity: 0;
+              }
+              10% { opacity: 1; }
+              90% { opacity: 1; }
+              100% { 
+                transform: translateY(-100px) translateX(${Math.random() * 200 - 100}px) rotate(360deg);
+                opacity: 0;
+              }
             }
-          }}
-        >
-          <CardContent sx={{ p: 4, position: 'relative', zIndex: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-              <Box>
-                <Typography
-                  variant="h4"
-                  sx={{
-                    fontWeight: DESIGN_SYSTEM.typography.fontWeight.bold,
-                    mb: 1,
-                  }}
+            @keyframes floatParticleLarge {
+              0% { 
+                transform: translateY(100vh) translateX(0px) rotate(0deg);
+                opacity: 0;
+              }
+              10% { opacity: 1; }
+              90% { opacity: 1; }
+              100% { 
+                transform: translateY(-100px) translateX(${Math.random() * 300 - 150}px) rotate(720deg);
+                opacity: 0;
+              }
+            }
+            @keyframes pulse {
+              0% { opacity: 1; transform: scale(1); }
+              50% { opacity: 0.7; transform: scale(1.05); }
+              100% { opacity: 1; transform: scale(1); }
+            }
+          `}
+        </style>
+
+        <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, position: 'relative', zIndex: 1 }}>
+          {/* Alerte de connexion */}
+          {!isAuthenticated && (
+            <Fade in timeout={800}>
+              <Alert 
+                severity="warning" 
+                sx={{ 
+                  mb: 3,
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: 3,
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                  border: '1px solid rgba(255,255,255,0.2)'
+                }}
+              >
+                <AlertTitle>{t('home.notConnected')}</AlertTitle>
+                {t('home.notConnectedMessage')}
+                <Button 
+                  color="inherit" 
+                  size="small" 
+                  sx={{ ml: 1, borderRadius: 2 }}
+                  onClick={() => window.location.href = '/login'}
                 >
-                  {t('home.welcome')}, {user?.name || 'Utilisateur'}!
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    opacity: 0.9,
-                    fontWeight: DESIGN_SYSTEM.typography.fontWeight.medium,
-                  }}
-                >
-                  {getMonthName(selectedMonth)} {selectedYear}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                {serverConnected && (
-                  <Chip
-                    icon={<CheckCircle />}
-                    label={t('home.connected')}
-                    size="small"
-                    sx={{
-                      background: 'rgba(34, 197, 94, 0.2)',
-                      color: '#10b981',
-                      fontWeight: DESIGN_SYSTEM.typography.fontWeight.medium,
-                    }}
-                  />
-                )}
-                <IconButton
-                  sx={{
-                    color: 'white',
-                    background: 'rgba(255,255,255,0.1)',
-                    backdropFilter: 'blur(10px)',
+                  {t('home.connect')}
+                </Button>
+              </Alert>
+            </Fade>
+          )}
+          
+          {isAuthenticated && !serverConnected && (
+            <Fade in timeout={800}>
+              <Alert 
+                severity="info" 
+                sx={{ 
+                  mb: 3,
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(10px)',
+                  borderRadius: 3,
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                  border: '1px solid rgba(255,255,255,0.2)'
+                }}
+              >
+                <AlertTitle>{t('home.offlineMode')}</AlertTitle>
+                {t('home.offlineModeMessage')}
+              </Alert>
+            </Fade>
+          )}
+          
+          {/* En-tête */}
+          <HeaderSection 
+            user={user}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            navigateMonth={navigateMonth}
+            getMonthName={getMonthName}
+            getSubscriptionIcon={getSubscriptionIcon}
+            getSubscriptionText={getSubscriptionText}
+            getSubscriptionColor={getSubscriptionColor}
+            serverConnected={serverConnected}
+            logout={logout}
+            t={t}
+          />
+
+          {/* Solde principal */}
+          <BalanceSection 
+            selectedMonthSaved={selectedMonthData?.saved || 0}
+            getMonthName={getMonthName}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+            t={t}
+          />
+
+          {/* KPIs optimisés */}
+          <Grid container spacing={2} sx={{ mb: 4 }}>
+            <Grid item xs={6} sm={6} md={3}>
+              <KPICard
+                title={t('home.revenues')}
+                value={selectedMonthData?.income || 0}
+                icon={TrendingUp}
+                color="#4caf50"
+                subtitle={getMonthName(selectedMonth, selectedYear)}
+                variant="elegant"
+                loading={isCalculating}
+              />
+            </Grid>
+            <Grid item xs={6} sm={6} md={3}>
+              <KPICard
+                title={t('home.expenses')}
+                value={selectedMonthData?.expenses || 0}
+                icon={TrendingDown}
+                color="#f44336"
+                subtitle={getMonthName(selectedMonth, selectedYear)}
+                variant="elegant"
+                loading={isCalculating}
+              />
+            </Grid>
+            <Grid item xs={6} sm={6} md={3}>
+              <KPICard
+                title={t('home.savings')}
+                value={selectedMonthData?.saved || 0}
+                icon={Savings}
+                color="#2196f3"
+                subtitle={t('home.thisMonth')}
+                progress={selectedMonthData?.income > 0 ? (selectedMonthData.saved / selectedMonthData.income) * 100 : 0}
+                variant="elegant"
+                loading={isCalculating}
+              />
+            </Grid>
+            <Grid item xs={6} sm={6} md={3}>
+              <KPICard
+                title={t('home.forecasts')}
+                value={forecast?.balance || 0}
+                icon={AccountBalance}
+                color="#ff9800"
+                subtitle={getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
+                variant="elegant"
+                loading={isCalculating}
+              />
+            </Grid>
+          </Grid>
+
+          {/* Actions rapides */}
+          <Paper sx={{ 
+            p: 3, 
+            mb: 4,
+            background: 'rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 4,
+            border: '1px solid rgba(255,255,255,0.2)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-2px)',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+            }
+          }}>
+            <Typography variant="h5" gutterBottom sx={{ 
+              fontWeight: 700, 
+              mb: 3,
+              color: 'white',
+              textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+            }}>
+              {t('home.quickActions')}
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={6} sm={3}>
+                <Button
+                  component={RouterLink}
+                  to="/action-plans"
+                  variant="contained"
+                  startIcon={<Assignment />}
+                  fullWidth
+                  sx={{ 
+                    py: 2,
+                    borderRadius: 3,
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+                    transition: 'all 0.3s ease',
                     '&:hover': {
-                      background: 'rgba(255,255,255,0.2)',
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 12px 35px rgba(102, 126, 234, 0.4)',
                     }
                   }}
                 >
-                  <Notifications />
-                </IconButton>
-              </Box>
-            </Box>
+                  Plans d'actions
+                </Button>
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <Button
+                  component={RouterLink}
+                  to="/expenses"
+                  variant="contained"
+                  fullWidth
+                  sx={{ 
+                    py: 2,
+                    borderRadius: 3,
+                    background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+                    boxShadow: '0 8px 25px rgba(244, 67, 54, 0.3)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 12px 35px rgba(244, 67, 54, 0.4)',
+                    }
+                  }}
+                >
+                  Dépenses
+                </Button>
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <Button
+                  component={RouterLink}
+                  to="/income"
+                  variant="contained"
+                  fullWidth
+                  sx={{ 
+                    py: 2,
+                    borderRadius: 3,
+                    background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+                    boxShadow: '0 8px 25px rgba(76, 175, 80, 0.3)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 12px 35px rgba(76, 175, 80, 0.4)',
+                    }
+                  }}
+                >
+                  Revenus
+                </Button>
+              </Grid>
+              <Grid item xs={6} sm={3}>
+                <Button
+                  component={RouterLink}
+                  to="/analytics"
+                  variant="contained"
+                  fullWidth
+                  sx={{ 
+                    py: 2,
+                    borderRadius: 3,
+                    background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                    boxShadow: '0 8px 25px rgba(33, 150, 243, 0.3)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 12px 35px rgba(33, 150, 243, 0.4)',
+                    }
+                  }}
+                >
+                  Analytics
+                </Button>
+              </Grid>
+            </Grid>
+          </Paper>
 
-            {/* Solde principal */}
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography
-                variant="h2"
-                sx={{
-                  fontWeight: DESIGN_SYSTEM.typography.fontWeight.bold,
-                  mb: 1,
-                  textShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                }}
-              >
-                <CurrencyFormatter value={selectedMonthSaved} />
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  opacity: 0.9,
-                  fontWeight: DESIGN_SYSTEM.typography.fontWeight.medium,
-                }}
-              >
-                {t('home.savings')} {t('home.thisMonth')}
-              </Typography>
-            </Box>
-          </CardContent>
-        </Card>
-      </Fade>
-
-      {/* Métriques principales */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <ModernMetricCard
-            title={t('home.revenues')}
-            value={<CurrencyFormatter value={metrics.totalIncome} />}
-            subtitle={t('home.thisMonth')}
-            icon={TrendingUp}
-            color="#10b981"
-            gradient={DESIGN_SYSTEM.gradients.success}
-            trend="up"
-            trendValue="+12%"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <ModernMetricCard
-            title={t('home.expenses')}
-            value={<CurrencyFormatter value={metrics.totalExpenses} />}
-            subtitle={t('home.thisMonth')}
-            icon={TrendingDown}
-            color="#ef4444"
-            gradient={DESIGN_SYSTEM.gradients.error}
-            trend="down"
-            trendValue="-8%"
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <ModernMetricCard
-            title={t('home.savings')}
-            value={<CurrencyFormatter value={metrics.savings} />}
-            subtitle={`${metrics.savingsRate.toFixed(1)}% ${t('home.savingsRate')}`}
-            icon={Savings}
-            color="#3b82f6"
-            gradient={DESIGN_SYSTEM.gradients.primary}
-            trend={metrics.savingsRate > 20 ? "up" : "down"}
-            trendValue={metrics.savingsRate > 20 ? "Excellent" : "À améliorer"}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <ModernMetricCard
-            title={t('home.transactions')}
-            value={metrics.transactionsCount}
-            subtitle={t('home.thisMonth')}
-            icon={AccountBalance}
-            color="#8b5cf6"
-            gradient={DESIGN_SYSTEM.gradients.secondary}
-            trend="up"
-            trendValue="+5"
-          />
-        </Grid>
-      </Grid>
-
-      {/* Actions rapides */}
-      <Typography
-        variant="h5"
-        sx={{
-          fontWeight: DESIGN_SYSTEM.typography.fontWeight.bold,
-          mb: 3,
-          color: theme.palette.text.primary,
-        }}
-      >
-        {t('home.quickActions')}
-      </Typography>
-      
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {quickActions.map((action, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
-            <QuickActionCard
-              title={action.title}
-              description={action.description}
-              icon={action.icon}
-              color={action.color}
-              gradient={action.gradient}
-              onClick={action.action}
-            />
-          </Grid>
-        ))}
-      </Grid>
-
-      {/* Graphiques et transactions récentes */}
-      <Grid container spacing={4}>
-        <Grid item xs={12} lg={8}>
-          <Card
-            sx={{
-              borderRadius: DESIGN_SYSTEM.borderRadius['2xl'],
-              boxShadow: DESIGN_SYSTEM.shadows.md,
-              border: `1px solid ${theme.palette.divider}`,
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: DESIGN_SYSTEM.typography.fontWeight.semibold,
-                  mb: 3,
-                  color: theme.palette.text.primary,
-                }}
-              >
-                {t('home.financialEvolution')}
-              </Typography>
+          {/* Graphiques optimisés */}
+          <Suspense fallback={<LoadingSpinner message="Chargement des graphiques..." />}>
+            <Box sx={{ mb: 4 }}>
               <FinancialCharts
-                lineData={null}
-                doughnutData={null}
-                loading={false}
+                lineData={chartData.lineData}
+                doughnutData={chartData.doughnutData}
+                loading={isCalculating}
               />
-            </CardContent>
-          </Card>
-        </Grid>
-        
-        <Grid item xs={12} lg={4}>
-          <Card
-            sx={{
-              borderRadius: DESIGN_SYSTEM.borderRadius['2xl'],
-              boxShadow: DESIGN_SYSTEM.shadows.md,
-              border: `1px solid ${theme.palette.divider}`,
-              height: 'fit-content',
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontWeight: DESIGN_SYSTEM.typography.fontWeight.semibold,
-                  mb: 3,
-                  color: theme.palette.text.primary,
-                }}
-              >
-                {t('home.recentTransactions')}
+            </Box>
+          </Suspense>
+
+          {/* Recommandations optimisées */}
+          {isFeatureAvailable('aiAnalysis') && recommendations && recommendations.length > 0 && (
+            <Paper sx={{ 
+              p: 3, 
+              mb: 4,
+              background: 'rgba(255,255,255,0.1)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: 4,
+              border: '1px solid rgba(255,255,255,0.2)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+              }
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                <Box sx={{ 
+                  p: 1.5, 
+                  borderRadius: 3, 
+                  background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                  mr: 2,
+                  boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
+                }}>
+                  <Lightbulb sx={{ color: 'white', fontSize: 28 }} />
+                </Box>
+                <Typography variant="h5" sx={{ 
+                  fontWeight: 700,
+                  color: 'white',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                }}>
+                  Recommandations intelligentes
+                </Typography>
+                <Chip 
+                  label={t('home.ai')} 
+                  size="small" 
+                  sx={{ 
+                    ml: 2,
+                    background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                    color: 'white',
+                    fontWeight: 600,
+                    boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
+                  }}
+                />
+              </Box>
+              
+              <VirtualizedRecommendations
+                recommendations={recommendations}
+                loading={isCalculating}
+                onActionClick={handleRecommendationAction}
+              />
+            </Paper>
+          )}
+
+          {/* Transactions récentes optimisées */}
+          {selectedMonthData?.transactions && selectedMonthData.transactions.length > 0 && (
+            <Paper sx={{ 
+              p: 3, 
+              mb: 4,
+              background: 'rgba(255,255,255,0.1)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: 4,
+              border: '1px solid rgba(255,255,255,0.2)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+              }
+            }}>
+              <Typography variant="h5" gutterBottom sx={{ 
+                fontWeight: 700, 
+                mb: 3,
+                color: 'white',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
+                Transactions récentes
               </Typography>
               
-              {recentTransactions.length > 0 ? (
-                <List sx={{ p: 0 }}>
-                  {recentTransactions.map((transaction, index) => (
-                    <React.Fragment key={transaction.id || index}>
-                      <RecentTransaction transaction={transaction} />
-                      {index < recentTransactions.length - 1 && <Divider />}
-                    </React.Fragment>
-                  ))}
-                </List>
-              ) : (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <Info sx={{ fontSize: 48, color: theme.palette.text.secondary, mb: 2 }} />
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      color: theme.palette.text.secondary,
-                      fontWeight: DESIGN_SYSTEM.typography.fontWeight.medium,
-                    }}
-                  >
-                    {t('home.noTransactions')}
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    startIcon={<Add />}
-                    sx={{
-                      mt: 2,
-                      background: DESIGN_SYSTEM.gradients.primary,
-                      '&:hover': {
-                        background: DESIGN_SYSTEM.gradients.primary,
-                      }
-                    }}
-                  >
-                    {t('home.addFirstTransaction')}
-                  </Button>
-                </Box>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
+              <VirtualizedTransactions
+                transactions={selectedMonthData.transactions}
+                loading={isCalculating}
+              />
+            </Paper>
+          )}
+
+          {/* Bouton d'ajout rapide */}
+          <Fab
+            color="primary"
+            aria-label="add"
+            onClick={() => setShowQuickAdd(true)}
+            sx={{
+              position: 'fixed',
+              bottom: 16,
+              right: 16,
+              background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+              boxShadow: '0 8px 25px rgba(76, 175, 80, 0.3)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)',
+                transform: 'scale(1.1)',
+                boxShadow: '0 12px 35px rgba(76, 175, 80, 0.4)',
+              }
+            }}
+          >
+            <Add />
+          </Fab>
+
+          {/* Popup QuickAdd */}
+          <QuickAdd open={showQuickAdd} onClose={() => setShowQuickAdd(false)} />
+        </Box>
+      </Box>
+    </ErrorBoundary>
   );
-});
+};
 
-HomeOptimized.displayName = 'HomeOptimized';
-
-export default HomeOptimized; 
+export default React.memo(HomeOptimized); 

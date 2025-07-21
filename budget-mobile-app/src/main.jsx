@@ -2,9 +2,6 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { GoogleOAuthProvider } from '@react-oauth/google'
-import { ThemeProvider } from '@mui/material/styles'
-import { CssBaseline } from '@mui/material'
-import { modernTheme } from './theme/modernTheme'
 import './index.css'
 import './i18n'
 import ErrorBoundary from './components/optimized/ErrorBoundary'
@@ -37,26 +34,23 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
       <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-        <ThemeProvider theme={modernTheme}>
-          <CssBaseline />
-          <BrowserRouter>
-            <AppRoutesOptimized />
-            <SmartNotifications />
-            <Toaster 
-              position="bottom-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: 'rgba(0,0,0,0.9)',
-                  color: 'white',
-                  borderRadius: '8px',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255,255,255,0.1)'
-                }
-              }}
-            />
-          </BrowserRouter>
-        </ThemeProvider>
+        <BrowserRouter>
+          <AppRoutesOptimized />
+          <SmartNotifications />
+          <Toaster 
+            position="bottom-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: 'rgba(0,0,0,0.9)',
+                color: 'white',
+                borderRadius: '8px',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.1)'
+              }
+            }}
+          />
+        </BrowserRouter>
       </GoogleOAuthProvider>
     </ErrorBoundary>
   </StrictMode>,
