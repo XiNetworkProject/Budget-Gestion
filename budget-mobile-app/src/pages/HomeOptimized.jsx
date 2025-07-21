@@ -58,6 +58,9 @@ import { FinancialCharts } from '../components/optimized/OptimizedCharts';
 // Hooks optimisés
 import useOptimizedData from '../hooks/useOptimizedData';
 
+// Composants
+import QuickAdd from './QuickAdd';
+
 // Configuration
 import { ACTIVE_CONFIG } from '../config/environment';
 import { PerformanceUtils } from '../config/performance';
@@ -964,6 +967,9 @@ const HomeOptimized = () => {
           >
             <Add />
           </Fab>
+
+          {/* Popup QuickAdd */}
+          <QuickAdd open={showQuickAdd} onClose={() => setShowQuickAdd(false)} />
         </Box>
       </Box>
     </ErrorBoundary>

@@ -13,7 +13,7 @@ const Expenses = lazy(() => import('./pages/Expenses'));
 const Income = lazy(() => import('./pages/Income'));
 const Savings = lazy(() => import('./pages/Savings'));
 const Debts = lazy(() => import('./pages/Debts'));
-const Bank = lazy(() => import('./pages/Bank'));
+
 const Analytics = lazy(() => import('./pages/Analytics'));
 const History = lazy(() => import('./pages/History'));
 const Settings = lazy(() => import('./pages/Settings'));
@@ -21,7 +21,7 @@ const ActionPlans = lazy(() => import('./pages/ActionPlans'));
 const Subscription = lazy(() => import('./pages/Subscription'));
 const Login = lazy(() => import('./components/Login'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
-const QuickAdd = lazy(() => import('./pages/QuickAdd'));
+
 
 // Composant de fallback optimisé
 const PageLoader = ({ message = "Chargement de la page..." }) => (
@@ -106,15 +106,7 @@ const AppRoutesOptimized = () => {
               />
             } 
           />
-          <Route 
-            path="bank" 
-            element={
-              <LazyPage 
-                component={Bank} 
-                fallbackMessage="Chargement des comptes bancaires..." 
-              />
-            } 
-          />
+
           <Route 
             path="analytics" 
             element={
@@ -160,15 +152,7 @@ const AppRoutesOptimized = () => {
               />
             } 
           />
-          <Route 
-            path="quick-add" 
-            element={
-              <LazyPage 
-                component={QuickAdd} 
-                fallbackMessage="Chargement de l'ajout rapide..." 
-              />
-            } 
-          />
+
         </Route>
         
         {/* Pages sans Layout */}
