@@ -6,17 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:optimized": "vite build --mode production",
-    "build:analyze": "vite build --mode production && npx vite-bundle-analyzer dist",
     "test": "vitest",
-    "test:coverage": "vitest --coverage",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
-    "lint:fix": "eslint . --ext js,jsx --fix",
     "preview": "vite preview",
-    "start": "node server/api.js",
-    "start:prod": "node server/api.js --mode production",
-    "lighthouse": "npx lighthouse http://localhost:3000 --output html --output-path ./lighthouse-report.html",
-    "performance": "npm run build:optimized && npm run lighthouse"
+    "start": "node server/api.js"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",

@@ -3,10 +3,20 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { Box, BottomNavigation, BottomNavigationAction, Chip, Tooltip } from '@mui/material';
-import { Home as HomeIcon, BarChart as BarChartIcon, Savings as SavingsIcon, Settings as SettingsIcon, Star as StarIcon, Diamond as DiamondIcon, CardMembership } from '@mui/icons-material';
+import { 
+  Home as HomeIcon, 
+  BarChart as BarChartIcon, 
+  Savings as SavingsIcon, 
+  Settings as SettingsIcon, 
+  Star as StarIcon, 
+  Diamond as DiamondIcon, 
+  CardMembership,
+  EmojiEvents,
+  Psychology,
+  Spa
+} from '@mui/icons-material';
 import Tutorial from './Tutorial';
 import UpdateDialog from './UpdateDialog';
-import BottomNavigationOptimized from './optimized/BottomNavigationOptimized';
 import toast from 'react-hot-toast';
 
 const Layout = () => {
@@ -38,7 +48,7 @@ const Layout = () => {
   } = useStore();
   
   // map path to nav value
-  const paths = ['/home', '/analytics', '/savings', '/settings'];
+  const paths = ['/home', '/analytics', '/savings', '/settings', '/achievements', '/ai-assistant', '/zen-dashboard'];
   const [value, setValue] = useState(paths.indexOf(location.pathname) !== -1 ? paths.indexOf(location.pathname) : 0);
   const [showTutorial, setShowTutorial] = useState(false);
 
@@ -168,7 +178,21 @@ const Layout = () => {
         <Outlet />
       </Box>
 
-      <BottomNavigationOptimized />
+      <BottomNavigation
+        value={value}
+        onChange={(event, newValue) => {
+          setValue(newValue);
+          navigate(paths[newValue]);
+        }}
+        showLabels
+        sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000 }}
+      >
+        <BottomNavigationAction label="Home" icon={<HomeIcon />} />
+        <BottomNavigationAction label="Analytics" icon={<BarChartIcon />} />
+        <BottomNavigationAction label="Savings" icon={<SavingsIcon />} />
+        <BottomNavigationAction label="Achievements" icon={<EmojiEvents />} />
+        <BottomNavigationAction label="Settings" icon={<SettingsIcon />} />
+      </BottomNavigation>
 
       {/* Indicateur d'abonnement discret */}
       {getSubscriptionIcon() && (
