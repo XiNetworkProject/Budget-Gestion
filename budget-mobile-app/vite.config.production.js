@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// Configuration simplifiée pour la production
+// Configuration simplifiée pour la production sans PWA
 export default defineConfig({
   plugins: [react()],
   

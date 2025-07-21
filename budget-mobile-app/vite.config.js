@@ -12,41 +12,41 @@ export default defineConfig(({ command, mode }) => {
   return {
     plugins: [
       react(),
-      // PWA pour le mode production
-      isProduction && VitePWA({
-        registerType: 'autoUpdate',
-        workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
-          runtimeCaching: [
-            {
-              urlPattern: /^https:\/\/api\./,
-              handler: 'NetworkFirst',
-              options: {
-                cacheName: 'api-cache',
-                expiration: {
-                  maxEntries: 100,
-                  maxAgeSeconds: 60 * 60 * 24 // 24 heures
-                }
-              }
-            }
-          ]
-        },
-        manifest: {
-          name: 'Budget Gestion',
-          short_name: 'Budget',
-          description: 'Application de gestion de budget moderne',
-          theme_color: '#10131a',
-          background_color: '#10131a',
-          display: 'standalone',
-          icons: [
-            {
-              src: 'vite.svg',
-              sizes: 'any',
-              type: 'image/svg+xml'
-            }
-          ]
-        }
-      }),
+      // PWA désactivée temporairement pour éviter les erreurs de déploiement
+      // isProduction && VitePWA({
+      //   registerType: 'autoUpdate',
+      //   workbox: {
+      //     globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+      //     runtimeCaching: [
+      //       {
+      //         urlPattern: /^https:\/\/api\./,
+      //         handler: 'NetworkFirst',
+      //         options: {
+      //           cacheName: 'api-cache',
+      //           expiration: {
+      //             maxEntries: 100,
+      //             maxAgeSeconds: 60 * 60 * 24 // 24 heures
+      //           }
+      //         }
+      //       }
+      //     ]
+      //   },
+      //   manifest: {
+      //     name: 'Budget Gestion',
+      //     short_name: 'Budget',
+      //     description: 'Application de gestion de budget moderne',
+      //     theme_color: '#10131a',
+      //     background_color: '#10131a',
+      //     display: 'standalone',
+      //     icons: [
+      //       {
+      //         src: 'vite.svg',
+      //         sizes: 'any',
+      //         type: 'image/svg+xml'
+      //       }
+      //     ]
+      //   }
+      // }),
       // Compression pour la production
       isProduction && viteCompression({
         algorithm: 'gzip',

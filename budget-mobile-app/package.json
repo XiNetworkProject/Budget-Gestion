@@ -9,6 +9,7 @@
     "build": "vite build",
     "build:optimized": "vite build --mode optimized",
     "build:production": "vite build --config vite.config.production.js",
+    "build:deploy": "vite build --mode production --config vite.config.production.js",
     "build:analyze": "vite build --mode analyze",
     "test": "vitest",
     "test:performance": "vitest --run performance",
