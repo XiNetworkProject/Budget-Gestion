@@ -21,7 +21,7 @@ import {
   TrendingUp,
   Savings,
   AttachMoney,
-  Target,
+  Flag,
   CheckCircle,
   Lock,
   Bolt,
@@ -60,7 +60,7 @@ const GOAL_CONFIG = {
     borderColor: '#2196f3'
   },
   [GOAL_TYPES.CATEGORY]: {
-    icon: <Target />,
+            icon: <Flag />,
     color: '#9c27b0',
     bgColor: 'rgba(156, 39, 176, 0.1)',
     borderColor: '#9c27b0'

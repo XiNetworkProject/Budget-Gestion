@@ -1,9 +1,26 @@
 {
-  "app": { "title": "Budget Gestion" },
+  "app": { 
+    "title": "Budget Gestion",
+    "subtitle": "Gérez vos finances intelligemment",
+    "version": "Version"
+  },
   "appName": "Budget Gestion",
   "theme": { "light": "Clair", "dark": "Sombre" },
   "logout": "Déconnexion",
   "nav": { "table": "Tableau", "chart": "Visualisation" },
+  "navigation": {
+    "home": "Accueil",
+    "expenses": "Dépenses",
+    "income": "Revenus",
+    "analytics": "Analyses",
+    "aiDashboard": "Dashboard IA",
+    "gamification": "Gamification",
+    "savings": "Épargne",
+    "history": "Historique",
+    "actionPlans": "Plans d'action",
+    "subscription": "Abonnement",
+    "settings": "Paramètres"
+  },
   "login": { "title": "Connexion à Budget Gestion" },
   "dashboard": { "title": "Tableau de bord", "tableTitle": "Tableau de Budget" },
   "budget": { "title": "Budget" },

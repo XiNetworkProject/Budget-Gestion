@@ -5,7 +5,7 @@ import { Box } from '@mui/material';
 // Composants optimisés
 import ErrorBoundary from './components/optimized/ErrorBoundary';
 import LoadingSpinner from './components/optimized/LoadingSpinner';
-import Layout from './components/Layout';
+import ModernLayout from './components/modern/ModernLayout';
 
 // Lazy loading des pages avec Suspense
 const HomeOptimized = lazy(() => import('./pages/HomeOptimized'));
@@ -60,16 +60,16 @@ const AppRoutesOptimized = () => {
         <Route path="/" element={<Navigate to="/home" replace />} />
         
         {/* Pages principales avec Layout */}
-        <Route path="/" element={<Layout />}>
-          <Route 
-            path="home" 
-            element={
-              <LazyPage 
-                component={HomeOptimized} 
-                fallbackMessage="Chargement du tableau de bord..." 
-              />
-            } 
-          />
+        <Route path="/" element={<ModernLayout />}>
+                                <Route 
+                        path="home" 
+                        element={
+                          <LazyPage 
+                            component={HomeOptimized} 
+                            fallbackMessage="Chargement du tableau de bord..." 
+                          />
+                        } 
+                      />
           <Route 
             path="expenses" 
             element={
