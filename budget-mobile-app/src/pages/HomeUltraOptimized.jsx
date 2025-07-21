@@ -20,7 +20,6 @@ import QuickAdd from './QuickAdd';
 
 // Configuration
 import { ACTIVE_CONFIG } from '../config/environment';
-import { PerformanceUtils } from '../config/performance';
 
 // Composant principal ultra-optimisé
 const HomeUltraOptimized = () => {
@@ -34,8 +33,7 @@ const HomeUltraOptimized = () => {
     logout,
     serverConnected,
     getCurrentPlan,
-    isFeatureAvailable,
-    addNotification
+    isFeatureAvailable
   } = useStore();
   
   const navigate = useNavigate();
@@ -103,23 +101,12 @@ const HomeUltraOptimized = () => {
 
   // Effets de performance
   useEffect(() => {
-    // Démarrer le monitoring de performance en mode développement
-    if (process.env.NODE_ENV === 'development') {
-      PerformanceUtils.startPerformanceMonitoring();
-    }
-
-    // Ajouter une notification de bienvenue si c'est la première visite
+    // Marquer la première visite
     const hasVisited = sessionStorage.getItem('hasVisitedHome');
     if (!hasVisited) {
-      addNotification({
-        title: t('home.welcomeTitle'),
-        message: t('home.welcomeMessage'),
-        type: 'info',
-        read: false
-      });
       sessionStorage.setItem('hasVisitedHome', 'true');
     }
-  }, [addNotification, t]);
+  }, []);
 
   // Si les données ne sont pas encore chargées
   if (!hasData && isCalculating) {

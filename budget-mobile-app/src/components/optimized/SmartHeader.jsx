@@ -52,9 +52,7 @@ const SmartHeader = memo(({
     logout, 
     serverConnected, 
     getCurrentPlan,
-    isFeatureAvailable,
-    notifications,
-    clearNotifications
+    isFeatureAvailable
   } = useStore();
   
   const [anchorEl, setAnchorEl] = useState(null);
@@ -109,10 +107,10 @@ const SmartHeader = memo(({
     return '#9E9E9E';
   }, [getCurrentPlan]);
 
-  // Notifications non lues
+  // Notifications non lues (simulées pour l'instant)
   const unreadNotifications = useMemo(() => {
-    return notifications?.filter(n => !n.read) || [];
-  }, [notifications]);
+    return []; // Pas de notifications pour l'instant
+  }, []);
 
   // Gestion des menus
   const handleProfileMenuOpen = useCallback((event) => {
@@ -399,39 +397,9 @@ const SmartHeader = memo(({
             </Typography>
           </Box>
           
-          {notifications && notifications.length > 0 ? (
-            notifications.slice(0, 5).map((notification, index) => (
-              <MenuItem key={index} sx={{ color: 'white', py: 1.5 }}>
-                <Box sx={{ width: '100%' }}>
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {notification.title}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                    {notification.message}
-                  </Typography>
-                </Box>
-              </MenuItem>
-            ))
-          ) : (
-            <MenuItem sx={{ color: 'rgba(255,255,255,0.7)' }}>
-              {t('home.noNotifications')}
-            </MenuItem>
-          )}
-          
-          {notifications && notifications.length > 0 && (
-            <>
-              <Divider sx={{ background: 'rgba(255,255,255,0.1)' }} />
-              <MenuItem 
-                onClick={() => {
-                  clearNotifications();
-                  handleNotificationMenuClose();
-                }}
-                sx={{ color: 'white' }}
-              >
-                {t('home.clearAll')}
-              </MenuItem>
-            </>
-          )}
+          <MenuItem sx={{ color: 'rgba(255,255,255,0.7)' }}>
+            {t('home.noNotifications')}
+          </MenuItem>
         </Menu>
       </Box>
     </Fade>
