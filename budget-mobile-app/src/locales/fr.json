@@ -128,62 +128,6 @@
   },
   "home": {
     "title": "Tableau de bord",
-    "dashboard": "Tableau de bord",
-    "smartDashboard": "Dashboard intelligent",
-    "quickAdd": "Ajout rapide",
-    "quickActions": "Actions rapides",
-    "keyboardShortcuts": "Raccourcis clavier",
-    "ultraOptimized": "Ultra-optimisé",
-    "secureConnection": "Connexion sécurisée",
-    "serverConnected": "Serveur connecté",
-    "serverDisconnected": "Serveur déconnecté",
-    "refreshData": "Actualiser les données",
-    "notifications": "Notifications",
-    "profile": "Profil",
-    "settings": "Paramètres",
-    "logout": "Déconnexion",
-    "currentPeriod": "Période actuelle",
-    "noNotifications": "Aucune notification",
-    "clearAll": "Tout effacer",
-    "addExpense": "Ajouter une dépense",
-    "addExpenseDescription": "Enregistrer rapidement une nouvelle dépense",
-    "addIncome": "Ajouter un revenu",
-    "addIncomeDescription": "Enregistrer rapidement un nouveau revenu",
-    "addSavings": "Ajouter une épargne",
-    "addSavingsDescription": "Enregistrer rapidement une nouvelle épargne",
-    "viewAnalytics": "Voir les analyses",
-    "viewAnalyticsDescription": "Accéder aux analyses détaillées",
-    "actionPlans": "Plans d'action",
-    "actionPlansDescription": "Gérer les plans d'action",
-    "smartAlerts": "Alertes intelligentes",
-    "smartInsights": "Insights intelligents",
-    "financialAnalytics": "Analyses financières",
-    "intelligentRecommendations": "Recommandations intelligentes",
-    "takeAction": "Agir",
-    "lowSavingsRate": "Taux d'épargne faible",
-    "lowSavingsRateMessage": "Votre taux d'épargne de {{savingsRate}}% est inférieur à la recommandation de 20%",
-    "highExpenseIncrease": "Augmentation importante des dépenses",
-    "highExpenseIncreaseMessage": "Vos dépenses ont augmenté de {{increase}}% ce mois-ci",
-    "incomeDecrease": "Baisse des revenus",
-    "incomeDecreaseMessage": "Vos revenus ont diminué de {{decrease}}% ce mois-ci",
-    "excellentSavingsRate": "Excellent taux d'épargne",
-    "excellentSavingsRateMessage": "Félicitations ! Votre taux d'épargne de {{savingsRate}}% est excellent",
-    "spendingPattern": "Modèle de dépenses",
-    "spendingPatternDescription": "Analyse de vos habitudes de dépenses",
-    "trendAnalysis": "Analyse des tendances",
-    "trendAnalysisDescription": "Évolution de vos finances dans le temps",
-    "financialHealth": "Santé financière",
-    "financialHealthDescription": "État général de vos finances",
-    "totalIncome": "Revenus totaux",
-    "totalExpenses": "Dépenses totales",
-    "savings": "Épargne",
-    "balance": "Solde",
-    "thisMonth": "Ce mois",
-    "currentBalance": "Solde actuel",
-    "loadingOptimizedData": "Chargement des données optimisées...",
-    "quickAddOpened": "Ajout rapide ouvert",
-    "welcomeTitle": "Bienvenue !",
-    "welcomeMessage": "Votre dashboard intelligent est prêt. Explorez les nouvelles fonctionnalités !",
     "revenues": "Revenus",
     "expenses": "Dépenses",
     "savings": "Économies",
@@ -967,6 +911,88 @@
     "and": "et",
     "lowEffort": "Faible",
     "mediumEffort": "Moyen",
-    "highEffort": "Élevé"
+    "highEffort": "Élevé",
+    "dashboard": {
+      "title": "Dashboard IA",
+      "metrics": "Métriques intelligentes",
+      "charts": "Graphiques financiers",
+      "analyses": "Analyses IA",
+      "noAnalyses": "Aucune analyse disponible",
+      "noAnalysesDescription": "L'IA analysera vos données et générera des insights personnalisés."
+    },
+    "analysis": {
+      "predictive": "Prédictive",
+      "behavioral": "Comportementale",
+      "optimization": "Optimisation",
+      "risk": "Risque",
+      "opportunity": "Opportunité"
+    },
+    "metrics": {
+      "savingsRate": "Taux d'épargne",
+      "trend": "Tendance",
+      "healthScore": "Score santé",
+      "aiScore": "Score IA",
+      "currentSavings": "Épargne actuelle",
+      "recommended": "Recommandé",
+      "gap": "Écart",
+      "expenseRatio": "Ratio dépenses",
+      "targetRatio": "Ratio cible",
+      "potential": "Potentiel",
+      "transactions": "Transactions",
+      "averageAmount": "Montant moyen",
+      "frequency": "Fréquence",
+      "monthlySavings": "Épargne mensuelle"
+    }
+  },
+  "notifications": {
+    "priority": {
+      "high": "Haute priorité",
+      "medium": "Priorité moyenne",
+      "low": "Basse priorité"
+    },
+    "achievements": {
+      "excellentSavings": "Excellent taux d'épargne !",
+      "excellentSavingsMessage": "Félicitations ! Votre taux d'épargne de {{rate}}% est excellent.",
+      "goalReached": "Objectif atteint !",
+      "goalReachedMessage": "Vous avez atteint votre objectif d'épargne !"
+    },
+    "warnings": {
+      "lowSavings": "Taux d'épargne faible",
+      "lowSavingsMessage": "Votre taux d'épargne de {{rate}}% est en dessous de la recommandation de 20%.",
+      "highExpenses": "Dépenses élevées",
+      "highExpensesMessage": "Vos dépenses représentent plus de 90% de vos revenus."
+    },
+    "goals": {
+      "savingsGoalReached": "Objectif d'épargne atteint",
+      "savingsGoalReachedMessage": "Félicitations ! Vous avez épargné {{amount}}€ ce mois-ci."
+    },
+    "actions": {
+      "createSavingsPlan": "Créer un plan d'épargne",
+      "reviewExpenses": "Réviser les dépenses"
+    }
+  },
+  "goals": {
+    "difficulty": {
+      "easy": "Facile",
+      "medium": "Moyen",
+      "hard": "Difficile",
+      "expert": "Expert"
+    },
+    "progress": "Progression",
+    "completed": "Terminé"
+  },
+  "gamification": {
+    "title": "Gamification",
+    "objectives": "Objectifs",
+    "totalPoints": "Points totaux",
+    "streak": "Série"
+  },
+  "floatingMenu": {
+    "ariaLabel": "Menu d'actions rapides",
+    "quickAdd": "Ajout rapide",
+    "aiDashboard": "Dashboard IA",
+    "gamification": "Gamification",
+    "analytics": "Analyses",
+    "settings": "Paramètres"
   }
 } 

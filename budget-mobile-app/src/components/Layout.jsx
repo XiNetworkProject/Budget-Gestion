@@ -17,6 +17,7 @@ import {
 } from '@mui/icons-material';
 import Tutorial from './Tutorial';
 import UpdateDialog from './UpdateDialog';
+import FloatingMenu from './optimized/FloatingMenu';
 import toast from 'react-hot-toast';
 
 const Layout = () => {
@@ -177,6 +178,8 @@ const Layout = () => {
       <Box sx={{ p: 2 }}>
         <Outlet />
       </Box>
+
+      <FloatingMenu onQuickAdd={() => navigate('/quick-add')} />
 
       <BottomNavigation
         value={value}

@@ -910,6 +910,88 @@
     "and": "and",
     "lowEffort": "Low",
     "mediumEffort": "Medium",
-    "highEffort": "High"
+    "highEffort": "High",
+    "dashboard": {
+      "title": "AI Dashboard",
+      "metrics": "Smart Metrics",
+      "charts": "Financial Charts",
+      "analyses": "AI Analyses",
+      "noAnalyses": "No analyses available",
+      "noAnalysesDescription": "AI will analyze your data and generate personalized insights."
+    },
+    "analysis": {
+      "predictive": "Predictive",
+      "behavioral": "Behavioral",
+      "optimization": "Optimization",
+      "risk": "Risk",
+      "opportunity": "Opportunity"
+    },
+    "metrics": {
+      "savingsRate": "Savings Rate",
+      "trend": "Trend",
+      "healthScore": "Health Score",
+      "aiScore": "AI Score",
+      "currentSavings": "Current Savings",
+      "recommended": "Recommended",
+      "gap": "Gap",
+      "expenseRatio": "Expense Ratio",
+      "targetRatio": "Target Ratio",
+      "potential": "Potential",
+      "transactions": "Transactions",
+      "averageAmount": "Average Amount",
+      "frequency": "Frequency",
+      "monthlySavings": "Monthly Savings"
+    }
+  },
+  "notifications": {
+    "priority": {
+      "high": "High Priority",
+      "medium": "Medium Priority",
+      "low": "Low Priority"
+    },
+    "achievements": {
+      "excellentSavings": "Excellent Savings Rate!",
+      "excellentSavingsMessage": "Congratulations! Your savings rate of {{rate}}% is excellent.",
+      "goalReached": "Goal Reached!",
+      "goalReachedMessage": "You have reached your savings goal!"
+    },
+    "warnings": {
+      "lowSavings": "Low Savings Rate",
+      "lowSavingsMessage": "Your savings rate of {{rate}}% is below the 20% recommendation.",
+      "highExpenses": "High Expenses",
+      "highExpensesMessage": "Your expenses represent more than 90% of your income."
+    },
+    "goals": {
+      "savingsGoalReached": "Savings Goal Reached",
+      "savingsGoalReachedMessage": "Congratulations! You saved {{amount}}€ this month."
+    },
+    "actions": {
+      "createSavingsPlan": "Create Savings Plan",
+      "reviewExpenses": "Review Expenses"
+    }
+  },
+  "goals": {
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard",
+      "expert": "Expert"
+    },
+    "progress": "Progress",
+    "completed": "Completed"
+  },
+  "gamification": {
+    "title": "Gamification",
+    "objectives": "Objectives",
+    "totalPoints": "Total Points",
+    "streak": "Streak"
+  },
+  "floatingMenu": {
+    "ariaLabel": "Quick actions menu",
+    "quickAdd": "Quick Add",
+    "aiDashboard": "AI Dashboard",
+    "gamification": "Gamification",
+    "analytics": "Analytics",
+    "settings": "Settings"
   }
 } 

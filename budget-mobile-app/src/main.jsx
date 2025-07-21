@@ -6,6 +6,7 @@ import './index.css'
 import './i18n'
 import ErrorBoundary from './components/optimized/ErrorBoundary'
 import { startPerformanceMonitoring } from './utils/performanceTest'
+import SmartNotifications from './components/optimized/SmartNotifications'
 
 // Supprimer les warnings React sur defaultProps dans les composants memo
 const suppressedErrors = [/Support for defaultProps/];
@@ -35,6 +36,7 @@ createRoot(document.getElementById('root')).render(
       <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
         <BrowserRouter>
           <AppRoutesOptimized />
+          <SmartNotifications />
           <Toaster 
             position="bottom-right"
             toastOptions={{

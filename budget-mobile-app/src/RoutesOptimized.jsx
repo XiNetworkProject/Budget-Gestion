@@ -8,13 +8,15 @@ import LoadingSpinner from './components/optimized/LoadingSpinner';
 import Layout from './components/Layout';
 
 // Lazy loading des pages avec Suspense
-const HomeUltraOptimized = lazy(() => import('./pages/HomeUltraOptimized'));
+const HomeOptimized = lazy(() => import('./pages/HomeOptimized'));
 const Expenses = lazy(() => import('./pages/Expenses'));
 const Income = lazy(() => import('./pages/Income'));
 const Savings = lazy(() => import('./pages/Savings'));
 const Debts = lazy(() => import('./pages/Debts'));
 
 const Analytics = lazy(() => import('./pages/Analytics'));
+const AIDashboard = lazy(() => import('./components/optimized/AIDashboard'));
+const Gamification = lazy(() => import('./components/optimized/GamificationSystem'));
 const History = lazy(() => import('./pages/History'));
 const Settings = lazy(() => import('./pages/Settings'));
 const ActionPlans = lazy(() => import('./pages/ActionPlans'));
@@ -63,8 +65,8 @@ const AppRoutesOptimized = () => {
             path="home" 
             element={
               <LazyPage 
-                component={HomeUltraOptimized} 
-                fallbackMessage="Chargement du tableau de bord ultra-optimisé..." 
+                component={HomeOptimized} 
+                fallbackMessage="Chargement du tableau de bord..." 
               />
             } 
           />
@@ -111,6 +113,24 @@ const AppRoutesOptimized = () => {
               <LazyPage 
                 component={Analytics} 
                 fallbackMessage="Chargement des analyses..." 
+              />
+            } 
+          />
+          <Route 
+            path="ai-dashboard" 
+            element={
+              <LazyPage 
+                component={AIDashboard} 
+                fallbackMessage="Chargement du dashboard IA..." 
+              />
+            } 
+          />
+          <Route 
+            path="gamification" 
+            element={
+              <LazyPage 
+                component={Gamification} 
+                fallbackMessage="Chargement de la gamification..." 
               />
             } 
           />
