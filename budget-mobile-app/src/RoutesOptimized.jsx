@@ -8,7 +8,7 @@ import LoadingSpinner from './components/optimized/LoadingSpinner';
 import Layout from './components/Layout';
 
 // Lazy loading des pages avec Suspense
-const HomeOptimized = lazy(() => import('./pages/HomeOptimized'));
+const HomeUltraOptimized = lazy(() => import('./pages/HomeUltraOptimized'));
 const Expenses = lazy(() => import('./pages/Expenses'));
 const Income = lazy(() => import('./pages/Income'));
 const Savings = lazy(() => import('./pages/Savings'));
@@ -63,8 +63,8 @@ const AppRoutesOptimized = () => {
             path="home" 
             element={
               <LazyPage 
-                component={HomeOptimized} 
-                fallbackMessage="Chargement du tableau de bord..." 
+                component={HomeUltraOptimized} 
+                fallbackMessage="Chargement du tableau de bord ultra-optimisé..." 
               />
             } 
           />
