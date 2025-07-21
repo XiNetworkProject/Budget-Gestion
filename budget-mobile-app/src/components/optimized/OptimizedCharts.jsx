@@ -54,6 +54,18 @@ const OptimizedLineChart = memo(({
     return () => clearTimeout(timer);
   }, []);
 
+  // Vérification de sécurité des données
+  const isValidData = data && 
+    data.labels && 
+    Array.isArray(data.labels) && 
+    data.datasets && 
+    Array.isArray(data.datasets) &&
+    data.datasets.length > 0;
+
+  if (loading || !isValidData) {
+    return <ChartSkeleton height={height} />;
+  }
+
   const defaultOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -165,6 +177,21 @@ const OptimizedDoughnutChart = memo(({
     return () => clearTimeout(timer);
   }, []);
 
+  // Vérification de sécurité des données
+  const isValidData = data && 
+    data.labels && 
+    Array.isArray(data.labels) && 
+    data.datasets && 
+    Array.isArray(data.datasets) &&
+    data.datasets.length > 0 &&
+    data.datasets[0].data &&
+    Array.isArray(data.datasets[0].data) &&
+    data.datasets[0].data.length > 0;
+
+  if (loading || !isValidData) {
+    return <ChartSkeleton height={height} />;
+  }
+
   const defaultOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -242,7 +269,11 @@ export const useChartData = (rawData, type = 'line') => {
   const [optimizedData, setOptimizedData] = useState(null);
 
   useEffect(() => {
-    if (!rawData) return;
+    // Vérification de sécurité des données d'entrée
+    if (!rawData || !rawData.labels || !rawData.datasets) {
+      setOptimizedData(null);
+      return;
+    }
 
     // Utiliser requestIdleCallback pour optimiser les calculs
     const optimizeData = () => {
@@ -299,55 +330,86 @@ const FinancialCharts = memo(({
   const optimizedLineData = useChartData(lineData, 'line');
   const optimizedDoughnutData = useChartData(doughnutData, 'doughnut');
 
+  // Vérification si les données sont disponibles
+  const hasLineData = optimizedLineData && optimizedLineData.labels && optimizedLineData.labels.length > 0;
+  const hasDoughnutData = optimizedDoughnutData && optimizedDoughnutData.labels && optimizedDoughnutData.labels.length > 0;
+
   return (
     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
-      <Paper sx={{ 
-        flex: 2,
-        p: 3,
-        background: 'rgba(255,255,255,0.1)',
-        backdropFilter: 'blur(20px)',
-        borderRadius: 4,
-        border: '1px solid rgba(255,255,255,0.2)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-        transition: 'all 0.3s ease',
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-        }
-      }}>
-        <LazyChart>
-          <OptimizedLineChart
-            data={optimizedLineData}
-            title="Évolution financière"
-            loading={loading}
-            onDataPointClick={onLineClick}
-          />
-        </LazyChart>
-      </Paper>
+      {hasLineData && (
+        <Paper sx={{ 
+          flex: 2,
+          p: 3,
+          background: 'rgba(255,255,255,0.1)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: 4,
+          border: '1px solid rgba(255,255,255,0.2)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+          }
+        }}>
+          <LazyChart>
+            <OptimizedLineChart
+              data={optimizedLineData}
+              title="Évolution financière"
+              loading={loading}
+              onDataPointClick={onLineClick}
+            />
+          </LazyChart>
+        </Paper>
+      )}
 
-      <Paper sx={{ 
-        flex: 1,
-        p: 3,
-        background: 'rgba(255,255,255,0.1)',
-        backdropFilter: 'blur(20px)',
-        borderRadius: 4,
-        border: '1px solid rgba(255,255,255,0.2)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-        transition: 'all 0.3s ease',
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-        }
-      }}>
-        <LazyChart>
-          <OptimizedDoughnutChart
-            data={optimizedDoughnutData}
-            title="Répartition des dépenses"
-            loading={loading}
-            onSegmentClick={onDoughnutClick}
-          />
-        </LazyChart>
-      </Paper>
+      {hasDoughnutData && (
+        <Paper sx={{ 
+          flex: 1,
+          p: 3,
+          background: 'rgba(255,255,255,0.1)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: 4,
+          border: '1px solid rgba(255,255,255,0.2)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+          }
+        }}>
+          <LazyChart>
+            <OptimizedDoughnutChart
+              data={optimizedDoughnutData}
+              title="Répartition des dépenses"
+              loading={loading}
+              onSegmentClick={onDoughnutClick}
+            />
+          </LazyChart>
+        </Paper>
+      )}
+
+      {!hasLineData && !hasDoughnutData && !loading && (
+        <Paper sx={{ 
+          flex: 1,
+          p: 3,
+          background: 'rgba(255,255,255,0.1)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: 4,
+          border: '1px solid rgba(255,255,255,0.2)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 350
+        }}>
+          <Typography variant="h6" sx={{ 
+            color: 'rgba(255,255,255,0.7)',
+            textAlign: 'center'
+          }}>
+            Aucune donnée disponible pour les graphiques
+          </Typography>
+        </Paper>
+      )}
     </Box>
   );
 });
