@@ -1,30 +1,143 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { VitePWA } from 'vite-plugin-pwa'
+import { compression } from 'vite-plugin-compression'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    host: '0.0.0.0',
-    port: process.env.PORT || 3000,
-    headers: {
-      'Content-Type': 'application/javascript',
-    },
-  },
-  base: '/',
-  build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
-    sourcemap: true,
-    rollupOptions: {
-      output: {
-        manualChunks: undefined,
+export default defineConfig(({ command, mode }) => {
+  const isProduction = mode === 'production' || mode === 'optimized'
+  const isAnalyze = mode === 'analyze'
+  
+  return {
+    plugins: [
+      react(),
+      // PWA pour le mode production
+      isProduction && VitePWA({
+        registerType: 'autoUpdate',
+        workbox: {
+          globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/api\./,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'api-cache',
+                expiration: {
+                  maxEntries: 100,
+                  maxAgeSeconds: 60 * 60 * 24 // 24 heures
+                }
+              }
+            }
+          ]
+        },
+        manifest: {
+          name: 'Budget Gestion',
+          short_name: 'Budget',
+          description: 'Application de gestion de budget moderne',
+          theme_color: '#10131a',
+          background_color: '#10131a',
+          display: 'standalone',
+          icons: [
+            {
+              src: 'pwa-192x192.png',
+              sizes: '192x192',
+              type: 'image/png'
+            },
+            {
+              src: 'pwa-512x512.png',
+              sizes: '512x512',
+              type: 'image/png'
+            }
+          ]
+        }
+      }),
+      // Compression pour la production
+      isProduction && compression({
+        algorithm: 'gzip',
+        ext: '.gz'
+      }),
+      // Analyseur de bundle
+      isAnalyze && visualizer({
+        filename: 'dist/stats.html',
+        open: true,
+        gzipSize: true,
+        brotliSize: true
+      })
+    ].filter(Boolean),
+    
+    // Optimisations de build
+    build: {
+      target: 'es2015',
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: isProduction,
+          drop_debugger: isProduction
+        }
       },
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom'],
+            mui: ['@mui/material', '@mui/icons-material'],
+            charts: ['chart.js', 'react-chartjs-2'],
+            utils: ['zustand', 'react-router-dom']
+          }
+        }
+      },
+      chunkSizeWarningLimit: 1000
     },
-  },
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    setupFiles: 'src/setupTests.js'
+    
+    // Optimisations de développement
+    server: {
+      port: 3000,
+      host: true,
+      hmr: {
+        overlay: false
+      }
+    },
+    
+    // Optimisations de preview
+    preview: {
+      port: 4173,
+      host: true
+    },
+    
+    // Optimisations CSS
+    css: {
+      devSourcemap: !isProduction
+    },
+    
+    // Optimisations d'import
+    optimizeDeps: {
+      include: [
+        'react',
+        'react-dom',
+        '@mui/material',
+        '@mui/icons-material',
+        'chart.js',
+        'react-chartjs-2',
+        'zustand',
+        'react-router-dom'
+      ]
+    },
+    
+    // Variables d'environnement
+    define: {
+      __DEV__: !isProduction,
+      __PROD__: isProduction
+    },
+    
+    // Optimisations de résolution
+    resolve: {
+      alias: {
+        '@': '/src',
+        '@components': '/src/components',
+        '@hooks': '/src/hooks',
+        '@utils': '/src/utils',
+        '@config': '/src/config'
+      }
+    }
   }
 })

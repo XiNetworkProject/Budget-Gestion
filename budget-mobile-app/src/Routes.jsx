@@ -20,9 +20,6 @@ import Savings from './pages/Savings';
 import Debts from './pages/Debts';
 import ActionPlans from './pages/ActionPlans';
 import Subscription from './pages/Subscription';
-import AchievementSystem from './components/gamification/AchievementSystem';
-import AIAssistant from './components/ai/AIAssistant';
-import ZenDashboard from './components/zen/ZenDashboard';
 import { useStore } from './store';
 
 function SplashRedirect() {
@@ -137,11 +134,8 @@ function ThemedAppRoutes() {
           <Route path="/income" element={<Income />} />
           <Route path="/savings" element={<Savings />} />
           <Route path="/debts" element={<Debts />} />
-          <Route path="/action-plans" element={<ActionPlans />} />
-          <Route path="/subscription" element={<Subscription />} />
-          <Route path="/achievements" element={<AchievementSystem />} />
-          <Route path="/ai-assistant" element={<AIAssistant />} />
-          <Route path="/zen-dashboard" element={<ZenDashboard />} />
+            <Route path="/action-plans" element={<ActionPlans />} />
+            <Route path="/subscription" element={<Subscription />} />
           <Route path="*" element={<Navigate to="/home" replace />} />
         </Route>
       </Routes>

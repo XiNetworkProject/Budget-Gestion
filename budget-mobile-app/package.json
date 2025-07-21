@@ -5,11 +5,22 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:optimized": "vite --mode optimized",
     "build": "vite build",
+    "build:optimized": "vite build --mode optimized",
+    "build:analyze": "vite build --mode analyze",
     "test": "vitest",
+    "test:performance": "vitest --run performance",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext js,jsx --fix",
     "preview": "vite preview",
-    "start": "node server/api.js"
+    "start": "node server/api.js",
+    "start:optimized": "node server/api.js --optimized",
+    "performance:test": "node scripts/performance-test.js",
+    "performance:analyze": "node scripts/analyze-performance.js",
+    "optimize": "npm run build:optimized && npm run performance:test",
+    "clean": "rm -rf dist node_modules/.vite",
+    "clean:all": "rm -rf dist node_modules package-lock.json && npm install"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -60,6 +71,25 @@
     "eslint-plugin-react": "^7.34.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
-    "vite": "^5.1.6"
+    "vite": "^5.1.6",
+    "rollup-plugin-visualizer": "^5.12.0",
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-pwa": "^0.17.4"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

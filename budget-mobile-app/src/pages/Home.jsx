@@ -29,10 +29,7 @@ import {
   Alert,
   AlertTitle,
   Collapse,
-  Fab,
-  SpeedDial,
-  SpeedDialAction,
-  SpeedDialIcon
+  Fab
 } from '@mui/material';
 import {
   TrendingUp,
@@ -61,11 +58,7 @@ import {
   Refresh,
   Savings,
   MoreVert,
-  Info,
-  Chat,
-  EmojiEvents,
-  Spa,
-  Dashboard
+  Info
 } from '@mui/icons-material';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { 
@@ -78,13 +71,6 @@ import {
   Legend,
   ArcElement
 } from 'chart.js';
-
-// Import des nouveaux composants optimisés
-import { MetricCard, ProgressCard, useMemoizedCalculations } from '../components/optimized/MemoizedComponents';
-import { useSmartCache, useCachedCalculation } from '../hooks/useOptimizedCache';
-import ZenDashboard from '../components/zen/ZenDashboard';
-import AIAssistant from '../components/ai/AIAssistant';
-import AchievementSystem from '../components/gamification/AchievementSystem';
 import QuickAdd from './QuickAdd';
 
 ChartJS.register(
@@ -98,11 +84,6 @@ ChartJS.register(
 );
 
 const Home = () => {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const [viewMode, setViewMode] = useState('classic'); // 'classic', 'zen', 'achievements'
-  const [showQuickAdd, setShowQuickAdd] = useState(false);
-  
   const { 
     data, 
     months, 
@@ -117,7 +98,7 @@ const Home = () => {
     saved,
     sideByMonth, 
     totalPotentialSavings,
-    budgetLimits,
+    budgetLimits, 
     expenses,
     incomeTransactions,
     savings,
@@ -126,322 +107,2935 @@ const Home = () => {
     transactions,
     userProfile,
     appSettings,
-    tutorialCompleted,
-    onboardingCompleted,
-    showUpdateDialog,
-    checkForUpdates,
-    closeUpdateDialog,
-    forceShowUpdateDialog,
-    resetOnboardingStates,
-    forceOnboardingCompleted,
-    checkAndFixOnboardingState,
-    validateAndCleanDates,
-    syncExpensesWithCategories,
-    syncIncomesWithTypes,
-    addTransaction,
-    addExpense,
-    updateExpense,
-    deleteExpense,
-    addIncome,
-    updateIncome,
-    deleteIncome,
-    addSavingsGoal,
-    updateSavingsGoal,
-    deleteSavingsGoal,
-    addDebt,
-    updateDebt,
-    deleteDebt,
-    addBankAccount,
-    updateBankAccount,
-    deleteBankAccount,
-    setValue,
-    addCategory,
-    removeCategory,
-    addMonth,
-    removeMonth,
-    setIncome,
-    addIncomeType,
-    removeIncomeType,
-    renameIncomeType,
-    setSideByMonth,
-    renameCategory,
-    logout,
-    clearAllData,
-    resetToDefaults,
-    renameMonth,
-    reorderCategories,
-    reorderIncomeTypes,
-    setCategoryLimit,
-    setTutorialCompleted,
-    setOnboardingCompleted,
-    showTutorial,
-    resetTutorial,
-    forceShowTutorial,
-    clearForceTutorial,
-    setUser,
-    setLoading,
-    setError,
-    setToken,
     updateUserProfile,
     updateAppSettings,
-    setSelectedMonth: setSelectedMonthAction,
-    getCurrentMonthIndex,
-    getSelectedMonthIndex,
-    hasSpecialAccess,
-    getCurrentPlan,
-    isFeatureAvailable,
-    getAILevel,
-    hasFullAI,
-    hasPartialAI,
-    checkUsageLimit,
-    updateSubscription,
-    cancelSubscription,
-    resetSubscription,
-    reloadBudgetData,
-    fetchSubscriptionFromStripe,
-    isSaving,
-    user,
-    token,
-    isAuthenticated,
     isLoading,
+    isSaving,
     error,
     serverConnected,
+    tutorialCompleted,
+    onboardingCompleted,
+    forceTutorial,
+    setTutorialCompleted,
+    clearForceTutorial,
+    validateAndCleanDates,
+    syncExpensesWithCategories,
+    showUpdateDialog,
+    closeUpdateDialog,
+    checkForUpdates,
+    checkAndFixOnboardingState,
+    activeAccount, 
+    accounts, 
+    setActiveAccount,
+    showTutorial: storeShowTutorial,
+    setShowTutorial: setStoreShowTutorial,
+    showOnboarding,
+    setShowOnboarding,
     subscription,
     subscriptionPlans,
-    specialAccessEmails,
-    appliedPromoCode,
-    promoCodeDiscount
+    getCurrentPlan,
+    isFeatureAvailable,
+    hasFullAI,
+    hasPartialAI,
+    getAILevel,
+    isAuthenticated,
+    user,
+    logout
   } = useStore();
+  const navigate = useNavigate();
+  const [localData, setLocalData] = useState({
+    income: [],
+    expenses: [],
+    savings: [],
+    recentTransactions: []
+  });
+  const { t } = useTranslation();
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
 
-  // Utiliser le cache intelligent
-  const { getCached, setCached } = useSmartCache();
-
-  // Calculs optimisés avec cache
-  const { totals, trends } = useCachedCalculation(
-    'home-calculations',
-    () => useMemoizedCalculations(data, categories, months),
-    [data, categories, months]
-  );
-
-  // Calculs pour les métriques principales
-  const mainMetrics = useCachedCalculation(
-    'main-metrics',
-    () => {
-      const currentMonthIndex = selectedMonth;
-      const currentExpenses = categories.map(cat => data[cat]?.[currentMonthIndex] || 0);
-      const totalExpenses = currentExpenses.reduce((sum, val) => sum + val, 0);
-      const totalIncome = revenus[currentMonthIndex] || 0;
-      const balance = totalIncome - totalExpenses;
-      const savingsRate = totalIncome > 0 ? (balance / totalIncome) * 100 : 0;
-
-      return {
-        balance,
-        totalExpenses,
-        totalIncome,
-        savingsRate,
-        expenseTrend: trends.total || 0
-      };
-    },
-    [data, categories, revenus, selectedMonth, trends]
-  );
-
-  // Actions rapides optimisées
-  const quickActions = [
-    {
-      icon: <Add />,
-      name: 'Ajouter Revenu',
-      action: () => setShowQuickAdd(true),
-      color: 'success'
-    },
-    {
-      icon: <Remove />,
-      name: 'Ajouter Dépense',
-      action: () => setShowQuickAdd(true),
-      color: 'error'
-    },
-    {
-      icon: <Savings />,
-      name: 'Objectif Épargne',
-      action: () => navigate('/savings'),
-      color: 'info'
-    },
-    {
-      icon: <Chat />,
-      name: 'Assistant IA',
-      action: () => setViewMode('ai'),
-      color: 'primary'
+  // Charger les données depuis localStorage au démarrage
+  useEffect(() => {
+    const savedData = localStorage.getItem('budgetAppData');
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        setLocalData(parsed);
+      } catch (error) {
+        console.error('Erreur lors du chargement des données:', error);
+      }
     }
-  ];
+  }, []);
 
-  // Gestion des vues
-  const renderView = () => {
-    switch (viewMode) {
-      case 'zen':
-        return <ZenDashboard />;
-      case 'achievements':
-        return <AchievementSystem />;
-      case 'ai':
-        return <AIAssistant />;
-      default:
-        return renderClassicView();
+  // Nettoyer les dates invalides au chargement de la page
+  useEffect(() => {
+    const { validateAndCleanDates } = useStore.getState();
+    validateAndCleanDates();
+  }, []);
+
+  // Fonction de débogage pour tester les calculs de dates
+  const debugDateCalculations = () => {
+    console.log('=== DÉBOGAGE DES CALCULS DE DATES ===');
+    console.log('Mois sélectionné:', selectedMonth, 'Année sélectionnée:', selectedYear);
+    
+    console.log('=== DÉPENSES ===');
+    expenses.forEach((expense, index) => {
+      const isInMonth = isDateInSelectedMonth(expense.date);
+      console.log(`Dépense ${index}: ${expense.category} - ${expense.amount}€ - Date: ${expense.date} -> InMonth: ${isInMonth}`);
+    });
+    
+    console.log('=== REVENUS ===');
+    incomeTransactions.forEach((income, index) => {
+      const isInMonth = isDateInSelectedMonth(income.date);
+      console.log(`Revenu ${index}: ${income.type} - ${income.amount}€ - Date: ${income.date} -> InMonth: ${isInMonth}`);
+    });
+    
+    console.log('=== RÉSULTATS ===');
+    console.log('Dépenses du mois:', selectedMonthExpenses);
+    console.log('Revenus du mois:', selectedMonthIncomeTransactions);
+    console.log('Total dépenses:', selectedMonthExpense);
+    console.log('Total revenus:', selectedMonthIncome);
+    
+    // Vérifier les dates problématiques
+    console.log('=== VÉRIFICATION DES DATES ===');
+    expenses.forEach((expense, index) => {
+      const date = new Date(expense.date);
+      console.log(`Dépense ${index} - Date originale: ${expense.date}`);
+      console.log(`  - Date parsée: ${date.toISOString()}`);
+      console.log(`  - Mois: ${date.getMonth()}, Année: ${date.getFullYear()}`);
+      console.log(`  - Mois attendu: ${selectedMonth}, Année attendue: ${selectedYear}`);
+      console.log(`  - Correspondance: ${date.getMonth() === selectedMonth && date.getFullYear() === selectedYear}`);
+    });
+  };
+
+  // Appeler le débogage en mode développement
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      debugDateCalculations();
+    }
+  }, [selectedMonth, selectedYear, expenses, incomeTransactions]);
+
+  // Sauvegarder les données dans localStorage
+  const saveData = (newData) => {
+    const dataToSave = { ...localData, ...newData };
+    setLocalData(dataToSave);
+    localStorage.setItem('budgetAppData', JSON.stringify(dataToSave));
+  };
+
+  const currentMonthIdx = new Date().getMonth();
+  // Calculer l'index du mois prochain pour les prévisions
+  const nextMonth = (selectedMonth + 1) % 12;
+  const nextMonthYear = selectedMonth === 11 ? selectedYear + 1 : selectedYear;
+
+  // Fonction pour obtenir le nom du mois
+  const getMonthName = (month, year) => {
+    const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+                       'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+    return `${monthNames[month]} ${year}`;
+  };
+
+  // Fonction pour naviguer entre les mois
+  const navigateMonth = (direction) => {
+    let newMonth = selectedMonth;
+    let newYear = selectedYear;
+    
+    if (direction === 'next') {
+      newMonth = (newMonth + 1) % 12;
+      if (newMonth === 0) newYear++;
+    } else {
+      newMonth = (newMonth - 1 + 12) % 12;
+      if (newMonth === 11) newYear--;
+    }
+    
+    setSelectedMonth(newMonth, newYear);
+  };
+
+  // Fonction pour parser et valider une date
+  const parseDate = (dateString) => {
+    if (!dateString) {
+      console.warn('Date vide détectée, utilisation de la date actuelle');
+      return new Date();
+    }
+    
+    // Essayer de parser la date
+    let date;
+    try {
+      date = new Date(dateString);
+    } catch (error) {
+      console.warn('Erreur de parsing de date:', dateString, error);
+      return new Date();
+    }
+    
+    // Vérifier si la date est valide
+    if (isNaN(date.getTime())) {
+      console.warn('Date invalide détectée:', dateString, 'remplacée par la date actuelle');
+      return new Date();
+    }
+    
+    // Normaliser la date au début du jour pour éviter les problèmes de fuseau horaire
+    // Utiliser 12h00 pour éviter les problèmes de décalage horaire
+    const normalizedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12, 0, 0);
+    
+    // Vérifier que la date n'est pas dans le futur (plus de 1 an)
+    const now = new Date();
+    const oneYearFromNow = new Date(now.getFullYear() + 1, now.getMonth(), now.getDate());
+    if (normalizedDate > oneYearFromNow) {
+      console.warn('Date dans le futur détectée:', dateString, 'remplacée par la date actuelle');
+      return new Date();
+    }
+    
+    // Vérifier que la date n'est pas trop ancienne (plus de 10 ans)
+    const tenYearsAgo = new Date(now.getFullYear() - 10, now.getMonth(), now.getDate());
+    if (normalizedDate < tenYearsAgo) {
+      console.warn('Date trop ancienne détectée:', dateString, 'remplacée par la date actuelle');
+      return new Date();
+    }
+    
+    // Log de débogage pour les dates valides
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Date valide parsée: ${dateString} -> ${normalizedDate.toISOString()} -> Month: ${normalizedDate.getMonth()}, Year: ${normalizedDate.getFullYear()}`);
+    }
+    
+    return normalizedDate;
+  };
+
+  // Fonction pour vérifier si une date correspond au mois sélectionné
+  const isDateInSelectedMonth = (dateString) => {
+    if (!dateString) return false;
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return false;
+      
+      const isInMonth = date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
+      
+      // Log de débogage pour identifier les problèmes
+      console.log(`isDateInSelectedMonth: ${dateString} -> ${date.toISOString()} -> Month: ${date.getMonth()}/${selectedMonth}, Year: ${date.getFullYear()}/${selectedYear} -> InMonth: ${isInMonth}`);
+      
+      return isInMonth;
+    } catch (error) {
+      console.error('Erreur dans isDateInSelectedMonth:', error);
+      return false;
     }
   };
 
-  // Vue classique optimisée
-  const renderClassicView = () => (
-    <Box sx={{ p: 3 }}>
-      {/* Header avec sélecteur de vue */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h4" component="h1">
-          Tableau de Bord
-        </Typography>
+  // Calculer les revenus du mois sélectionné - UTILISER SEULEMENT LES TRANSACTIONS INDIVIDUELLES
+  const selectedMonthIncomeTransactions = incomeTransactions
+    .filter(t => isDateInSelectedMonth(t.date))
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
+  const selectedMonthIncome = selectedMonthIncomeTransactions;
+
+  // Calculer les dépenses du mois sélectionné - UTILISER SEULEMENT LES TRANSACTIONS INDIVIDUELLES
+  const selectedMonthExpenses = expenses
+    .filter(e => isDateInSelectedMonth(e.date))
+    .reduce((sum, e) => sum + (e.amount || 0), 0);
+  
+  const selectedMonthExpense = selectedMonthExpenses;
+
+  // Calculer les économies du mois sélectionné
+  const selectedMonthSaved = selectedMonthIncome - selectedMonthExpense;
+
+  // Système de prévisions intelligentes pour le mois prochain - CORRIGÉ
+  const calculateIntelligentForecast = () => {
+    // Utiliser le mois sélectionné comme référence au lieu de la date actuelle
+    const currentDate = new Date(selectedYear, selectedMonth, 1);
+    const nextMonth = new Date(selectedYear, selectedMonth + 1, 1);
+    const nextMonthYear = nextMonth.getFullYear();
+    const nextMonthIndex = nextMonth.getMonth();
+    
+    // 1. Prévisions de revenus basées sur les transactions récentes - CORRIGÉ
+    const calculateIncomeForecast = () => {
+      // Revenus récurrents (basés sur les 3 derniers mois par rapport au mois sélectionné)
+      const recentMonths = [0, 1, 2].map(i => {
+        const monthDate = new Date(selectedYear, selectedMonth - i, 1);
         
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button
-            variant={viewMode === 'classic' ? 'contained' : 'outlined'}
-            size="small"
-            onClick={() => setViewMode('classic')}
-            startIcon={<Dashboard />}
-          >
-            Classique
-          </Button>
-          <Button
-            variant={viewMode === 'zen' ? 'contained' : 'outlined'}
-            size="small"
-            onClick={() => setViewMode('zen')}
-            startIcon={<Spa />}
-          >
-            Zen
-          </Button>
-          <Button
-            variant={viewMode === 'achievements' ? 'contained' : 'outlined'}
-            size="small"
-            onClick={() => setViewMode('achievements')}
-            startIcon={<EmojiEvents />}
-          >
-            Récompenses
-          </Button>
-        </Box>
-      </Box>
+        // Transactions individuelles pour ce mois
+        const monthIncomeTransactions = incomeTransactions
+    .filter(t => {
+            const date = parseDate(t.date);
+            return date.getMonth() === monthDate.getMonth() && 
+                   date.getFullYear() === monthDate.getFullYear();
+    })
+    .reduce((sum, t) => sum + (t.amount || 0), 0);
+        
+        return monthIncomeTransactions;
+      });
+      
+      // Calculer la moyenne des revenus récents (pondérée)
+      const avgRecentIncome = recentMonths.reduce((sum, val, index) => {
+        const weights = [0.5, 0.3, 0.2];
+        return sum + (val * weights[index]);
+      }, 0);
+      
+      // Analyser la tendance
+      const trend = recentMonths[0] - recentMonths[2];
+      const trendPercentage = Math.abs(trend) / Math.max(avgRecentIncome, 1);
+      
+      // Ajuster la prévision selon la tendance
+      let adjustedForecast = avgRecentIncome;
+      if (trendPercentage > 0.1) { // Si la tendance est significative (>10%)
+        adjustedForecast = avgRecentIncome * (1 + (trend / avgRecentIncome) * 0.3);
+      }
+      
+      // Analyser la stabilité (écart-type)
+      const variance = recentMonths.reduce((sum, val) => sum + Math.pow(val - avgRecentIncome, 2), 0) / recentMonths.length;
+      const volatility = Math.sqrt(variance) / Math.max(avgRecentIncome, 1);
+      
+      return {
+        forecast: Math.max(adjustedForecast, 0),
+        trend: trend,
+        volatility: volatility,
+        confidence: Math.max(0.5, 1 - volatility) // Confiance basée sur la stabilité
+      };
+    };
+    
+    // 2. Prévisions de dépenses basées sur les transactions récentes - CORRIGÉ
+    const calculateExpenseForecast = () => {
+      // Dépenses récentes (basées sur les 3 derniers mois par rapport au mois sélectionné)
+      const recentExpenses = [0, 1, 2].map(i => {
+        const monthDate = new Date(selectedYear, selectedMonth - i, 1);
+        
+        // Transactions individuelles pour ce mois
+        const monthExpenses = expenses
+    .filter(e => {
+            const date = parseDate(e.date);
+            return date.getMonth() === monthDate.getMonth() && 
+                   date.getFullYear() === monthDate.getFullYear();
+    })
+    .reduce((sum, e) => sum + (e.amount || 0), 0);
+        
+        return monthExpenses;
+      });
+      
+      // Calculer la moyenne des dépenses récentes (pondérée)
+      const avgRecentExpenses = recentExpenses.reduce((sum, val, index) => {
+        const weights = [0.5, 0.3, 0.2];
+        return sum + (val * weights[index]);
+      }, 0);
+      
+      // Analyser la tendance
+      const trend = recentExpenses[0] - recentExpenses[2];
+      const trendPercentage = Math.abs(trend) / Math.max(avgRecentExpenses, 1);
+      
+      // Ajuster la prévision selon la tendance
+      let adjustedForecast = avgRecentExpenses;
+      if (trendPercentage > 0.1) { // Si la tendance est significative (>10%)
+        adjustedForecast = avgRecentExpenses * (1 + (trend / avgRecentExpenses) * 0.3);
+      }
+      
+      // Analyser la stabilité (écart-type)
+      const variance = recentExpenses.reduce((sum, val) => sum + Math.pow(val - avgRecentExpenses, 2), 0) / recentExpenses.length;
+      const volatility = Math.sqrt(variance) / Math.max(avgRecentExpenses, 1);
+      
+      // Analyser les dépenses par catégorie
+      const categoryAnalysis = Object.entries(data).map(([category, arr]) => {
+        const categoryExpenses = expenses
+          .filter(e => e.category === category && isDateInSelectedMonth(e.date))
+          .reduce((sum, e) => sum + (e.amount || 0), 0);
+        
+        return { category, amount: categoryExpenses };
+      });
+      
+      return {
+        forecast: Math.max(adjustedForecast, 0),
+        trend: trend,
+        volatility: volatility,
+        confidence: Math.max(0.5, 1 - volatility),
+        categoryBreakdown: categoryAnalysis
+      };
+    };
+    
+    const incomeForecast = calculateIncomeForecast();
+    const expenseForecast = calculateExpenseForecast();
+    const balanceForecast = incomeForecast.forecast - expenseForecast.forecast;
+    
+    return {
+      income: incomeForecast.forecast,
+      expenses: expenseForecast.forecast,
+      balance: balanceForecast,
+      incomeTrend: incomeForecast.trend,
+      expenseTrend: expenseForecast.trend,
+      incomeVolatility: incomeForecast.volatility,
+      expenseVolatility: expenseForecast.volatility,
+      incomeConfidence: incomeForecast.confidence,
+      expenseConfidence: expenseForecast.confidence,
+      categoryBreakdown: expenseForecast.categoryBreakdown
+    };
+  };
+  
+  const forecast = calculateIntelligentForecast();
+  const nextMonthProjected = forecast.balance;
 
-      {/* Métriques principales optimisées */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <MetricCard
-            title="Solde du Mois"
-            value={mainMetrics.balance}
-            trend={mainMetrics.expenseTrend}
-            color={mainMetrics.balance >= 0 ? 'success.main' : 'error.main'}
-            icon={<AccountBalance />}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <MetricCard
-            title="Revenus"
-            value={mainMetrics.totalIncome}
-            color="primary.main"
-            icon={<TrendingUp />}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <MetricCard
-            title="Dépenses"
-            value={mainMetrics.totalExpenses}
-            color="error.main"
-            icon={<TrendingDown />}
-          />
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <MetricCard
-            title="Taux d'Épargne"
-            value={mainMetrics.savingsRate}
-            subtitle={`${mainMetrics.savingsRate.toFixed(1)}%`}
-            color="info.main"
-            icon={<Savings />}
-          />
-        </Grid>
-      </Grid>
+  // Générer des recommandations intelligentes - AMÉLIORÉ
+  const generateRecommendations = () => {
+    const recommendations = [];
+    
+    // Analyser le taux d'épargne
+    const savingsRate = forecast.income > 0 ? (forecast.balance / forecast.income) * 100 : 0;
+    if (savingsRate < 10) {
+      recommendations.push({
+        type: 'warning',
+        title: t('ai.lowSavingsRate'),
+        message: t('ai.lowSavingsRateMessage', { savingsRate: Math.round(savingsRate) }),
+        action: t('createSavingsPlan'),
+        actionType: 'create_savings_plan',
+        priority: 'high',
+        suggestedPlan: {
+          title: t('ai.emergencySavingsPlan'),
+          description: t('ai.emergencySavingsPlanDescription'),
+          category: 'Épargne',
+          targetAmount: Math.round(selectedMonthExpense * 3),
+          priority: 'high'
+        }
+      });
+    } else if (savingsRate > 30) {
+      recommendations.push({
+        type: 'success',
+        title: t('ai.excellentSavingsRate'),
+        message: t('ai.excellentSavingsRateMessage', { savingsRate: Math.round(savingsRate) }),
+        action: t('optimizeInvestment'),
+        actionType: 'optimize_investment',
+        priority: 'low',
+        suggestedPlan: {
+          title: t('ai.investmentPlan'),
+          description: t('ai.diversifyInvestments'),
+          category: 'Investissement',
+          targetAmount: Math.round(forecast.balance * 0.5),
+          priority: 'medium'
+        }
+      });
+    }
+    
+    // Analyser les tendances des dépenses
+    const currentMonthExpense = selectedMonthExpense;
+    const expenseChange = ((forecast.expenses - currentMonthExpense) / Math.max(currentMonthExpense, 1)) * 100;
+    
+    if (expenseChange > 20) {
+      recommendations.push({
+        type: 'error',
+        title: t('expectedExpenseIncrease'),
+        message: t('expectedExpenseIncreaseMessage', { increase: Math.round(expenseChange) }),
+        action: t('createReductionPlan'),
+        actionType: 'create_reduction_plan',
+        priority: 'high',
+        suggestedPlan: {
+          title: t('reduceExpenses'),
+          description: t('reduceExpensesMessage', { increase: Math.round(expenseChange) }),
+          category: 'Réduction des dépenses',
+          targetAmount: Math.round(currentMonthExpense * (expenseChange / 100)),
+          priority: 'high'
+        }
+      });
+    } else if (expenseChange < -10) {
+      recommendations.push({
+        type: 'info',
+        title: t('expectedExpenseDecrease'),
+        message: t('expectedExpenseDecreaseMessage', { decrease: Math.round(Math.abs(expenseChange)) }),
+        action: t('maintainTrend'),
+        actionType: 'maintain_trend',
+        priority: 'medium'
+      });
+    }
+    
+    // Analyser la stabilité des revenus
+    const currentMonthIncome = selectedMonthIncome;
+    const incomeChange = ((forecast.income - currentMonthIncome) / Math.max(currentMonthIncome, 1)) * 100;
+    
+    if (incomeChange < -15) {
+      recommendations.push({
+        type: 'warning',
+        title: t('ai.expectedIncomeDecrease'),
+        message: t('ai.expectedIncomeDecreaseMessage', { decrease: Math.round(Math.abs(incomeChange)) }),
+        action: t('prepareContingencyPlan'),
+        actionType: 'prepare_contingency_plan',
+        priority: 'high',
+        suggestedPlan: {
+          title: t('ai.financialContingencyPlan'),
+          description: t('ai.financialContingencyPlanDescription'),
+          category: 'Budget',
+          targetAmount: Math.round(currentMonthIncome * (Math.abs(incomeChange) / 100)),
+          priority: 'high'
+        }
+      });
+    }
+    
+    // Analyser les catégories de dépenses
+    const categoryAnalysis = Object.entries(data).map(([category, arr]) => {
+      const categoryExpenses = expenses
+        .filter(e => e.category === category && isDateInSelectedMonth(e.date))
+        .reduce((sum, e) => sum + (e.amount || 0), 0);
+      
+      return { category, amount: categoryExpenses };
+    }).sort((a, b) => b.amount - a.amount);
+    
+    // Recommandation pour la catégorie la plus dépensière
+    if (categoryAnalysis.length > 0 && categoryAnalysis[0].amount > 0) {
+      const topCategory = categoryAnalysis[0];
+      const topCategoryPercentage = (topCategory.amount / selectedMonthExpense) * 100;
+      
+      if (topCategoryPercentage > 40) {
+        recommendations.push({
+          type: 'warning',
+          title: t('concentrationExpenses'),
+          message: t('concentrationExpensesMessage', { category: topCategory.category, percentage: Math.round(topCategoryPercentage) }),
+          action: t('diversifyExpenses'),
+          actionType: 'diversify_expenses',
+          priority: 'medium',
+          suggestedPlan: {
+            title: t('reduceExpensesCategory', { category: topCategory.category }),
+            description: t('reduceExpensesCategoryDescription', { category: topCategory.category }),
+            category: 'Réduction des dépenses',
+            targetAmount: Math.round(topCategory.amount * 0.2),
+            priority: 'medium'
+          }
+        });
+      }
+    }
+    
+    // Analyser la fréquence des transactions
+    const recentTransactions = expenses
+      .filter(e => isDateInSelectedMonth(e.date))
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, 10);
+    
+    if (recentTransactions.length > 0) {
+      const avgAmount = recentTransactions.reduce((sum, t) => sum + t.amount, 0) / recentTransactions.length;
+      const smallTransactions = recentTransactions.filter(t => t.amount < 10).length;
+      
+      if (smallTransactions > recentTransactions.length * 0.6) {
+        recommendations.push({
+          type: 'info',
+          title: t('frequentSmallExpenses'),
+          message: t('frequentSmallExpensesMessage', { smallTransactions: smallTransactions, totalTransactions: recentTransactions.length }),
+          action: t('consolidateExpenses'),
+          actionType: 'consolidate_expenses',
+          priority: 'medium',
+          suggestedPlan: {
+            title: t('consolidateExpenses'),
+            description: t('consolidateExpensesDescription'),
+            category: 'Budget',
+            targetAmount: Math.round(avgAmount * smallTransactions * 0.3),
+            priority: 'medium'
+          }
+        });
+      }
+    }
+    
+    // Recommandation générale si pas d'autres alertes
+    if (recommendations.length === 0) {
+      recommendations.push({
+        type: 'success',
+        title: t('financialHealth'),
+        message: t('financialHealthMessage'),
+        action: t('continueMonitoring'),
+        actionType: 'continue_monitoring',
+        priority: 'low'
+      });
+    }
+    
+    // Trier par priorité
+    const priorityOrder = { high: 3, medium: 2, low: 1 };
+    return recommendations.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
+  };
+  
+  const recommendations = generateRecommendations();
 
-      {/* Actions rapides */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h6" gutterBottom>
-          Actions Rapides
-        </Typography>
-        <Grid container spacing={2}>
-          {quickActions.map((action, index) => (
-            <Grid item xs={6} sm={3} key={index}>
-              <Card 
-                sx={{ 
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  '&:hover': { transform: 'translateY(-2px)', boxShadow: 4 }
-                }}
-                onClick={action.action}
-              >
-                <CardContent sx={{ textAlign: 'center', p: 2 }}>
-                  <Box sx={{ color: `${action.color}.main`, mb: 1 }}>
-                    {action.icon}
-                  </Box>
-                  <Typography variant="body2">
-                    {action.name}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
+  // Fonctions pour gérer les actions des recommandations - AMÉLIORÉ
+  const handleRecommendationAction = (actionType, recommendation) => {
+    switch (actionType) {
+      case 'review_expenses':
+        // Ouvrir la page Analytics avec focus sur les dépenses
+        navigate('/analytics');
+        break;
+      case 'analyze_expenses':
+        // Ouvrir la page Analytics
+        navigate('/analytics');
+        break;
+      case 'maintain_trend':
+        // Afficher un message de confirmation
+        alert('Continuez vos bonnes habitudes ! Votre tendance est positive.');
+        break;
+      case 'prepare_plan':
+        // Ouvrir la page des plans d'actions
+        navigate('/action-plans');
+        break;
+      case 'diversify_expenses':
+        // Ouvrir la page Analytics pour voir la répartition
+        navigate('/analytics');
+        break;
+      case 'consolidate_expenses':
+        // Afficher des conseils pour consolider
+        alert('Conseil : Regroupez vos petites dépenses en une seule transaction mensuelle pour mieux les contrôler.');
+        break;
+      case 'continue_good_habits':
+        // Message d'encouragement
+        alert('Excellent travail ! Continuez sur cette voie.');
+        break;
+      case 'continue_monitoring':
+        // Message de confirmation
+        alert('Vos finances sont en bonne santé. Continuez à surveiller régulièrement.');
+        break;
+      case 'create_savings_plan':
+      case 'optimize_investment':
+      case 'create_reduction_plan':
+      case 'prepare_contingency_plan':
+        // Créer automatiquement un plan suggéré et naviguer vers la page des plans
+        if (recommendation.suggestedPlan) {
+          createSuggestedPlan(recommendation.suggestedPlan);
+        }
+        navigate('/action-plans');
+        break;
+      default:
+        console.log('Action non reconnue:', actionType);
+    }
+  };
 
-      {/* Graphiques et analyses */}
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Évolution des Finances
-              </Typography>
-              {/* Graphique d'évolution */}
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" gutterBottom>
-                Répartition des Dépenses
-              </Typography>
-              {/* Graphique camembert */}
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Box>
-  );
+  // Fonction pour créer automatiquement un plan suggéré
+  const createSuggestedPlan = (suggestedPlan) => {
+    // Créer un plan d'action basé sur la recommandation
+    const newPlan = {
+      id: Date.now(),
+      title: suggestedPlan.title,
+      description: suggestedPlan.description,
+      category: suggestedPlan.category,
+      targetAmount: suggestedPlan.targetAmount,
+      deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // +30 jours
+      priority: suggestedPlan.priority,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      progress: 0,
+      isSuggested: true
+    };
+    
+    const updatedPlans = [...existingPlans, newPlan];
+    localStorage.setItem('actionPlans', JSON.stringify(updatedPlans));
+    
+    alert(t('home.planCreatedAutomatically', { title: suggestedPlan.title }));
+  };
+
+  // Fonction pour gérer les actions des catégories
+  const handleCategoryAction = (actionType, category) => {
+    switch (actionType) {
+      case 'reduce_expenses':
+        // Créer un plan de réduction pour cette catégorie
+        const reductionPlan = {
+          title: t('home.reduceExpensesCategory', { category: category.category }),
+          description: t('home.reduceExpensesCategoryDescription', { 
+            category: category.category, 
+            percentage: Math.round(category.trendPercentage) 
+          }),
+          category: t('home.reduceExpenses'),
+          targetAmount: Math.round(category.current * (category.trendPercentage / 100)),
+          priority: 'high'
+        };
+        createSuggestedPlan(reductionPlan);
+        break;
+      case 'maintain_trend':
+        // Message d'encouragement
+        alert(t('home.maintainTrend', { category: category.category }));
+        break;
+      case 'monitor':
+        // Naviguer vers Analytics pour surveiller
+        navigate('/analytics');
+        break;
+      default:
+        console.log('Action de catégorie non reconnue:', actionType);
+    }
+  };
+
+  // Fonction pour obtenir l'icône de tendance
+  const getTrendIcon = (trendDirection) => {
+    if (trendDirection === 'up') {
+      return <TrendingUpIcon sx={{ fontSize: 16, color: '#4caf50' }} />;
+    } else if (trendDirection === 'down') {
+      return <TrendingDownIcon sx={{ fontSize: 16, color: '#f44336' }} />;
+    } else {
+      return <RemoveIcon sx={{ fontSize: 16, color: '#ff9800' }} />;
+    }
+  };
+
+  // Fonction pour obtenir la couleur de confiance
+  const getConfidenceColor = (confidence) => {
+    if (confidence >= 0.8) return 'success.main';
+    if (confidence >= 0.6) return 'warning.main';
+    return 'error.main';
+  };
+
+  // Analyser les prévisions par catégorie - AMÉLIORÉ ET FONCTIONNEL
+  const getCategoryForecastAnalysis = () => {
+    const categoryAnalysis = [];
+    
+    // Utiliser les données de prévisions améliorées
+    const forecast = calculateIntelligentForecast();
+    
+    Object.entries(data).forEach(([category, arr]) => {
+      // Dépenses actuelles du mois sélectionné
+      const currentExpenses = expenses
+        .filter(e => e.category === category && isDateInSelectedMonth(e.date))
+        .reduce((sum, e) => sum + (e.amount || 0), 0);
+      
+      // Calculer la prévision pour cette catégorie
+      // Basé sur la tendance des 3 derniers mois
+      const recentMonths = [0, 1, 2].map(i => {
+        const monthDate = new Date(selectedYear, selectedMonth - i, 1);
+        return expenses
+          .filter(e => {
+            const date = parseDate(e.date);
+            return e.category === category && 
+                   date.getMonth() === monthDate.getMonth() && 
+                   date.getFullYear() === monthDate.getFullYear();
+          })
+          .reduce((sum, e) => sum + (e.amount || 0), 0);
+      });
+      
+      // Moyenne pondérée des 3 derniers mois
+      const avgRecent = recentMonths.reduce((sum, val, index) => {
+        const weights = [0.5, 0.3, 0.2];
+        return sum + (val * weights[index]);
+      }, 0);
+      
+      // Calculer la tendance
+      const trend = recentMonths[0] - recentMonths[2];
+      const trendPercentage = Math.abs(trend) / Math.max(avgRecent, 1);
+      
+      // Prévision ajustée selon la tendance
+      let forecastAmount = avgRecent;
+      if (trendPercentage > 0.1) {
+        forecastAmount = avgRecent * (1 + (trend / avgRecent) * 0.3);
+      }
+      
+      // Calculer la volatilité
+      const variance = recentMonths.reduce((sum, val) => sum + Math.pow(val - avgRecent, 2), 0) / recentMonths.length;
+      const volatility = Math.sqrt(variance) / Math.max(avgRecent, 1);
+      
+      // Calculer le changement prévu
+      const change = forecastAmount - currentExpenses;
+      const changePercentage = currentExpenses > 0 ? (change / currentExpenses) * 100 : 0;
+      
+      // Déterminer le statut et les recommandations
+      let status = 'stable';
+      let statusColor = 'default';
+      let recommendation = '';
+      let actionType = '';
+      
+      if (changePercentage > 20) {
+        status = 'augmentation';
+        statusColor = 'error';
+        recommendation = `Prévision d'augmentation de ${Math.round(changePercentage)}%`;
+        actionType = 'reduce_expenses';
+      } else if (changePercentage < -10) {
+        status = 'diminution';
+        statusColor = 'success';
+        recommendation = `Prévision de diminution de ${Math.round(Math.abs(changePercentage))}%`;
+        actionType = 'maintain_trend';
+      } else {
+        status = 'stable';
+        statusColor = 'info';
+        recommendation = 'Tendance stable';
+        actionType = 'monitor';
+      }
+      
+      // Calculer le pourcentage du budget total
+      const budgetPercentage = selectedMonthExpense > 0 ? (currentExpenses / selectedMonthExpense) * 100 : 0;
+      
+      // Déterminer si c'est une catégorie importante
+      const isImportant = budgetPercentage > 20 || Math.abs(changePercentage) > 15;
+      
+      categoryAnalysis.push({
+        category: category,
+        current: currentExpenses,
+        forecast: Math.max(forecastAmount, 0),
+        trend: change,
+        trendPercentage: changePercentage,
+        volatility: Math.min(volatility, 1),
+        confidence: Math.max(0.3, 1 - volatility),
+        status: status,
+        statusColor: statusColor,
+        recommendation: recommendation,
+        actionType: actionType,
+        budgetPercentage: budgetPercentage,
+        isImportant: isImportant,
+        recentMonths: recentMonths
+      });
+    });
+    
+    // Trier par importance (pourcentage du budget + changement significatif)
+    return categoryAnalysis.sort((a, b) => {
+      const aScore = (a.budgetPercentage * 0.7) + (Math.abs(a.trendPercentage) * 0.3);
+      const bScore = (b.budgetPercentage * 0.7) + (Math.abs(b.trendPercentage) * 0.3);
+      return bScore - aScore;
+    });
+  };
+  const categoryForecastAnalysis = getCategoryForecastAnalysis();
+
+  // Factures à venir (limites de budget)
+  const upcoming = Object.values(budgetLimits).reduce((sum, val) => sum + val, 0);
+
+  // Données pour les graphiques (6 derniers mois à partir du mois actuel)
+  const getLast6Months = () => {
+    const currentDate = new Date();
+    const months = [];
+    const monthNames = [
+      'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+    ];
+    
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+      months.push(monthNames[date.getMonth()]);
+    }
+    
+    return months;
+  };
+  
+  const last6Months = getLast6Months();
+  
+  // Revenus par mois pour les graphiques
+  const revenuesByMonth = last6Months.map((_, i) => {
+    const currentDate = new Date();
+    const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - (5 - i), 1);
+    
+    // Calculer les revenus par type pour ce mois
+    const monthIncomeByType = Object.values(incomes).reduce((sum, arr) => {
+      // Trouver l'index correspondant dans le tableau des revenus
+      const monthIndex = months.findIndex((_, idx) => {
+        const monthDate = new Date();
+        monthDate.setMonth(monthDate.getMonth() - (months.length - 1 - idx));
+        return monthDate.getMonth() === targetDate.getMonth() && 
+               monthDate.getFullYear() === targetDate.getFullYear();
+      });
+      return sum + (arr[monthIndex] || 0);
+    }, 0);
+    
+    // Calculer les transactions individuelles pour ce mois
+    const monthIncomeTransactions = incomeTransactions
+      .filter(t => {
+        const date = parseDate(t.date);
+        return date.getMonth() === targetDate.getMonth() && 
+               date.getFullYear() === targetDate.getFullYear();
+      })
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+    
+    return monthIncomeByType + monthIncomeTransactions;
+  });
+
+  // Dépenses par mois pour les graphiques
+  const expensesByMonth = last6Months.map((_, i) => {
+    const currentDate = new Date();
+    const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - (5 - i), 1);
+    
+    // Calculer les transactions individuelles pour ce mois
+    const monthExpenses = expenses
+      .filter(e => {
+        const date = parseDate(e.date);
+        return date.getMonth() === targetDate.getMonth() && 
+               date.getFullYear() === targetDate.getFullYear();
+      })
+      .reduce((sum, e) => sum + (e.amount || 0), 0);
+    
+    // Calculer les dépenses par catégorie pour ce mois
+    const monthExpensesByCategory = Object.entries(data).reduce((sum, [category, arr]) => {
+      // Vérifier si cette catégorie a des transactions individuelles pour ce mois
+      const hasIndividualTransactions = expenses.some(e => {
+        const date = parseDate(e.date);
+        return e.category === category && 
+               date.getMonth() === targetDate.getMonth() && 
+               date.getFullYear() === targetDate.getFullYear();
+      });
+      
+      // Si pas de transactions individuelles, utiliser la valeur par catégorie
+      if (!hasIndividualTransactions) {
+        const monthIndex = months.findIndex((_, idx) => {
+          const monthDate = new Date();
+          monthDate.setMonth(monthDate.getMonth() - (months.length - 1 - idx));
+          return monthDate.getMonth() === targetDate.getMonth() && 
+                 monthDate.getFullYear() === targetDate.getFullYear();
+        });
+        return sum + (arr[monthIndex] || 0);
+      }
+      return sum;
+    }, 0);
+    
+    return monthExpenses + monthExpensesByCategory;
+  });
+
+  const lineData = {
+    labels: last6Months,
+    datasets: [
+      {
+        label: 'Revenus',
+        data: revenuesByMonth,
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+        tension: 0.4
+      },
+      {
+        label: 'Dépenses',
+        data: expensesByMonth,
+        borderColor: 'rgba(255, 99, 132, 1)',
+        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+        tension: 0.4
+      }
+    ]
+  };
+
+  const doughnutData = {
+    labels: Object.keys(data),
+    datasets: [{
+      data: Object.entries(data).map(([category, arr]) => {
+        // Pour chaque catégorie, calculer le total des transactions individuelles du mois sélectionné
+        const individualTransactions = expenses
+          .filter(e => e.category === category && isDateInSelectedMonth(e.date))
+          .reduce((sum, e) => sum + (e.amount || 0), 0);
+        
+        return individualTransactions;
+      }),
+      backgroundColor: [
+        '#FF6384',
+        '#36A2EB',
+        '#FFCE56',
+        '#4BC0C0',
+        '#9966FF',
+        '#FF9F40'
+      ],
+      borderWidth: 2,
+      borderColor: '#fff'
+    }]
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'bottom'
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            return `${context.label}: ${context.parsed}€`;
+          }
+        }
+      }
+    }
+  };
+
+  const lineOptions = {
+    ...chartOptions,
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function(value) {
+            return value + '€';
+          }
+        }
+      }
+    }
+  };
+
+  // Transactions récentes réelles (revenus et dépenses) - FILTRÉES PAR MOIS SÉLECTIONNÉ
+  const allTransactions = [
+    ...incomeTransactions
+      .filter(t => isDateInSelectedMonth(t.date))
+      .map(t => ({
+      ...t,
+      type: 'income',
+      icon: <AttachMoney sx={{ fontSize: 20 }} />,
+      category: t.type || 'Revenu',
+        date: parseDate(t.date)
+    })),
+    ...expenses
+      .filter(e => isDateInSelectedMonth(e.date))
+      .map(e => ({
+      ...e,
+      type: 'expense',
+      icon: <MoneyOff sx={{ fontSize: 20 }} />,
+      category: e.category || 'Dépense',
+        date: parseDate(e.date)
+    }))
+  ];
+  const recentTransactions = allTransactions
+    .sort((a, b) => b.date - a.date)
+    .slice(0, 5)
+    .map(t => ({
+      ...t,
+      date: t.date ? t.date.toLocaleDateString('fr-FR') : 'Date inconnue'
+    }));
+
+  const getBalanceColor = (amount) => {
+    if (amount > 0) return 'success.main';
+    if (amount < 0) return 'error.main';
+    return 'text.secondary';
+  };
+
+  const getProgressValue = (current, target) => {
+    if (target === 0) return 0;
+    return Math.min((current / target) * 100, 100);
+  };
+
+  // Fonction pour obtenir l'icône d'abonnement
+  const getSubscriptionIcon = () => {
+    const currentPlan = getCurrentPlan();
+    
+    // Gérer le cas où currentPlan est undefined
+    if (!currentPlan) {
+      return <CardMembership sx={{ color: '#9E9E9E' }} />;
+    }
+    
+    if (currentPlan.id === 'premium') {
+      return <Star sx={{ color: '#FFD700' }} />;
+    } else if (currentPlan.id === 'pro') {
+      return <Diamond sx={{ color: '#00D4FF' }} />;
+    }
+    return <CardMembership sx={{ color: '#9E9E9E' }} />;
+  };
+
+  // Fonction pour obtenir le texte de l'abonnement
+  const getSubscriptionText = () => {
+    const currentPlan = getCurrentPlan();
+    
+    // Gérer le cas où currentPlan est undefined
+    if (!currentPlan) {
+      return t('subscription.free');
+    }
+    
+    if (currentPlan.id === 'premium') {
+      return t('subscription.premium');
+    } else if (currentPlan.id === 'pro') {
+      return t('subscription.pro');
+    }
+    return t('subscription.free');
+  };
+
+  // Fonction pour obtenir la couleur de l'abonnement
+  const getSubscriptionColor = () => {
+    const currentPlan = getCurrentPlan();
+    
+    // Gérer le cas où currentPlan est undefined
+    if (!currentPlan) {
+      return '#9E9E9E';
+    }
+    
+    if (currentPlan.id === 'premium') {
+      return '#FFD700';
+    } else if (currentPlan.id === 'pro') {
+      return '#00D4FF';
+    }
+    return '#9E9E9E';
+  };
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
-      {/* Assistant IA flottant */}
-      <AIAssistant />
-      
-      {/* Contenu principal */}
-      {renderView()}
-      
-      {/* Speed Dial pour les actions rapides */}
-      <SpeedDial
-        ariaLabel="Actions rapides"
-        sx={{ position: 'fixed', bottom: 16, right: 16 }}
-        icon={<SpeedDialIcon />}
-      >
-        {quickActions.map((action, index) => (
-          <SpeedDialAction
+    <Box sx={{ 
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #10131a 0%, #232946 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Particules d'arrière-plan animées (vraies particules) */}
+      <Box sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 0,
+        overflow: 'hidden'
+      }}>
+        {/* Particules flottantes */}
+        {[...Array(20)].map((_, index) => (
+          <Box
             key={index}
-            icon={action.icon}
-            tooltipTitle={action.name}
-            onClick={action.action}
-            sx={{ color: `${action.color}.main` }}
+            sx={{
+              position: 'absolute',
+              width: Math.random() * 4 + 2,
+              height: Math.random() * 4 + 2,
+              background: `rgba(${Math.random() * 255}, ${Math.random() * 255}, 255, ${Math.random() * 0.3 + 0.1})`,
+              borderRadius: '50%',
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `floatParticle ${Math.random() * 10 + 10}s linear infinite`,
+              animationDelay: `${Math.random() * 5}s`,
+              filter: 'blur(0.5px)',
+              boxShadow: '0 0 10px rgba(255,255,255,0.3)'
+            }}
           />
         ))}
-      </SpeedDial>
+        
+        {/* Particules plus grandes et plus lentes */}
+        {[...Array(8)].map((_, index) => (
+          <Box
+            key={`large-${index}`}
+            sx={{
+              position: 'absolute',
+              width: Math.random() * 8 + 4,
+              height: Math.random() * 8 + 4,
+              background: `rgba(255, ${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 0.2 + 0.05})`,
+              borderRadius: '50%',
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `floatParticleLarge ${Math.random() * 15 + 20}s linear infinite`,
+              animationDelay: `${Math.random() * 10}s`,
+              filter: 'blur(1px)',
+              boxShadow: '0 0 20px rgba(255,255,255,0.2)'
+            }}
+          />
+        ))}
+      </Box>
+      
+      <style>
+        {`
+          @keyframes floatParticle {
+            0% { 
+              transform: translateY(100vh) translateX(0px) rotate(0deg);
+              opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { 
+              transform: translateY(-100px) translateX(${Math.random() * 200 - 100}px) rotate(360deg);
+              opacity: 0;
+            }
+          }
+          @keyframes floatParticleLarge {
+            0% { 
+              transform: translateY(100vh) translateX(0px) rotate(0deg);
+              opacity: 0;
+            }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { 
+              transform: translateY(-100px) translateX(${Math.random() * 300 - 150}px) rotate(720deg);
+              opacity: 0;
+            }
+          }
+          @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+          }
+          @keyframes slideInUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+        `}
+      </style>
+
+      <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, position: 'relative', zIndex: 1 }}>
+        {/* Alerte de connexion */}
+        {!isAuthenticated && (
+          <Fade in timeout={800}>
+            <Alert 
+              severity="warning" 
+              sx={{ 
+                mb: 3,
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: 3,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                border: '1px solid rgba(255,255,255,0.2)'
+              }}
+            >
+              <AlertTitle>{t('home.notConnected')}</AlertTitle>
+              {t('home.notConnectedMessage')}
+              <Button 
+                color="inherit" 
+                size="small" 
+                sx={{ ml: 1, borderRadius: 2 }}
+                onClick={() => window.location.href = '/login'}
+              >
+                {t('home.connect')}
+              </Button>
+            </Alert>
+          </Fade>
+        )}
+        
+        {isAuthenticated && !serverConnected && (
+          <Fade in timeout={800}>
+            <Alert 
+              severity="info" 
+              sx={{ 
+                mb: 3,
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: 3,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                border: '1px solid rgba(255,255,255,0.2)'
+              }}
+            >
+              <AlertTitle>{t('home.offlineMode')}</AlertTitle>
+              {t('home.offlineModeMessage')}
+            </Alert>
+          </Fade>
+        )}
+        
+        {/* En-tête moderne avec salutation */}
+        <Fade in timeout={1000}>
+          <Box sx={{ mb: 4 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'flex-start', 
+              mb: 3,
+              flexWrap: 'wrap',
+              gap: 2
+            }}>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography 
+                  variant="h3" 
+                  sx={{ 
+                    fontWeight: 800,
+                    fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+                    color: 'white',
+                    textShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                    background: 'linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    letterSpacing: '-0.5px',
+                    lineHeight: 1.2,
+                    mb: 1
+                  }}
+                >
+                  {t('home.hello')}{user?.name ? `, ${user.name}` : ''}
+                </Typography>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    color: 'rgba(255,255,255,0.8)',
+                    fontWeight: 400,
+                    letterSpacing: '0.5px'
+                  }}
+                >
+                  {getMonthName(selectedMonth, selectedYear)}
+                </Typography>
+              </Box>
+              
+              {/* Actions rapides en haut */}
+              <Box sx={{ 
+                display: 'flex', 
+                gap: 1,
+                flexWrap: 'wrap'
+              }}>
+                <IconButton
+                  sx={{
+                    color: 'white',
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    '&:hover': {
+                      background: 'rgba(255,255,255,0.2)',
+                      transform: 'scale(1.1)',
+                      transition: 'all 0.2s ease'
+                    }
+                  }}
+                >
+                  <Notifications />
+                </IconButton>
+                <IconButton
+                  sx={{
+                    color: 'white',
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    '&:hover': {
+                      background: 'rgba(255,255,255,0.2)',
+                      transform: 'scale(1.1)',
+                      transition: 'all 0.2s ease'
+                    }
+                  }}
+                >
+                  <Refresh />
+                </IconButton>
+                <IconButton
+                  onClick={() => navigate('/subscription')}
+                  sx={{
+                    color: getSubscriptionColor(),
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    '&:hover': {
+                      background: 'rgba(255,255,255,0.2)',
+                      transform: 'scale(1.1)',
+                      transition: 'all 0.2s ease'
+                    }
+                  }}
+                  title={`${t('subscription.currentPlan')}: ${getSubscriptionText()}`}
+                >
+                  {getSubscriptionIcon()}
+                </IconButton>
+                <IconButton
+                  sx={{
+                    color: serverConnected ? '#4caf50' : '#ff9800',
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    '&:hover': {
+                      background: 'rgba(255,255,255,0.2)',
+                      transform: 'scale(1.1)',
+                      transition: 'all 0.2s ease'
+                    }
+                  }}
+                  title={serverConnected ? t('home.connectedToServer') : t('home.offlineModeData')}
+                >
+                  <Box sx={{ 
+                    width: 8, 
+                    height: 8, 
+                    borderRadius: '50%', 
+                    bgcolor: 'currentColor',
+                    animation: serverConnected ? 'none' : 'pulse 2s infinite'
+                  }} />
+                </IconButton>
+                <IconButton
+                  onClick={() => {
+                    if (window.confirm(t('home.confirmLogout'))) {
+                      logout();
+                    }
+                  }}
+                  sx={{
+                    color: '#f44336',
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    '&:hover': {
+                      background: 'rgba(255,255,255,0.2)',
+                      transform: 'scale(1.1)',
+                      transition: 'all 0.2s ease'
+                    }
+                  }}
+                  title={t('logout')}
+                >
+                  <Logout />
+                </IconButton>
+              </Box>
+            </Box>
+
+            {/* Navigation des mois moderne */}
+            <Paper sx={{ 
+              p: 2, 
+              mb: 3, 
+              background: 'rgba(255,255,255,0.1)', 
+              backdropFilter: 'blur(20px)',
+              borderRadius: 4,
+              border: '1px solid rgba(255,255,255,0.2)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+            }}>
+              <Box sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 2
+              }}>
+                <Typography 
+                  variant="h5" 
+                  sx={{ 
+                    color: 'white', 
+                    fontWeight: 700,
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}
+                >
+                  {getMonthName(selectedMonth, selectedYear)}
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <IconButton 
+                    onClick={() => navigateMonth('prev')}
+                    sx={{ 
+                      color: 'white',
+                      background: 'rgba(255,255,255,0.1)',
+                      '&:hover': {
+                        background: 'rgba(255,255,255,0.2)',
+                        transform: 'scale(1.1)',
+                        transition: 'all 0.2s ease'
+                      }
+                    }}
+                  >
+                    <ArrowBack />
+                  </IconButton>
+                  <IconButton 
+                    onClick={() => navigateMonth('next')}
+                    sx={{ 
+                      color: 'white',
+                      background: 'rgba(255,255,255,0.1)',
+                      '&:hover': {
+                        background: 'rgba(255,255,255,0.2)',
+                        transform: 'scale(1.1)',
+                        transition: 'all 0.2s ease'
+                      }
+                    }}
+                  >
+                    <ArrowForward />
+                  </IconButton>
+                </Box>
+              </Box>
+            </Paper>
+
+            {/* Solde principal avec design moderne */}
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+              <Box
+                sx={{ 
+                  position: 'relative',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  p: 4,
+                  borderRadius: '50%',
+                  background: selectedMonthSaved >= 0 
+                    ? 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)'
+                    : 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+                  boxShadow: selectedMonthSaved >= 0
+                    ? '0 20px 60px rgba(76, 175, 80, 0.4)'
+                    : '0 20px 60px rgba(244, 67, 54, 0.4)',
+                  minWidth: { xs: 160, sm: 200, md: 240 },
+                  minHeight: { xs: 160, sm: 200, md: 240 },
+                  justifyContent: 'center',
+                  textAlign: 'center',
+                  border: selectedMonthSaved >= 0
+                    ? '4px solid rgba(76, 175, 80, 0.3)'
+                    : '4px solid rgba(244, 67, 54, 0.3)',
+                  transition: 'all 0.4s ease',
+                  animation: 'pulse 3s ease-in-out infinite',
+                  '&:hover': {
+                    transform: 'scale(1.05)',
+                    boxShadow: selectedMonthSaved >= 0
+                      ? '0 30px 80px rgba(76, 175, 80, 0.6)'
+                      : '0 30px 80px rgba(244, 67, 54, 0.6)',
+                  }
+                }}
+              >
+                <Typography
+                  variant="h2"
+                  sx={{
+                    fontWeight: 900,
+                    color: 'white',
+                    fontSize: {
+                      xs: selectedMonthSaved >= 1000000 ? '1.8rem' : selectedMonthSaved >= 100000 ? '2.2rem' : '2.6rem',
+                      sm: selectedMonthSaved >= 1000000 ? '2.2rem' : selectedMonthSaved >= 100000 ? '2.6rem' : '3rem',
+                      md: selectedMonthSaved >= 1000000 ? '2.6rem' : selectedMonthSaved >= 100000 ? '3rem' : '3.5rem'
+                    },
+                    lineHeight: 1.1,
+                    textShadow: '0 4px 8px rgba(0,0,0,0.3)',
+                    wordBreak: 'break-word',
+                    maxWidth: '90%'
+                  }}
+                >
+                  <CurrencyFormatter amount={selectedMonthSaved} />
+                </Typography>
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: -12,
+                    right: -12,
+                    width: 32,
+                    height: 32,
+                    borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.95)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                    border: '2px solid white'
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: '0.8rem',
+                      fontWeight: 900,
+                      color: selectedMonthSaved >= 0 ? '#4caf50' : '#f44336'
+                    }}
+                  >
+                    {selectedMonthSaved >= 0 ? '✓' : '!'}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+            <Typography 
+              variant="h6" 
+              textAlign="center" 
+              sx={{ 
+                color: selectedMonthSaved >= 0 ? '#4caf50' : '#f44336',
+                fontSize: '1rem',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }} 
+              component="span"
+            >
+              {t('home.balance')} {getMonthName(selectedMonth, selectedYear)}
+            </Typography>
+          </Box>
+        </Fade>
+
+        {/* KPIs principaux avec design bulles transparentes */}
+        <Grid container spacing={2} sx={{ mb: 4 }}>
+          <Grid item xs={6} sm={6} md={3}>
+            <Zoom in timeout={600}>
+              <Box sx={{ 
+                p: 3,
+                borderRadius: 4,
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s ease',
+                textAlign: 'center',
+                minHeight: 210,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  background: 'rgba(255,255,255,0.15)',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                }
+              }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2 
+                }}>
+                  <TrendingUp sx={{ 
+                    fontSize: 32, 
+                    color: '#4caf50',
+                    filter: 'drop-shadow(0 2px 4px rgba(76, 175, 80, 0.3))'
+                  }} />
+                </Box>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: '#4caf50',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    mb: 1
+                  }}
+                >
+                  {t('home.revenues')}
+                </Typography>
+                <Typography 
+                  variant="h4" 
+                  sx={{ 
+                    fontWeight: 900, 
+                    color: '#4caf50',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    mb: 1,
+                    fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' }
+                  }}
+                >
+                  <CurrencyFormatter amount={selectedMonthIncome} />
+                </Typography>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    opacity: 0.8, 
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.9)'
+                  }}
+                >
+                  {getMonthName(selectedMonth, selectedYear)}
+                </Typography>
+              </Box>
+            </Zoom>
+          </Grid>
+
+          <Grid item xs={6} sm={6} md={3}>
+            <Zoom in timeout={700}>
+              <Box sx={{ 
+                p: 3,
+                borderRadius: 4,
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s ease',
+                textAlign: 'center',
+                minHeight: 210,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  background: 'rgba(255,255,255,0.15)',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                }
+              }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2 
+                }}>
+                  <TrendingDown sx={{ 
+                    fontSize: 32, 
+                    color: '#f44336',
+                    filter: 'drop-shadow(0 2px 4px rgba(244, 67, 54, 0.3))'
+                  }} />
+                </Box>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: '#f44336',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    mb: 1
+                  }}
+                >
+                  {t('home.expenses')}
+                </Typography>
+                <Typography 
+                  variant="h4" 
+                  sx={{ 
+                    fontWeight: 900, 
+                    color: '#f44336',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    mb: 1,
+                    fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' }
+                  }}
+                >
+                  <CurrencyFormatter amount={selectedMonthExpense} />
+                </Typography>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    opacity: 0.8, 
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.9)'
+                  }}
+                >
+                  {getMonthName(selectedMonth, selectedYear)}
+                </Typography>
+              </Box>
+            </Zoom>
+          </Grid>
+
+          <Grid item xs={6} sm={6} md={3}>
+            <Zoom in timeout={800}>
+              <Box sx={{ 
+                p: 3,
+                borderRadius: 4,
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s ease',
+                textAlign: 'center',
+                minHeight: 210,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  background: 'rgba(255,255,255,0.15)',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                }
+              }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2 
+                }}>
+                  <Savings sx={{ 
+                    fontSize: 32, 
+                    color: '#2196f3',
+                    filter: 'drop-shadow(0 2px 4px rgba(33, 150, 243, 0.3))'
+                  }} />
+                </Box>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: '#2196f3',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    mb: 1
+                  }}
+                >
+                  {t('home.savings')}
+                </Typography>
+                <Typography 
+                  variant="h4" 
+                  sx={{ 
+                    fontWeight: 900, 
+                    color: '#2196f3',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    mb: 1,
+                    fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' }
+                  }}
+                >
+                  <CurrencyFormatter amount={selectedMonthSaved} />
+                </Typography>
+                <LinearProgress 
+                  variant="determinate" 
+                  value={getProgressValue(selectedMonthSaved, selectedMonthIncome)} 
+                  sx={{ 
+                    mt: 1, 
+                    height: 6,
+                    borderRadius: 3,
+                    bgcolor: 'rgba(255,255,255,0.2)', 
+                    '& .MuiLinearProgress-bar': { 
+                      bgcolor: '#2196f3',
+                      borderRadius: 3
+                    } 
+                  }}
+                />
+              </Box>
+            </Zoom>
+          </Grid>
+
+          <Grid item xs={6} sm={6} md={3}>
+            <Zoom in timeout={900}>
+              <Box sx={{ 
+                p: 3,
+                borderRadius: 4,
+                background: 'rgba(255,255,255,0.1)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s ease',
+                textAlign: 'center',
+                minHeight: 210,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  background: 'rgba(255,255,255,0.15)',
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+                }
+              }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2 
+                }}>
+                  <AccountBalance sx={{ 
+                    fontSize: 32, 
+                    color: '#ff9800',
+                    filter: 'drop-shadow(0 2px 4px rgba(255, 152, 0, 0.3))'
+                  }} />
+                </Box>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: '#ff9800',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    mb: 1
+                  }}
+                >
+                  {t('home.forecasts')}
+                </Typography>
+                <Typography 
+                  variant="h4" 
+                  sx={{ 
+                    fontWeight: 900, 
+                    color: '#ff9800',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    mb: 1,
+                    fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' }
+                  }}
+                >
+                  <CurrencyFormatter amount={nextMonthProjected} />
+                </Typography>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    opacity: 0.8, 
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.9)'
+                  }}
+                >
+                  {getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
+                </Typography>
+              </Box>
+            </Zoom>
+          </Grid>
+        </Grid>
+
+        {/* Actions rapides modernes */}
+        <Paper sx={{ 
+          p: 3, 
+          mb: 4,
+          background: 'rgba(255,255,255,0.1)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: 4,
+          border: '1px solid rgba(255,255,255,0.2)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+          }
+        }}>
+          <Typography variant="h5" gutterBottom sx={{ 
+            fontWeight: 700, 
+            mb: 3,
+            color: 'white',
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          }}>
+            {t('home.quickActions')}
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={6} sm={3}>
+              <Button
+                component={RouterLink}
+                to="/action-plans"
+                variant="contained"
+                startIcon={<Assignment />}
+                fullWidth
+                sx={{ 
+                  py: 2,
+                  borderRadius: 3,
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 12px 35px rgba(102, 126, 234, 0.4)',
+                  }
+                }}
+              >
+                Plans d'actions
+              </Button>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Button
+                component={RouterLink}
+                to="/expenses"
+                variant="contained"
+                fullWidth
+                sx={{ 
+                  py: 2,
+                  borderRadius: 3,
+                  background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+                  boxShadow: '0 8px 25px rgba(244, 67, 54, 0.3)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 12px 35px rgba(244, 67, 54, 0.4)',
+                  }
+                }}
+              >
+                Dépenses
+              </Button>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Button
+                component={RouterLink}
+                to="/income"
+                variant="contained"
+                fullWidth
+                sx={{ 
+                  py: 2,
+                  borderRadius: 3,
+                  background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+                  boxShadow: '0 8px 25px rgba(76, 175, 80, 0.3)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 12px 35px rgba(76, 175, 80, 0.4)',
+                  }
+                }}
+              >
+                Revenus
+              </Button>
+            </Grid>
+            <Grid item xs={6} sm={3}>
+              <Button
+                component={RouterLink}
+                to="/analytics"
+                variant="contained"
+                fullWidth
+                sx={{ 
+                  py: 2,
+                  borderRadius: 3,
+                  background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                  boxShadow: '0 8px 25px rgba(33, 150, 243, 0.3)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 12px 35px rgba(33, 150, 243, 0.4)',
+                  }
+                }}
+              >
+                Analytics
+              </Button>
+            </Grid>
+          </Grid>
+        </Paper>
+
+        {/* Graphiques avec design moderne */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} md={8}>
+            <Paper sx={{ 
+              p: 3,
+              background: 'rgba(255,255,255,0.1)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: 4,
+              border: '1px solid rgba(255,255,255,0.2)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+              }
+            }}>
+              <Typography variant="h5" gutterBottom sx={{ 
+                fontWeight: 700, 
+                mb: 3,
+                color: 'white',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
+                {t('home.financialEvolution')}
+              </Typography>
+              <Box sx={{ height: 350 }}>
+                <Line data={lineData} options={lineOptions} />
+              </Box>
+            </Paper>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ 
+              p: 3,
+              background: 'rgba(255,255,255,0.1)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: 4,
+              border: '1px solid rgba(255,255,255,0.2)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+              }
+            }}>
+              <Typography variant="h5" gutterBottom sx={{ 
+                fontWeight: 700, 
+                mb: 3,
+                color: 'white',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
+                {t('home.expenseBreakdown')}
+              </Typography>
+              <Box sx={{ height: 350 }}>
+                <Doughnut data={doughnutData} options={chartOptions} />
+              </Box>
+            </Paper>
+          </Grid>
+        </Grid>
+
+        {/* Prévisions intelligentes avec design moderne */}
+        {isFeatureAvailable('aiAnalysis') && (
+          <Paper sx={{ 
+            p: 3, 
+            mb: 4,
+            background: 'rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 4,
+            border: '1px solid rgba(255,255,255,0.2)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+            }
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <Box sx={{ 
+                p: 1.5, 
+                borderRadius: 3, 
+                background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
+                mr: 2,
+                boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)'
+              }}>
+                <Analytics sx={{ color: 'white', fontSize: 28 }} />
+              </Box>
+              <Typography variant="h5" sx={{ 
+                fontWeight: 700,
+                color: 'white',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
+                Prévisions intelligentes
+              </Typography>
+              <Chip 
+                label={t('home.ai')} 
+                size="small" 
+                sx={{ 
+                  ml: 2,
+                  background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
+                  color: 'white',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)'
+                }}
+              />
+            </Box>
+            
+            <Alert severity="info" sx={{ 
+              mb: 3,
+              borderRadius: 3,
+              background: 'rgba(156, 39, 176, 0.1)',
+              border: '1px solid rgba(156, 39, 176, 0.2)',
+              color: 'white'
+            }}>
+              <AlertTitle sx={{ color: 'white' }}>Calcul intelligent</AlertTitle>
+              Ces prévisions utilisent l'IA pour analyser vos tendances et prédire vos finances du mois prochain.
+            </Alert>
+            
+            <Grid container spacing={3} sx={{ mb: 3 }}>
+              <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  p: 3, 
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(20px)',
+                  borderRadius: 4,
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                  transition: 'all 0.3s ease',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    background: 'rgba(255,255,255,0.15)',
+                    boxShadow: '0 12px 35px rgba(0,0,0,0.15)',
+                  }
+                }}>
+                  <Typography variant="h6" sx={{ 
+                    fontWeight: 600, 
+                    mb: 1,
+                    color: '#4caf50',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
+                    Revenus prévus
+                  </Typography>
+                  <Typography variant="h4" sx={{ 
+                    fontWeight: 900, 
+                    mb: 2,
+                    color: '#4caf50',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
+                    {forecast.income.toLocaleString()}€
+                  </Typography>
+                  <Typography variant="body2" sx={{ 
+                    mb: 1, 
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.9)'
+                  }}>
+                    {forecast.incomeTrend > 0 ? <><TrendingUpIcon sx={{ fontSize: 16, color: '#4caf50', mr: 0.5 }} />+</> : forecast.incomeTrend < 0 ? <><TrendingDownIcon sx={{ fontSize: 16, color: '#f44336', mr: 0.5 }} /></> : <><RemoveIcon sx={{ fontSize: 16, color: '#ff9800', mr: 0.5 }} /></>}
+                    {Math.abs(forecast.incomeTrend).toLocaleString()}€ vs ce mois
+                  </Typography>
+                  <Typography variant="caption" sx={{ 
+                    display: 'block', 
+                    opacity: 0.9,
+                    color: 'rgba(255,255,255,0.8)'
+                  }}>
+                    Confiance: {Math.round(forecast.incomeConfidence * 100)}%
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  p: 3, 
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(20px)',
+                  borderRadius: 4,
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                  transition: 'all 0.3s ease',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    background: 'rgba(255,255,255,0.15)',
+                    boxShadow: '0 12px 35px rgba(0,0,0,0.15)',
+                  }
+                }}>
+                  <Typography variant="h6" sx={{ 
+                    fontWeight: 600, 
+                    mb: 1,
+                    color: '#f44336',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
+                    Dépenses prévues
+                  </Typography>
+                  <Typography variant="h4" sx={{ 
+                    fontWeight: 900, 
+                    mb: 2,
+                    color: '#f44336',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
+                    {forecast.expenses.toLocaleString()}€
+                  </Typography>
+                  <Typography variant="body2" sx={{ 
+                    mb: 1, 
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.9)'
+                  }}>
+                    {forecast.expenseTrend > 0 ? <><TrendingUpIcon sx={{ fontSize: 16, color: '#f44336', mr: 0.5 }} />+</> : forecast.expenseTrend < 0 ? <><TrendingDownIcon sx={{ fontSize: 16, color: '#4caf50', mr: 0.5 }} /></> : <><RemoveIcon sx={{ fontSize: 16, color: '#ff9800', mr: 0.5 }} /></>}
+                    {Math.abs(forecast.expenseTrend).toLocaleString()}€ vs ce mois
+                  </Typography>
+                  <Typography variant="caption" sx={{ 
+                    display: 'block', 
+                    opacity: 0.9,
+                    color: 'rgba(255,255,255,0.8)'
+                  }}>
+                    Confiance: {Math.round(forecast.expenseConfidence * 100)}%
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  p: 3, 
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(20px)',
+                  borderRadius: 4,
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                  transition: 'all 0.3s ease',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    background: 'rgba(255,255,255,0.15)',
+                    boxShadow: '0 12px 35px rgba(0,0,0,0.15)',
+                  }
+                }}>
+                  <Typography variant="h6" sx={{ 
+                    fontWeight: 600, 
+                    mb: 1,
+                    color: '#2196f3',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
+                    Économies prévues
+                  </Typography>
+                  <Typography variant="h4" sx={{ 
+                    fontWeight: 900, 
+                    mb: 2,
+                    color: '#2196f3',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
+                    {forecast.balance.toLocaleString()}€
+                  </Typography>
+                  <Typography variant="body2" sx={{ 
+                    mb: 1, 
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.9)'
+                  }}>
+                    {forecast.balance > 0 ? <><CheckCircle sx={{ fontSize: 16, color: '#4caf50', mr: 0.5 }} />Prévision positive</> : <><Warning sx={{ fontSize: 16, color: '#ff9800', mr: 0.5 }} />Attention nécessaire</>}
+                  </Typography>
+                  <Typography variant="caption" sx={{ 
+                    display: 'block', 
+                    opacity: 0.9,
+                    color: 'rgba(255,255,255,0.8)'
+                  }}>
+                    Inclut les tendances saisonnières
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  p: 3, 
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(20px)',
+                  borderRadius: 4,
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                  transition: 'all 0.3s ease',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    background: 'rgba(255,255,255,0.15)',
+                    boxShadow: '0 12px 35px rgba(0,0,0,0.15)',
+                  }
+                }}>
+                  <Typography variant="h6" sx={{ 
+                    fontWeight: 600, 
+                    mb: 1,
+                    color: '#ff9800',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
+                    Taux d'épargne
+                  </Typography>
+                  <Typography variant="h4" sx={{ 
+                    fontWeight: 900, 
+                    mb: 2,
+                    color: '#ff9800',
+                    textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                  }}>
+                    {forecast.income > 0 ? Math.round((forecast.balance / forecast.income) * 100) : 0}%
+                  </Typography>
+                  <Typography variant="body2" sx={{ 
+                    mb: 1, 
+                    fontWeight: 500,
+                    color: 'rgba(255,255,255,0.9)'
+                  }}>
+                    Objectif recommandé: 20%
+                  </Typography>
+                  <Typography variant="caption" sx={{ 
+                    display: 'block', 
+                    opacity: 0.9,
+                    color: 'rgba(255,255,255,0.8)'
+                  }}>
+                    Basé sur les prévisions IA
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+            
+            {/* Détails du calcul amélioré */}
+            <Collapse in={true}>
+              <Box sx={{ 
+                mt: 3, 
+                p: 3, 
+                background: 'rgba(33, 150, 243, 0.05)',
+                borderRadius: 3,
+                border: '1px solid rgba(33, 150, 243, 0.1)'
+              }}>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, color: '#1976d2' }}>
+                  <Psychology sx={{ fontSize: 20, mr: 1, verticalAlign: 'middle' }} />
+                  Détails du calcul intelligent:
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      • Revenus: Moyenne pondérée des 3 derniers mois + ajustement tendance
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      • Dépenses: Analyse des tendances + ajustements saisonniers
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      • Pondération: 50% mois récent, 30% avant-dernier, 20% troisième
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      • Précision: Améliore avec plus de données historiques
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      • Volatilité: Mesure de la stabilité des données
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      • Confiance: Indicateur de fiabilité des prévisions
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Box>
+            </Collapse>
+          </Paper>
+        )}
+
+        {/* Message pour les utilisateurs gratuits - Prévisions intelligentes */}
+        {!hasPartialAI() && (
+          <Paper sx={{ 
+            p: 3, 
+            mb: 4,
+            background: 'linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(245, 124, 0, 0.1) 100%)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 4,
+            border: '1px solid rgba(255, 152, 0, 0.2)',
+            boxShadow: '0 8px 32px rgba(255, 152, 0, 0.1)'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <Box sx={{ 
+                p: 1.5, 
+                borderRadius: 3, 
+                background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                mr: 2,
+                boxShadow: '0 4px 12px rgba(255, 152, 0, 0.3)'
+              }}>
+                <AccountBalance sx={{ color: 'white', fontSize: 28 }} />
+              </Box>
+              <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                {t('home.upgradeForIntelligentForecasts')}
+              </Typography>
+              <Chip 
+                label={t('home.premium')} 
+                size="small" 
+                sx={{ 
+                  ml: 2,
+                  background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                  color: 'white',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(255, 152, 0, 0.3)'
+                }}
+              />
+            </Box>
+            <Typography variant="body1" sx={{ mb: 3, fontWeight: 500 }}>
+              {t('home.intelligentForecastsDescription')}
+            </Typography>
+            <Button 
+              variant="contained" 
+              sx={{
+                background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                borderRadius: 3,
+                px: 4,
+                py: 1.5,
+                fontWeight: 600,
+                boxShadow: '0 8px 25px rgba(255, 152, 0, 0.3)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 12px 35px rgba(255, 152, 0, 0.4)',
+                }
+              }}
+              onClick={() => navigate('/subscription')}
+              startIcon={<AccountBalance />}
+            >
+              {t('home.upgradeNow')}
+            </Button>
+          </Paper>
+        )}
+
+        {/* Recommandations intelligentes avec design moderne */}
+        {isFeatureAvailable('aiAnalysis') && recommendations.length > 0 && (
+          <Paper sx={{ 
+            p: 3, 
+            mb: 4,
+            background: 'rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 4,
+            border: '1px solid rgba(255,255,255,0.2)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+            }
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <Box sx={{ 
+                p: 1.5, 
+                borderRadius: 3, 
+                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                mr: 2,
+                boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
+              }}>
+                <Lightbulb sx={{ color: 'white', fontSize: 28 }} />
+              </Box>
+              <Typography variant="h5" sx={{ 
+                fontWeight: 700,
+                color: 'white',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
+                Recommandations intelligentes
+              </Typography>
+              <Chip 
+                label={t('home.ai')} 
+                size="small" 
+                sx={{ 
+                  ml: 2,
+                  background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                  color: 'white',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
+                }}
+              />
+              <Chip 
+                label={`${recommendations.length} conseils`}
+                size="small" 
+                sx={{ 
+                  ml: 2,
+                  background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
+                  color: 'white',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)'
+                }}
+              />
+            </Box>
+            
+            <Alert severity="info" sx={{ 
+              mb: 3,
+              borderRadius: 3,
+              background: 'rgba(33, 150, 243, 0.1)',
+              border: '1px solid rgba(33, 150, 243, 0.2)',
+              color: 'white'
+            }}>
+              <AlertTitle sx={{ color: 'white' }}>Conseils personnalisés</AlertTitle>
+              Ces recommandations sont basées sur l'analyse de vos données financières et vos tendances.
+            </Alert>
+            
+            <Grid container spacing={3}>
+              {recommendations.slice(0, 4).map((recommendation, index) => (
+                <Grid item xs={12} sm={6} md={6} key={index}>
+                  <Box sx={{ 
+                    p: 3, 
+                    background: 'rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(20px)',
+                    borderRadius: 4,
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
+                    transition: 'all 0.3s ease',
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      background: 'rgba(255,255,255,0.15)',
+                      boxShadow: '0 12px 35px rgba(0,0,0,0.15)',
+                    }
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
+                      <Box sx={{ 
+                        p: 1, 
+                        borderRadius: 2, 
+                        background: recommendation.type === 'success' ? 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)' :
+                                   recommendation.type === 'warning' ? 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)' :
+                                   recommendation.type === 'error' ? 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)' :
+                                   'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                        mr: 2,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+                      }}>
+                        {recommendation.type === 'success' ? <CheckCircle sx={{ color: 'white', fontSize: 20 }} /> :
+                         recommendation.type === 'warning' ? <Warning sx={{ color: 'white', fontSize: 20 }} /> :
+                         recommendation.type === 'error' ? <Warning sx={{ color: 'white', fontSize: 20 }} /> :
+                         <Info sx={{ color: 'white', fontSize: 20 }} />}
+                      </Box>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="h6" sx={{ 
+                          fontWeight: 600,
+                          color: 'white',
+                          textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                          mb: 1
+                        }}>
+                          {recommendation.title}
+                        </Typography>
+                        <Typography variant="body2" sx={{ 
+                          color: 'rgba(255,255,255,0.9)',
+                          mb: 2,
+                          lineHeight: 1.5
+                        }}>
+                          {recommendation.message}
+                        </Typography>
+                        <Button
+                          variant="contained"
+                          size="small"
+                          onClick={() => handleRecommendationAction(recommendation.actionType, recommendation)}
+                          sx={{
+                            background: recommendation.type === 'success' ? 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)' :
+                                       recommendation.type === 'warning' ? 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)' :
+                                       recommendation.type === 'error' ? 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)' :
+                                       'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                            '&:hover': {
+                              background: recommendation.type === 'success' ? 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)' :
+                                         recommendation.type === 'warning' ? 'linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)' :
+                                         recommendation.type === 'error' ? 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)' :
+                                         'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
+                            },
+                            borderRadius: 2,
+                            px: 2,
+                            py: 0.5,
+                            fontSize: '0.75rem',
+                            fontWeight: 600
+                          }}
+                        >
+                          {recommendation.action}
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+            
+            {recommendations.length > 4 && (
+              <Box sx={{ mt: 3, textAlign: 'center' }}>
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate('/action-plans')}
+                  sx={{
+                    borderColor: 'rgba(255,255,255,0.3)',
+                    color: 'white',
+                    '&:hover': {
+                      borderColor: 'white',
+                      background: 'rgba(255,255,255,0.1)'
+                    }
+                  }}
+                >
+                  Voir toutes les recommandations ({recommendations.length})
+                </Button>
+              </Box>
+            )}
+          </Paper>
+        )}
+
+        {/* Message pour les utilisateurs gratuits - Recommandations IA */}
+        {!isFeatureAvailable('aiAnalysis') && (
+          <Paper sx={{ 
+            p: 3, 
+            mb: 4,
+            background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(25, 118, 210, 0.1) 100%)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 4,
+            border: '1px solid rgba(33, 150, 243, 0.2)',
+            boxShadow: '0 8px 32px rgba(33, 150, 243, 0.1)'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <Box sx={{ 
+                p: 1.5, 
+                borderRadius: 3, 
+                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                mr: 2,
+                boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
+              }}>
+                <Lightbulb sx={{ color: 'white', fontSize: 28 }} />
+              </Box>
+              <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                {t('home.upgradeForAI')}
+              </Typography>
+              <Chip 
+                label={t('home.premium')} 
+                size="small" 
+                sx={{ 
+                  ml: 2,
+                  background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                  color: 'white',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
+                }}
+              />
+            </Box>
+            <Typography variant="body1" sx={{ mb: 3, fontWeight: 500 }}>
+              {t('home.aiFeaturesDescription')}
+            </Typography>
+            <Button 
+              variant="contained" 
+              sx={{
+                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                borderRadius: 3,
+                px: 4,
+                py: 1.5,
+                fontWeight: 600,
+                boxShadow: '0 8px 25px rgba(33, 150, 243, 0.3)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 12px 35px rgba(33, 150, 243, 0.4)',
+                }
+              }}
+              onClick={() => navigate('/subscription')}
+              startIcon={<Star />}
+            >
+              {t('home.upgradeNow')}
+            </Button>
+          </Paper>
+        )}
+
+        {/* Analyse détaillée par catégorie - AMÉLIORÉE */}
+        {isFeatureAvailable('basicAnalytics') && (
+          <Paper sx={{ 
+            p: 3, 
+            mb: 4,
+            background: 'rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 4,
+            border: '1px solid rgba(255,255,255,0.2)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              transform: 'translateY(-4px)',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+            }
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+              <Analytics sx={{ 
+                mr: 2, 
+                color: '#2196f3',
+                fontSize: 28
+              }} />
+              <Typography variant="h5" sx={{ 
+                fontWeight: 700,
+                color: 'white',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
+                {t('home.categoryAnalysis')}
+              </Typography>
+              <Chip 
+                label={t('home.intelligent')} 
+                size="small" 
+                sx={{ 
+                  ml: 2,
+                  background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                  color: 'white',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
+                }}
+              />
+            </Box>
+            
+            {categoryForecastAnalysis.length > 0 ? (
+              <Grid container spacing={2}>
+                {categoryForecastAnalysis.map((cat, index) => (
+                  <Grid item xs={12} sm={6} md={4} key={index}>
+                    <Card sx={{ 
+                      p: 2,
+                      background: 'rgba(255,255,255,0.1)',
+                      backdropFilter: 'blur(20px)',
+                      borderRadius: 3,
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        background: 'rgba(255,255,255,0.15)',
+                        boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+                      }
+                    }}>
+                      <CardContent sx={{ p: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                          <Typography variant="h6" sx={{ 
+                            fontWeight: 600,
+                            color: 'white',
+                            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                          }}>
+                            {cat.category}
+                          </Typography>
+                          <Chip 
+                            label={`${cat.budgetPercentage || 0}%`}
+                            size="small" 
+                            sx={{
+                              background: (cat.budgetPercentage || 0) > 30 
+                                ? 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)'
+                                : 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+                              color: 'white',
+                              fontWeight: 600,
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                            }}
+                          />
+                        </Box>
+                        
+                        {/* Montant actuel */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                          <Typography variant="body2" sx={{ 
+                            color: 'rgba(255,255,255,0.8)'
+                          }}>
+                            {t('home.current')}:
+                          </Typography>
+                          <Typography variant="body2" sx={{ 
+                            fontWeight: 'bold',
+                            color: '#f44336',
+                            textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                          }}>
+                            {(cat.current || 0).toLocaleString()}€
+                          </Typography>
+                        </Box>
+                        
+                        {/* Prévision */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                          <Typography variant="body2" sx={{ 
+                            color: 'rgba(255,255,255,0.8)'
+                          }}>
+                            {t('home.forecast')}:
+                          </Typography>
+                          <Typography variant="body2" sx={{ 
+                            fontWeight: 'bold',
+                            color: '#ff9800',
+                            textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                          }}>
+                            {(cat.forecast || 0).toLocaleString()}€
+                          </Typography>
+                        </Box>
+                        
+                        {/* Changement prévu */}
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                          <Typography variant="body2" sx={{ 
+                            color: 'rgba(255,255,255,0.8)'
+                          }}>
+                            Changement:
+                          </Typography>
+                          <Typography variant="body2" sx={{ 
+                            fontWeight: 'bold',
+                            color: cat.trend > 0 ? '#f44336' : '#4caf50',
+                            textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                          }}>
+                            {cat.trend > 0 ? '+' : ''}{(cat.trend || 0).toLocaleString()}€
+                          </Typography>
+                        </Box>
+                        
+                        {/* Barre de progression */}
+                        <LinearProgress 
+                          variant="determinate" 
+                          value={Math.min(cat.budgetPercentage || 0, 100)} 
+                          sx={{ 
+                            height: 8, 
+                            borderRadius: 4,
+                            bgcolor: 'rgba(255,255,255,0.2)',
+                            '& .MuiLinearProgress-bar': { 
+                              bgcolor: (cat.budgetPercentage || 0) > 30 ? '#f44336' : '#4caf50',
+                              borderRadius: 4
+                            }
+                          }} 
+                        />
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            ) : (
+              <Box sx={{ textAlign: 'center', py: 3 }}>
+                <Typography variant="body1" sx={{ 
+                  color: 'rgba(255,255,255,0.8)'
+                }}>
+                  {t('home.noCategoryData')}
+                </Typography>
+                <Typography variant="body2" sx={{ 
+                  color: 'rgba(255,255,255,0.6)'
+                }}>
+                  {t('home.addExpensesToSeeAnalysis')}
+                </Typography>
+              </Box>
+            )}
+          </Paper>
+        )}
+
+        {/* Message pour les utilisateurs gratuits - Analytics */}
+        {!isFeatureAvailable('basicAnalytics') && (
+          <Paper sx={{ 
+            p: 3, 
+            mb: 4,
+            background: 'rgba(255,255,255,0.1)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 4,
+            border: '1px solid rgba(255,255,255,0.2)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <Analytics sx={{ mr: 1, color: '#2196f3' }} />
+              <Typography variant="h6" sx={{ 
+                color: 'white',
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
+                {t('home.upgradeForAnalytics')}
+              </Typography>
+              <Chip 
+                label={t('home.premium')} 
+                size="small" 
+                sx={{ 
+                  ml: 1,
+                  background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                  color: 'white',
+                  fontWeight: 600
+                }}
+              />
+            </Box>
+            <Typography variant="body2" sx={{ 
+              mb: 2,
+              color: 'rgba(255,255,255,0.8)'
+            }}>
+              {t('home.analyticsFeaturesDescription')}
+            </Typography>
+            <Button 
+              variant="contained" 
+              sx={{
+                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+                borderRadius: 3,
+                px: 4,
+                py: 1.5,
+                fontWeight: 600,
+                boxShadow: '0 8px 25px rgba(33, 150, 243, 0.3)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 12px 35px rgba(33, 150, 243, 0.4)',
+                }
+              }}
+              onClick={() => navigate('/subscription')}
+              startIcon={<Analytics />}
+            >
+              {t('home.upgradeNow')}
+            </Button>
+          </Paper>
+        )}
+
+        {/* Transactions récentes avec design moderne */}
+        <Paper sx={{ 
+          p: 3,
+          background: 'rgba(255,255,255,0.1)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: 4,
+          border: '1px solid rgba(255,255,255,0.2)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+          transition: 'all 0.3s ease',
+          '&:hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+          }
+        }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Typography variant="h5" sx={{ 
+              fontWeight: 700,
+              color: 'white',
+              textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+            }}>
+              {t('home.recentTransactions')}
+            </Typography>
+            <Button
+              component={RouterLink}
+              to="/history"
+              size="small"
+              endIcon={<MoreVert />}
+              sx={{
+                borderRadius: 2,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                fontWeight: 600,
+                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 20px rgba(102, 126, 234, 0.4)',
+                }
+              }}
+            >
+              {t('home.seeAll')}
+            </Button>
+          </Box>
+          
+          <List sx={{ p: 0 }}>
+            {recentTransactions.map((transaction, index) => (
+              <React.Fragment key={transaction.id}>
+                <ListItem sx={{ 
+                  p: 2,
+                  borderRadius: 2,
+                  mb: 1,
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    background: 'rgba(255,255,255,0.15)',
+                    transform: 'translateX(8px)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  }
+                }}>
+                  <ListItemAvatar>
+                    <Avatar sx={{ 
+                      bgcolor: transaction.type === 'income' ? '#4caf50' : '#f44336',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                      width: 48,
+                      height: 48
+                    }}>
+                      {transaction.icon}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={
+                      <Typography variant="h6" sx={{ 
+                        fontWeight: 600,
+                        color: 'white',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                      }}>
+                        {transaction.category}
+                      </Typography>
+                    }
+                    secondary={
+                      <Typography variant="body2" sx={{ 
+                        fontWeight: 500,
+                        color: 'rgba(255,255,255,0.8)'
+                      }}>
+                        {transaction.date}
+                      </Typography>
+                    }
+                  />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Typography 
+                      variant="h6" 
+                      color={transaction.type === 'income' ? '#4caf50' : '#f44336'}
+                      sx={{ 
+                        fontWeight: 900,
+                        fontSize: '1.2rem',
+                        textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                      }}
+                    >
+                      {transaction.type === 'income' ? '+' : '-'}{(transaction.amount || 0).toLocaleString()}€
+                    </Typography>
+                    <Chip 
+                      label={transaction.type === 'income' ? t('home.income') : t('home.expense')} 
+                      size="small" 
+                      sx={{
+                        background: transaction.type === 'income' 
+                          ? 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)'
+                          : 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+                        color: 'white',
+                        fontWeight: 600,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+                      }}
+                    />
+                  </Box>
+                </ListItem>
+                {index < recentTransactions.length - 1 && (
+                  <Divider sx={{ 
+                    my: 1,
+                    opacity: 0.3,
+                    borderColor: 'rgba(255,255,255,0.2)'
+                  }} />
+                )}
+              </React.Fragment>
+            ))}
+          </List>
+        </Paper>
+      </Box>
+
+      {/* Bouton QuickAdd flottant avec design moderne */}
+      <Fab
+        color="primary"
+        aria-label="quickadd"
+        onClick={() => setShowQuickAdd(true)}
+        sx={{
+          position: 'fixed',
+          bottom: 80,
+          right: 24,
+          zIndex: 1000,
+          background: 'rgba(255,255,255,0.15)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.3)',
+          color: 'white',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.1)',
+          width: 64,
+          height: 64,
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          '&:hover': {
+            background: 'rgba(255,255,255,0.25)',
+            transform: 'scale(1.1) translateY(-2px)',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.2)',
+          },
+          '&:active': {
+            transform: 'scale(0.95)',
+          },
+          '& .MuiFab-label': {
+            fontSize: 0,
+          },
+        }}
+      >
+        <Add sx={{ 
+          fontSize: 28,
+          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
+          transition: 'all 0.3s ease'
+        }} />
+      </Fab>
+      {/* Popup QuickAdd */}
+      <QuickAdd open={showQuickAdd} onClose={() => setShowQuickAdd(false)} />
     </Box>
   );
 };
