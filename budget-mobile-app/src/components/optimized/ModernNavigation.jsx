@@ -86,7 +86,7 @@ import { useStore } from '../../store';
 
 // Composant pour les cartes d'action dans le menu "Plus"
 const ActionCard = memo(({ icon: Icon, label, description, onClick, color = '#2196f3', badge, premium = false }) => (
-  <Zoom in timeout={300}>
+  <Zoom in timeout={300} mountOnEnter unmountOnExit>
     <Card
       sx={{
         cursor: 'pointer',
@@ -182,7 +182,7 @@ const ActionCard = memo(({ icon: Icon, label, description, onClick, color = '#21
 
 // Composant pour les éléments de liste dans le menu "Plus"
 const ListAction = memo(({ icon: Icon, label, description, onClick, color = '#2196f3', badge, premium = false }) => (
-  <Fade in timeout={300}>
+  <Fade in timeout={300} mountOnEnter unmountOnExit>
     <ListItemButton
       onClick={onClick}
       sx={{
@@ -405,7 +405,7 @@ const ModernNavigation = memo(() => {
       </BottomNavigation>
 
       {/* Bouton d'action rapide */}
-      <Zoom in timeout={300}>
+      <Zoom in timeout={300} mountOnEnter unmountOnExit>
         <Fab
           sx={{
             position: 'fixed',

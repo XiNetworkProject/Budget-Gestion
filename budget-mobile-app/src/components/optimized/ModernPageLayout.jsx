@@ -58,7 +58,7 @@ export const ModernMetricCard = memo(({
   };
 
   return (
-    <Zoom in timeout={300}>
+    <Zoom in timeout={300} mountOnEnter unmountOnExit>
       <Card
         onClick={onClick}
         sx={{
@@ -167,7 +167,7 @@ export const ModernSection = memo(({
   loading = false,
   premium = false
 }) => (
-  <Fade in timeout={400}>
+  <Fade in timeout={400} mountOnEnter unmountOnExit>
     <Box sx={{ mb: 4 }}>
       <Box sx={{ 
         display: 'flex', 
@@ -230,7 +230,7 @@ export const ModernList = memo(({
   emptyIcon: EmptyIcon,
   loading = false
 }) => (
-  <Fade in timeout={500}>
+  <Fade in timeout={500} mountOnEnter unmountOnExit>
     <Box>
       {loading ? (
         <Box sx={{ p: 3, textAlign: 'center' }}>
@@ -242,7 +242,7 @@ export const ModernList = memo(({
       ) : items && items.length > 0 ? (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {items.map((item, index) => (
-            <Zoom in timeout={300 + index * 100} key={item.id || index}>
+            <Zoom in timeout={300 + index * 100} key={item.id || index} mountOnEnter unmountOnExit>
               {renderItem(item, index)}
             </Zoom>
           ))}

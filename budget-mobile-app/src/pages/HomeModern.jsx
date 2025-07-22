@@ -266,7 +266,7 @@ const HomeModern = () => {
       <ModernSection title="Actions rapides" subtitle="Accédez rapidement aux fonctionnalités principales">
         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', justifyContent: 'center' }}>
           {quickActions.map((action, index) => (
-            <Zoom in timeout={300 + index * 100} key={action.label}>
+            <Zoom in timeout={300 + index * 100} key={action.label} mountOnEnter unmountOnExit>
               <QuickActionButton
                 icon={action.icon}
                 label={action.label}
@@ -352,7 +352,7 @@ const HomeModern = () => {
           <Grid container spacing={3}>
             {premiumFeatures.map((feature, index) => (
               <Grid item xs={12} md={4} key={feature.label}>
-                <Zoom in timeout={400 + index * 100}>
+                <Zoom in timeout={400 + index * 100} mountOnEnter unmountOnExit>
                   <Box
                     sx={{
                       p: 3,
