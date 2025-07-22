@@ -20,6 +20,7 @@
     "start:optimized": "node server/api.js --optimized",
     "performance:test": "node scripts/performance-test.js",
     "performance:analyze": "node scripts/analyze-performance.js",
+    "debug:connection": "node scripts/debug-connection.js",
     "optimize": "npm run build:optimized && npm run performance:test",
     "clean": "rm -rf dist node_modules/.vite",
     "clean:all": "rm -rf dist node_modules package-lock.json && npm install"

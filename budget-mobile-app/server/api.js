@@ -220,17 +220,30 @@ app.post('/api/budget', verifyAuth, async (req, res) => {
 app.get('/api/budget/:userId', verifyAuth, async (req, res) => {
   try {
     const paramUserId = req.params.userId;
-    if (req.user.id !== paramUserId) {
-      return res.status(403).json({ error: 'Forbidden' });
+    const authenticatedUserId = req.user.id;
+    
+    console.log('=== RÉCUPÉRATION DU BUDGET ===');
+    console.log('userId demandé:', paramUserId);
+    console.log('userId authentifié:', authenticatedUserId);
+    console.log('Correspondance:', paramUserId === authenticatedUserId);
+    
+    if (authenticatedUserId !== paramUserId) {
+      console.error('Accès interdit: userId ne correspond pas');
+      return res.status(403).json({ error: 'Forbidden - userId mismatch' });
     }
+    
     const userId = paramUserId;
-    console.log('=== Récupération du budget ===');
-    console.log('userId:', userId);
+    console.log('Recherche dans la collection budgets pour userId:', userId);
 
     const data = await db.collection('budgets').findOne({ userId });
     console.log('Données trouvées:', data ? 'Oui' : 'Non');
     if (data) {
       console.log('Structure des données:', Object.keys(data));
+      console.log('Nombre de dépenses:', data.expenses?.length || 0);
+      console.log('Nombre de revenus:', data.incomeTransactions?.length || 0);
+      console.log('Nombre de transactions:', data.transactions?.length || 0);
+    } else {
+      console.log('Aucune donnée trouvée pour cet utilisateur');
     }
 
     res.json(data || {});
@@ -380,6 +393,50 @@ app.get('/api/stripe/test', (req, res) => {
     premiumUrl: STRIPE_CONFIG.PLANS.PREMIUM.checkoutUrl,
     proUrl: STRIPE_CONFIG.PLANS.PRO.checkoutUrl
   });
+});
+
+// Route de debug pour vérifier les données MongoDB
+app.get('/api/debug/budgets', async (req, res) => {
+  try {
+    console.log('=== DEBUG BUDGETS MONGODB ===');
+    
+    if (!db) {
+      return res.status(503).json({ 
+        error: 'Database not connected',
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    // Lister tous les budgets
+    const budgets = await db.collection('budgets').find({}).toArray();
+    console.log('Nombre total de budgets:', budgets.length);
+    
+    const budgetsInfo = budgets.map(budget => ({
+      userId: budget.userId,
+      email: budget.userProfile?.email || 'N/A',
+      expensesCount: budget.expenses?.length || 0,
+      incomeCount: budget.incomeTransactions?.length || 0,
+      transactionsCount: budget.transactions?.length || 0,
+      categoriesCount: budget.categories?.length || 0,
+      createdAt: budget.createdAt,
+      updatedAt: budget.updatedAt
+    }));
+    
+    console.log('Informations des budgets:', budgetsInfo);
+    
+    res.json({
+      totalBudgets: budgets.length,
+      budgets: budgetsInfo,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('Erreur lors du debug des budgets:', error);
+    res.status(500).json({ 
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Route de test pour vérifier la configuration Stripe

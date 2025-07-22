@@ -15,14 +15,13 @@ const Savings = lazy(() => import('./pages/Savings'));
 const Debts = lazy(() => import('./pages/Debts'));
 
 const Analytics = lazy(() => import('./pages/Analytics'));
-const AIDashboard = lazy(() => import('./components/optimized/AIDashboard'));
-const Gamification = lazy(() => import('./components/optimized/GamificationSystem'));
 const History = lazy(() => import('./pages/History'));
 const Settings = lazy(() => import('./pages/Settings'));
 const ActionPlans = lazy(() => import('./pages/ActionPlans'));
 const Subscription = lazy(() => import('./pages/Subscription'));
 const Login = lazy(() => import('./components/Login'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
+const DebugConnection = lazy(() => import('./components/DebugConnection'));
 
 
 // Composant de fallback optimisé
@@ -117,24 +116,6 @@ const AppRoutesOptimized = () => {
             } 
           />
           <Route 
-            path="ai-dashboard" 
-            element={
-              <LazyPage 
-                component={AIDashboard} 
-                fallbackMessage="Chargement du dashboard IA..." 
-              />
-            } 
-          />
-          <Route 
-            path="gamification" 
-            element={
-              <LazyPage 
-                component={Gamification} 
-                fallbackMessage="Chargement de la gamification..." 
-              />
-            } 
-          />
-          <Route 
             path="history" 
             element={
               <LazyPage 
@@ -189,6 +170,17 @@ const AppRoutesOptimized = () => {
             <LazyPage 
               component={Onboarding} 
               fallbackMessage="Chargement de l'onboarding..." 
+            />
+          } 
+        />
+        
+        {/* Route de debug temporaire */}
+        <Route 
+          path="debug" 
+          element={
+            <LazyPage 
+              component={DebugConnection} 
+              fallbackMessage="Chargement du debug..." 
             />
           } 
         />
