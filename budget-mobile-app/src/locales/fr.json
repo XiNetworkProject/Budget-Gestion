@@ -1041,6 +1041,7 @@
     "amount": "Montant",
     "category": "Catégorie",
     "date": "Date",
+    "recurring": "Récurrent",
     "allFieldsRequired": "Tous les champs sont requis",
     "added": "Transaction ajoutée avec succès",
     "updated": "Transaction mise à jour avec succès",
