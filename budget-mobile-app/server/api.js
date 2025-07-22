@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { OAuth2Client } from 'google-auth-library';
 import Stripe from 'stripe';
+import { securityMiddleware, corsConfig } from './middleware/security.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -24,8 +25,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Configuration CORS
-app.use(cors());
+// Configuration CORS avec le middleware de sécurité
+app.use(cors(corsConfig));
+
+// Middleware de sécurité global
+app.use(securityMiddleware);
 
 // Middleware pour parser le JSON
 app.use(express.json());
@@ -184,6 +188,19 @@ app.get('/health', async (req, res) => {
       error: error.message
     });
   }
+});
+
+// Test CORS endpoint
+app.get('/api/cors-test', (req, res) => {
+  res.json({
+    message: 'CORS test successful',
+    timestamp: new Date().toISOString(),
+    headers: {
+      'Cross-Origin-Opener-Policy': res.getHeader('Cross-Origin-Opener-Policy'),
+      'Cross-Origin-Embedder-Policy': res.getHeader('Cross-Origin-Embedder-Policy'),
+      'Cross-Origin-Resource-Policy': res.getHeader('Cross-Origin-Resource-Policy')
+    }
+  });
 });
 
 // Routes API
