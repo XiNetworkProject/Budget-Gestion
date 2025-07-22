@@ -99,29 +99,59 @@ const IncomeOptimized = () => {
 
   // Données pour les graphiques
   const chartData = useMemo(() => {
-    const categoryData = Object.entries(stats.byCategory).map(([category, amount]) => ({
-      category,
-      amount
-    })).sort((a, b) => b.amount - a.amount).slice(0, 5);
+    // Filtrer les catégories valides et non-undefined
+    const validCategoryData = Object.entries(stats.byCategory)
+      .filter(([category, amount]) => category && category !== 'undefined' && amount > 0)
+      .map(([category, amount]) => ({
+        category: category || 'Autre',
+        amount: parseFloat(amount) || 0
+      }))
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 5);
+
+    // Si aucune donnée valide, afficher un message
+    if (validCategoryData.length === 0) {
+      return {
+        doughnut: {
+          labels: ['Aucune donnée'],
+          datasets: [{
+            data: [1],
+            backgroundColor: ['rgba(255, 255, 255, 0.3)'],
+            borderWidth: 2,
+            borderColor: 'rgba(255, 255, 255, 0.8)'
+          }]
+        },
+        bar: {
+          labels: ['Aucune donnée'],
+          datasets: [{
+            label: t('income.amount'),
+            data: [0],
+            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+            borderColor: 'rgba(255, 255, 255, 0.5)',
+            borderWidth: 1
+          }]
+        }
+      };
+    }
 
     return {
       doughnut: {
-        labels: categoryData.map(d => d.category),
+        labels: validCategoryData.map(d => d.category),
         datasets: [{
-          data: categoryData.map(d => d.amount),
+          data: validCategoryData.map(d => d.amount),
           backgroundColor: [
             '#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#607D8B',
             '#795548', '#FF5722', '#00BCD4', '#8BC34A', '#FFC107'
-          ],
+          ].slice(0, validCategoryData.length),
           borderWidth: 2,
           borderColor: 'rgba(255, 255, 255, 0.8)'
         }]
       },
       bar: {
-        labels: categoryData.map(d => d.category),
+        labels: validCategoryData.map(d => d.category),
         datasets: [{
           label: t('income.amount'),
-          data: categoryData.map(d => d.amount),
+          data: validCategoryData.map(d => d.amount),
           backgroundColor: 'rgba(76, 175, 80, 0.8)',
           borderColor: '#4CAF50',
           borderWidth: 1

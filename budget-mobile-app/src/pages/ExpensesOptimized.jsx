@@ -99,29 +99,59 @@ const ExpensesOptimized = () => {
 
   // Données pour les graphiques
   const chartData = useMemo(() => {
-    const categoryData = Object.entries(stats.byCategory).map(([category, amount]) => ({
-      category,
-      amount
-    })).sort((a, b) => b.amount - a.amount).slice(0, 5);
+    // Filtrer les catégories valides et non-undefined
+    const validCategoryData = Object.entries(stats.byCategory)
+      .filter(([category, amount]) => category && category !== 'undefined' && amount > 0)
+      .map(([category, amount]) => ({
+        category: category || 'Autre',
+        amount: parseFloat(amount) || 0
+      }))
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 5);
+
+    // Si aucune donnée valide, afficher un message
+    if (validCategoryData.length === 0) {
+      return {
+        doughnut: {
+          labels: ['Aucune donnée'],
+          datasets: [{
+            data: [1],
+            backgroundColor: ['rgba(255, 255, 255, 0.3)'],
+            borderWidth: 2,
+            borderColor: 'rgba(255, 255, 255, 0.8)'
+          }]
+        },
+        bar: {
+          labels: ['Aucune donnée'],
+          datasets: [{
+            label: t('expenses.amount'),
+            data: [0],
+            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+            borderColor: 'rgba(255, 255, 255, 0.5)',
+            borderWidth: 1
+          }]
+        }
+      };
+    }
 
     return {
       doughnut: {
-        labels: categoryData.map(d => d.category),
+        labels: validCategoryData.map(d => d.category),
         datasets: [{
-          data: categoryData.map(d => d.amount),
+          data: validCategoryData.map(d => d.amount),
           backgroundColor: [
             '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
             '#DDA0DD', '#FF8A80', '#90A4AE', '#FFB74D', '#81C784'
-          ],
+          ].slice(0, validCategoryData.length),
           borderWidth: 2,
           borderColor: 'rgba(255, 255, 255, 0.8)'
         }]
       },
       bar: {
-        labels: categoryData.map(d => d.category),
+        labels: validCategoryData.map(d => d.category),
         datasets: [{
           label: t('expenses.amount'),
-          data: categoryData.map(d => d.amount),
+          data: validCategoryData.map(d => d.amount),
           backgroundColor: 'rgba(255, 107, 107, 0.8)',
           borderColor: '#FF6B6B',
           borderWidth: 1
