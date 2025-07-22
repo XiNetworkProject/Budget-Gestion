@@ -217,19 +217,50 @@ const HomeOptimized = () => {
 
   // Fonction de débogage pour tester les calculs de dates
   const debugDateCalculations = useCallback(() => {
-    console.log('=== DÉBOGAGE DES CALCULS DE DATES ===');
-    console.log('Mois sélectionné:', selectedMonth, 'Année sélectionnée:', selectedYear);
+    console.log('=== DÉBOGAGE HOMEOPTIMIZED ===');
+    console.log('Mois/Année sélectionnés:', selectedMonth, selectedYear);
+    console.log('Total revenus dans le store:', incomeTransactions.length);
+    console.log('Total dépenses dans le store:', expenses.length);
     
-    console.log('=== DÉPENSES ===');
-    expenses.forEach((expense, index) => {
-      const isInMonth = isDateInSelectedMonth(expense.date);
-      console.log(`Dépense ${index}: ${expense.category} - ${expense.amount}€ - Date: ${expense.date} -> InMonth: ${isInMonth}`);
-    });
+    // Afficher quelques exemples de données
+    if (incomeTransactions.length > 0) {
+      console.log('Exemple revenu:', incomeTransactions[0]);
+    }
+    if (expenses.length > 0) {
+      console.log('Exemple dépense:', expenses[0]);
+    }
     
-    console.log('=== REVENUS ===');
-    incomeTransactions.forEach((income, index) => {
-      const isInMonth = isDateInSelectedMonth(income.date);
-      console.log(`Revenu ${index}: ${income.type} - ${income.amount}€ - Date: ${income.date} -> InMonth: ${isInMonth}`);
+    // Calculer et afficher les données du mois actuel
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    console.log('Mois actuel:', currentMonth, currentYear);
+    
+    const currentMonthIncome = incomeTransactions
+      .filter(t => {
+        try {
+          const date = new Date(t.date);
+          return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+        } catch (e) {
+          return false;
+        }
+      })
+      .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+    
+    const currentMonthExpenses = expenses
+      .filter(e => {
+        try {
+          const date = new Date(e.date);
+          return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+        } catch (e) {
+          return false;
+        }
+      })
+      .reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+    
+    console.log('Données du mois actuel:', {
+      revenus: currentMonthIncome,
+      depenses: currentMonthExpenses,
+      economies: currentMonthIncome - currentMonthExpenses
     });
   }, [selectedMonth, selectedYear, expenses, incomeTransactions]);
 
@@ -284,65 +315,60 @@ const HomeOptimized = () => {
 
   // Fonction pour vérifier si une date correspond au mois sélectionné
   const isDateInSelectedMonth = useCallback((dateString) => {
-    if (!dateString) {
-      console.warn('Date vide dans isDateInSelectedMonth');
-      return false;
-    }
+    if (!dateString) return false;
     
     try {
-      const date = parseDate(dateString);
-      const isInMonth = date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
-      
-      console.log(`Vérification date: ${dateString} -> ${date.toISOString()} -> Mois: ${date.getMonth()}/${selectedMonth}, Année: ${date.getFullYear()}/${selectedYear} -> InMonth: ${isInMonth}`);
-      
-      return isInMonth;
+      const date = new Date(dateString);
+      return date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
     } catch (error) {
-      console.error('Erreur dans isDateInSelectedMonth:', error, 'Date:', dateString);
       return false;
     }
-  }, [selectedMonth, selectedYear, parseDate]);
+  }, [selectedMonth, selectedYear]);
 
   // Calculer les données du mois sélectionné
   const selectedMonthData = useMemo(() => {
-    console.log('=== CALCUL DES DONNÉES DU MOIS ===');
-    console.log('Mois sélectionné:', selectedMonth, 'Année sélectionnée:', selectedYear);
-    console.log('Transactions de revenus:', incomeTransactions.length);
-    console.log('Dépenses:', expenses.length);
-    
+    // Fonction simplifiée pour vérifier si une date est dans le mois sélectionné
+    const isInSelectedMonth = (dateString) => {
+      if (!dateString) return false;
+      try {
+        const date = new Date(dateString);
+        return date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
+      } catch (error) {
+        return false;
+      }
+    };
+
     // Calculer les revenus du mois sélectionné
     const selectedMonthIncomeTransactions = incomeTransactions
-      .filter(t => {
-        const isInMonth = isDateInSelectedMonth(t.date);
-        console.log(`Revenu: ${t.type} - ${t.amount}€ - Date: ${t.date} -> InMonth: ${isInMonth}`);
-        return isInMonth;
-      })
+      .filter(t => isInSelectedMonth(t.date))
       .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
     
     // Calculer les dépenses du mois sélectionné
     const selectedMonthExpenses = expenses
-      .filter(e => {
-        const isInMonth = isDateInSelectedMonth(e.date);
-        console.log(`Dépense: ${e.category} - ${e.amount}€ - Date: ${e.date} -> InMonth: ${isInMonth}`);
-        return isInMonth;
-      })
+      .filter(e => isInSelectedMonth(e.date))
       .reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
     
     // Calculer les économies du mois sélectionné
     const selectedMonthSaved = selectedMonthIncomeTransactions - selectedMonthExpenses;
 
-    console.log('Résultats:', {
-      income: selectedMonthIncomeTransactions,
-      expenses: selectedMonthExpenses,
-      saved: selectedMonthSaved
+    // Debug simple
+    console.log('HomeOptimized - Données du mois:', {
+      mois: selectedMonth,
+      annee: selectedYear,
+      revenus: selectedMonthIncomeTransactions,
+      depenses: selectedMonthExpenses,
+      economies: selectedMonthSaved,
+      totalRevenus: incomeTransactions.length,
+      totalDepenses: expenses.length
     });
 
     return {
       income: selectedMonthIncomeTransactions,
       expenses: selectedMonthExpenses,
       saved: selectedMonthSaved,
-      transactions: transactions.filter(t => isDateInSelectedMonth(t.date))
+      transactions: transactions.filter(t => isInSelectedMonth(t.date))
     };
-  }, [incomeTransactions, expenses, transactions, isDateInSelectedMonth, selectedMonth, selectedYear]);
+  }, [incomeTransactions, expenses, transactions, selectedMonth, selectedYear]);
 
   // Système de prévisions intelligentes
   const calculateIntelligentForecast = useCallback(() => {
