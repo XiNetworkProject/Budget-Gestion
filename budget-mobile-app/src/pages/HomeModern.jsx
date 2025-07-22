@@ -11,7 +11,8 @@ import {
   IconButton,
   Tooltip,
   Fade,
-  Zoom
+  Zoom,
+  Avatar
 } from '@mui/material';
 import {
   TrendingUp,
