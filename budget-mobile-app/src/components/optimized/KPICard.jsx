@@ -1,6 +1,9 @@
 import React, { memo, useState } from 'react';
-import { Box, Typography, LinearProgress, Zoom, Fade, Chip } from '@mui/material';
+import { Box, Typography, LinearProgress, Fade, Chip } from '@mui/material';
 import CurrencyFormatter from '../CurrencyFormatter';
+
+// Composant Zoom sécurisé
+import SafeZoom from './SafeZoom';
 
 const KPICard = memo(({ 
   title, 
@@ -165,7 +168,7 @@ const KPICard = memo(({
   const styles = getVariantStyles();
 
   return (
-    <Zoom in timeout={800}>
+    <SafeZoom in timeout={800}>
       <Box
         sx={styles.container}
         onClick={onClick}
@@ -313,7 +316,7 @@ const KPICard = memo(({
           }} />
         )}
       </Box>
-    </Zoom>
+    </SafeZoom>
   );
 });
 

@@ -15,7 +15,6 @@ import {
   Avatar,
   Tooltip,
   Fade,
-  Zoom,
   Alert,
   Snackbar,
   Fab,
@@ -66,6 +65,9 @@ import {
   LocalOffer,
   AccountBalance
 } from '@mui/icons-material';
+
+// Composant Zoom sécurisé
+import SafeZoom from './SafeZoom';
 
 const TransactionManager = memo(({ 
   type = 'expenses', // 'expenses' ou 'income'
@@ -410,7 +412,7 @@ const TransactionManager = memo(({
       {/* Liste des transactions */}
       <List sx={{ p: 0 }}>
         {filteredTransactions.map((transaction, index) => (
-          <Zoom in timeout={800 + index * 100} key={transaction.id}>
+          <SafeZoom key={transaction.id} timeout={800 + index * 100}>
             <Paper sx={{
               mb: 2,
               background: 'rgba(255, 255, 255, 0.1)',
@@ -496,7 +498,7 @@ const TransactionManager = memo(({
                 </ListItemSecondaryAction>
               </ListItem>
             </Paper>
-          </Zoom>
+          </SafeZoom>
         ))}
       </List>
 

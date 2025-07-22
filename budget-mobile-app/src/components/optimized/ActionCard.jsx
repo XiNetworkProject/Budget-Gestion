@@ -10,7 +10,6 @@ import {
   CardActionArea,
   Chip,
   Fade,
-  Zoom,
   Tooltip,
   Badge
 } from '@mui/material';
@@ -49,6 +48,9 @@ import {
   Computer,
   Person
 } from '@mui/icons-material';
+
+// Composant Zoom sécurisé
+import SafeZoom from './SafeZoom';
 
 // Actions rapides avec intégration des nouvelles pages
 const QuickActionsSection = memo(({ actions, t }) => {
@@ -179,7 +181,7 @@ const QuickActionsSection = memo(({ actions, t }) => {
           
           return (
             <Grid item xs={12} sm={6} md={4} key={action.id}>
-              <Zoom in timeout={800 + index * 100}>
+              <SafeZoom in timeout={800 + index * 100}>
                 <Card sx={{
                   background: 'rgba(255, 255, 255, 0.1)',
                   backdropFilter: 'blur(20px)',
@@ -350,7 +352,7 @@ const QuickActionsSection = memo(({ actions, t }) => {
                     </CardContent>
                   </CardActionArea>
                 </Card>
-              </Zoom>
+              </SafeZoom>
             </Grid>
           );
         })}

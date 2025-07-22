@@ -13,7 +13,6 @@ import {
   IconButton,
   Chip,
   Fade,
-  Zoom,
   Alert,
   LinearProgress
 } from '@mui/material';
@@ -44,6 +43,7 @@ import ErrorBoundary from '../components/optimized/ErrorBoundary';
 import LoadingSpinner from '../components/optimized/LoadingSpinner';
 import CategoryManager from '../components/optimized/CategoryManager';
 import TransactionManager from '../components/optimized/TransactionManager';
+import SafeZoom from '../components/optimized/SafeZoom';
 
 ChartJS.register(
   CategoryScale, 
@@ -352,7 +352,7 @@ const ExpensesOptimized = () => {
         {/* Contenu des tabs */}
         <Box sx={{ m: 2 }}>
           {activeTab === 0 && (
-            <Zoom in timeout={500}>
+            <SafeZoom in timeout={500}>
               <TransactionManager
                 type="expenses"
                 transactions={filteredExpenses}
@@ -363,11 +363,11 @@ const ExpensesOptimized = () => {
                 selectedCategory={selectedCategory}
                 t={t}
               />
-            </Zoom>
+            </SafeZoom>
           )}
 
           {activeTab === 1 && (
-            <Zoom in timeout={500}>
+            <SafeZoom in timeout={500}>
               <CategoryManager
                 type="expenses"
                 categories={categories}
@@ -378,11 +378,11 @@ const ExpensesOptimized = () => {
                 selectedCategory={selectedCategory}
                 t={t}
               />
-            </Zoom>
+            </SafeZoom>
           )}
 
           {activeTab === 2 && (
-            <Zoom in timeout={500}>
+            <SafeZoom in timeout={500}>
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                   <Paper sx={{
@@ -464,7 +464,7 @@ const ExpensesOptimized = () => {
                   </Paper>
                 </Grid>
               </Grid>
-            </Zoom>
+            </SafeZoom>
           )}
         </Box>
       </Box>
