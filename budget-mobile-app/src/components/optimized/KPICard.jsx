@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react';
-import { Box, Typography, LinearProgress, Zoom, Fade } from '@mui/material';
+import { Box, Typography, LinearProgress } from '@mui/material';
 import CurrencyFormatter from '../CurrencyFormatter';
 
 const KPICard = memo(({ 
@@ -148,111 +148,107 @@ const KPICard = memo(({
 
   if (loading) {
     return (
-      <Fade in timeout={300}>
-        <Box sx={styles.container}>
-          <Box sx={{ 
-            width: styles.icon.fontSize, 
-            height: styles.icon.fontSize, 
-            borderRadius: '50%', 
-            bgcolor: 'rgba(255,255,255,0.2)', 
-            mb: 2,
-            animation: 'pulse 1.5s ease-in-out infinite'
-          }} />
-          <Box sx={{ 
-            width: '60%', 
-            height: 20, 
-            bgcolor: 'rgba(255,255,255,0.2)', 
-            borderRadius: 1,
-            mb: 1,
-            animation: 'pulse 1.5s ease-in-out infinite'
-          }} />
-          <Box sx={{ 
-            width: '40%', 
-            height: 16, 
-            bgcolor: 'rgba(255,255,255,0.1)', 
-            borderRadius: 1,
-            animation: 'pulse 1.5s ease-in-out infinite'
-          }} />
-        </Box>
-      </Fade>
+      <Box sx={styles.container}>
+        <Box sx={{ 
+          width: styles.icon.fontSize, 
+          height: styles.icon.fontSize, 
+          borderRadius: '50%', 
+          bgcolor: 'rgba(255,255,255,0.2)', 
+          mb: 2,
+          animation: 'pulse 1.5s ease-in-out infinite'
+        }} />
+        <Box sx={{ 
+          width: '60%', 
+          height: 20, 
+          bgcolor: 'rgba(255,255,255,0.2)', 
+          borderRadius: 1,
+          mb: 1,
+          animation: 'pulse 1.5s ease-in-out infinite'
+        }} />
+        <Box sx={{ 
+          width: '40%', 
+          height: 16, 
+          bgcolor: 'rgba(255,255,255,0.1)', 
+          borderRadius: 1,
+          animation: 'pulse 1.5s ease-in-out infinite'
+        }} />
+      </Box>
     );
   }
 
   return (
-    <Zoom in timeout={600}>
-      <Box
-        sx={styles.container}
-        onClick={onClick}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          mb: variant === 'elegant' ? 2 : 1 
-        }}>
-          {Icon && <Icon sx={styles.icon} />}
-        </Box>
-        
-        <Typography variant="h6" sx={styles.title}>
-          {title}
-        </Typography>
-        
-        <Typography variant="h4" sx={styles.value}>
-          {typeof value === 'number' ? <CurrencyFormatter amount={value} /> : value}
-        </Typography>
-        
-        {subtitle && (
-          <Typography variant="body2" sx={{ 
-            opacity: 0.8, 
-            fontWeight: 500,
-            color: 'rgba(255,255,255,0.9)'
-          }}>
-            {subtitle}
-          </Typography>
-        )}
-        
-        {trend && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1 }}>
-            <Typography variant="body2" sx={{ 
-              color: getTrendColor(),
-              fontWeight: 600,
-              fontSize: '0.875rem'
-            }}>
-              {getTrendIcon()} {trend}
-            </Typography>
-          </Box>
-        )}
-        
-        {progress !== undefined && (
-          <LinearProgress 
-            variant="determinate" 
-            value={progress} 
-            sx={{ 
-              mt: 2, 
-              height: 6,
-              borderRadius: 3,
-              bgcolor: 'rgba(255,255,255,0.2)', 
-              '& .MuiLinearProgress-bar': { 
-                bgcolor: color,
-                borderRadius: 3
-              } 
-            }}
-          />
-        )}
-        
-        <style>
-          {`
-            @keyframes pulse {
-              0% { opacity: 1; }
-              50% { opacity: 0.5; }
-              100% { opacity: 1; }
-            }
-          `}
-        </style>
+    <Box
+      sx={styles.container}
+      onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <Box sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        mb: variant === 'elegant' ? 2 : 1 
+      }}>
+        {Icon && <Icon sx={styles.icon} />}
       </Box>
-    </Zoom>
+      
+      <Typography variant="h6" sx={styles.title}>
+        {title}
+      </Typography>
+      
+      <Typography variant="h4" sx={styles.value}>
+        {typeof value === 'number' ? <CurrencyFormatter amount={value} /> : value}
+      </Typography>
+      
+      {subtitle && (
+        <Typography variant="body2" sx={{ 
+          opacity: 0.8, 
+          fontWeight: 500,
+          color: 'rgba(255,255,255,0.9)'
+        }}>
+          {subtitle}
+        </Typography>
+      )}
+      
+      {trend && (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1 }}>
+          <Typography variant="body2" sx={{ 
+            color: getTrendColor(),
+            fontWeight: 600,
+            fontSize: '0.875rem'
+          }}>
+            {getTrendIcon()} {trend}
+          </Typography>
+        </Box>
+      )}
+      
+      {progress !== undefined && (
+        <LinearProgress 
+          variant="determinate" 
+          value={progress} 
+          sx={{ 
+            mt: 2, 
+            height: 6,
+            borderRadius: 3,
+            bgcolor: 'rgba(255,255,255,0.2)', 
+            '& .MuiLinearProgress-bar': { 
+              bgcolor: color,
+              borderRadius: 3
+            } 
+          }}
+        />
+      )}
+      
+      <style>
+        {`
+          @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+          }
+        `}
+      </style>
+    </Box>
   );
 });
 

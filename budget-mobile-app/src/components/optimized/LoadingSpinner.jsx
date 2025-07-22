@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, CircularProgress, Typography, Fade } from '@mui/material';
+import { Box, CircularProgress, Typography } from '@mui/material';
 
 const LoadingSpinner = ({ 
   message = "Chargement en cours...", 
@@ -69,56 +69,54 @@ const LoadingSpinner = ({
   const styles = getVariantStyles();
 
   return (
-    <Fade in timeout={300}>
-      <Box sx={styles.container}>
-        <Box sx={{ position: 'relative' }}>
-          <CircularProgress
-            size={size}
+    <Box sx={styles.container}>
+      <Box sx={{ position: 'relative' }}>
+        <CircularProgress
+          size={size}
+          sx={{
+            ...styles.spinner,
+            animation: 'spin 1s linear infinite',
+            '& .MuiCircularProgress-circle': {
+              strokeLinecap: 'round',
+            }
+          }}
+        />
+        {variant === "elegant" && (
+          <Box
             sx={{
-              ...styles.spinner,
-              animation: 'spin 1s linear infinite',
-              '& .MuiCircularProgress-circle': {
-                strokeLinecap: 'round',
-              }
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: size * 0.3,
+              height: size * 0.3,
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
+              animation: 'pulse 2s ease-in-out infinite',
+              boxShadow: '0 0 20px rgba(33, 150, 243, 0.5)'
             }}
           />
-          {variant === "elegant" && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: size * 0.3,
-                height: size * 0.3,
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
-                animation: 'pulse 2s ease-in-out infinite',
-                boxShadow: '0 0 20px rgba(33, 150, 243, 0.5)'
-              }}
-            />
-          )}
-        </Box>
-        {message && (
-          <Typography variant="body1" sx={styles.message}>
-            {message}
-          </Typography>
         )}
-        <style>
-          {`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-            @keyframes pulse {
-              0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-              50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.1); }
-              100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            }
-          `}
-        </style>
       </Box>
-    </Fade>
+      {message && (
+        <Typography variant="body1" sx={styles.message}>
+          {message}
+        </Typography>
+      )}
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes pulse {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.1); }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+          }
+        `}
+      </style>
+    </Box>
   );
 };
 

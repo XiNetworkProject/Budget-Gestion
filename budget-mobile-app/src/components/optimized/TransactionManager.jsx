@@ -522,24 +522,27 @@ const TransactionManager = memo(({
 
       {/* Message si aucune transaction */}
       {filteredTransactions.length === 0 && (
-        <Fade in timeout={800}>
-          <Paper sx={{
-            p: 4,
-            textAlign: 'center',
-            background: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: 3,
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-          }}>
-            <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
-              {t('transactionManager.noTransactions')}
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-              {t('transactionManager.noTransactionsMessage')}
-            </Typography>
-          </Paper>
-        </Fade>
+        <Paper sx={{
+          p: 4,
+          textAlign: 'center',
+          background: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: 3,
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+          animation: mounted ? 'fadeIn 0.8s ease' : 'none',
+          '@keyframes fadeIn': {
+            '0%': { opacity: 0 },
+            '100%': { opacity: 1 }
+          }
+        }}>
+          <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
+            {t('transactionManager.noTransactions')}
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+            {t('transactionManager.noTransactionsMessage')}
+          </Typography>
+        </Paper>
       )}
 
       {/* Bouton d'ajout flottant */}
