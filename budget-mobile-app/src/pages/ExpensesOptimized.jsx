@@ -222,6 +222,54 @@ const ExpensesOptimized = () => {
           </Toolbar>
         </AppBar>
 
+        {/* Onglets */}
+        <AppBar position="static" sx={{ 
+          background: 'rgba(255, 255, 255, 0.1)', 
+          backdropFilter: 'blur(20px)',
+          boxShadow: 'none',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+        }}>
+          <Toolbar sx={{ px: 0 }}>
+            <Tabs 
+              value={activeTab} 
+              onChange={handleTabChange}
+              sx={{
+                '& .MuiTab-root': {
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  fontSize: '0.875rem',
+                  minWidth: 'auto',
+                  px: 2
+                },
+                '& .Mui-selected': {
+                  color: '#FF6B6B'
+                },
+                '& .MuiTabs-indicator': {
+                  backgroundColor: '#FF6B6B',
+                  height: 3
+                }
+              }}
+            >
+              <Tab 
+                label={t('expenses.tabs.transactions')} 
+                icon={<AttachMoney />} 
+                iconPosition="start"
+              />
+              <Tab 
+                label={t('expenses.tabs.categories')} 
+                icon={<Category />} 
+                iconPosition="start"
+              />
+              <Tab 
+                label={t('expenses.tabs.analytics')} 
+                icon={<TrendingDown />} 
+                iconPosition="start"
+              />
+            </Tabs>
+          </Toolbar>
+        </AppBar>
+
         {/* Alertes */}
         {!isAuthenticated && (
           <Alert 
@@ -304,49 +352,6 @@ const ExpensesOptimized = () => {
             </Grid>
           </Grid>
         </Paper>
-
-        {/* Tabs */}
-        <Box sx={{ m: 2 }}>
-          <Paper sx={{
-            background: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: 3,
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-          }}>
-            <Tabs 
-              value={activeTab} 
-              onChange={handleTabChange}
-              sx={{
-                '& .MuiTab-root': {
-                  color: 'rgba(255, 255, 255, 0.7)',
-                  '&.Mui-selected': {
-                    color: '#FF6B6B'
-                  }
-                },
-                '& .MuiTabs-indicator': {
-                  backgroundColor: '#FF6B6B'
-                }
-              }}
-            >
-              <Tab 
-                label={t('expenses.transactions')} 
-                icon={<AttachMoney />} 
-                iconPosition="start"
-              />
-              <Tab 
-                label={t('expenses.categories')} 
-                icon={<Category />} 
-                iconPosition="start"
-              />
-              <Tab 
-                label={t('expenses.analytics')} 
-                icon={<TrendingDown />} 
-                iconPosition="start"
-              />
-            </Tabs>
-          </Paper>
-        </Box>
 
         {/* Contenu des tabs */}
         <Box sx={{ m: 2 }}>

@@ -1,4 +1,4 @@
-import React, { useState, memo, useEffect } from 'react';
+import React, { useState, memo, useEffect, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -86,35 +86,56 @@ const DEFAULT_ICONS = {
 };
 
 const CategoryManager = memo(({ 
-  type = 'expenses', // 'expenses' ou 'income'
+  type = 'expenses',
   categories = [],
   onAddCategory,
   onUpdateCategory,
   onDeleteCategory,
   onSelectCategory,
-  selectedCategory = null,
+  selectedCategory,
   t
 }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [newCategory, setNewCategory] = useState({
     name: '',
-    icon: 'Category',
-    color: '#4CAF50',
+    icon: 'category',
+    color: '#2196f3',
     budget: 0
   });
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCategoryForMenu, setSelectedCategoryForMenu] = useState(null);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [mounted, setMounted] = useState(false);
-
-  const defaultIcons = DEFAULT_ICONS[type] || DEFAULT_ICONS.expenses;
 
   // Éviter les erreurs de rendu avant le montage
   useEffect(() => {
     setMounted(true);
     return () => setMounted(false);
   }, []);
+
+  // Convertir les catégories du store (chaînes) en objets avec les propriétés nécessaires
+  const processedCategories = useMemo(() => {
+    return categories.map((category, index) => {
+      // Si c'est déjà un objet, l'utiliser tel quel
+      if (typeof category === 'object' && category !== null) {
+        return category;
+      }
+      
+      // Sinon, créer un objet à partir de la chaîne
+      const colors = ['#FF6B6B', '#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#607D8B', '#795548', '#E91E63'];
+      const icons = ['category', 'home', 'restaurant', 'directions_car', 'shopping_cart', 'movie', 'sports_soccer', 'school'];
+      
+      return {
+        id: `category-${index}`,
+        name: category,
+        icon: icons[index % icons.length],
+        color: colors[index % colors.length],
+        budget: 0
+      };
+    });
+  }, [categories]);
+
+  const defaultIcons = DEFAULT_ICONS[type] || DEFAULT_ICONS.expenses;
 
   const handleOpenDialog = (category = null) => {
     if (category) {
@@ -266,7 +287,7 @@ const CategoryManager = memo(({
 
       {/* Liste des catégories */}
       <Grid container spacing={2}>
-        {categories.map((category, index) => {
+        {processedCategories.map((category, index) => {
           const IconComponent = getIconComponent(category.icon);
           const isSelected = selectedCategory?.id === category.id;
           

@@ -293,10 +293,19 @@
     "tabs": {
       "categories": "Catégories",
       "history": "Historique",
-      "analytics": "Analytics"
+      "analytics": "Analytics",
+      "transactions": "Transactions",
+      "types": "Types"
     },
     "createNewCategory": "Créer une nouvelle catégorie",
-    "descriptionOptional": "Description (optionnel)"
+    "descriptionOptional": "Description (optionnel)",
+    "totalExpenses": "Total des dépenses",
+    "transactions": "transactions",
+    "average": "Moyenne",
+    "categoryDistribution": "Répartition par catégorie",
+    "topCategories": "Top des catégories",
+    "notConnected": "Vous n'êtes pas connecté. Mode hors ligne activé.",
+    "offlineMode": "Mode hors ligne. Vos données seront synchronisées lors de la reconnexion."
   },
   "income": {
     "title": "Revenus",
@@ -328,12 +337,20 @@
     "tabs": {
       "types": "Types",
       "history": "Historique",
-      "analytics": "Analytics"
+      "analytics": "Analytics",
+      "transactions": "Transactions"
     },
     "incomeType": "Type de revenu",
     "sourceOptional": "Source (optionnel)",
     "descriptionOptional": "Description (optionnel)",
-    "recurringIncome": "Revenu récurrent"
+    "recurringIncome": "Revenu récurrent",
+    "totalIncome": "Total des revenus",
+    "transactions": "transactions",
+    "average": "Moyenne",
+    "categoryDistribution": "Répartition par catégorie",
+    "topCategories": "Top des catégories",
+    "notConnected": "Vous n'êtes pas connectés. Mode hors ligne activé.",
+    "offlineMode": "Mode hors ligne. Vos données seront synchronisées lors de la reconnexion."
   },
   "savings": {
     "title": "Épargne",

@@ -255,98 +255,53 @@ const IncomeOptimized = () => {
           </Alert>
         )}
 
-        {/* Statistiques principales */}
-        <Paper sx={{
-          m: 2,
-          p: 3,
-          background: 'rgba(255, 255, 255, 0.1)',
+        {/* Onglets */}
+        <AppBar position="static" sx={{ 
+          background: 'rgba(255, 255, 255, 0.1)', 
           backdropFilter: 'blur(20px)',
-          borderRadius: 3,
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+          boxShadow: 'none',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
         }}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={4}>
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h4" sx={{ color: '#4CAF50', fontWeight: 700 }}>
-                  {new Intl.NumberFormat('fr-FR', {
-                    style: 'currency',
-                    currency: 'EUR'
-                  }).format(stats.total)}
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                  {t('income.totalIncome')}
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
-                  {stats.count}
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                  {t('income.transactions')}
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
-                  {new Intl.NumberFormat('fr-FR', {
-                    style: 'currency',
-                    currency: 'EUR'
-                  }).format(stats.avg)}
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                  {t('income.average')}
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </Paper>
-
-        {/* Tabs */}
-        <Box sx={{ m: 2 }}>
-          <Paper sx={{
-            background: 'rgba(255, 255, 255, 0.1)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: 3,
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-          }}>
+          <Toolbar sx={{ px: 0 }}>
             <Tabs 
               value={activeTab} 
               onChange={handleTabChange}
               sx={{
                 '& .MuiTab-root': {
                   color: 'rgba(255, 255, 255, 0.7)',
-                  '&.Mui-selected': {
-                    color: '#4CAF50'
-                  }
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  fontSize: '0.875rem',
+                  minWidth: 'auto',
+                  px: 2
+                },
+                '& .Mui-selected': {
+                  color: '#4CAF50'
                 },
                 '& .MuiTabs-indicator': {
-                  backgroundColor: '#4CAF50'
+                  backgroundColor: '#4CAF50',
+                  height: 3
                 }
               }}
             >
               <Tab 
-                label={t('income.transactions')} 
+                label={t('income.tabs.transactions')} 
                 icon={<AttachMoney />} 
                 iconPosition="start"
               />
               <Tab 
-                label={t('income.categories')} 
+                label={t('income.tabs.types')} 
                 icon={<Category />} 
                 iconPosition="start"
               />
               <Tab 
-                label={t('income.analytics')} 
+                label={t('income.tabs.analytics')} 
                 icon={<TrendingUp />} 
                 iconPosition="start"
               />
             </Tabs>
-          </Paper>
-        </Box>
+          </Toolbar>
+        </AppBar>
 
         {/* Contenu des tabs */}
         <Box sx={{ m: 2 }}>
