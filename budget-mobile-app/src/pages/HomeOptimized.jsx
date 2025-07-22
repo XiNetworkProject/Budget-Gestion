@@ -338,29 +338,109 @@ const HomeOptimized = () => {
       }
     };
 
+    // Debug détaillé des données
+    console.log('=== DEBUG HOMEOPTIMIZED ===');
+    console.log('Mois/Année sélectionnés:', selectedMonth, selectedYear);
+    console.log('Mois/Année actuels:', new Date().getMonth(), new Date().getFullYear());
+    console.log('Total revenus dans le store:', incomeTransactions.length);
+    console.log('Total dépenses dans le store:', expenses.length);
+    
+    // Afficher quelques exemples de données
+    if (incomeTransactions.length > 0) {
+      console.log('Exemple revenu:', {
+        type: incomeTransactions[0].type,
+        amount: incomeTransactions[0].amount,
+        date: incomeTransactions[0].date,
+        parsedDate: new Date(incomeTransactions[0].date)
+      });
+    }
+    if (expenses.length > 0) {
+      console.log('Exemple dépense:', {
+        category: expenses[0].category,
+        amount: expenses[0].amount,
+        date: expenses[0].date,
+        parsedDate: new Date(expenses[0].date)
+      });
+    }
+
     // Calculer les revenus du mois sélectionné
     const selectedMonthIncomeTransactions = incomeTransactions
-      .filter(t => isInSelectedMonth(t.date))
+      .filter(t => {
+        const isInMonth = isInSelectedMonth(t.date);
+        console.log(`Revenu: ${t.type} - ${t.amount}€ - Date: ${t.date} -> InMonth: ${isInMonth}`);
+        return isInMonth;
+      })
       .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
     
     // Calculer les dépenses du mois sélectionné
     const selectedMonthExpenses = expenses
-      .filter(e => isInSelectedMonth(e.date))
+      .filter(e => {
+        const isInMonth = isInSelectedMonth(e.date);
+        console.log(`Dépense: ${e.category} - ${e.amount}€ - Date: ${e.date} -> InMonth: ${isInMonth}`);
+        return isInMonth;
+      })
       .reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
     
     // Calculer les économies du mois sélectionné
     const selectedMonthSaved = selectedMonthIncomeTransactions - selectedMonthExpenses;
 
-    // Debug simple
-    console.log('HomeOptimized - Données du mois:', {
-      mois: selectedMonth,
-      annee: selectedYear,
-      revenus: selectedMonthIncomeTransactions,
-      depenses: selectedMonthExpenses,
-      economies: selectedMonthSaved,
-      totalRevenus: incomeTransactions.length,
-      totalDepenses: expenses.length
-    });
+    console.log('=== RÉSULTATS ===');
+    console.log('Revenus du mois:', selectedMonthIncomeTransactions);
+    console.log('Dépenses du mois:', selectedMonthExpenses);
+    console.log('Économies du mois:', selectedMonthSaved);
+
+    // Si aucune donnée pour le mois sélectionné, essayer le mois actuel
+    if (selectedMonthIncomeTransactions === 0 && selectedMonthExpenses === 0) {
+      console.log('Aucune donnée pour le mois sélectionné, essai avec le mois actuel...');
+      
+      const currentMonth = new Date().getMonth();
+      const currentYear = new Date().getFullYear();
+      
+      const currentMonthIncome = incomeTransactions
+        .filter(t => {
+          try {
+            const date = new Date(t.date);
+            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+          } catch (e) {
+            return false;
+          }
+        })
+        .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+      
+      const currentMonthExpenses = expenses
+        .filter(e => {
+          try {
+            const date = new Date(e.date);
+            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+          } catch (e) {
+            return false;
+          }
+        })
+        .reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+      
+      console.log('Données du mois actuel:', {
+        revenus: currentMonthIncome,
+        depenses: currentMonthExpenses,
+        economies: currentMonthIncome - currentMonthExpenses
+      });
+      
+      // Retourner les données du mois actuel si elles existent
+      if (currentMonthIncome > 0 || currentMonthExpenses > 0) {
+        return {
+          income: currentMonthIncome,
+          expenses: currentMonthExpenses,
+          saved: currentMonthIncome - currentMonthExpenses,
+          transactions: transactions.filter(t => {
+            try {
+              const date = new Date(t.date);
+              return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+            } catch (e) {
+              return false;
+            }
+          })
+        };
+      }
+    }
 
     return {
       income: selectedMonthIncomeTransactions,

@@ -57,7 +57,7 @@ ChartJS.register(
 
 const ExpensesOptimized = () => {
   const { 
-    categories, 
+    categories: rawCategories, 
     expenses,
     addCategory,
     updateCategory,
@@ -71,6 +71,18 @@ const ExpensesOptimized = () => {
     isAuthenticated,
     activeAccount
   } = useStore();
+
+  // Transformer les catégories simples en objets complets
+  const categories = useMemo(() => {
+    return rawCategories.map((catName, index) => ({
+      id: `cat-${index}`,
+      name: catName,
+      icon: 'Category',
+      color: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#FF8A80'][index % 7],
+      budget: 0,
+      type: 'expense'
+    }));
+  }, [rawCategories]);
   
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(0);
@@ -169,22 +181,26 @@ const ExpensesOptimized = () => {
   };
 
   const handleAddCategory = (categoryData) => {
-    const newCategory = {
-      id: Date.now().toString(),
-      ...categoryData,
-      type: 'expense'
-    };
-    addCategory(newCategory);
+    // Ajouter seulement le nom pour l'ancien système
+    addCategory(categoryData.name);
   };
 
   const handleUpdateCategory = (categoryId, categoryData) => {
-    updateCategory(categoryId, categoryData);
+    // Pour l'ancien système, on supprime et on rajoute
+    const oldCategory = categories.find(c => c.id === categoryId);
+    if (oldCategory) {
+      removeCategory(oldCategory.name);
+      addCategory(categoryData.name);
+    }
   };
 
   const handleDeleteCategory = (categoryId) => {
-    removeCategory(categoryId);
-    if (selectedCategory?.id === categoryId) {
-      setSelectedCategory(null);
+    const category = categories.find(c => c.id === categoryId);
+    if (category) {
+      removeCategory(category.name);
+      if (selectedCategory?.id === categoryId) {
+        setSelectedCategory(null);
+      }
     }
   };
 

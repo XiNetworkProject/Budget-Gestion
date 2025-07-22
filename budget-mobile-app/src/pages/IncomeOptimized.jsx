@@ -57,7 +57,7 @@ ChartJS.register(
 
 const IncomeOptimized = () => {
   const { 
-    incomeTypes, 
+    incomeTypes: rawIncomeTypes, 
     incomeTransactions,
     addIncomeType,
     updateIncomeType,
@@ -71,6 +71,18 @@ const IncomeOptimized = () => {
     isAuthenticated,
     activeAccount
   } = useStore();
+
+  // Transformer les types de revenus simples en objets complets
+  const categories = useMemo(() => {
+    return rawIncomeTypes.map((typeName, index) => ({
+      id: `income-${index}`,
+      name: typeName,
+      icon: 'TrendingUp',
+      color: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#607D8B', '#795548', '#FF5722'][index % 7],
+      budget: 0,
+      type: 'income'
+    }));
+  }, [rawIncomeTypes]);
   
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(0);
@@ -169,22 +181,26 @@ const IncomeOptimized = () => {
   };
 
   const handleAddCategory = (categoryData) => {
-    const newCategory = {
-      id: Date.now().toString(),
-      ...categoryData,
-      type: 'income'
-    };
-    addIncomeType(newCategory);
+    // Ajouter seulement le nom pour l'ancien système
+    addIncomeType(categoryData.name);
   };
 
   const handleUpdateCategory = (categoryId, categoryData) => {
-    updateIncomeType(categoryId, categoryData);
+    // Pour l'ancien système, on supprime et on rajoute
+    const oldCategory = categories.find(c => c.id === categoryId);
+    if (oldCategory) {
+      removeIncomeType(oldCategory.name);
+      addIncomeType(categoryData.name);
+    }
   };
 
   const handleDeleteCategory = (categoryId) => {
-    removeIncomeType(categoryId);
-    if (selectedCategory?.id === categoryId) {
-      setSelectedCategory(null);
+    const category = categories.find(c => c.id === categoryId);
+    if (category) {
+      removeIncomeType(category.name);
+      if (selectedCategory?.id === categoryId) {
+        setSelectedCategory(null);
+      }
     }
   };
 
