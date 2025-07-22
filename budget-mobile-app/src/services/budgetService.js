@@ -96,7 +96,7 @@ export const budgetService = {
 
   async getBudget(userId) {
     try {
-      console.log('=== TENTATIVE RÉCUPÉRATION BUDGET ===');
+      console.log('=== TENTATIVE RÉCUPÉRATION DONNÉES ===');
       console.log('userId:', userId);
       console.log('API_URL:', API_URL);
       
@@ -108,17 +108,14 @@ export const budgetService = {
       
       console.log('Headers:', headers);
       
-      const response = await fetch(`${API_URL}/api/budget/${userId}`, { 
-        method: 'GET',
-        headers 
-      });
+      const response = await fetch(`${API_URL}/api/budget/${userId}`, { headers });
       
       console.log('Réponse serveur:', {
         status: response.status,
         statusText: response.statusText,
         ok: response.ok
       });
-      
+
       // Déconnexion automatique si session expirée ou non autorisée
       if (response.status === 401 || response.status === 403) {
         console.error('Erreur d\'authentification:', response.status);
@@ -134,19 +131,16 @@ export const budgetService = {
 
       const data = await response.json();
       console.log('Données récupérées du serveur:', data);
-      console.log('Structure des données:', data ? Object.keys(data) : 'Aucune donnée');
       
       // Sauvegarder en local comme backup
       saveToLocalStorage(userId, data);
       
       return data;
     } catch (error) {
-      console.error('=== ERREUR RÉCUPÉRATION BUDGET ===');
+      console.error('=== ERREUR CONNEXION SERVEUR ===');
       console.error('Type d\'erreur:', error.name);
       console.error('Message:', error.message);
       console.error('Stack:', error.stack);
-      
-      console.warn('Erreur de connexion serveur, tentative de récupération locale:', error.message);
       
       // En cas d'erreur de connexion, essayer de récupérer depuis le local
       const localData = getFromLocalStorage(userId);

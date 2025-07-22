@@ -14,34 +14,54 @@ const Login = () => {
     try {
       const token = credentialResponse.credential;
       const decoded = jwtDecode(token);
-      setToken(token);
       
       console.log('Login: Début de la connexion pour:', decoded.email);
       
-      // Attendre que setUser charge les données depuis le serveur
-      await setUser({
+      // Définir le token d'abord
+      setToken(token);
+      
+      // Créer l'objet utilisateur
+      const user = {
         id: decoded.sub,
         email: decoded.email,
         name: decoded.name,
         picture: decoded.picture
-      });
+      };
       
-      console.log('Login: setUser terminé, vérification de l\'état onboarding');
+      console.log('Login: Tentative de récupération des données pour:', user.id);
       
-      // Vérifier et corriger l'état onboarding
-      const wasFixed = checkAndFixOnboardingState();
+      // Attendre que setUser récupère les données depuis le serveur
+      await setUser(user);
       
-      // Récupérer l'état mis à jour
+      // Récupérer l'état mis à jour après setUser
       const currentState = useStore.getState();
       console.log('Login: État après setUser:', { 
         onboardingCompleted: currentState.onboardingCompleted,
         isAuthenticated: currentState.isAuthenticated,
-        wasFixed,
-        hasData: !!(currentState.expenses?.length || currentState.incomeTransactions?.length || currentState.transactions?.length)
+        hasData: !!currentState.expenses?.length || !!currentState.incomeTransactions?.length,
+        error: currentState.error
+      });
+      
+      // Vérifier s'il y a eu une erreur
+      if (currentState.error) {
+        console.error('Login: Erreur lors de la récupération des données:', currentState.error);
+        // Continuer quand même, les données locales seront utilisées
+      }
+      
+      // Vérifier et corriger l'état onboarding
+      console.log('Login: Vérification de l\'état onboarding après connexion');
+      const wasFixed = checkAndFixOnboardingState();
+      
+      // Récupérer l'état final
+      const finalState = useStore.getState();
+      console.log('Login: État final:', { 
+        onboardingCompleted: finalState.onboardingCompleted,
+        isAuthenticated: finalState.isAuthenticated,
+        wasFixed
       });
       
       // Rediriger vers l'onboarding seulement si ce n'est pas encore terminé
-      if (!currentState.onboardingCompleted) {
+      if (!finalState.onboardingCompleted) {
         console.log('Login: Redirection vers onboarding');
         navigate('/onboarding', { replace: true });
       } else {
@@ -50,7 +70,8 @@ const Login = () => {
       }
     } catch (error) {
       console.error('Login: Erreur lors de la connexion:', error);
-      // Gérer l'erreur (afficher un message à l'utilisateur)
+      // En cas d'erreur, rediriger vers home quand même
+      navigate('/home', { replace: true });
     }
   };
 

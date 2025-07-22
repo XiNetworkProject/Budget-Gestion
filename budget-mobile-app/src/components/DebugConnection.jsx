@@ -1,21 +1,15 @@
 import React, { useState } from 'react';
 import { useStore } from '../store';
-import { budgetService } from '../services/budgetService';
-import { 
-  Box, 
-  Button, 
-  Typography, 
-  Paper, 
-  Alert,
-  CircularProgress,
-  Divider
-} from '@mui/material';
+import { Box, Button, Typography, Paper, Alert, CircularProgress } from '@mui/material';
+import { Refresh, BugReport, CheckCircle, Error } from '@mui/icons-material';
 
 const DebugConnection = () => {
-  const { user, token, isAuthenticated } = useStore();
+  const { user, token, isAuthenticated, serverConnected, reloadBudgetData } = useStore();
   const [debugInfo, setDebugInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
   const testConnection = async () => {
     setLoading(true);
@@ -23,164 +17,184 @@ const DebugConnection = () => {
     setDebugInfo(null);
 
     try {
-      console.log('=== TEST CONNEXION DEBUG ===');
+      console.log('=== TEST DE CONNEXION ===');
       
-      // Test 1: Vérifier l'état de l'utilisateur
-      const userInfo = {
-        isAuthenticated,
-        userId: user?.id,
-        userEmail: user?.email,
-        hasToken: !!token
-      };
-      
-      console.log('Informations utilisateur:', userInfo);
-      
-      // Test 2: Tester l'API de debug MongoDB
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      console.log('API URL:', apiUrl);
-      
-      const debugResponse = await fetch(`${apiUrl}/api/debug/budgets`);
-      const debugData = await debugResponse.json();
-      
-      console.log('Données debug MongoDB:', debugData);
-      
-      // Test 3: Tester la récupération du budget
-      let budgetData = null;
-      let budgetError = null;
-      
-      if (user?.id) {
-        try {
-          budgetData = await budgetService.getBudget(user.id);
-          console.log('Données budget récupérées:', budgetData);
-        } catch (err) {
-          budgetError = err.message;
-          console.error('Erreur récupération budget:', err);
-        }
+      // Test 1: Health check
+      console.log('Test 1: Health check');
+      const healthResponse = await fetch(`${API_URL}/health`);
+      const healthData = await healthResponse.json();
+      console.log('Health check:', healthData);
+
+      // Test 2: Debug utilisateur (si connecté)
+      let userDebugData = null;
+      if (user && token) {
+        console.log('Test 2: Debug utilisateur');
+        const userResponse = await fetch(`${API_URL}/api/debug/user/${user.id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        userDebugData = await userResponse.json();
+        console.log('Debug utilisateur:', userDebugData);
       }
-      
-      // Test 4: Vérifier le localStorage
-      const localData = localStorage.getItem(`budget_${user?.id}`);
-      const hasLocalData = !!localData;
-      
+
+      // Test 3: Récupération des données
+      let budgetData = null;
+      if (user && token) {
+        console.log('Test 3: Récupération des données');
+        const budgetResponse = await fetch(`${API_URL}/api/budget/${user.id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        budgetData = await budgetResponse.json();
+        console.log('Données budget:', budgetData);
+      }
+
       setDebugInfo({
-        userInfo,
-        mongoDebug: debugData,
-        budgetData: budgetData ? {
-          hasData: true,
-          expensesCount: budgetData.expenses?.length || 0,
-          incomeCount: budgetData.incomeTransactions?.length || 0,
-          transactionsCount: budgetData.transactions?.length || 0,
-          categoriesCount: budgetData.categories?.length || 0,
-          structure: Object.keys(budgetData)
-        } : null,
-        budgetError,
-        hasLocalData,
-        localDataSize: localData ? localData.length : 0
+        health: healthData,
+        userDebug: userDebugData,
+        budgetData: budgetData,
+        timestamp: new Date().toISOString()
       });
-      
+
     } catch (err) {
-      console.error('Erreur test connexion:', err);
+      console.error('Erreur lors du test de connexion:', err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const clearLocalData = () => {
-    if (user?.id) {
-      localStorage.removeItem(`budget_${user.id}`);
-      alert('Données locales supprimées');
+  const forceReload = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      await reloadBudgetData();
+      setDebugInfo(prev => ({
+        ...prev,
+        reloadSuccess: true,
+        reloadTimestamp: new Date().toISOString()
+      }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <Box sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>
-      <Typography variant="h4" gutterBottom>
-        Debug Connexion
-      </Typography>
-      
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Typography variant="h6" gutterBottom>
-          État Actuel
-        </Typography>
-        <Typography>Authentifié: {isAuthenticated ? 'Oui' : 'Non'}</Typography>
-        <Typography>User ID: {user?.id || 'Aucun'}</Typography>
-        <Typography>Email: {user?.email || 'Aucun'}</Typography>
-        <Typography>Token: {token ? 'Présent' : 'Manquant'}</Typography>
-      </Paper>
+      <Paper sx={{ p: 3, mb: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <BugReport sx={{ mr: 1, color: 'primary.main' }} />
+          <Typography variant="h6">Debug de Connexion</Typography>
+        </Box>
 
-      <Box sx={{ mb: 2 }}>
-        <Button 
-          variant="contained" 
-          onClick={testConnection}
-          disabled={loading}
-          sx={{ mr: 2 }}
-        >
-          {loading ? <CircularProgress size={20} /> : 'Tester Connexion'}
-        </Button>
-        
-        <Button 
-          variant="outlined" 
-          onClick={clearLocalData}
-          disabled={!user?.id}
-        >
-          Effacer Données Locales
-        </Button>
-      </Box>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
-
-      {debugInfo && (
-        <Paper sx={{ p: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            Résultats du Test
+        {/* État actuel */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 'bold' }}>
+            État Actuel:
           </Typography>
-          
-          <Divider sx={{ my: 2 }} />
-          
-          <Typography variant="subtitle1" gutterBottom>
-            MongoDB Debug
-          </Typography>
-          <Typography variant="body2" sx={{ fontFamily: 'monospace', mb: 2 }}>
-            {JSON.stringify(debugInfo.mongoDebug, null, 2)}
-          </Typography>
-          
-          <Divider sx={{ my: 2 }} />
-          
-          <Typography variant="subtitle1" gutterBottom>
-            Données Budget
-          </Typography>
-          {debugInfo.budgetError ? (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              Erreur: {debugInfo.budgetError}
-            </Alert>
-          ) : debugInfo.budgetData ? (
-            <Box>
-              <Typography>Dépenses: {debugInfo.budgetData.expensesCount}</Typography>
-              <Typography>Revenus: {debugInfo.budgetData.incomeCount}</Typography>
-              <Typography>Transactions: {debugInfo.budgetData.transactionsCount}</Typography>
-              <Typography>Catégories: {debugInfo.budgetData.categoriesCount}</Typography>
-              <Typography variant="body2" sx={{ fontFamily: 'monospace', mt: 1 }}>
-                Structure: {debugInfo.budgetData.structure.join(', ')}
-              </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {isAuthenticated ? <CheckCircle color="success" /> : <Error color="error" />}
+              <Typography>Authentifié: {isAuthenticated ? 'Oui' : 'Non'}</Typography>
             </Box>
-          ) : (
-            <Typography>Aucune donnée budget</Typography>
-          )}
-          
-          <Divider sx={{ my: 2 }} />
-          
-          <Typography variant="subtitle1" gutterBottom>
-            Données Locales
-          </Typography>
-          <Typography>Présentes: {debugInfo.hasLocalData ? 'Oui' : 'Non'}</Typography>
-          <Typography>Taille: {debugInfo.localDataSize} caractères</Typography>
-        </Paper>
-      )}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {token ? <CheckCircle color="success" /> : <Error color="error" />}
+              <Typography>Token: {token ? 'Présent' : 'Manquant'}</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {serverConnected ? <CheckCircle color="success" /> : <Error color="error" />}
+              <Typography>Serveur: {serverConnected ? 'Connecté' : 'Déconnecté'}</Typography>
+            </Box>
+            {user && (
+              <Typography variant="body2" color="text.secondary">
+                Utilisateur: {user.email} (ID: {user.id})
+              </Typography>
+            )}
+          </Box>
+        </Box>
+
+        {/* Boutons d'action */}
+        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+          <Button
+            variant="contained"
+            onClick={testConnection}
+            disabled={loading}
+            startIcon={loading ? <CircularProgress size={20} /> : <BugReport />}
+          >
+            Tester la Connexion
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={forceReload}
+            disabled={loading || !isAuthenticated}
+            startIcon={<Refresh />}
+          >
+            Recharger les Données
+          </Button>
+        </Box>
+
+        {/* Erreur */}
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+
+        {/* Informations de debug */}
+        {debugInfo && (
+          <Box>
+            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 'bold' }}>
+              Résultats du Test:
+            </Typography>
+            
+            {/* Health check */}
+            <Paper sx={{ p: 2, mb: 2, bgcolor: 'grey.50' }}>
+              <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                Health Check:
+              </Typography>
+              <pre style={{ fontSize: '12px', overflow: 'auto' }}>
+                {JSON.stringify(debugInfo.health, null, 2)}
+              </pre>
+            </Paper>
+
+            {/* Debug utilisateur */}
+            {debugInfo.userDebug && (
+              <Paper sx={{ p: 2, mb: 2, bgcolor: 'grey.50' }}>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                  Debug Utilisateur:
+                </Typography>
+                <pre style={{ fontSize: '12px', overflow: 'auto' }}>
+                  {JSON.stringify(debugInfo.userDebug, null, 2)}
+                </pre>
+              </Paper>
+            )}
+
+            {/* Données budget */}
+            {debugInfo.budgetData && (
+              <Paper sx={{ p: 2, mb: 2, bgcolor: 'grey.50' }}>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                  Données Budget:
+                </Typography>
+                <pre style={{ fontSize: '12px', overflow: 'auto' }}>
+                  {JSON.stringify(debugInfo.budgetData, null, 2)}
+                </pre>
+              </Paper>
+            )}
+
+            {/* Timestamp */}
+            <Typography variant="caption" color="text.secondary">
+              Test effectué le: {debugInfo.timestamp}
+            </Typography>
+          </Box>
+        )}
+      </Paper>
     </Box>
   );
 };

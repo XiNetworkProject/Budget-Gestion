@@ -1,167 +1,182 @@
-# 🔍 Diagnostic Problème de Connexion
+# 🔍 Guide de Diagnostic - Problème de Connexion
 
 ## 🚨 Problème Identifié
 
-Lors de la connexion, les données ne sont pas récupérées depuis MongoDB malgré qu'elles y soient présentes.
+Lors de la connexion à l'application, les utilisateurs n'ont plus accès à leurs données existantes dans MongoDB.
 
 ## 🔧 Corrections Apportées
 
-### 1. **Correction du Login.jsx**
-- ✅ Ajout de `await` devant `setUser()` pour attendre le chargement des données
-- ✅ Amélioration de la gestion d'erreurs
+### 1. **Correction du Composant Login**
+- ✅ Ajout de `await` devant `setUser()` pour attendre la récupération des données
+- ✅ Amélioration de la gestion des erreurs
 - ✅ Logs détaillés pour le diagnostic
 
-### 2. **Amélioration du budgetService.js**
-- ✅ Logs détaillés pour tracer les appels API
-- ✅ Meilleure gestion des headers d'authentification
-- ✅ Gestion d'erreurs améliorée
+### 2. **Amélioration du Service BudgetService**
+- ✅ Logs détaillés pour tracer les requêtes
+- ✅ Meilleure gestion des erreurs d'authentification
+- ✅ Fallback vers les données locales en cas d'erreur
 
-### 3. **Amélioration du serveur API**
-- ✅ Logs détaillés pour la récupération des budgets
-- ✅ Endpoint de debug MongoDB (`/api/debug/budgets`)
-- ✅ Vérification de l'authentification améliorée
+### 3. **Amélioration du Serveur API**
+- ✅ Logs détaillés pour la récupération des données
+- ✅ Vérification de la connexion à la base de données
+- ✅ Route de debug pour diagnostiquer les problèmes
 
 ### 4. **Composant de Debug**
-- ✅ Page de debug accessible sur `/debug`
-- ✅ Tests de connexion et récupération de données
-- ✅ Affichage des données MongoDB
+- ✅ Interface web pour tester la connexion
+- ✅ Tests automatisés de l'API
+- ✅ Affichage des informations de debug
 
-## 🧪 Tests à Effectuer
-
-### 1. **Test de Connexion**
-```bash
-# Démarrer le serveur
-npm run dev
-
-# Dans un autre terminal, tester la connexion
-npm run debug:connection
-```
-
-### 2. **Test via l'Interface**
-1. Aller sur `http://localhost:5173/debug`
-2. Cliquer sur "Tester Connexion"
-3. Vérifier les résultats
-
-### 3. **Test de Connexion Utilisateur**
-1. Se connecter avec Google
-2. Vérifier les logs dans la console du navigateur
-3. Aller sur `/debug` pour voir l'état
-
-## 🔍 Points de Vérification
-
-### 1. **Variables d'Environnement**
-Vérifiez que ces variables sont correctement définies :
-```env
-VITE_API_URL=http://localhost:3000
-VITE_GOOGLE_CLIENT_ID=your_google_client_id
-VITE_MONGODB_URI=your_mongodb_uri
-VITE_MONGODB_DB=your_database_name
-```
-
-### 2. **Connexion MongoDB**
-- ✅ Le serveur se connecte-t-il à MongoDB ?
-- ✅ Les données sont-elles présentes dans la collection `budgets` ?
-- ✅ Le `userId` correspond-il entre l'authentification et les données ?
-
-### 3. **Authentification Google**
-- ✅ Le token Google est-il valide ?
-- ✅ L'ID utilisateur est-il cohérent ?
-
-### 4. **API Endpoints**
-- ✅ `/health` répond-il correctement ?
-- ✅ `/api/debug/budgets` affiche-t-il les données ?
-- ✅ `/api/budget/:userId` fonctionne-t-il avec authentification ?
-
-## 🐛 Diagnostic Pas à Pas
+## 🛠️ Étapes de Diagnostic
 
 ### Étape 1: Vérifier le Serveur
 ```bash
 # Démarrer le serveur
-npm run dev
+npm run start
 
-# Vérifier les logs de démarrage
-# Doit afficher : "Connexion à MongoDB réussie !"
+# Tester la connexion
+npm run debug:connection
 ```
 
-### Étape 2: Tester l'API
+### Étape 2: Vérifier les Variables d'Environnement
+Assurez-vous que ces variables sont définies dans votre `.env` :
+
+```env
+VITE_API_URL=http://localhost:3000
+VITE_MONGODB_URI=mongodb+srv://...
+VITE_MONGODB_DB=budget-app
+VITE_GOOGLE_CLIENT_ID=your-google-client-id
+```
+
+### Étape 3: Tester via l'Interface Web
+1. Connectez-vous à l'application
+2. Allez sur `/debug` dans votre navigateur
+3. Cliquez sur "Tester la Connexion"
+4. Vérifiez les résultats
+
+### Étape 4: Vérifier les Logs
+Regardez les logs du serveur pour identifier les erreurs :
+
 ```bash
-# Tester l'endpoint de debug
-curl http://localhost:3000/api/debug/budgets
-
-# Doit retourner la liste des budgets dans MongoDB
+# Dans le terminal du serveur
+npm run start
 ```
 
-### Étape 3: Tester l'Authentification
-1. Ouvrir la console du navigateur
-2. Se connecter avec Google
-3. Vérifier les logs :
-   - `Login: Début de la connexion pour: [email]`
-   - `setUser: Connexion de l'utilisateur: [user]`
-   - `=== TENTATIVE RÉCUPÉRATION BUDGET ===`
+## 🔍 Points de Vérification
 
-### Étape 4: Vérifier les Données
-1. Aller sur `/debug`
-2. Cliquer sur "Tester Connexion"
-3. Vérifier :
-   - MongoDB Debug : données présentes
-   - Données Budget : récupération réussie
-   - Données Locales : backup disponible
+### 1. **Authentification Google**
+- ✅ Le token Google est-il valide ?
+- ✅ L'ID utilisateur correspond-il à celui en base ?
 
-## 🔧 Solutions Possibles
+### 2. **Connexion MongoDB**
+- ✅ La base de données est-elle accessible ?
+- ✅ Les données existent-elles pour cet utilisateur ?
 
-### Problème 1: Token d'Authentification
-**Symptôme** : Erreur 401/403
-**Solution** : Vérifier que le token Google est valide et envoyé correctement
+### 3. **API Endpoints**
+- ✅ `/health` répond-il correctement ?
+- ✅ `/api/budget/:userId` fonctionne-t-il ?
 
-### Problème 2: userId Mismatch
-**Symptôme** : Erreur 403 "Forbidden - userId mismatch"
-**Solution** : Vérifier que l'ID utilisateur correspond entre l'auth et les données
+### 4. **Variables d'Environnement**
+- ✅ Toutes les variables sont-elles définies ?
+- ✅ Les URLs sont-elles correctes ?
 
-### Problème 3: Données MongoDB
-**Symptôme** : Aucune donnée trouvée
-**Solution** : Vérifier la collection `budgets` dans MongoDB
+## 🚀 Solutions Rapides
 
-### Problème 4: Variables d'Environnement
-**Symptôme** : Erreur de connexion
-**Solution** : Vérifier toutes les variables d'environnement
-
-## 📊 Logs à Surveiller
-
-### Logs Serveur
-```
-=== RÉCUPÉRATION DU BUDGET ===
-userId demandé: [userId]
-userId authentifié: [userId]
-Correspondance: true
-Recherche dans la collection budgets pour userId: [userId]
-Données trouvées: Oui
+### Solution 1: Rechargement Forcé
+```javascript
+// Dans la console du navigateur
+const store = useStore.getState();
+await store.reloadBudgetData();
 ```
 
-### Logs Client
-```
-=== TENTATIVE RÉCUPÉRATION BUDGET ===
-userId: [userId]
-Token présent: true
-Headers: {Authorization: "Bearer [token]"}
-Réponse serveur: {status: 200, ok: true}
-Données récupérées du serveur: [data]
+### Solution 2: Réinitialisation du Cache
+```javascript
+// Vider le localStorage
+localStorage.clear();
+// Puis se reconnecter
 ```
 
-## 🚀 Prochaines Étapes
+### Solution 3: Vérification Manuelle en Base
+```javascript
+// Dans MongoDB Compass ou shell
+db.budgets.findOne({ userId: "votre-user-id" })
+```
 
-1. **Tester les corrections** avec le guide ci-dessus
-2. **Vérifier les logs** pour identifier le point de blocage
-3. **Utiliser l'interface de debug** pour diagnostiquer
-4. **Corriger les variables d'environnement** si nécessaire
+## 📊 Tests de Diagnostic
+
+### Test 1: Health Check
+```bash
+curl http://localhost:3000/health
+```
+
+### Test 2: Debug Utilisateur
+```bash
+# Avec un token valide
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+     http://localhost:3000/api/debug/user/YOUR_USER_ID
+```
+
+### Test 3: Récupération des Données
+```bash
+# Avec un token valide
+curl -H "Authorization: Bearer YOUR_TOKEN" \
+     http://localhost:3000/api/budget/YOUR_USER_ID
+```
+
+## 🎯 Problèmes Courants
+
+### Problème 1: Token Expiré
+**Symptômes** : Erreur 401/403
+**Solution** : Se reconnecter avec Google
+
+### Problème 2: Base de Données Inaccessible
+**Symptômes** : Erreur 503
+**Solution** : Vérifier la connexion MongoDB
+
+### Problème 3: Données Non Trouvées
+**Symptômes** : Objet vide retourné
+**Solution** : Vérifier l'ID utilisateur en base
+
+### Problème 4: CORS
+**Symptômes** : Erreur de requête bloquée
+**Solution** : Vérifier la configuration CORS
+
+## 🔧 Scripts de Diagnostic
+
+### Script Automatique
+```bash
+npm run debug:connection
+```
+
+### Script avec Token
+```bash
+npm run debug:connection "YOUR_TOKEN" "YOUR_USER_ID"
+```
+
+## 📱 Interface de Debug
+
+Accédez à `/debug` dans votre application pour :
+- ✅ Voir l'état actuel de la connexion
+- ✅ Tester la récupération des données
+- ✅ Forcer le rechargement des données
+- ✅ Voir les logs détaillés
+
+## 🎉 Résolution
+
+Une fois le problème identifié et corrigé :
+
+1. **Redémarrez le serveur** si nécessaire
+2. **Videz le cache** du navigateur
+3. **Reconnectez-vous** à l'application
+4. **Vérifiez** que les données sont bien récupérées
 
 ## 📞 Support
 
 Si le problème persiste :
-1. Copier tous les logs de la console
-2. Prendre une capture de l'écran de debug
-3. Vérifier les variables d'environnement
-4. Tester avec un nouvel utilisateur
+1. Vérifiez les logs du serveur
+2. Utilisez l'interface de debug
+3. Testez avec le script de diagnostic
+4. Vérifiez la configuration MongoDB
 
 ---
 
-**Note** : Les corrections apportées devraient résoudre le problème de récupération des données. Le composant de debug vous permettra d'identifier précisément où se situe le problème. 
+**Note** : Les corrections apportées devraient résoudre le problème de récupération des données lors de la connexion. 

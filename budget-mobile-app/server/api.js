@@ -5,7 +5,6 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { OAuth2Client } from 'google-auth-library';
 import Stripe from 'stripe';
-import { securityMiddleware, corsConfig } from './middleware/security.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -25,11 +24,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Configuration CORS avec le middleware de sécurité
-app.use(cors(corsConfig));
-
-// Middleware de sécurité global
-app.use(securityMiddleware);
+// Configuration CORS
+app.use(cors());
 
 // Middleware pour parser le JSON
 app.use(express.json());
@@ -173,11 +169,15 @@ app.get('/health', async (req, res) => {
     // Test de connexion MongoDB
     await db.admin().ping();
     
+    // Compter les documents dans la collection budgets
+    const budgetCount = await db.collection('budgets').countDocuments();
+    
     res.status(200).json({ 
       status: 'ok', 
       message: 'Application is healthy',
       timestamp: new Date().toISOString(),
-      database: 'connected'
+      database: 'connected',
+      budgetCount: budgetCount
     });
   } catch (error) {
     console.error('Health check failed:', error);
@@ -190,48 +190,56 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// Test CORS endpoint
-app.get('/api/cors-test', (req, res) => {
-  res.json({
-    message: 'CORS test successful',
-    timestamp: new Date().toISOString(),
-    headers: {
-      'Cross-Origin-Opener-Policy': res.getHeader('Cross-Origin-Opener-Policy'),
-      'Cross-Origin-Embedder-Policy': res.getHeader('Cross-Origin-Embedder-Policy'),
-      'Cross-Origin-Resource-Policy': res.getHeader('Cross-Origin-Resource-Policy')
-    }
-  });
-});
-
-// Test assets endpoint
-app.get('/api/assets-test', (req, res) => {
-  const fs = require('fs');
-  const indexPath = join(distPath, 'index.html');
-  const assetsPath = join(distPath, 'assets');
-  
+// Route de debug pour vérifier les données d'un utilisateur
+app.get('/api/debug/user/:userId', verifyAuth, async (req, res) => {
   try {
-    const indexExists = fs.existsSync(indexPath);
-    const assetsExists = fs.existsSync(assetsPath);
-    
-    let assetsList = [];
-    if (assetsExists) {
-      assetsList = fs.readdirSync(assetsPath);
+    const paramUserId = req.params.userId;
+    if (req.user.id !== paramUserId) {
+      return res.status(403).json({ error: 'Forbidden' });
     }
     
-    res.json({
-      message: 'Assets test',
-      timestamp: new Date().toISOString(),
-      distPath,
-      indexExists,
-      assetsExists,
-      assetsCount: assetsList.length,
-      assetsList: assetsList.slice(0, 10) // Limiter à 10 pour éviter les logs trop longs
-    });
+    console.log('=== DEBUG UTILISATEUR ===');
+    console.log('userId:', paramUserId);
+    console.log('user.email:', req.user.email);
+    
+    if (!db) {
+      return res.status(503).json({ error: 'Database not connected' });
+    }
+    
+    const data = await db.collection('budgets').findOne({ userId: paramUserId });
+    
+    if (data) {
+      res.json({
+        success: true,
+        user: {
+          id: req.user.id,
+          email: req.user.email
+        },
+        data: {
+          hasData: true,
+          keys: Object.keys(data),
+          expensesCount: data.expenses?.length || 0,
+          incomeCount: data.incomeTransactions?.length || 0,
+          onboardingCompleted: data.onboardingCompleted,
+          lastUpdate: data.updatedAt
+        }
+      });
+    } else {
+      res.json({
+        success: true,
+        user: {
+          id: req.user.id,
+          email: req.user.email
+        },
+        data: {
+          hasData: false,
+          message: 'Aucune donnée trouvée pour cet utilisateur'
+        }
+      });
+    }
   } catch (error) {
-    res.status(500).json({
-      error: 'Erreur lors du test des assets',
-      message: error.message
-    });
+    console.error('Erreur debug utilisateur:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -269,20 +277,23 @@ app.post('/api/budget', verifyAuth, async (req, res) => {
 app.get('/api/budget/:userId', verifyAuth, async (req, res) => {
   try {
     const paramUserId = req.params.userId;
-    const authenticatedUserId = req.user.id;
-    
-    console.log('=== RÉCUPÉRATION DU BUDGET ===');
-    console.log('userId demandé:', paramUserId);
-    console.log('userId authentifié:', authenticatedUserId);
-    console.log('Correspondance:', paramUserId === authenticatedUserId);
-    
-    if (authenticatedUserId !== paramUserId) {
-      console.error('Accès interdit: userId ne correspond pas');
-      return res.status(403).json({ error: 'Forbidden - userId mismatch' });
+    if (req.user.id !== paramUserId) {
+      console.error('Tentative d\'accès non autorisé:', { 
+        requestedUserId: paramUserId, 
+        authenticatedUserId: req.user.id 
+      });
+      return res.status(403).json({ error: 'Forbidden' });
     }
-    
     const userId = paramUserId;
-    console.log('Recherche dans la collection budgets pour userId:', userId);
+    console.log('=== RÉCUPÉRATION DU BUDGET ===');
+    console.log('userId:', userId);
+    console.log('user.email:', req.user.email);
+
+    // Vérifier que la base de données est connectée
+    if (!db) {
+      console.error('Base de données non connectée');
+      return res.status(503).json({ error: 'Database not connected' });
+    }
 
     const data = await db.collection('budgets').findOne({ userId });
     console.log('Données trouvées:', data ? 'Oui' : 'Non');
@@ -290,7 +301,7 @@ app.get('/api/budget/:userId', verifyAuth, async (req, res) => {
       console.log('Structure des données:', Object.keys(data));
       console.log('Nombre de dépenses:', data.expenses?.length || 0);
       console.log('Nombre de revenus:', data.incomeTransactions?.length || 0);
-      console.log('Nombre de transactions:', data.transactions?.length || 0);
+      console.log('Onboarding terminé:', data.onboardingCompleted);
     } else {
       console.log('Aucune donnée trouvée pour cet utilisateur');
     }
@@ -442,50 +453,6 @@ app.get('/api/stripe/test', (req, res) => {
     premiumUrl: STRIPE_CONFIG.PLANS.PREMIUM.checkoutUrl,
     proUrl: STRIPE_CONFIG.PLANS.PRO.checkoutUrl
   });
-});
-
-// Route de debug pour vérifier les données MongoDB
-app.get('/api/debug/budgets', async (req, res) => {
-  try {
-    console.log('=== DEBUG BUDGETS MONGODB ===');
-    
-    if (!db) {
-      return res.status(503).json({ 
-        error: 'Database not connected',
-        timestamp: new Date().toISOString()
-      });
-    }
-    
-    // Lister tous les budgets
-    const budgets = await db.collection('budgets').find({}).toArray();
-    console.log('Nombre total de budgets:', budgets.length);
-    
-    const budgetsInfo = budgets.map(budget => ({
-      userId: budget.userId,
-      email: budget.userProfile?.email || 'N/A',
-      expensesCount: budget.expenses?.length || 0,
-      incomeCount: budget.incomeTransactions?.length || 0,
-      transactionsCount: budget.transactions?.length || 0,
-      categoriesCount: budget.categories?.length || 0,
-      createdAt: budget.createdAt,
-      updatedAt: budget.updatedAt
-    }));
-    
-    console.log('Informations des budgets:', budgetsInfo);
-    
-    res.json({
-      totalBudgets: budgets.length,
-      budgets: budgetsInfo,
-      timestamp: new Date().toISOString()
-    });
-    
-  } catch (error) {
-    console.error('Erreur lors du debug des budgets:', error);
-    res.status(500).json({ 
-      error: error.message,
-      timestamp: new Date().toISOString()
-    });
-  }
 });
 
 // Route de test pour vérifier la configuration Stripe
@@ -748,64 +715,19 @@ app.get('/api/stripe/subscription-info', verifyAuth, async (req, res) => {
   }
 });
 
-// Servir les fichiers statiques avec gestion correcte des types MIME
+// Servir les fichiers statiques
 const distPath = join(__dirname, '..', 'dist');
-
-// Middleware pour servir les fichiers statiques avec les bons types MIME
 app.use(express.static(distPath, {
   setHeaders: (res, path) => {
-    // Gestion des types MIME pour les différents types de fichiers
     if (path.endsWith('.css')) {
       res.setHeader('Content-Type', 'text/css');
-    } else if (path.endsWith('.js')) {
-      res.setHeader('Content-Type', 'application/javascript');
-    } else if (path.endsWith('.html')) {
-      res.setHeader('Content-Type', 'text/html');
-    } else if (path.endsWith('.json')) {
-      res.setHeader('Content-Type', 'application/json');
-    } else if (path.endsWith('.png')) {
-      res.setHeader('Content-Type', 'image/png');
-    } else if (path.endsWith('.jpg') || path.endsWith('.jpeg')) {
-      res.setHeader('Content-Type', 'image/jpeg');
-    } else if (path.endsWith('.svg')) {
-      res.setHeader('Content-Type', 'image/svg+xml');
-    } else if (path.endsWith('.ico')) {
-      res.setHeader('Content-Type', 'image/x-icon');
-    } else if (path.endsWith('.woff')) {
-      res.setHeader('Content-Type', 'font/woff');
-    } else if (path.endsWith('.woff2')) {
-      res.setHeader('Content-Type', 'font/woff2');
-    } else if (path.endsWith('.ttf')) {
-      res.setHeader('Content-Type', 'font/ttf');
-    } else if (path.endsWith('.eot')) {
-      res.setHeader('Content-Type', 'application/vnd.ms-fontobject');
-    }
-    
-    // Headers de cache pour les assets
-    if (path.includes('/assets/')) {
-      res.setHeader('Cache-Control', 'public, max-age=31536000'); // 1 an
     }
   }
 }));
 
-// Route par défaut pour l'application React (SPA)
+// Route par défaut pour l'application React
 app.get('*', (req, res) => {
-  // Vérifier si le fichier existe avant de servir index.html
-  const indexPath = join(distPath, 'index.html');
-  
-  // Log pour debug
-  console.log('Route catch-all:', req.path);
-  console.log('Index path:', indexPath);
-  
-  res.sendFile(indexPath, (err) => {
-    if (err) {
-      console.error('Erreur lors du serve du fichier index.html:', err);
-      res.status(500).json({ 
-        error: 'Erreur serveur',
-        message: 'Impossible de charger l\'application'
-      });
-    }
-  });
+  res.sendFile(join(distPath, 'index.html'));
 });
 
 app.listen(port, '0.0.0.0', () => {
