@@ -1026,26 +1026,7 @@ const HomeOptimized = () => {
             </Paper>
           )}
 
-          {/* Bouton d'ajout rapide */}
-          <Fab
-            color="primary"
-            aria-label="add"
-            onClick={() => setShowQuickAdd(true)}
-            sx={{
-              position: 'fixed',
-              bottom: 16,
-              right: 16,
-              background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
-              boxShadow: '0 8px 25px rgba(76, 175, 80, 0.3)',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)',
-                transform: 'scale(1.1)',
-                boxShadow: '0 12px 35px rgba(76, 175, 80, 0.4)',
-              }
-            }}
-          >
-            <Add />
-          </Fab>
+          {/* Le bouton d'ajout rapide est maintenant dans la barre de navigation */}
 
           {/* Popup QuickAdd */}
           <QuickAdd open={showQuickAdd} onClose={() => setShowQuickAdd(false)} />
