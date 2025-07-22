@@ -179,7 +179,7 @@ const KPICard = memo(({
   }
 
   return (
-    <Zoom in timeout={600}>
+    <Zoom in timeout={600} mountOnEnter unmountOnExit>
       <Box
         sx={styles.container}
         onClick={onClick}

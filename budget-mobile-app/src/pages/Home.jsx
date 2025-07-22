@@ -1573,7 +1573,7 @@ const Home = () => {
         {/* KPIs principaux avec design bulles transparentes */}
         <Grid container spacing={2} sx={{ mb: 4 }}>
           <Grid item xs={6} sm={6} md={3}>
-            <Zoom in timeout={600}>
+            <Zoom in timeout={600} mountOnEnter unmountOnExit>
               <Box sx={{ 
                 p: 3,
                 borderRadius: 4,
@@ -1643,7 +1643,7 @@ const Home = () => {
           </Grid>
 
           <Grid item xs={6} sm={6} md={3}>
-            <Zoom in timeout={700}>
+            <Zoom in timeout={700} mountOnEnter unmountOnExit>
               <Box sx={{ 
                 p: 3,
                 borderRadius: 4,
@@ -1713,7 +1713,7 @@ const Home = () => {
           </Grid>
 
           <Grid item xs={6} sm={6} md={3}>
-            <Zoom in timeout={800}>
+            <Zoom in timeout={800} mountOnEnter unmountOnExit>
               <Box sx={{ 
                 p: 3,
                 borderRadius: 4,
@@ -1787,7 +1787,7 @@ const Home = () => {
           </Grid>
 
           <Grid item xs={6} sm={6} md={3}>
-            <Zoom in timeout={900}>
+            <Zoom in timeout={900} mountOnEnter unmountOnExit>
               <Box sx={{ 
                 p: 3,
                 borderRadius: 4,

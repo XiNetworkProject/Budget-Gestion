@@ -121,8 +121,8 @@ const HeaderSection = React.memo(({ user, selectedMonth, selectedYear, navigateM
   const navigate = useNavigate();
 
   return (
-    <Fade in timeout={1000}>
-      <Box sx={{ mb: 4 }}>
+            <Fade in timeout={1000} mountOnEnter unmountOnExit>
+          <Box sx={{ mb: 4 }}>
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
@@ -325,7 +325,7 @@ const HeaderSection = React.memo(({ user, selectedMonth, selectedYear, navigateM
 
 // Composant de solde principal optimisé
 const BalanceSection = React.memo(({ selectedMonthSaved, getMonthName, selectedMonth, selectedYear, t }) => (
-  <Fade in timeout={1000}>
+  <Fade in timeout={1000} mountOnEnter unmountOnExit>
     <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
       <Box
         sx={{ 
@@ -620,7 +620,7 @@ const HomeOptimized = () => {
         <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, position: 'relative', zIndex: 1 }}>
           {/* Alerte de connexion */}
           {!isAuthenticated && (
-            <Fade in timeout={800}>
+            <Fade in timeout={800} mountOnEnter unmountOnExit>
               <Alert 
                 severity="warning" 
                 sx={{ 
@@ -647,7 +647,7 @@ const HomeOptimized = () => {
           )}
           
           {isAuthenticated && !serverConnected && (
-            <Fade in timeout={800}>
+            <Fade in timeout={800} mountOnEnter unmountOnExit>
               <Alert 
                 severity="info" 
                 sx={{ 

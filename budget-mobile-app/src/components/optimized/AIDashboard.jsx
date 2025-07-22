@@ -88,7 +88,7 @@ const AIAnalysisCard = memo(({ analysis, onAction }) => {
   const config = AI_ANALYSIS_CONFIG[analysis.type];
 
   return (
-    <Zoom in timeout={600}>
+    <Zoom in timeout={600} mountOnEnter unmountOnExit>
       <Paper
         sx={{
           p: 3,

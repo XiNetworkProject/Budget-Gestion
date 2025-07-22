@@ -657,7 +657,7 @@ const Analytics = () => {
             {/* Graphiques glassmorphism */}
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
-                <Zoom in timeout={600}>
+                <Zoom in timeout={600} mountOnEnter unmountOnExit>
                   <Paper sx={{ 
                     p: 2,
                     background: 'rgba(255, 255, 255, 0.1)',
@@ -687,7 +687,7 @@ const Analytics = () => {
               </Grid>
 
               <Grid item xs={12} md={6}>
-                <Zoom in timeout={800}>
+                <Zoom in timeout={800} mountOnEnter unmountOnExit>
                   <Paper sx={{ 
                     p: 2,
                     background: 'rgba(255, 255, 255, 0.1)',
@@ -717,7 +717,7 @@ const Analytics = () => {
               </Grid>
 
               <Grid item xs={12}>
-                <Zoom in timeout={1000}>
+                <Zoom in timeout={1000} mountOnEnter unmountOnExit>
                   <Paper sx={{ 
                     p: 2,
                     background: 'rgba(255, 255, 255, 0.1)',
