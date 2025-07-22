@@ -17,7 +17,7 @@ import {
 } from '@mui/icons-material';
 import Tutorial from './Tutorial';
 import UpdateDialog from './UpdateDialog';
-import ModernNavigation from './optimized/ModernNavigation';
+import FloatingMenu from './optimized/FloatingMenu';
 import toast from 'react-hot-toast';
 
 const Layout = () => {
@@ -179,7 +179,100 @@ const Layout = () => {
         <Outlet />
       </Box>
 
-      <ModernNavigation />
+      <FloatingMenu onQuickAdd={() => navigate('/quick-add')} />
+
+      <BottomNavigation
+        value={value}
+        onChange={(event, newValue) => {
+          setValue(newValue);
+          navigate(paths[newValue]);
+        }}
+        showLabels
+        sx={{ 
+          position: 'fixed', 
+          bottom: 0, 
+          left: 0, 
+          right: 0, 
+          zIndex: 1000,
+          background: 'rgba(255,255,255,0.95)',
+          backdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(0,0,0,0.1)',
+          boxShadow: '0 -4px 20px rgba(0,0,0,0.1)'
+        }}
+      >
+        <BottomNavigationAction 
+          label={t('navigation.home')} 
+          icon={<HomeIcon />} 
+          sx={{ 
+            '&.Mui-selected': { 
+              color: '#2196f3',
+              '& .MuiBottomNavigationAction-label': {
+                color: '#2196f3'
+              }
+            }
+          }}
+        />
+        <BottomNavigationAction 
+          label={t('navigation.expenses')} 
+          icon={<MoneyIcon />} 
+          sx={{ 
+            '&.Mui-selected': { 
+              color: '#f44336',
+              '& .MuiBottomNavigationAction-label': {
+                color: '#f44336'
+              }
+            }
+          }}
+        />
+        <BottomNavigationAction 
+          label={t('navigation.income')} 
+          icon={<IncomeIcon />} 
+          sx={{ 
+            '&.Mui-selected': { 
+              color: '#4caf50',
+              '& .MuiBottomNavigationAction-label': {
+                color: '#4caf50'
+              }
+            }
+          }}
+        />
+        <BottomNavigationAction 
+          label={t('navigation.analytics')} 
+          icon={<BarChartIcon />} 
+          sx={{ 
+            '&.Mui-selected': { 
+              color: '#ff9800',
+              '& .MuiBottomNavigationAction-label': {
+                color: '#ff9800'
+              }
+            }
+          }}
+        />
+        <BottomNavigationAction 
+          label={t('navigation.savings')} 
+          icon={<SavingsIcon />} 
+          sx={{ 
+            '&.Mui-selected': { 
+              color: '#9c27b0',
+              '& .MuiBottomNavigationAction-label': {
+                color: '#9c27b0'
+              }
+            }
+          }}
+        />
+        <BottomNavigationAction 
+          label={t('navigation.settings')} 
+          icon={<SettingsIcon />} 
+          sx={{ 
+            '&.Mui-selected': { 
+              color: '#607d8b',
+              '& .MuiBottomNavigationAction-label': {
+                color: '#607d8b'
+              }
+            }
+          }}
+        />
+      </BottomNavigation>
 
       {/* Indicateur d'abonnement discret */}
       {getSubscriptionIcon() && (

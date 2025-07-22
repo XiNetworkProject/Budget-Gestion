@@ -246,7 +246,7 @@ const Subscription = () => {
     const isFreePlan = plan.price === 0;
 
     return (
-      <Zoom in timeout={600} mountOnEnter unmountOnExit>
+      <Zoom in timeout={600}>
         <Card 
           sx={{ 
             height: '100%',

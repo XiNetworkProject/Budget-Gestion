@@ -139,7 +139,7 @@ const GoalCard = memo(({ goal, progress, onComplete }) => {
   const isCompleted = progress >= goal.target;
 
   return (
-    <Zoom in timeout={600} mountOnEnter unmountOnExit>
+    <Zoom in timeout={600}>
       <Paper
         sx={{
           p: 3,

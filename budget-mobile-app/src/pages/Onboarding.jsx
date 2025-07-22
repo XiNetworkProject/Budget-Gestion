@@ -217,7 +217,7 @@ const steps = [
       }}>
         {/* Icon and Title glassmorphism */}
         <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Zoom in timeout={600} mountOnEnter unmountOnExit>
+          <Zoom in timeout={600}>
             <Avatar 
               sx={{ 
                 width: 120, 
@@ -235,7 +235,7 @@ const steps = [
             </Avatar>
           </Zoom>
           
-          <Fade in timeout={800} mountOnEnter unmountOnExit>
+          <Fade in timeout={800}>
             <Box>
               <Typography variant="h4" sx={{ 
                 fontWeight: 'bold', 
@@ -272,7 +272,7 @@ const steps = [
         </Slide>
 
         {/* Features glassmorphism */}
-        <Fade in timeout={1200} mountOnEnter unmountOnExit>
+        <Fade in timeout={1200}>
           <Box sx={{ mb: 4 }}>
             <Grid container spacing={2}>
               {currentStep.features.map((feature, index) => (

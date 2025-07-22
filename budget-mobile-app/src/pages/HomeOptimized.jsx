@@ -45,7 +45,10 @@ import {
   Refresh,
   Savings,
   MoreVert,
-  Info
+  Info,
+  BarChart,
+  History,
+  Settings
 } from '@mui/icons-material';
 
 // Composants optimisés
@@ -54,6 +57,12 @@ import LoadingSpinner from '../components/optimized/LoadingSpinner';
 import KPICard from '../components/optimized/KPICard';
 import { VirtualizedTransactions, VirtualizedRecommendations } from '../components/optimized/VirtualizedList';
 import { FinancialCharts } from '../components/optimized/OptimizedCharts';
+
+// Nouveaux composants modulaires
+import HeaderSection from '../components/optimized/HeaderSection';
+import BalanceCard from '../components/optimized/BalanceCard';
+import { QuickActionsSection } from '../components/optimized/ActionCard';
+import { RecommendationsSection } from '../components/optimized/RecommendationCard';
 
 // Hooks optimisés
 import useOptimizedData from '../hooks/useOptimizedData';
@@ -116,298 +125,6 @@ const BackgroundParticles = React.memo(() => (
   </Box>
 ));
 
-// Composant d'en-tête optimisé
-const HeaderSection = React.memo(({ user, selectedMonth, selectedYear, navigateMonth, getMonthName, getSubscriptionIcon, getSubscriptionText, getSubscriptionColor, serverConnected, logout, t }) => {
-  const navigate = useNavigate();
-
-  return (
-            <Fade in timeout={1000} mountOnEnter unmountOnExit>
-          <Box sx={{ mb: 4 }}>
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'flex-start', 
-          mb: 3,
-          flexWrap: 'wrap',
-          gap: 2
-        }}>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography 
-              variant="h3" 
-              sx={{ 
-                fontWeight: 800,
-                fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-                color: 'white',
-                textShadow: '0 4px 8px rgba(0,0,0,0.3)',
-                background: 'linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                letterSpacing: '-0.5px',
-                lineHeight: 1.2,
-                mb: 1
-              }}
-            >
-              {t('home.hello')}{user?.name ? `, ${user.name}` : ''}
-            </Typography>
-            <Typography 
-              variant="h6" 
-              sx={{ 
-                color: 'rgba(255,255,255,0.8)',
-                fontWeight: 400,
-                letterSpacing: '0.5px'
-              }}
-            >
-              {getMonthName(selectedMonth, selectedYear)}
-            </Typography>
-          </Box>
-          
-          <Box sx={{ 
-            display: 'flex', 
-            gap: 1,
-            flexWrap: 'wrap'
-          }}>
-            <IconButton
-              sx={{
-                color: 'white',
-                background: 'rgba(255,255,255,0.1)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                '&:hover': {
-                  background: 'rgba(255,255,255,0.2)',
-                  transform: 'scale(1.1)',
-                  transition: 'all 0.2s ease'
-                }
-              }}
-            >
-              <Notifications />
-            </IconButton>
-            <IconButton
-              sx={{
-                color: 'white',
-                background: 'rgba(255,255,255,0.1)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                '&:hover': {
-                  background: 'rgba(255,255,255,0.2)',
-                  transform: 'scale(1.1)',
-                  transition: 'all 0.2s ease'
-                }
-              }}
-            >
-              <Refresh />
-            </IconButton>
-            <IconButton
-              onClick={() => navigate('/subscription')}
-              sx={{
-                color: getSubscriptionColor(),
-                background: 'rgba(255,255,255,0.1)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                '&:hover': {
-                  background: 'rgba(255,255,255,0.2)',
-                  transform: 'scale(1.1)',
-                  transition: 'all 0.2s ease'
-                }
-              }}
-              title={`${t('subscription.currentPlan')}: ${getSubscriptionText()}`}
-            >
-              {getSubscriptionIcon()}
-            </IconButton>
-            <IconButton
-              sx={{
-                color: serverConnected ? '#4caf50' : '#ff9800',
-                background: 'rgba(255,255,255,0.1)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                '&:hover': {
-                  background: 'rgba(255,255,255,0.2)',
-                  transform: 'scale(1.1)',
-                  transition: 'all 0.2s ease'
-                }
-              }}
-              title={serverConnected ? t('home.connectedToServer') : t('home.offlineModeData')}
-            >
-              <Box sx={{ 
-                width: 8, 
-                height: 8, 
-                borderRadius: '50%', 
-                bgcolor: 'currentColor',
-                animation: serverConnected ? 'none' : 'pulse 2s infinite'
-              }} />
-            </IconButton>
-            <IconButton
-              onClick={() => {
-                if (window.confirm(t('home.confirmLogout'))) {
-                  logout();
-                }
-              }}
-              sx={{
-                color: '#f44336',
-                background: 'rgba(255,255,255,0.1)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                '&:hover': {
-                  background: 'rgba(255,255,255,0.2)',
-                  transform: 'scale(1.1)',
-                  transition: 'all 0.2s ease'
-                }
-              }}
-              title={t('logout')}
-            >
-              <Logout />
-            </IconButton>
-          </Box>
-        </Box>
-
-        <Paper sx={{ 
-          p: 2, 
-          mb: 3, 
-          background: 'rgba(255,255,255,0.1)', 
-          backdropFilter: 'blur(20px)',
-          borderRadius: 4,
-          border: '1px solid rgba(255,255,255,0.2)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
-        }}>
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between',
-            flexWrap: 'wrap',
-            gap: 2
-          }}>
-            <Typography 
-              variant="h5" 
-              sx={{ 
-                color: 'white', 
-                fontWeight: 700,
-                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-              }}
-            >
-              {getMonthName(selectedMonth, selectedYear)}
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <IconButton 
-                onClick={() => navigateMonth('prev')}
-                sx={{ 
-                  color: 'white',
-                  background: 'rgba(255,255,255,0.1)',
-                  '&:hover': {
-                    background: 'rgba(255,255,255,0.2)',
-                    transform: 'scale(1.1)',
-                    transition: 'all 0.2s ease'
-                  }
-                }}
-              >
-                <ArrowBack />
-              </IconButton>
-              <IconButton 
-                onClick={() => navigateMonth('next')}
-                sx={{ 
-                  color: 'white',
-                  background: 'rgba(255,255,255,0.1)',
-                  '&:hover': {
-                    background: 'rgba(255,255,255,0.2)',
-                    transform: 'scale(1.1)',
-                    transition: 'all 0.2s ease'
-                  }
-                }}
-              >
-                <ArrowForward />
-              </IconButton>
-            </Box>
-          </Box>
-        </Paper>
-      </Box>
-    </Fade>
-  );
-});
-
-// Composant de solde principal optimisé
-const BalanceSection = React.memo(({ selectedMonthSaved, getMonthName, selectedMonth, selectedYear, t }) => (
-  <Fade in timeout={1000} mountOnEnter unmountOnExit>
-    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
-      <Box
-        sx={{ 
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          p: 4,
-          borderRadius: '50%',
-          background: selectedMonthSaved >= 0 
-            ? 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)'
-            : 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
-          boxShadow: selectedMonthSaved >= 0
-            ? '0 20px 60px rgba(76, 175, 80, 0.4)'
-            : '0 20px 60px rgba(244, 67, 54, 0.4)',
-          minWidth: { xs: 160, sm: 200, md: 240 },
-          minHeight: { xs: 160, sm: 200, md: 240 },
-          justifyContent: 'center',
-          textAlign: 'center',
-          border: selectedMonthSaved >= 0
-            ? '4px solid rgba(76, 175, 80, 0.3)'
-            : '4px solid rgba(244, 67, 54, 0.3)',
-          transition: 'all 0.4s ease',
-          animation: 'pulse 3s ease-in-out infinite',
-          '&:hover': {
-            transform: 'scale(1.05)',
-            boxShadow: selectedMonthSaved >= 0
-              ? '0 30px 80px rgba(76, 175, 80, 0.6)'
-              : '0 30px 80px rgba(244, 67, 54, 0.6)',
-          }
-        }}
-      >
-        <Typography
-          variant="h2"
-          sx={{
-            fontWeight: 900,
-            color: 'white',
-            fontSize: {
-              xs: selectedMonthSaved >= 1000000 ? '1.8rem' : selectedMonthSaved >= 100000 ? '2.2rem' : '2.6rem',
-              sm: selectedMonthSaved >= 1000000 ? '2.2rem' : selectedMonthSaved >= 100000 ? '2.6rem' : '3rem',
-              md: selectedMonthSaved >= 1000000 ? '2.6rem' : selectedMonthSaved >= 100000 ? '3rem' : '3.5rem'
-            },
-            lineHeight: 1.1,
-            textShadow: '0 4px 8px rgba(0,0,0,0.3)',
-            wordBreak: 'break-word',
-            maxWidth: '90%'
-          }}
-        >
-          <CurrencyFormatter amount={selectedMonthSaved} />
-        </Typography>
-        <Box
-          sx={{
-            position: 'absolute',
-            top: -12,
-            right: -12,
-            width: 32,
-            height: 32,
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.95)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-            border: '2px solid white'
-          }}
-        >
-          <Typography
-            variant="caption"
-            sx={{
-              fontSize: '0.8rem',
-              fontWeight: 900,
-              color: selectedMonthSaved >= 0 ? '#4caf50' : '#f44336'
-            }}
-          >
-            {selectedMonthSaved >= 0 ? '✓' : '!'}
-          </Typography>
-        </Box>
-      </Box>
-    </Box>
-  </Fade>
-));
-
 // Composant principal optimisé
 const HomeOptimized = () => {
   const { 
@@ -420,7 +137,8 @@ const HomeOptimized = () => {
     logout,
     serverConnected,
     getCurrentPlan,
-    isFeatureAvailable
+    isFeatureAvailable,
+    reloadBudgetData
   } = useStore();
   
   const navigate = useNavigate();
@@ -484,6 +202,42 @@ const HomeOptimized = () => {
     if (currentPlan.id === 'pro') return '#00D4FF';
     return '#9E9E9E';
   }, [getCurrentPlan]);
+
+  // Actions rapides memoizées
+  const quickActions = useMemo(() => [
+    {
+      icon: Add,
+      label: 'Ajouter',
+      description: 'Nouvelle transaction',
+      color: '#4caf50',
+      onClick: () => setShowQuickAdd(true),
+      variant: 'primary'
+    },
+    {
+      icon: Assignment,
+      label: 'Plans',
+      description: 'Plans d\'action',
+      color: '#667eea',
+      onClick: () => navigate('/action-plans'),
+      variant: 'secondary'
+    },
+    {
+      icon: Analytics,
+      label: 'Analytics',
+      description: 'Analyses détaillées',
+      color: '#ff9800',
+      onClick: () => navigate('/analytics'),
+      variant: 'secondary'
+    },
+    {
+      icon: Savings,
+      label: 'Épargne',
+      description: 'Objectifs d\'épargne',
+      color: '#9c27b0',
+      onClick: () => navigate('/savings'),
+      variant: 'secondary'
+    }
+  ], [navigate, setShowQuickAdd]);
 
   // Données pour les graphiques memoizées
   const chartData = useMemo(() => {
@@ -554,6 +308,23 @@ const HomeOptimized = () => {
     }
   }, [navigate]);
 
+  // Calcul des métriques de performance
+  const performanceMetrics = useMemo(() => {
+    const income = selectedMonthData?.income || 0;
+    const expenses = selectedMonthData?.expenses || 0;
+    const saved = selectedMonthData?.saved || 0;
+    
+    const savingsRate = income > 0 ? (saved / income) * 100 : 0;
+    const budgetRespect = expenses > 0 ? Math.min((income - expenses) / income * 100, 100) : 100;
+    const balanceTrend = saved > 0 ? 5 : saved < 0 ? -3 : 0;
+    
+    return {
+      savingsRate,
+      budgetRespect,
+      balanceTrend
+    };
+  }, [selectedMonthData]);
+
   // Si les données ne sont pas encore chargées
   if (!hasData && isCalculating) {
     return (
@@ -620,7 +391,7 @@ const HomeOptimized = () => {
         <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, position: 'relative', zIndex: 1 }}>
           {/* Alerte de connexion */}
           {!isAuthenticated && (
-            <Fade in timeout={800} mountOnEnter unmountOnExit>
+            <Fade in timeout={800}>
               <Alert 
                 severity="warning" 
                 sx={{ 
@@ -647,7 +418,7 @@ const HomeOptimized = () => {
           )}
           
           {isAuthenticated && !serverConnected && (
-            <Fade in timeout={800} mountOnEnter unmountOnExit>
+            <Fade in timeout={800}>
               <Alert 
                 severity="info" 
                 sx={{ 
@@ -665,7 +436,7 @@ const HomeOptimized = () => {
             </Fade>
           )}
           
-          {/* En-tête */}
+          {/* En-tête amélioré */}
           <HeaderSection 
             user={user}
             selectedMonth={selectedMonth}
@@ -677,15 +448,21 @@ const HomeOptimized = () => {
             getSubscriptionColor={getSubscriptionColor}
             serverConnected={serverConnected}
             logout={logout}
+            balanceTrend={performanceMetrics.balanceTrend}
+            onRefresh={reloadBudgetData}
             t={t}
           />
 
-          {/* Solde principal */}
-          <BalanceSection 
+          {/* Solde principal amélioré */}
+          <BalanceCard 
             selectedMonthSaved={selectedMonthData?.saved || 0}
             getMonthName={getMonthName}
             selectedMonth={selectedMonth}
             selectedYear={selectedYear}
+            income={selectedMonthData?.income || 0}
+            expenses={selectedMonthData?.expenses || 0}
+            savingsRate={performanceMetrics.savingsRate}
+            budgetRespect={performanceMetrics.budgetRespect}
             t={t}
           />
 
@@ -700,6 +477,7 @@ const HomeOptimized = () => {
                 subtitle={getMonthName(selectedMonth, selectedYear)}
                 variant="elegant"
                 loading={isCalculating}
+                onClick={() => navigate('/income')}
               />
             </Grid>
             <Grid item xs={6} sm={6} md={3}>
@@ -711,6 +489,7 @@ const HomeOptimized = () => {
                 subtitle={getMonthName(selectedMonth, selectedYear)}
                 variant="elegant"
                 loading={isCalculating}
+                onClick={() => navigate('/expenses')}
               />
             </Grid>
             <Grid item xs={6} sm={6} md={3}>
@@ -720,9 +499,10 @@ const HomeOptimized = () => {
                 icon={Savings}
                 color="#2196f3"
                 subtitle={t('home.thisMonth')}
-                progress={selectedMonthData?.income > 0 ? (selectedMonthData.saved / selectedMonthData.income) * 100 : 0}
+                progress={performanceMetrics.savingsRate}
                 variant="elegant"
                 loading={isCalculating}
+                onClick={() => navigate('/savings')}
               />
             </Grid>
             <Grid item xs={6} sm={6} md={3}>
@@ -734,125 +514,29 @@ const HomeOptimized = () => {
                 subtitle={getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
                 variant="elegant"
                 loading={isCalculating}
+                onClick={() => navigate('/analytics')}
               />
             </Grid>
           </Grid>
 
-          {/* Actions rapides */}
-          <Paper sx={{ 
-            p: 3, 
-            mb: 4,
-            background: 'rgba(255,255,255,0.1)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: 4,
-            border: '1px solid rgba(255,255,255,0.2)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-            }
-          }}>
-            <Typography variant="h5" gutterBottom sx={{ 
-              fontWeight: 700, 
-              mb: 3,
-              color: 'white',
-              textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-            }}>
-              {t('home.quickActions')}
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={6} sm={3}>
-                <Button
-                  component={RouterLink}
-                  to="/action-plans"
-                  variant="contained"
-                  startIcon={<Assignment />}
-                  fullWidth
-                  sx={{ 
-                    py: 2,
-                    borderRadius: 3,
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: '0 12px 35px rgba(102, 126, 234, 0.4)',
-                    }
-                  }}
-                >
-                  Plans d'actions
-                </Button>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Button
-                  component={RouterLink}
-                  to="/expenses"
-                  variant="contained"
-                  fullWidth
-                  sx={{ 
-                    py: 2,
-                    borderRadius: 3,
-                    background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
-                    boxShadow: '0 8px 25px rgba(244, 67, 54, 0.3)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: '0 12px 35px rgba(244, 67, 54, 0.4)',
-                    }
-                  }}
-                >
-                  Dépenses
-                </Button>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Button
-                  component={RouterLink}
-                  to="/income"
-                  variant="contained"
-                  fullWidth
-                  sx={{ 
-                    py: 2,
-                    borderRadius: 3,
-                    background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
-                    boxShadow: '0 8px 25px rgba(76, 175, 80, 0.3)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: '0 12px 35px rgba(76, 175, 80, 0.4)',
-                    }
-                  }}
-                >
-                  Revenus
-                </Button>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Button
-                  component={RouterLink}
-                  to="/analytics"
-                  variant="contained"
-                  fullWidth
-                  sx={{ 
-                    py: 2,
-                    borderRadius: 3,
-                    background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
-                    boxShadow: '0 8px 25px rgba(33, 150, 243, 0.3)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: '0 12px 35px rgba(33, 150, 243, 0.4)',
-                    }
-                  }}
-                >
-                  Analytics
-                </Button>
-              </Grid>
-            </Grid>
-          </Paper>
+          {/* Actions rapides améliorées */}
+          <QuickActionsSection actions={quickActions} t={t} />
 
           {/* Graphiques optimisés */}
           <Suspense fallback={<LoadingSpinner message="Chargement des graphiques..." />}>
             <Box sx={{ mb: 4 }}>
+              <Typography 
+                variant="h5" 
+                sx={{ 
+                  fontWeight: 700, 
+                  mb: 3,
+                  color: 'white',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                  textAlign: 'center'
+                }}
+              >
+                Évolution financière
+              </Typography>
               <FinancialCharts
                 lineData={chartData.lineData}
                 doughnutData={chartData.doughnutData}
@@ -863,56 +547,12 @@ const HomeOptimized = () => {
 
           {/* Recommandations optimisées */}
           {isFeatureAvailable('aiAnalysis') && recommendations && recommendations.length > 0 && (
-            <Paper sx={{ 
-              p: 3, 
-              mb: 4,
-              background: 'rgba(255,255,255,0.1)',
-              backdropFilter: 'blur(20px)',
-              borderRadius: 4,
-              border: '1px solid rgba(255,255,255,0.2)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
-              }
-            }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-                <Box sx={{ 
-                  p: 1.5, 
-                  borderRadius: 3, 
-                  background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
-                  mr: 2,
-                  boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
-                }}>
-                  <Lightbulb sx={{ color: 'white', fontSize: 28 }} />
-                </Box>
-                <Typography variant="h5" sx={{ 
-                  fontWeight: 700,
-                  color: 'white',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                }}>
-                  Recommandations intelligentes
-                </Typography>
-                <Chip 
-                  label={t('home.ai')} 
-                  size="small" 
-                  sx={{ 
-                    ml: 2,
-                    background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
-                    color: 'white',
-                    fontWeight: 600,
-                    boxShadow: '0 4px 12px rgba(33, 150, 243, 0.3)'
-                  }}
-                />
-              </Box>
-              
-              <VirtualizedRecommendations
-                recommendations={recommendations}
-                loading={isCalculating}
-                onActionClick={handleRecommendationAction}
-              />
-            </Paper>
+            <RecommendationsSection
+              recommendations={recommendations}
+              loading={isCalculating}
+              onActionClick={handleRecommendationAction}
+              t={t}
+            />
           )}
 
           {/* Transactions récentes optimisées */}
