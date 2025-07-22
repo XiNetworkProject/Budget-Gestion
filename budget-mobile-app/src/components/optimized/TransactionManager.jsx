@@ -15,6 +15,7 @@ import {
   Avatar,
   Tooltip,
   Fade,
+  Zoom,
   Alert,
   Snackbar,
   Fab,
@@ -65,9 +66,10 @@ import {
   LocalOffer,
   AccountBalance
 } from '@mui/icons-material';
-
-// Composant Zoom sécurisé
-import SafeZoom from './SafeZoom';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { fr } from 'date-fns/locale';
 
 const TransactionManager = memo(({ 
   type = 'expenses', // 'expenses' ou 'income'
@@ -86,7 +88,7 @@ const TransactionManager = memo(({
     amount: '',
     category: '',
     description: '',
-    date: new Date().toISOString().split('T')[0], // Format YYYY-MM-DD
+    date: new Date(),
     recurring: false,
     recurringType: 'monthly'
   });
@@ -169,7 +171,7 @@ const TransactionManager = memo(({
         amount: transaction.amount.toString(),
         category: transaction.category,
         description: transaction.description,
-        date: new Date(transaction.date).toISOString().split('T')[0],
+        date: new Date(transaction.date),
         recurring: transaction.recurring || false,
         recurringType: transaction.recurringType || 'monthly'
       });
@@ -179,7 +181,7 @@ const TransactionManager = memo(({
         amount: '',
         category: selectedCategory?.name || '',
         description: '',
-        date: new Date().toISOString().split('T')[0],
+        date: new Date(),
         recurring: false,
         recurringType: 'monthly'
       });
@@ -194,7 +196,7 @@ const TransactionManager = memo(({
       amount: '',
       category: '',
       description: '',
-      date: new Date().toISOString().split('T')[0],
+      date: new Date(),
       recurring: false,
       recurringType: 'monthly'
     });
@@ -213,7 +215,7 @@ const TransactionManager = memo(({
     const transactionData = {
       ...newTransaction,
       amount: parseFloat(newTransaction.amount),
-      date: new Date(newTransaction.date).toISOString(),
+      date: newTransaction.date.toISOString(),
       type
     };
 
@@ -412,7 +414,7 @@ const TransactionManager = memo(({
       {/* Liste des transactions */}
       <List sx={{ p: 0 }}>
         {filteredTransactions.map((transaction, index) => (
-          <SafeZoom key={transaction.id} timeout={800 + index * 100}>
+          <Zoom in timeout={800 + index * 100} key={transaction.id}>
             <Paper sx={{
               mb: 2,
               background: 'rgba(255, 255, 255, 0.1)',
@@ -498,7 +500,7 @@ const TransactionManager = memo(({
                 </ListItemSecondaryAction>
               </ListItem>
             </Paper>
-          </SafeZoom>
+          </Zoom>
         ))}
       </List>
 
@@ -602,74 +604,68 @@ const TransactionManager = memo(({
           {editingTransaction ? t('transactionManager.editTransaction') : t('transactionManager.addTransaction')}
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label={t('transactionManager.description')}
-                value={newTransaction.description}
-                onChange={(e) => setNewTransaction({ ...newTransaction, description: e.target.value })}
-                variant="outlined"
-                required
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label={t('transactionManager.amount')}
-                type="number"
-                value={newTransaction.amount}
-                onChange={(e) => setNewTransaction({ ...newTransaction, amount: e.target.value })}
-                variant="outlined"
-                required
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">€</InputAdornment>
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>{t('transactionManager.category')}</InputLabel>
-                <Select
-                  value={newTransaction.category}
-                  onChange={(e) => setNewTransaction({ ...newTransaction, category: e.target.value })}
-                  label={t('transactionManager.category')}
+          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label={t('transactionManager.description')}
+                  value={newTransaction.description}
+                  onChange={(e) => setNewTransaction({ ...newTransaction, description: e.target.value })}
+                  variant="outlined"
                   required
-                >
-                  {categories.map((category) => (
-                    <MenuItem key={category.id} value={category.name}>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Box sx={{
-                          width: 16,
-                          height: 16,
-                          borderRadius: '50%',
-                          bgcolor: category.color,
-                          mr: 1
-                        }} />
-                        {category.name}
-                      </Box>
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label={t('transactionManager.amount')}
+                  type="number"
+                  value={newTransaction.amount}
+                  onChange={(e) => setNewTransaction({ ...newTransaction, amount: e.target.value })}
+                  variant="outlined"
+                  required
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start">€</InputAdornment>
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <FormControl fullWidth>
+                  <InputLabel>{t('transactionManager.category')}</InputLabel>
+                  <Select
+                    value={newTransaction.category}
+                    onChange={(e) => setNewTransaction({ ...newTransaction, category: e.target.value })}
+                    label={t('transactionManager.category')}
+                    required
+                  >
+                    {categories.map((category) => (
+                      <MenuItem key={category.id} value={category.name}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Box sx={{
+                            width: 16,
+                            height: 16,
+                            borderRadius: '50%',
+                            bgcolor: category.color,
+                            mr: 1
+                          }} />
+                          {category.name}
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12}>
+                <DatePicker
+                  label={t('transactionManager.date')}
+                  value={newTransaction.date}
+                  onChange={(date) => setNewTransaction({ ...newTransaction, date })}
+                  renderInput={(params) => <TextField {...params} fullWidth />}
+                />
+              </Grid>
             </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label={t('transactionManager.date')}
-                type="date"
-                value={newTransaction.date}
-                onChange={(e) => setNewTransaction({ ...newTransaction, date: e.target.value })}
-                variant="outlined"
-                required
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">
-                    <CalendarToday />
-                  </InputAdornment>
-                }}
-              />
-            </Grid>
-          </Grid>
+          </LocalizationProvider>
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 1 }}>
           <Button onClick={handleCloseDialog} color="inherit">

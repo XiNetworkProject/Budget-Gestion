@@ -13,6 +13,7 @@ import {
   IconButton,
   Chip,
   Fade,
+  Zoom,
   Alert,
   LinearProgress
 } from '@mui/material';
@@ -43,7 +44,6 @@ import ErrorBoundary from '../components/optimized/ErrorBoundary';
 import LoadingSpinner from '../components/optimized/LoadingSpinner';
 import CategoryManager from '../components/optimized/CategoryManager';
 import TransactionManager from '../components/optimized/TransactionManager';
-import SafeZoom from '../components/optimized/SafeZoom';
 
 ChartJS.register(
   CategoryScale, 
@@ -57,7 +57,7 @@ ChartJS.register(
 
 const ExpensesOptimized = () => {
   const { 
-    categories: rawCategories, 
+    categories, 
     expenses,
     addCategory,
     updateCategory,
@@ -71,18 +71,6 @@ const ExpensesOptimized = () => {
     isAuthenticated,
     activeAccount
   } = useStore();
-
-  // Transformer les catégories simples en objets complets
-  const categories = useMemo(() => {
-    return rawCategories.map((catName, index) => ({
-      id: `cat-${index}`,
-      name: catName,
-      icon: 'Category',
-      color: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#FF8A80'][index % 7],
-      budget: 0,
-      type: 'expense'
-    }));
-  }, [rawCategories]);
   
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(0);
@@ -111,59 +99,29 @@ const ExpensesOptimized = () => {
 
   // Données pour les graphiques
   const chartData = useMemo(() => {
-    // Filtrer les catégories valides et non-undefined
-    const validCategoryData = Object.entries(stats.byCategory)
-      .filter(([category, amount]) => category && category !== 'undefined' && amount > 0)
-      .map(([category, amount]) => ({
-        category: category || 'Autre',
-        amount: parseFloat(amount) || 0
-      }))
-      .sort((a, b) => b.amount - a.amount)
-      .slice(0, 5);
-
-    // Si aucune donnée valide, afficher un message
-    if (validCategoryData.length === 0) {
-      return {
-        doughnut: {
-          labels: ['Aucune donnée'],
-          datasets: [{
-            data: [1],
-            backgroundColor: ['rgba(255, 255, 255, 0.3)'],
-            borderWidth: 2,
-            borderColor: 'rgba(255, 255, 255, 0.8)'
-          }]
-        },
-        bar: {
-          labels: ['Aucune donnée'],
-          datasets: [{
-            label: t('expenses.amount'),
-            data: [0],
-            backgroundColor: 'rgba(255, 255, 255, 0.3)',
-            borderColor: 'rgba(255, 255, 255, 0.5)',
-            borderWidth: 1
-          }]
-        }
-      };
-    }
+    const categoryData = Object.entries(stats.byCategory).map(([category, amount]) => ({
+      category,
+      amount
+    })).sort((a, b) => b.amount - a.amount).slice(0, 5);
 
     return {
       doughnut: {
-        labels: validCategoryData.map(d => d.category),
+        labels: categoryData.map(d => d.category),
         datasets: [{
-          data: validCategoryData.map(d => d.amount),
+          data: categoryData.map(d => d.amount),
           backgroundColor: [
             '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
             '#DDA0DD', '#FF8A80', '#90A4AE', '#FFB74D', '#81C784'
-          ].slice(0, validCategoryData.length),
+          ],
           borderWidth: 2,
           borderColor: 'rgba(255, 255, 255, 0.8)'
         }]
       },
       bar: {
-        labels: validCategoryData.map(d => d.category),
+        labels: categoryData.map(d => d.category),
         datasets: [{
           label: t('expenses.amount'),
-          data: validCategoryData.map(d => d.amount),
+          data: categoryData.map(d => d.amount),
           backgroundColor: 'rgba(255, 107, 107, 0.8)',
           borderColor: '#FF6B6B',
           borderWidth: 1
@@ -181,26 +139,22 @@ const ExpensesOptimized = () => {
   };
 
   const handleAddCategory = (categoryData) => {
-    // Ajouter seulement le nom pour l'ancien système
-    addCategory(categoryData.name);
+    const newCategory = {
+      id: Date.now().toString(),
+      ...categoryData,
+      type: 'expense'
+    };
+    addCategory(newCategory);
   };
 
   const handleUpdateCategory = (categoryId, categoryData) => {
-    // Pour l'ancien système, on supprime et on rajoute
-    const oldCategory = categories.find(c => c.id === categoryId);
-    if (oldCategory) {
-      removeCategory(oldCategory.name);
-      addCategory(categoryData.name);
-    }
+    updateCategory(categoryId, categoryData);
   };
 
   const handleDeleteCategory = (categoryId) => {
-    const category = categories.find(c => c.id === categoryId);
-    if (category) {
-      removeCategory(category.name);
-      if (selectedCategory?.id === categoryId) {
-        setSelectedCategory(null);
-      }
+    removeCategory(categoryId);
+    if (selectedCategory?.id === categoryId) {
+      setSelectedCategory(null);
     }
   };
 
@@ -398,7 +352,7 @@ const ExpensesOptimized = () => {
         {/* Contenu des tabs */}
         <Box sx={{ m: 2 }}>
           {activeTab === 0 && (
-            <SafeZoom in timeout={500}>
+            <Zoom in timeout={500}>
               <TransactionManager
                 type="expenses"
                 transactions={filteredExpenses}
@@ -409,11 +363,11 @@ const ExpensesOptimized = () => {
                 selectedCategory={selectedCategory}
                 t={t}
               />
-            </SafeZoom>
+            </Zoom>
           )}
 
           {activeTab === 1 && (
-            <SafeZoom in timeout={500}>
+            <Zoom in timeout={500}>
               <CategoryManager
                 type="expenses"
                 categories={categories}
@@ -424,11 +378,11 @@ const ExpensesOptimized = () => {
                 selectedCategory={selectedCategory}
                 t={t}
               />
-            </SafeZoom>
+            </Zoom>
           )}
 
           {activeTab === 2 && (
-            <SafeZoom in timeout={500}>
+            <Zoom in timeout={500}>
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                   <Paper sx={{
@@ -510,7 +464,7 @@ const ExpensesOptimized = () => {
                   </Paper>
                 </Grid>
               </Grid>
-            </SafeZoom>
+            </Zoom>
           )}
         </Box>
       </Box>

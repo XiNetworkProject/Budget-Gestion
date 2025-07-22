@@ -15,7 +15,8 @@ import {
   AlertTitle,
   Collapse,
   Fab,
-  Fade
+  Fade,
+  Zoom
 } from '@mui/material';
 import {
   TrendingUp,
@@ -56,7 +57,6 @@ import LoadingSpinner from '../components/optimized/LoadingSpinner';
 import KPICard from '../components/optimized/KPICard';
 import { VirtualizedTransactions, VirtualizedRecommendations } from '../components/optimized/VirtualizedList';
 import { FinancialCharts } from '../components/optimized/OptimizedCharts';
-import SafeZoom from '../components/optimized/SafeZoom';
 
 // Nouveaux composants modulaires
 import HeaderSection from '../components/optimized/HeaderSection';
@@ -217,50 +217,19 @@ const HomeOptimized = () => {
 
   // Fonction de débogage pour tester les calculs de dates
   const debugDateCalculations = useCallback(() => {
-    console.log('=== DÉBOGAGE HOMEOPTIMIZED ===');
-    console.log('Mois/Année sélectionnés:', selectedMonth, selectedYear);
-    console.log('Total revenus dans le store:', incomeTransactions.length);
-    console.log('Total dépenses dans le store:', expenses.length);
+    console.log('=== DÉBOGAGE DES CALCULS DE DATES ===');
+    console.log('Mois sélectionné:', selectedMonth, 'Année sélectionnée:', selectedYear);
     
-    // Afficher quelques exemples de données
-    if (incomeTransactions.length > 0) {
-      console.log('Exemple revenu:', incomeTransactions[0]);
-    }
-    if (expenses.length > 0) {
-      console.log('Exemple dépense:', expenses[0]);
-    }
+    console.log('=== DÉPENSES ===');
+    expenses.forEach((expense, index) => {
+      const isInMonth = isDateInSelectedMonth(expense.date);
+      console.log(`Dépense ${index}: ${expense.category} - ${expense.amount}€ - Date: ${expense.date} -> InMonth: ${isInMonth}`);
+    });
     
-    // Calculer et afficher les données du mois actuel
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
-    console.log('Mois actuel:', currentMonth, currentYear);
-    
-    const currentMonthIncome = incomeTransactions
-      .filter(t => {
-        try {
-          const date = new Date(t.date);
-          return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-        } catch (e) {
-          return false;
-        }
-      })
-      .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
-    
-    const currentMonthExpenses = expenses
-      .filter(e => {
-        try {
-          const date = new Date(e.date);
-          return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-        } catch (e) {
-          return false;
-        }
-      })
-      .reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
-    
-    console.log('Données du mois actuel:', {
-      revenus: currentMonthIncome,
-      depenses: currentMonthExpenses,
-      economies: currentMonthIncome - currentMonthExpenses
+    console.log('=== REVENUS ===');
+    incomeTransactions.forEach((income, index) => {
+      const isInMonth = isDateInSelectedMonth(income.date);
+      console.log(`Revenu ${index}: ${income.type} - ${income.amount}€ - Date: ${income.date} -> InMonth: ${isInMonth}`);
     });
   }, [selectedMonth, selectedYear, expenses, incomeTransactions]);
 
@@ -318,118 +287,30 @@ const HomeOptimized = () => {
     if (!dateString) return false;
     
     try {
-      const date = new Date(dateString);
-      return date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
+      const date = parseDate(dateString);
+      const isInMonth = date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
+      
+      return isInMonth;
     } catch (error) {
+      console.error('Erreur dans isDateInSelectedMonth:', error);
       return false;
     }
-  }, [selectedMonth, selectedYear]);
+  }, [selectedMonth, selectedYear, parseDate]);
 
   // Calculer les données du mois sélectionné
   const selectedMonthData = useMemo(() => {
-    // Debug détaillé des données
-    console.log('=== DEBUG HOMEOPTIMIZED ===');
-    console.log('Mois/Année sélectionnés:', selectedMonth, selectedYear);
-    console.log('Mois/Année actuels:', new Date().getMonth(), new Date().getFullYear());
-    console.log('Total revenus dans le store:', incomeTransactions.length);
-    console.log('Total dépenses dans le store:', expenses.length);
-    
-    // Afficher quelques exemples de données
-    if (incomeTransactions.length > 0) {
-      console.log('Exemple revenu:', {
-        type: incomeTransactions[0].type,
-        amount: incomeTransactions[0].amount,
-        date: incomeTransactions[0].date,
-        parsedDate: new Date(incomeTransactions[0].date)
-      });
-    }
-    if (expenses.length > 0) {
-      console.log('Exemple dépense:', {
-        category: expenses[0].category,
-        amount: expenses[0].amount,
-        date: expenses[0].date,
-        parsedDate: new Date(expenses[0].date)
-      });
-    }
-
     // Calculer les revenus du mois sélectionné
     const selectedMonthIncomeTransactions = incomeTransactions
-      .filter(t => {
-        const isInMonth = isDateInSelectedMonth(t.date);
-        console.log(`Revenu: ${t.type} - ${t.amount}€ - Date: ${t.date} -> InMonth: ${isInMonth}`);
-        return isInMonth;
-      })
-      .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
+      .filter(t => isDateInSelectedMonth(t.date))
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
     
     // Calculer les dépenses du mois sélectionné
     const selectedMonthExpenses = expenses
-      .filter(e => {
-        const isInMonth = isDateInSelectedMonth(e.date);
-        console.log(`Dépense: ${e.category} - ${e.amount}€ - Date: ${e.date} -> InMonth: ${isInMonth}`);
-        return isInMonth;
-      })
-      .reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+      .filter(e => isDateInSelectedMonth(e.date))
+      .reduce((sum, e) => sum + (e.amount || 0), 0);
     
     // Calculer les économies du mois sélectionné
     const selectedMonthSaved = selectedMonthIncomeTransactions - selectedMonthExpenses;
-
-    console.log('=== RÉSULTATS ===');
-    console.log('Revenus du mois:', selectedMonthIncomeTransactions);
-    console.log('Dépenses du mois:', selectedMonthExpenses);
-    console.log('Économies du mois:', selectedMonthSaved);
-
-    // Si aucune donnée pour le mois sélectionné, essayer le mois actuel
-    if (selectedMonthIncomeTransactions === 0 && selectedMonthExpenses === 0) {
-      console.log('Aucune donnée pour le mois sélectionné, essai avec le mois actuel...');
-      
-      const currentMonth = new Date().getMonth();
-      const currentYear = new Date().getFullYear();
-      
-      const currentMonthIncome = incomeTransactions
-        .filter(t => {
-          try {
-            const date = new Date(t.date);
-            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-          } catch (e) {
-            return false;
-          }
-        })
-        .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
-      
-      const currentMonthExpenses = expenses
-        .filter(e => {
-          try {
-            const date = new Date(e.date);
-            return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-          } catch (e) {
-            return false;
-          }
-        })
-        .reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
-      
-      console.log('Données du mois actuel:', {
-        revenus: currentMonthIncome,
-        depenses: currentMonthExpenses,
-        economies: currentMonthIncome - currentMonthExpenses
-      });
-      
-      // Retourner les données du mois actuel si elles existent
-      if (currentMonthIncome > 0 || currentMonthExpenses > 0) {
-        return {
-          income: currentMonthIncome,
-          expenses: currentMonthExpenses,
-          saved: currentMonthIncome - currentMonthExpenses,
-          transactions: transactions.filter(t => {
-            try {
-              const date = new Date(t.date);
-              return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-            } catch (e) {
-              return false;
-            }
-          })
-        };
-      }
-    }
 
     return {
       income: selectedMonthIncomeTransactions,
@@ -437,7 +318,7 @@ const HomeOptimized = () => {
       saved: selectedMonthSaved,
       transactions: transactions.filter(t => isDateInSelectedMonth(t.date))
     };
-  }, [incomeTransactions, expenses, transactions, selectedMonth, selectedYear, isDateInSelectedMonth]);
+  }, [incomeTransactions, expenses, transactions, isDateInSelectedMonth]);
 
   // Système de prévisions intelligentes
   const calculateIntelligentForecast = useCallback(() => {
@@ -902,14 +783,6 @@ const HomeOptimized = () => {
     );
   }
 
-  // Vérification des données critiques
-  console.log('=== VÉRIFICATION DES DONNÉES ===');
-  console.log('isLoading:', isLoading);
-  console.log('incomeTransactions:', incomeTransactions);
-  console.log('expenses:', expenses);
-  console.log('selectedMonthData:', selectedMonthData);
-  console.log('forecast:', forecast);
-
   return (
     <ErrorBoundary>
       <Box sx={{ 
@@ -955,25 +828,9 @@ const HomeOptimized = () => {
         </style>
 
         <Box sx={{ p: 0, position: 'relative', zIndex: 1 }}>
-          {/* Bouton de debug temporaire */}
-          <Box sx={{ position: 'fixed', top: 10, right: 10, zIndex: 1000 }}>
-            <Button
-              variant="contained"
-              size="small"
-              onClick={debugDateCalculations}
-              sx={{
-                background: 'rgba(255, 0, 0, 0.8)',
-                color: 'white',
-                '&:hover': { background: 'rgba(255, 0, 0, 1)' }
-              }}
-            >
-              Debug
-            </Button>
-          </Box>
-
           {/* Alerte de connexion */}
           {!isAuthenticated && (
-            <SafeZoom in timeout={800}>
+            <Fade in timeout={800}>
               <Alert 
                 severity="warning" 
                 sx={{ 
@@ -996,11 +853,11 @@ const HomeOptimized = () => {
                   {t('home.connect')}
                 </Button>
               </Alert>
-            </SafeZoom>
+            </Fade>
           )}
           
           {isAuthenticated && !serverConnected && (
-            <SafeZoom in timeout={800}>
+            <Fade in timeout={800}>
               <Alert 
                 severity="info" 
                 sx={{ 
@@ -1015,7 +872,7 @@ const HomeOptimized = () => {
                 <AlertTitle>{t('home.offlineMode')}</AlertTitle>
                 {t('home.offlineModeMessage')}
               </Alert>
-            </SafeZoom>
+            </Fade>
           )}
           
           {/* En-tête amélioré */}
@@ -1049,65 +906,57 @@ const HomeOptimized = () => {
           />
 
           {/* KPIs optimisés */}
-          <Box sx={{ mb: 4, px: 2 }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={3}>
-                <KPICard
-                  title={t('home.revenues')}
-                  value={selectedMonthData?.income ?? 0}
-                  icon={TrendingUp}
-                  color="#4caf50"
-                  subtitle={getMonthName(selectedMonth, selectedYear)}
-                  variant="elegant"
-                  loading={isLoading}
-                  onClick={() => navigate('/income')}
-                  badge="Nouveau"
-                  badgeColor="#FF9800"
-                  isNew={true}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <KPICard
-                  title={t('home.expenses')}
-                  value={selectedMonthData?.expenses ?? 0}
-                  icon={TrendingDown}
-                  color="#f44336"
-                  subtitle={getMonthName(selectedMonth, selectedYear)}
-                  variant="elegant"
-                  loading={isLoading}
-                  onClick={() => navigate('/expenses')}
-                  badge="Nouveau"
-                  badgeColor="#FF9800"
-                  isNew={true}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <KPICard
-                  title={t('home.savings')}
-                  value={selectedMonthData?.saved ?? 0}
-                  icon={Savings}
-                  color="#2196f3"
-                  subtitle={t('home.thisMonth')}
-                  progress={performanceMetrics?.savingsRate ?? 0}
-                  variant="elegant"
-                  loading={isLoading}
-                  onClick={() => navigate('/savings')}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <KPICard
-                  title={t('home.forecasts')}
-                  value={forecast?.balance ?? 0}
-                  icon={AccountBalance}
-                  color="#ff9800"
-                  subtitle={getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
-                  variant="elegant"
-                  loading={isLoading}
-                  onClick={() => navigate('/analytics')}
-                />
-              </Grid>
+          <Grid container spacing={2} sx={{ mb: 4 }}>
+            <Grid item xs={6} sm={6} md={3}>
+              <KPICard
+                title={t('home.revenues')}
+                value={selectedMonthData?.income || 0}
+                icon={TrendingUp}
+                color="#4caf50"
+                subtitle={getMonthName(selectedMonth, selectedYear)}
+                variant="elegant"
+                loading={isLoading}
+                onClick={() => navigate('/income')}
+              />
             </Grid>
-          </Box>
+            <Grid item xs={6} sm={6} md={3}>
+              <KPICard
+                title={t('home.expenses')}
+                value={selectedMonthData?.expenses || 0}
+                icon={TrendingDown}
+                color="#f44336"
+                subtitle={getMonthName(selectedMonth, selectedYear)}
+                variant="elegant"
+                loading={isLoading}
+                onClick={() => navigate('/expenses')}
+              />
+            </Grid>
+            <Grid item xs={6} sm={6} md={3}>
+              <KPICard
+                title={t('home.savings')}
+                value={selectedMonthData?.saved || 0}
+                icon={Savings}
+                color="#2196f3"
+                subtitle={t('home.thisMonth')}
+                progress={performanceMetrics.savingsRate}
+                variant="elegant"
+                loading={isLoading}
+                onClick={() => navigate('/savings')}
+              />
+            </Grid>
+            <Grid item xs={6} sm={6} md={3}>
+              <KPICard
+                title={t('home.forecasts')}
+                value={forecast?.balance || 0}
+                icon={AccountBalance}
+                color="#ff9800"
+                subtitle={getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
+                variant="elegant"
+                loading={isLoading}
+                onClick={() => navigate('/analytics')}
+              />
+            </Grid>
+          </Grid>
 
           {/* Actions rapides améliorées */}
           <QuickActionsSection actions={quickActions} t={t} />

@@ -15,6 +15,7 @@ import {
   Avatar,
   Tooltip,
   Fade,
+  Zoom,
   Alert,
   Snackbar,
   Fab,
@@ -63,9 +64,6 @@ import {
   Person,
   MonetizationOn
 } from '@mui/icons-material';
-
-// Composant Zoom sécurisé
-import SafeZoom from './SafeZoom';
 
 // Icônes par défaut pour les catégories
 const DEFAULT_ICONS = {
@@ -269,7 +267,7 @@ const CategoryManager = memo(({
           
           return (
             <Grid item xs={12} sm={6} md={4} key={category.id}>
-              <SafeZoom in timeout={800 + index * 100}>
+              <Zoom in timeout={800 + index * 100}>
                 <Card sx={{
                   background: isSelected 
                     ? 'rgba(255, 255, 255, 0.2)' 
@@ -346,7 +344,7 @@ const CategoryManager = memo(({
                     )}
                   </CardContent>
                 </Card>
-              </SafeZoom>
+              </Zoom>
             </Grid>
           );
         })}

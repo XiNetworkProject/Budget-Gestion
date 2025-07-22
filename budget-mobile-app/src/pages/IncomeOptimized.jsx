@@ -13,6 +13,7 @@ import {
   IconButton,
   Chip,
   Fade,
+  Zoom,
   Alert,
   LinearProgress
 } from '@mui/material';
@@ -43,7 +44,6 @@ import ErrorBoundary from '../components/optimized/ErrorBoundary';
 import LoadingSpinner from '../components/optimized/LoadingSpinner';
 import CategoryManager from '../components/optimized/CategoryManager';
 import TransactionManager from '../components/optimized/TransactionManager';
-import SafeZoom from '../components/optimized/SafeZoom';
 
 ChartJS.register(
   CategoryScale, 
@@ -57,7 +57,7 @@ ChartJS.register(
 
 const IncomeOptimized = () => {
   const { 
-    incomeTypes: rawIncomeTypes, 
+    incomeTypes, 
     incomeTransactions,
     addIncomeType,
     updateIncomeType,
@@ -71,18 +71,6 @@ const IncomeOptimized = () => {
     isAuthenticated,
     activeAccount
   } = useStore();
-
-  // Transformer les types de revenus simples en objets complets
-  const categories = useMemo(() => {
-    return rawIncomeTypes.map((typeName, index) => ({
-      id: `income-${index}`,
-      name: typeName,
-      icon: 'TrendingUp',
-      color: ['#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#607D8B', '#795548', '#FF5722'][index % 7],
-      budget: 0,
-      type: 'income'
-    }));
-  }, [rawIncomeTypes]);
   
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(0);
@@ -111,59 +99,29 @@ const IncomeOptimized = () => {
 
   // Données pour les graphiques
   const chartData = useMemo(() => {
-    // Filtrer les catégories valides et non-undefined
-    const validCategoryData = Object.entries(stats.byCategory)
-      .filter(([category, amount]) => category && category !== 'undefined' && amount > 0)
-      .map(([category, amount]) => ({
-        category: category || 'Autre',
-        amount: parseFloat(amount) || 0
-      }))
-      .sort((a, b) => b.amount - a.amount)
-      .slice(0, 5);
-
-    // Si aucune donnée valide, afficher un message
-    if (validCategoryData.length === 0) {
-      return {
-        doughnut: {
-          labels: ['Aucune donnée'],
-          datasets: [{
-            data: [1],
-            backgroundColor: ['rgba(255, 255, 255, 0.3)'],
-            borderWidth: 2,
-            borderColor: 'rgba(255, 255, 255, 0.8)'
-          }]
-        },
-        bar: {
-          labels: ['Aucune donnée'],
-          datasets: [{
-            label: t('income.amount'),
-            data: [0],
-            backgroundColor: 'rgba(255, 255, 255, 0.3)',
-            borderColor: 'rgba(255, 255, 255, 0.5)',
-            borderWidth: 1
-          }]
-        }
-      };
-    }
+    const categoryData = Object.entries(stats.byCategory).map(([category, amount]) => ({
+      category,
+      amount
+    })).sort((a, b) => b.amount - a.amount).slice(0, 5);
 
     return {
       doughnut: {
-        labels: validCategoryData.map(d => d.category),
+        labels: categoryData.map(d => d.category),
         datasets: [{
-          data: validCategoryData.map(d => d.amount),
+          data: categoryData.map(d => d.amount),
           backgroundColor: [
             '#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#607D8B',
             '#795548', '#FF5722', '#00BCD4', '#8BC34A', '#FFC107'
-          ].slice(0, validCategoryData.length),
+          ],
           borderWidth: 2,
           borderColor: 'rgba(255, 255, 255, 0.8)'
         }]
       },
       bar: {
-        labels: validCategoryData.map(d => d.category),
+        labels: categoryData.map(d => d.category),
         datasets: [{
           label: t('income.amount'),
-          data: validCategoryData.map(d => d.amount),
+          data: categoryData.map(d => d.amount),
           backgroundColor: 'rgba(76, 175, 80, 0.8)',
           borderColor: '#4CAF50',
           borderWidth: 1
@@ -181,26 +139,22 @@ const IncomeOptimized = () => {
   };
 
   const handleAddCategory = (categoryData) => {
-    // Ajouter seulement le nom pour l'ancien système
-    addIncomeType(categoryData.name);
+    const newCategory = {
+      id: Date.now().toString(),
+      ...categoryData,
+      type: 'income'
+    };
+    addIncomeType(newCategory);
   };
 
   const handleUpdateCategory = (categoryId, categoryData) => {
-    // Pour l'ancien système, on supprime et on rajoute
-    const oldCategory = categories.find(c => c.id === categoryId);
-    if (oldCategory) {
-      removeIncomeType(oldCategory.name);
-      addIncomeType(categoryData.name);
-    }
+    updateIncomeType(categoryId, categoryData);
   };
 
   const handleDeleteCategory = (categoryId) => {
-    const category = categories.find(c => c.id === categoryId);
-    if (category) {
-      removeIncomeType(category.name);
-      if (selectedCategory?.id === categoryId) {
-        setSelectedCategory(null);
-      }
+    removeIncomeType(categoryId);
+    if (selectedCategory?.id === categoryId) {
+      setSelectedCategory(null);
     }
   };
 
@@ -398,7 +352,7 @@ const IncomeOptimized = () => {
         {/* Contenu des tabs */}
         <Box sx={{ m: 2 }}>
           {activeTab === 0 && (
-            <SafeZoom>
+            <Zoom in timeout={500}>
               <TransactionManager
                 type="income"
                 transactions={filteredIncomes}
@@ -409,11 +363,11 @@ const IncomeOptimized = () => {
                 selectedCategory={selectedCategory}
                 t={t}
               />
-            </SafeZoom>
+            </Zoom>
           )}
 
           {activeTab === 1 && (
-            <SafeZoom>
+            <Zoom in timeout={500}>
               <CategoryManager
                 type="income"
                 categories={incomeTypes}
@@ -424,11 +378,11 @@ const IncomeOptimized = () => {
                 selectedCategory={selectedCategory}
                 t={t}
               />
-            </SafeZoom>
+            </Zoom>
           )}
 
           {activeTab === 2 && (
-            <SafeZoom>
+            <Zoom in timeout={500}>
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                   <Paper sx={{
@@ -510,7 +464,7 @@ const IncomeOptimized = () => {
                   </Paper>
                 </Grid>
               </Grid>
-            </SafeZoom>
+            </Zoom>
           )}
         </Box>
       </Box>
