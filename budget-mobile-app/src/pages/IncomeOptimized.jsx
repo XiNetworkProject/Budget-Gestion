@@ -12,8 +12,6 @@ import {
   Toolbar,
   IconButton,
   Chip,
-  Fade,
-  Zoom,
   Alert,
   LinearProgress
 } from '@mui/material';
@@ -226,39 +224,35 @@ const IncomeOptimized = () => {
 
         {/* Alertes */}
         {!isAuthenticated && (
-          <Fade in timeout={800}>
-            <Alert 
-              severity="warning" 
-              sx={{ 
-                m: 2,
-                background: 'rgba(255, 255, 255, 0.95)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: 3,
-                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)'
-              }}
-            >
-              {t('income.notConnected')}
-            </Alert>
-          </Fade>
+          <Alert 
+            severity="warning" 
+            sx={{ 
+              m: 2,
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: 3,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              border: '1px solid rgba(255,255,255,0.2)'
+            }}
+          >
+            {t('income.notConnected')}
+          </Alert>
         )}
         
         {isAuthenticated && !serverConnected && (
-          <Fade in timeout={800}>
-            <Alert 
-              severity="info" 
-              sx={{ 
-                m: 2,
-                background: 'rgba(255, 255, 255, 0.95)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: 3,
-                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)'
-              }}
-            >
-              {t('income.offlineMode')}
-            </Alert>
-          </Fade>
+          <Alert 
+            severity="info" 
+            sx={{ 
+              m: 2,
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: 3,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              border: '1px solid rgba(255,255,255,0.2)'
+            }}
+          >
+            {t('income.offlineMode')}
+          </Alert>
         )}
 
         {/* Statistiques principales */}
@@ -357,7 +351,13 @@ const IncomeOptimized = () => {
         {/* Contenu des tabs */}
         <Box sx={{ m: 2 }}>
           {activeTab === 0 && (
-            <Zoom in timeout={500}>
+            <Box sx={{
+              animation: mounted ? 'fadeIn 0.5s ease' : 'none',
+              '@keyframes fadeIn': {
+                '0%': { opacity: 0 },
+                '100%': { opacity: 1 }
+              }
+            }}>
               <TransactionManager
                 type="income"
                 transactions={filteredIncomes}
@@ -368,11 +368,17 @@ const IncomeOptimized = () => {
                 selectedCategory={selectedCategory}
                 t={t}
               />
-            </Zoom>
+            </Box>
           )}
 
           {activeTab === 1 && (
-            <Zoom in timeout={500}>
+            <Box sx={{
+              animation: mounted ? 'fadeIn 0.5s ease' : 'none',
+              '@keyframes fadeIn': {
+                '0%': { opacity: 0 },
+                '100%': { opacity: 1 }
+              }
+            }}>
               <CategoryManager
                 type="income"
                 categories={incomeTypes}
@@ -383,11 +389,17 @@ const IncomeOptimized = () => {
                 selectedCategory={selectedCategory}
                 t={t}
               />
-            </Zoom>
+            </Box>
           )}
 
           {activeTab === 2 && (
-            <Zoom in timeout={500}>
+            <Box sx={{
+              animation: mounted ? 'fadeIn 0.5s ease' : 'none',
+              '@keyframes fadeIn': {
+                '0%': { opacity: 0 },
+                '100%': { opacity: 1 }
+              }
+            }}>
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                   <Paper sx={{
@@ -469,7 +481,7 @@ const IncomeOptimized = () => {
                   </Paper>
                 </Grid>
               </Grid>
-            </Zoom>
+            </Box>
           )}
         </Box>
       </Box>

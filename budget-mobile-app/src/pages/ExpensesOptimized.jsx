@@ -12,8 +12,6 @@ import {
   Toolbar,
   IconButton,
   Chip,
-  Fade,
-  Zoom,
   Alert,
   LinearProgress
 } from '@mui/material';
@@ -226,39 +224,35 @@ const ExpensesOptimized = () => {
 
         {/* Alertes */}
         {!isAuthenticated && (
-          <Fade in timeout={800}>
-            <Alert 
-              severity="warning" 
-              sx={{ 
-                m: 2,
-                background: 'rgba(255, 255, 255, 0.95)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: 3,
-                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)'
-              }}
-            >
-              {t('expenses.notConnected')}
-            </Alert>
-          </Fade>
+          <Alert 
+            severity="warning" 
+            sx={{ 
+              m: 2,
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: 3,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              border: '1px solid rgba(255,255,255,0.2)'
+            }}
+          >
+            {t('expenses.notConnected')}
+          </Alert>
         )}
         
         {isAuthenticated && !serverConnected && (
-          <Fade in timeout={800}>
-            <Alert 
-              severity="info" 
-              sx={{ 
-                m: 2,
-                background: 'rgba(255, 255, 255, 0.95)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: 3,
-                boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)'
-              }}
-            >
-              {t('expenses.offlineMode')}
-            </Alert>
-          </Fade>
+          <Alert 
+            severity="info" 
+            sx={{ 
+              m: 2,
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: 3,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+              border: '1px solid rgba(255,255,255,0.2)'
+            }}
+          >
+            {t('expenses.offlineMode')}
+          </Alert>
         )}
 
         {/* Statistiques principales */}
@@ -357,20 +351,13 @@ const ExpensesOptimized = () => {
         {/* Contenu des tabs */}
         <Box sx={{ m: 2 }}>
           {activeTab === 0 && (
-            mounted ? (
-              <Zoom in timeout={500}>
-                <TransactionManager
-                  type="expenses"
-                  transactions={filteredExpenses}
-                  categories={categories}
-                  onAddTransaction={handleAddExpense}
-                  onUpdateTransaction={handleUpdateExpense}
-                  onDeleteTransaction={handleDeleteExpense}
-                  selectedCategory={selectedCategory}
-                  t={t}
-                />
-              </Zoom>
-            ) : (
+            <Box sx={{
+              animation: mounted ? 'fadeIn 0.5s ease' : 'none',
+              '@keyframes fadeIn': {
+                '0%': { opacity: 0 },
+                '100%': { opacity: 1 }
+              }
+            }}>
               <TransactionManager
                 type="expenses"
                 transactions={filteredExpenses}
@@ -381,24 +368,17 @@ const ExpensesOptimized = () => {
                 selectedCategory={selectedCategory}
                 t={t}
               />
-            )
+            </Box>
           )}
 
           {activeTab === 1 && (
-            mounted ? (
-              <Zoom in timeout={500}>
-                <CategoryManager
-                  type="expenses"
-                  categories={categories}
-                  onAddCategory={handleAddCategory}
-                  onUpdateCategory={handleUpdateCategory}
-                  onDeleteCategory={handleDeleteCategory}
-                  onSelectCategory={handleCategorySelect}
-                  selectedCategory={selectedCategory}
-                  t={t}
-                />
-              </Zoom>
-            ) : (
+            <Box sx={{
+              animation: mounted ? 'fadeIn 0.5s ease' : 'none',
+              '@keyframes fadeIn': {
+                '0%': { opacity: 0 },
+                '100%': { opacity: 1 }
+              }
+            }}>
               <CategoryManager
                 type="expenses"
                 categories={categories}
@@ -409,95 +389,17 @@ const ExpensesOptimized = () => {
                 selectedCategory={selectedCategory}
                 t={t}
               />
-            )
+            </Box>
           )}
 
           {activeTab === 2 && (
-            mounted ? (
-              <Zoom in timeout={500}>
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <Paper sx={{
-                      p: 3,
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      backdropFilter: 'blur(20px)',
-                      borderRadius: 3,
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-                    }}>
-                      <Typography variant="h6" sx={{ mb: 2, color: 'white', fontWeight: 600 }}>
-                        {t('expenses.categoryDistribution')}
-                      </Typography>
-                      <Box sx={{ height: 300 }}>
-                        <Doughnut 
-                          data={chartData.doughnut}
-                          options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                              legend: {
-                                position: 'bottom',
-                                labels: {
-                                  color: 'white',
-                                  padding: 20
-                                }
-                              }
-                            }
-                          }}
-                        />
-                      </Box>
-                    </Paper>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Paper sx={{
-                      p: 3,
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      backdropFilter: 'blur(20px)',
-                      borderRadius: 3,
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-                    }}>
-                      <Typography variant="h6" sx={{ mb: 2, color: 'white', fontWeight: 600 }}>
-                        {t('expenses.topCategories')}
-                      </Typography>
-                      <Box sx={{ height: 300 }}>
-                        <Bar 
-                          data={chartData.bar}
-                          options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                              legend: {
-                                display: false
-                              }
-                            },
-                            scales: {
-                              y: {
-                                beginAtZero: true,
-                                ticks: {
-                                  color: 'white'
-                                },
-                                grid: {
-                                  color: 'rgba(255, 255, 255, 0.1)'
-                                }
-                              },
-                              x: {
-                                ticks: {
-                                  color: 'white'
-                                },
-                                grid: {
-                                  color: 'rgba(255, 255, 255, 0.1)'
-                                }
-                              }
-                            }
-                          }}
-                        />
-                      </Box>
-                    </Paper>
-                  </Grid>
-                </Grid>
-              </Zoom>
-            ) : (
+            <Box sx={{
+              animation: mounted ? 'fadeIn 0.5s ease' : 'none',
+              '@keyframes fadeIn': {
+                '0%': { opacity: 0 },
+                '100%': { opacity: 1 }
+              }
+            }}>
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                   <Paper sx={{
@@ -579,7 +481,7 @@ const ExpensesOptimized = () => {
                   </Paper>
                 </Grid>
               </Grid>
-            )
+            </Box>
           )}
         </Box>
       </Box>

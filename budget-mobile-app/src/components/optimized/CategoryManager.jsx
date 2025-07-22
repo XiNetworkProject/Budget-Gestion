@@ -14,8 +14,6 @@ import {
   Chip,
   Avatar,
   Tooltip,
-  Fade,
-  Zoom,
   Alert,
   Snackbar,
   Fab,
@@ -274,161 +272,100 @@ const CategoryManager = memo(({
           
           return (
             <Grid item xs={12} sm={6} md={4} key={category.id}>
-              {mounted ? (
-                <Zoom in timeout={800 + index * 100}>
-                  <Card sx={{
-                    background: isSelected 
-                      ? 'rgba(255, 255, 255, 0.2)' 
-                      : 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(20px)',
-                    borderRadius: 3,
-                    border: isSelected 
-                      ? `2px solid ${category.color}` 
-                      : '1px solid rgba(255, 255, 255, 0.2)',
-                    boxShadow: isSelected 
-                      ? `0 8px 32px rgba(0, 0, 0, 0.2)` 
-                      : '0 4px 16px rgba(0, 0, 0, 0.1)',
-                    transition: 'all 0.3s ease',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
-                      background: 'rgba(255, 255, 255, 0.15)'
-                    }
-                  }} onClick={() => onSelectCategory(category)}>
-                    <CardContent sx={{ p: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                        <Avatar sx={{ 
-                          bgcolor: category.color, 
-                          mr: 2,
-                          width: 40,
-                          height: 40
-                        }}>
-                          <IconComponent />
-                        </Avatar>
-                        <Box sx={{ flexGrow: 1 }}>
-                          <Typography variant="h6" sx={{ 
-                            fontWeight: 600, 
-                            color: 'white',
-                            mb: 0.5
-                          }}>
-                            {category.name}
-                          </Typography>
-                          {category.budget > 0 && (
-                            <Typography variant="body2" sx={{ 
-                              color: 'rgba(255, 255, 255, 0.7)',
-                              fontWeight: 500
-                            }}>
-                              Budget: {category.budget}€
-                            </Typography>
-                          )}
-                        </Box>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleMenuOpen(e, category);
-                          }}
-                          sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
-                        >
-                          <MoreVert />
-                        </IconButton>
-                      </Box>
-                      
-                      {isSelected && (
-                        <Fade in timeout={300}>
-                          <Box sx={{ 
-                            mt: 1, 
-                            p: 1, 
-                            bgcolor: 'rgba(255, 255, 255, 0.1)', 
-                            borderRadius: 1,
-                            border: `1px solid ${category.color}`
-                          }}>
-                            <Typography variant="caption" sx={{ color: 'white' }}>
-                              ✓ {t('categoryManager.selected')}
-                            </Typography>
-                          </Box>
-                        </Fade>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Zoom>
-              ) : (
-                <Card sx={{
-                  background: isSelected 
-                    ? 'rgba(255, 255, 255, 0.2)' 
-                    : 'rgba(255, 255, 255, 0.1)',
-                  backdropFilter: 'blur(20px)',
-                  borderRadius: 3,
-                  border: isSelected 
-                    ? `2px solid ${category.color}` 
-                    : '1px solid rgba(255, 255, 255, 0.2)',
-                  boxShadow: isSelected 
-                    ? `0 8px 32px rgba(0, 0, 0, 0.2)` 
-                    : '0 4px 16px rgba(0, 0, 0, 0.1)',
-                  transition: 'all 0.3s ease',
-                  cursor: 'pointer',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
-                    background: 'rgba(255, 255, 255, 0.15)'
+              <Card sx={{
+                background: isSelected 
+                  ? 'rgba(255, 255, 255, 0.2)' 
+                  : 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: 3,
+                border: isSelected 
+                  ? `2px solid ${category.color}` 
+                  : '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: isSelected 
+                  ? `0 8px 32px rgba(0, 0, 0, 0.2)` 
+                  : '0 4px 16px rgba(0, 0, 0, 0.1)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                animation: mounted ? `fadeInUp 0.6s ease ${index * 0.1}s both` : 'none',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
+                  background: 'rgba(255, 255, 255, 0.15)'
+                },
+                '@keyframes fadeInUp': {
+                  '0%': {
+                    opacity: 0,
+                    transform: 'translateY(20px)'
+                  },
+                  '100%': {
+                    opacity: 1,
+                    transform: 'translateY(0)'
                   }
-                }} onClick={() => onSelectCategory(category)}>
-                  <CardContent sx={{ p: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <Avatar sx={{ 
-                        bgcolor: category.color, 
-                        mr: 2,
-                        width: 40,
-                        height: 40
+                },
+                '@keyframes fadeIn': {
+                  '0%': {
+                    opacity: 0
+                  },
+                  '100%': {
+                    opacity: 1
+                  }
+                }
+              }} onClick={() => onSelectCategory(category)}>
+                <CardContent sx={{ p: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <Avatar sx={{ 
+                      bgcolor: category.color, 
+                      mr: 2,
+                      width: 40,
+                      height: 40
+                    }}>
+                      <IconComponent />
+                    </Avatar>
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography variant="h6" sx={{ 
+                        fontWeight: 600, 
+                        color: 'white',
+                        mb: 0.5
                       }}>
-                        <IconComponent />
-                      </Avatar>
-                      <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="h6" sx={{ 
-                          fontWeight: 600, 
-                          color: 'white',
-                          mb: 0.5
+                        {category.name}
+                      </Typography>
+                      {category.budget > 0 && (
+                        <Typography variant="body2" sx={{ 
+                          color: 'rgba(255, 255, 255, 0.7)',
+                          fontWeight: 500
                         }}>
-                          {category.name}
+                          Budget: {category.budget}€
                         </Typography>
-                        {category.budget > 0 && (
-                          <Typography variant="body2" sx={{ 
-                            color: 'rgba(255, 255, 255, 0.7)',
-                            fontWeight: 500
-                          }}>
-                            Budget: {category.budget}€
-                          </Typography>
-                        )}
-                      </Box>
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleMenuOpen(e, category);
-                        }}
-                        sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
-                      >
-                        <MoreVert />
-                      </IconButton>
+                      )}
                     </Box>
-                    
-                    {isSelected && (
-                      <Box sx={{ 
-                        mt: 1, 
-                        p: 1, 
-                        bgcolor: 'rgba(255, 255, 255, 0.1)', 
-                        borderRadius: 1,
-                        border: `1px solid ${category.color}`
-                      }}>
-                        <Typography variant="caption" sx={{ color: 'white' }}>
-                          ✓ {t('categoryManager.selected')}
-                        </Typography>
-                      </Box>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMenuOpen(e, category);
+                      }}
+                      sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                    >
+                      <MoreVert />
+                    </IconButton>
+                  </Box>
+                  
+                  {isSelected && (
+                    <Box sx={{ 
+                      mt: 1, 
+                      p: 1, 
+                      bgcolor: 'rgba(255, 255, 255, 0.1)', 
+                      borderRadius: 1,
+                      border: `1px solid ${category.color}`,
+                      animation: 'fadeIn 0.3s ease'
+                    }}>
+                      <Typography variant="caption" sx={{ color: 'white' }}>
+                        ✓ {t('categoryManager.selected')}
+                      </Typography>
+                    </Box>
+                  )}
+                </CardContent>
+              </Card>
             </Grid>
           );
         })}
