@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
-import { Box, Chip, Tooltip } from '@mui/material';
+import { Box, Chip, Tooltip, useTheme, useMediaQuery } from '@mui/material';
 import { 
   Star as StarIcon, 
   Diamond as DiamondIcon, 
@@ -17,6 +17,8 @@ const Layout = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { 
     tutorialCompleted, 
     onboardingCompleted,
@@ -149,7 +151,7 @@ const Layout = () => {
   };
 
   return (
-    <Box sx={{ pb: 8 }}>
+    <Box sx={{ pb: isMobile ? 6 : 8, minHeight: '100vh' }}>
       <Tutorial 
         open={showTutorial}
         onClose={() => setShowTutorial(false)}
@@ -165,7 +167,13 @@ const Layout = () => {
         onClose={closeUpdateDialog}
       />
 
-      <Box sx={{ p: 2 }}>
+      <Box sx={{ 
+        p: 0, // Supprime complètement le padding
+        pb: 0, // Supprime le padding bottom pour éviter l'espacement
+        minHeight: 'calc(100vh - 80px)', // Hauteur complète moins la barre de navigation
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
         <Outlet />
       </Box>
 
@@ -177,8 +185,8 @@ const Layout = () => {
         <Box
           sx={{
             position: 'fixed',
-            top: 16,
-            right: 16,
+            top: isMobile ? 8 : 16,
+            right: isMobile ? 8 : 16,
             zIndex: 1000,
             display: 'flex',
             alignItems: 'center',

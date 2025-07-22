@@ -197,7 +197,7 @@ const History = () => {
         </Box>
       </AppBar>
 
-      <Box sx={{ p: 2, pb: 10, position: 'relative', zIndex: 1 }}>
+      <Box sx={{ p: 0, pb: 10, position: 'relative', zIndex: 1 }}>
         {/* Résumé du mois glassmorphism */}
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={12} sm={4}>

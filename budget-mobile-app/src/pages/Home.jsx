@@ -1223,7 +1223,7 @@ const Home = () => {
         `}
       </style>
 
-      <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, position: 'relative', zIndex: 1 }}>
+      <Box sx={{ p: 0, position: 'relative', zIndex: 1 }}>
         {/* Alerte de connexion */}
         {!isAuthenticated && (
           <Fade in timeout={800}>

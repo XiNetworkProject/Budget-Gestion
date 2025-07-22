@@ -7,7 +7,9 @@ import {
   Zoom,
   Fade,
   Dialog,
-  DialogContent
+  DialogContent,
+  useTheme,
+  useMediaQuery
 } from '@mui/material';
 import {
   Home,
@@ -48,6 +50,8 @@ const tabs = [
 const BottomTabs = () => {
   const location = useLocation();
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const handleQuickAdd = () => {
     setShowQuickAdd(true);
@@ -69,30 +73,32 @@ const BottomTabs = () => {
         left: 0,
         right: 0,
         zIndex: 1000,
-        height: 80,
+        height: isMobile ? 70 : 80,
         display: 'flex',
         alignItems: 'flex-end',
-        px: 2
+        px: isMobile ? 1 : 2,
+        pb: 0 // Supprime le padding bottom
       }}>
         {/* Fond de la barre */}
         <Box sx={{
           width: '100%',
-          height: 70,
+          height: isMobile ? 60 : 70,
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
           borderTop: '1px solid rgba(255, 255, 255, 0.3)',
-          borderRadius: '20px 20px 0 0',
+          borderRadius: isMobile ? '16px 16px 0 0' : '20px 20px 0 0',
           boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.1)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          px: 4,
-          position: 'relative'
+          px: isMobile ? 2 : 4,
+          position: 'relative',
+          mb: 0 // Supprime la marge bottom
         }}>
           {/* Onglets de gauche */}
           <Box sx={{ 
             display: 'flex', 
-            gap: 4,
+            gap: isMobile ? 2 : 4,
             flex: 1,
             justifyContent: 'flex-start'
           }}>
@@ -111,9 +117,9 @@ const BottomTabs = () => {
                       flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      minWidth: 50,
-                      height: 50,
-                      borderRadius: '12px',
+                      minWidth: isMobile ? 40 : 50,
+                      height: isMobile ? 45 : 50,
+                      borderRadius: isMobile ? '8px' : '12px',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       color: active ? tab.color : 'rgba(0, 0, 0, 0.5)',
                       background: active ? `rgba(${tab.color === '#4caf50' ? '76, 175, 80' : '33, 150, 243'}, 0.1)` : 'transparent',
@@ -124,12 +130,12 @@ const BottomTabs = () => {
                       }
                     }}>
                       <Icon sx={{ 
-                        fontSize: 24,
-                        mb: 0.5,
+                        fontSize: isMobile ? 20 : 24,
+                        mb: isMobile ? 0.3 : 0.5,
                         filter: active ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' : 'none'
                       }} />
                       <Box sx={{
-                        fontSize: '0.65rem',
+                        fontSize: isMobile ? '0.6rem' : '0.65rem',
                         fontWeight: active ? 600 : 400,
                         opacity: active ? 1 : 0.7,
                         textAlign: 'center',
@@ -145,12 +151,12 @@ const BottomTabs = () => {
           </Box>
 
           {/* Espace pour le bouton central */}
-          <Box sx={{ width: 80 }} />
+          <Box sx={{ width: isMobile ? 60 : 80 }} />
 
           {/* Onglets de droite */}
           <Box sx={{ 
             display: 'flex', 
-            gap: 4,
+            gap: isMobile ? 2 : 4,
             flex: 1,
             justifyContent: 'flex-end'
           }}>
@@ -169,9 +175,9 @@ const BottomTabs = () => {
                       flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      minWidth: 50,
-                      height: 50,
-                      borderRadius: '12px',
+                      minWidth: isMobile ? 40 : 50,
+                      height: isMobile ? 45 : 50,
+                      borderRadius: isMobile ? '8px' : '12px',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       color: active ? tab.color : 'rgba(0, 0, 0, 0.5)',
                       background: active ? `rgba(${tab.color === '#9c27b0' ? '156, 39, 176' : '96, 125, 139'}, 0.1)` : 'transparent',
@@ -182,12 +188,12 @@ const BottomTabs = () => {
                       }
                     }}>
                       <Icon sx={{ 
-                        fontSize: 24,
-                        mb: 0.5,
+                        fontSize: isMobile ? 20 : 24,
+                        mb: isMobile ? 0.3 : 0.5,
                         filter: active ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' : 'none'
                       }} />
                       <Box sx={{
-                        fontSize: '0.65rem',
+                        fontSize: isMobile ? '0.6rem' : '0.65rem',
                         fontWeight: active ? 600 : 400,
                         opacity: active ? 1 : 0.7,
                         textAlign: 'center',
@@ -207,7 +213,7 @@ const BottomTabs = () => {
         <Box sx={{
           position: 'absolute',
           left: '50%',
-          top: -15,
+          top: isMobile ? -12 : -15,
           transform: 'translateX(-50%)',
           zIndex: 1001
         }}>
@@ -218,11 +224,11 @@ const BottomTabs = () => {
                 aria-label="add"
                 onClick={handleQuickAdd}
                 sx={{
-                  width: 70,
-                  height: 70,
+                  width: isMobile ? 56 : 70,
+                  height: isMobile ? 56 : 70,
                   background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
                   boxShadow: '0 8px 25px rgba(76, 175, 80, 0.4), 0 4px 10px rgba(0, 0, 0, 0.1)',
-                  border: '4px solid white',
+                  border: isMobile ? '3px solid white' : '4px solid white',
                   '&:hover': {
                     background: 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)',
                     transform: 'scale(1.1)',
@@ -233,7 +239,7 @@ const BottomTabs = () => {
                   }
                 }}
               >
-                <Add sx={{ fontSize: 32, color: 'white' }} />
+                <Add sx={{ fontSize: isMobile ? 28 : 32, color: 'white' }} />
               </Fab>
             </Tooltip>
           </Zoom>

@@ -449,7 +449,7 @@ const Subscription = () => {
         ))}
       </Box>
 
-      <Box sx={{ p: 2, pb: 10, position: 'relative', zIndex: 1 }}>
+      <Box sx={{ p: 0, pb: 10, position: 'relative', zIndex: 1 }}>
         <Typography variant="h4" sx={{ 
           mb: 3, 
           fontWeight: 'bold',
