@@ -327,17 +327,6 @@ const HomeOptimized = () => {
 
   // Calculer les données du mois sélectionné
   const selectedMonthData = useMemo(() => {
-    // Fonction simplifiée pour vérifier si une date est dans le mois sélectionné
-    const isInSelectedMonth = (dateString) => {
-      if (!dateString) return false;
-      try {
-        const date = new Date(dateString);
-        return date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
-      } catch (error) {
-        return false;
-      }
-    };
-
     // Debug détaillé des données
     console.log('=== DEBUG HOMEOPTIMIZED ===');
     console.log('Mois/Année sélectionnés:', selectedMonth, selectedYear);
@@ -366,7 +355,7 @@ const HomeOptimized = () => {
     // Calculer les revenus du mois sélectionné
     const selectedMonthIncomeTransactions = incomeTransactions
       .filter(t => {
-        const isInMonth = isInSelectedMonth(t.date);
+        const isInMonth = isDateInSelectedMonth(t.date);
         console.log(`Revenu: ${t.type} - ${t.amount}€ - Date: ${t.date} -> InMonth: ${isInMonth}`);
         return isInMonth;
       })
@@ -375,7 +364,7 @@ const HomeOptimized = () => {
     // Calculer les dépenses du mois sélectionné
     const selectedMonthExpenses = expenses
       .filter(e => {
-        const isInMonth = isInSelectedMonth(e.date);
+        const isInMonth = isDateInSelectedMonth(e.date);
         console.log(`Dépense: ${e.category} - ${e.amount}€ - Date: ${e.date} -> InMonth: ${isInMonth}`);
         return isInMonth;
       })
@@ -446,9 +435,9 @@ const HomeOptimized = () => {
       income: selectedMonthIncomeTransactions,
       expenses: selectedMonthExpenses,
       saved: selectedMonthSaved,
-      transactions: transactions.filter(t => isInSelectedMonth(t.date))
+      transactions: transactions.filter(t => isDateInSelectedMonth(t.date))
     };
-  }, [incomeTransactions, expenses, transactions, selectedMonth, selectedYear]);
+  }, [incomeTransactions, expenses, transactions, selectedMonth, selectedYear, isDateInSelectedMonth]);
 
   // Système de prévisions intelligentes
   const calculateIntelligentForecast = useCallback(() => {
@@ -913,6 +902,14 @@ const HomeOptimized = () => {
     );
   }
 
+  // Vérification des données critiques
+  console.log('=== VÉRIFICATION DES DONNÉES ===');
+  console.log('isLoading:', isLoading);
+  console.log('incomeTransactions:', incomeTransactions);
+  console.log('expenses:', expenses);
+  console.log('selectedMonthData:', selectedMonthData);
+  console.log('forecast:', forecast);
+
   return (
     <ErrorBoundary>
       <Box sx={{ 
@@ -1057,7 +1054,7 @@ const HomeOptimized = () => {
               <Grid item xs={12} sm={6} md={3}>
                 <KPICard
                   title={t('home.revenues')}
-                  value={selectedMonthData?.income || 0}
+                  value={selectedMonthData?.income ?? 0}
                   icon={TrendingUp}
                   color="#4caf50"
                   subtitle={getMonthName(selectedMonth, selectedYear)}
@@ -1072,7 +1069,7 @@ const HomeOptimized = () => {
               <Grid item xs={12} sm={6} md={3}>
                 <KPICard
                   title={t('home.expenses')}
-                  value={selectedMonthData?.expenses || 0}
+                  value={selectedMonthData?.expenses ?? 0}
                   icon={TrendingDown}
                   color="#f44336"
                   subtitle={getMonthName(selectedMonth, selectedYear)}
@@ -1087,11 +1084,11 @@ const HomeOptimized = () => {
               <Grid item xs={12} sm={6} md={3}>
                 <KPICard
                   title={t('home.savings')}
-                  value={selectedMonthData?.saved || 0}
+                  value={selectedMonthData?.saved ?? 0}
                   icon={Savings}
                   color="#2196f3"
                   subtitle={t('home.thisMonth')}
-                  progress={performanceMetrics.savingsRate}
+                  progress={performanceMetrics?.savingsRate ?? 0}
                   variant="elegant"
                   loading={isLoading}
                   onClick={() => navigate('/savings')}
@@ -1100,7 +1097,7 @@ const HomeOptimized = () => {
               <Grid item xs={12} sm={6} md={3}>
                 <KPICard
                   title={t('home.forecasts')}
-                  value={forecast?.balance || 0}
+                  value={forecast?.balance ?? 0}
                   icon={AccountBalance}
                   color="#ff9800"
                   subtitle={getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
