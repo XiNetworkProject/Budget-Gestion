@@ -39,7 +39,16 @@ import ModernPageLayout, {
   QuickActionButton,
   StatusChip 
 } from '../components/optimized/ModernPageLayout';
-import CurrencyFormatter from '../components/CurrencyFormatter';
+// Fonction utilitaire pour formater les montants
+const formatCurrency = (amount) => {
+  const numValue = parseFloat(amount) || 0;
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'EUR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  }).format(numValue);
+};
 
 const HomeModern = () => {
   const { 
@@ -49,12 +58,12 @@ const HomeModern = () => {
     setSelectedYear,
     isAuthenticated,
     user,
-    expenses,
-    incomeTransactions,
-    savings,
-    debts,
-    getCurrentPlan,
-    isFeatureAvailable
+    expenses = [],
+    incomeTransactions = [],
+    savings = [],
+    debts = [],
+    getCurrentPlan = () => ({ name: 'Gratuit', id: 'free' }),
+    isFeatureAvailable = () => false
   } = useStore();
   
   const navigate = useNavigate();
@@ -225,7 +234,7 @@ const HomeModern = () => {
           <Grid item xs={12} sm={6} md={3}>
             <ModernMetricCard
               title="Revenus"
-              value={<CurrencyFormatter amount={currentMonthStats.income} />}
+              value={formatCurrency(currentMonthStats.income)}
               icon={TrendingUp}
               color="#4caf50"
               subtitle={`${currentMonthStats.incomeCount} transactions`}
@@ -234,7 +243,7 @@ const HomeModern = () => {
           <Grid item xs={12} sm={6} md={3}>
             <ModernMetricCard
               title="Dépenses"
-              value={<CurrencyFormatter amount={currentMonthStats.expenses} />}
+              value={formatCurrency(currentMonthStats.expenses)}
               icon={TrendingDown}
               color="#f44336"
               subtitle={`${currentMonthStats.expenseCount} transactions`}
@@ -243,7 +252,7 @@ const HomeModern = () => {
           <Grid item xs={12} sm={6} md={3}>
             <ModernMetricCard
               title="Solde"
-              value={<CurrencyFormatter amount={currentMonthStats.balance} />}
+              value={formatCurrency(currentMonthStats.balance)}
               icon={currentMonthStats.balance >= 0 ? TrendingUp : TrendingDown}
               color={currentMonthStats.balance >= 0 ? '#4caf50' : '#f44336'}
               subtitle={currentMonthStats.balance >= 0 ? 'Positif' : 'Négatif'}
