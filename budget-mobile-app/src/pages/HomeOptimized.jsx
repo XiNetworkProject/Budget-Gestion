@@ -15,8 +15,7 @@ import {
   AlertTitle,
   Collapse,
   Fab,
-  Fade,
-  Zoom
+  Fade
 } from '@mui/material';
 import {
   TrendingUp,
@@ -57,6 +56,7 @@ import LoadingSpinner from '../components/optimized/LoadingSpinner';
 import KPICard from '../components/optimized/KPICard';
 import { VirtualizedTransactions, VirtualizedRecommendations } from '../components/optimized/VirtualizedList';
 import { FinancialCharts } from '../components/optimized/OptimizedCharts';
+import SafeZoom from '../components/optimized/SafeZoom';
 
 // Nouveaux composants modulaires
 import HeaderSection from '../components/optimized/HeaderSection';
@@ -284,33 +284,57 @@ const HomeOptimized = () => {
 
   // Fonction pour vérifier si une date correspond au mois sélectionné
   const isDateInSelectedMonth = useCallback((dateString) => {
-    if (!dateString) return false;
+    if (!dateString) {
+      console.warn('Date vide dans isDateInSelectedMonth');
+      return false;
+    }
     
     try {
       const date = parseDate(dateString);
       const isInMonth = date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
       
+      console.log(`Vérification date: ${dateString} -> ${date.toISOString()} -> Mois: ${date.getMonth()}/${selectedMonth}, Année: ${date.getFullYear()}/${selectedYear} -> InMonth: ${isInMonth}`);
+      
       return isInMonth;
     } catch (error) {
-      console.error('Erreur dans isDateInSelectedMonth:', error);
+      console.error('Erreur dans isDateInSelectedMonth:', error, 'Date:', dateString);
       return false;
     }
   }, [selectedMonth, selectedYear, parseDate]);
 
   // Calculer les données du mois sélectionné
   const selectedMonthData = useMemo(() => {
+    console.log('=== CALCUL DES DONNÉES DU MOIS ===');
+    console.log('Mois sélectionné:', selectedMonth, 'Année sélectionnée:', selectedYear);
+    console.log('Transactions de revenus:', incomeTransactions.length);
+    console.log('Dépenses:', expenses.length);
+    
     // Calculer les revenus du mois sélectionné
     const selectedMonthIncomeTransactions = incomeTransactions
-      .filter(t => isDateInSelectedMonth(t.date))
-      .reduce((sum, t) => sum + (t.amount || 0), 0);
+      .filter(t => {
+        const isInMonth = isDateInSelectedMonth(t.date);
+        console.log(`Revenu: ${t.type} - ${t.amount}€ - Date: ${t.date} -> InMonth: ${isInMonth}`);
+        return isInMonth;
+      })
+      .reduce((sum, t) => sum + (parseFloat(t.amount) || 0), 0);
     
     // Calculer les dépenses du mois sélectionné
     const selectedMonthExpenses = expenses
-      .filter(e => isDateInSelectedMonth(e.date))
-      .reduce((sum, e) => sum + (e.amount || 0), 0);
+      .filter(e => {
+        const isInMonth = isDateInSelectedMonth(e.date);
+        console.log(`Dépense: ${e.category} - ${e.amount}€ - Date: ${e.date} -> InMonth: ${isInMonth}`);
+        return isInMonth;
+      })
+      .reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
     
     // Calculer les économies du mois sélectionné
     const selectedMonthSaved = selectedMonthIncomeTransactions - selectedMonthExpenses;
+
+    console.log('Résultats:', {
+      income: selectedMonthIncomeTransactions,
+      expenses: selectedMonthExpenses,
+      saved: selectedMonthSaved
+    });
 
     return {
       income: selectedMonthIncomeTransactions,
@@ -318,7 +342,7 @@ const HomeOptimized = () => {
       saved: selectedMonthSaved,
       transactions: transactions.filter(t => isDateInSelectedMonth(t.date))
     };
-  }, [incomeTransactions, expenses, transactions, isDateInSelectedMonth]);
+  }, [incomeTransactions, expenses, transactions, isDateInSelectedMonth, selectedMonth, selectedYear]);
 
   // Système de prévisions intelligentes
   const calculateIntelligentForecast = useCallback(() => {
@@ -828,9 +852,25 @@ const HomeOptimized = () => {
         </style>
 
         <Box sx={{ p: 0, position: 'relative', zIndex: 1 }}>
+          {/* Bouton de debug temporaire */}
+          <Box sx={{ position: 'fixed', top: 10, right: 10, zIndex: 1000 }}>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={debugDateCalculations}
+              sx={{
+                background: 'rgba(255, 0, 0, 0.8)',
+                color: 'white',
+                '&:hover': { background: 'rgba(255, 0, 0, 1)' }
+              }}
+            >
+              Debug
+            </Button>
+          </Box>
+
           {/* Alerte de connexion */}
           {!isAuthenticated && (
-            <Fade in timeout={800}>
+            <SafeZoom in timeout={800}>
               <Alert 
                 severity="warning" 
                 sx={{ 
@@ -853,11 +893,11 @@ const HomeOptimized = () => {
                   {t('home.connect')}
                 </Button>
               </Alert>
-            </Fade>
+            </SafeZoom>
           )}
           
           {isAuthenticated && !serverConnected && (
-            <Fade in timeout={800}>
+            <SafeZoom in timeout={800}>
               <Alert 
                 severity="info" 
                 sx={{ 
@@ -872,7 +912,7 @@ const HomeOptimized = () => {
                 <AlertTitle>{t('home.offlineMode')}</AlertTitle>
                 {t('home.offlineModeMessage')}
               </Alert>
-            </Fade>
+            </SafeZoom>
           )}
           
           {/* En-tête amélioré */}
