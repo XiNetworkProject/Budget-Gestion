@@ -36,8 +36,8 @@ const tabs = [
     color: '#ff9800'
   },
   { 
-    to: '/bank', 
-    label: 'Banque', 
+    to: '/savings', 
+    label: 'Épargne', 
     icon: AccountBalance,
     color: '#9c27b0'
   },
