@@ -75,6 +75,11 @@ const IncomeOptimized = () => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Filtrer les transactions par catégorie sélectionnée
   const filteredIncomes = useMemo(() => {

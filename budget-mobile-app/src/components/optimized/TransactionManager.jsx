@@ -1,4 +1,4 @@
-import React, { useState, memo, useMemo } from 'react';
+import React, { useState, memo, useMemo, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -95,6 +95,13 @@ const TransactionManager = memo(({
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('date');
   const [sortOrder, setSortOrder] = useState('desc');
+  const [mounted, setMounted] = useState(false);
+
+  // Éviter les erreurs de rendu avant le montage
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   // Filtrer et trier les transactions
   const filteredTransactions = useMemo(() => {
@@ -301,7 +308,10 @@ const TransactionManager = memo(({
           <Grid item xs={12} sm={4}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
-                {formatAmount(stats.total)}
+                {new Intl.NumberFormat('fr-FR', {
+                  style: 'currency',
+                  currency: 'EUR'
+                }).format(stats.total)}
               </Typography>
               <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                 {t('transactionManager.total')}
@@ -321,7 +331,10 @@ const TransactionManager = memo(({
           <Grid item xs={12} sm={4}>
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
-                {formatAmount(stats.avg)}
+                {new Intl.NumberFormat('fr-FR', {
+                  style: 'currency',
+                  currency: 'EUR'
+                }).format(stats.avg)}
               </Typography>
               <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                 {t('transactionManager.average')}
@@ -410,20 +423,102 @@ const TransactionManager = memo(({
       {/* Liste des transactions */}
       <List sx={{ p: 0 }}>
         {filteredTransactions.map((transaction, index) => (
-          <Zoom in timeout={800 + index * 100} key={transaction.id}>
-            <Paper sx={{
+          mounted ? (
+            <Zoom in timeout={800 + index * 100} key={transaction.id}>
+              <Paper sx={{
+                mb: 2,
+                background: 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: 3,
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+                transition: 'all 0.3s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+                  background: 'rgba(255, 255, 255, 0.15)'
+                }
+              }}>
+                <ListItem sx={{ p: 2 }}>
+                  <ListItemAvatar>
+                    <Avatar sx={{ 
+                      bgcolor: getCategoryColor(transaction.category),
+                      width: 48,
+                      height: 48
+                    }}>
+                      {type === 'expenses' ? <TrendingDown /> : <TrendingUp />}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="h6" sx={{ 
+                          fontWeight: 600, 
+                          color: 'white',
+                          flexGrow: 1
+                        }}>
+                          {transaction.description}
+                        </Typography>
+                        <Typography variant="h6" sx={{ 
+                          fontWeight: 700, 
+                          color: type === 'expenses' ? '#FF6B6B' : '#4CAF50',
+                          ml: 2
+                        }}>
+                          {type === 'expenses' ? '-' : '+'}{formatAmount(transaction.amount)}
+                        </Typography>
+                      </Box>
+                    }
+                    secondary={
+                      <Box sx={{ mt: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+                          <Chip
+                            label={transaction.category}
+                            size="small"
+                            sx={{
+                              bgcolor: getCategoryColor(transaction.category),
+                              color: 'white',
+                              mr: 1
+                            }}
+                          />
+                          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                            {formatDate(transaction.date)}
+                          </Typography>
+                        </Box>
+                        {transaction.recurring && (
+                          <Chip
+                            label={t('transactionManager.recurring')}
+                            size="small"
+                            variant="outlined"
+                            sx={{
+                              color: 'rgba(255, 255, 255, 0.7)',
+                              borderColor: 'rgba(255, 255, 255, 0.3)',
+                              fontSize: '0.7rem'
+                            }}
+                          />
+                        )}
+                      </Box>
+                    }
+                  />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      edge="end"
+                      onClick={(e) => handleMenuOpen(e, transaction)}
+                      sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                    >
+                      <MoreVert />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              </Paper>
+            </Zoom>
+          ) : (
+            <Paper key={transaction.id} sx={{
               mb: 2,
               background: 'rgba(255, 255, 255, 0.1)',
               backdropFilter: 'blur(20px)',
               borderRadius: 3,
               border: '1px solid rgba(255, 255, 255, 0.2)',
-              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
-              transition: 'all 0.3s ease',
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-                background: 'rgba(255, 255, 255, 0.15)'
-              }
+              boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
             }}>
               <ListItem sx={{ p: 2 }}>
                 <ListItemAvatar>
@@ -496,7 +591,7 @@ const TransactionManager = memo(({
                 </ListItemSecondaryAction>
               </ListItem>
             </Paper>
-          </Zoom>
+          )
         ))}
       </List>
 

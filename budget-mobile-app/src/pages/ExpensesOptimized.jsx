@@ -75,6 +75,11 @@ const ExpensesOptimized = () => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Filtrer les transactions par catégorie sélectionnée
   const filteredExpenses = useMemo(() => {
@@ -352,7 +357,20 @@ const ExpensesOptimized = () => {
         {/* Contenu des tabs */}
         <Box sx={{ m: 2 }}>
           {activeTab === 0 && (
-            <Zoom in timeout={500}>
+            mounted ? (
+              <Zoom in timeout={500}>
+                <TransactionManager
+                  type="expenses"
+                  transactions={filteredExpenses}
+                  categories={categories}
+                  onAddTransaction={handleAddExpense}
+                  onUpdateTransaction={handleUpdateExpense}
+                  onDeleteTransaction={handleDeleteExpense}
+                  selectedCategory={selectedCategory}
+                  t={t}
+                />
+              </Zoom>
+            ) : (
               <TransactionManager
                 type="expenses"
                 transactions={filteredExpenses}
@@ -363,11 +381,24 @@ const ExpensesOptimized = () => {
                 selectedCategory={selectedCategory}
                 t={t}
               />
-            </Zoom>
+            )
           )}
 
           {activeTab === 1 && (
-            <Zoom in timeout={500}>
+            mounted ? (
+              <Zoom in timeout={500}>
+                <CategoryManager
+                  type="expenses"
+                  categories={categories}
+                  onAddCategory={handleAddCategory}
+                  onUpdateCategory={handleUpdateCategory}
+                  onDeleteCategory={handleDeleteCategory}
+                  onSelectCategory={handleCategorySelect}
+                  selectedCategory={selectedCategory}
+                  t={t}
+                />
+              </Zoom>
+            ) : (
               <CategoryManager
                 type="expenses"
                 categories={categories}
@@ -378,11 +409,95 @@ const ExpensesOptimized = () => {
                 selectedCategory={selectedCategory}
                 t={t}
               />
-            </Zoom>
+            )
           )}
 
           {activeTab === 2 && (
-            <Zoom in timeout={500}>
+            mounted ? (
+              <Zoom in timeout={500}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <Paper sx={{
+                      p: 3,
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(20px)',
+                      borderRadius: 3,
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+                    }}>
+                      <Typography variant="h6" sx={{ mb: 2, color: 'white', fontWeight: 600 }}>
+                        {t('expenses.categoryDistribution')}
+                      </Typography>
+                      <Box sx={{ height: 300 }}>
+                        <Doughnut 
+                          data={chartData.doughnut}
+                          options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                              legend: {
+                                position: 'bottom',
+                                labels: {
+                                  color: 'white',
+                                  padding: 20
+                                }
+                              }
+                            }
+                          }}
+                        />
+                      </Box>
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Paper sx={{
+                      p: 3,
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      backdropFilter: 'blur(20px)',
+                      borderRadius: 3,
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+                    }}>
+                      <Typography variant="h6" sx={{ mb: 2, color: 'white', fontWeight: 600 }}>
+                        {t('expenses.topCategories')}
+                      </Typography>
+                      <Box sx={{ height: 300 }}>
+                        <Bar 
+                          data={chartData.bar}
+                          options={{
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                              legend: {
+                                display: false
+                              }
+                            },
+                            scales: {
+                              y: {
+                                beginAtZero: true,
+                                ticks: {
+                                  color: 'white'
+                                },
+                                grid: {
+                                  color: 'rgba(255, 255, 255, 0.1)'
+                                }
+                              },
+                              x: {
+                                ticks: {
+                                  color: 'white'
+                                },
+                                grid: {
+                                  color: 'rgba(255, 255, 255, 0.1)'
+                                }
+                              }
+                            }
+                          }}
+                        />
+                      </Box>
+                    </Paper>
+                  </Grid>
+                </Grid>
+              </Zoom>
+            ) : (
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                   <Paper sx={{
@@ -464,7 +579,7 @@ const ExpensesOptimized = () => {
                   </Paper>
                 </Grid>
               </Grid>
-            </Zoom>
+            )
           )}
         </Box>
       </Box>
