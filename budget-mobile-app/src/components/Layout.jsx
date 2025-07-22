@@ -10,7 +10,6 @@ import {
 } from '@mui/icons-material';
 import Tutorial from './Tutorial';
 import UpdateDialog from './UpdateDialog';
-import FloatingMenu from './optimized/FloatingMenu';
 import BottomTabs from './BottomTabs';
 import toast from 'react-hot-toast';
 
@@ -169,8 +168,6 @@ const Layout = () => {
       <Box sx={{ p: 2 }}>
         <Outlet />
       </Box>
-
-      <FloatingMenu onQuickAdd={() => navigate('/quick-add')} />
 
       {/* Nouvelle barre de navigation BottomTabs */}
       <BottomTabs />
