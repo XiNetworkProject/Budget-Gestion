@@ -917,6 +917,9 @@ const HomeOptimized = () => {
                 variant="elegant"
                 loading={isLoading}
                 onClick={() => navigate('/income')}
+                badge="Nouveau"
+                badgeColor="#FF9800"
+                isNew={true}
               />
             </Grid>
             <Grid item xs={6} sm={6} md={3}>
@@ -929,6 +932,9 @@ const HomeOptimized = () => {
                 variant="elegant"
                 loading={isLoading}
                 onClick={() => navigate('/expenses')}
+                badge="Nouveau"
+                badgeColor="#FF9800"
+                isNew={true}
               />
             </Grid>
             <Grid item xs={6} sm={6} md={3}>

@@ -1,5 +1,5 @@
 import React, { memo, useState } from 'react';
-import { Box, Typography, LinearProgress, Zoom, Fade } from '@mui/material';
+import { Box, Typography, LinearProgress, Zoom, Fade, Chip } from '@mui/material';
 import CurrencyFormatter from '../CurrencyFormatter';
 
 const KPICard = memo(({ 
@@ -13,7 +13,10 @@ const KPICard = memo(({
   trendDirection = 'neutral',
   onClick,
   variant = 'default',
-  loading = false
+  loading = false,
+  badge = null,
+  badgeColor = '#FF9800',
+  isNew = false
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -46,6 +49,7 @@ const KPICard = memo(({
             border: '1px solid rgba(255,255,255,0.1)',
             transition: 'all 0.2s ease',
             cursor: onClick ? 'pointer' : 'default',
+            position: 'relative',
             '&:hover': onClick ? {
               background: 'rgba(255,255,255,0.1)',
               transform: 'translateY(-2px)'
@@ -85,37 +89,49 @@ const KPICard = memo(({
             flexDirection: 'column',
             justifyContent: 'center',
             textAlign: 'center',
+            position: 'relative',
+            overflow: 'visible',
             '&:hover': onClick ? {
               transform: 'translateY(-4px)',
               background: 'rgba(255,255,255,0.15)',
               boxShadow: '0 12px 40px rgba(0,0,0,0.15)',
+              '& .kpi-icon': {
+                transform: 'scale(1.1) rotate(5deg)',
+              }
             } : {}
           },
           icon: {
             fontSize: 32,
             color: color,
             mb: 2,
-            filter: `drop-shadow(0 2px 4px ${color}40)`
+            filter: `drop-shadow(0 2px 4px ${color}40)`,
+            transition: 'all 0.3s ease'
           },
           title: {
+            fontSize: '1rem',
             fontWeight: 600,
-            color: color,
-            textShadow: '0 2px 4px rgba(0,0,0,0.3)',
-            mb: 1
+            color: 'white',
+            mb: 1,
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
           },
           value: {
-            fontWeight: 900,
-            color: color,
-            textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+            fontSize: '2rem',
+            fontWeight: 700,
+            color: 'white',
             mb: 1,
-            fontSize: { xs: '1.5rem', sm: '1.8rem', md: '2rem' }
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          },
+          subtitle: {
+            fontSize: '0.875rem',
+            color: 'rgba(255,255,255,0.7)',
+            fontWeight: 500
           }
         };
       default:
         return {
           container: {
             p: 2,
-            borderRadius: 3,
+            borderRadius: 2,
             background: 'rgba(255,255,255,0.1)',
             border: '1px solid rgba(255,255,255,0.2)',
             transition: 'all 0.2s ease',
@@ -126,19 +142,21 @@ const KPICard = memo(({
             } : {}
           },
           icon: {
-            fontSize: 28,
+            fontSize: 20,
             color: color,
             mb: 1
           },
           title: {
-            fontWeight: 600,
-            color: 'white',
-            mb: 1
+            fontSize: '0.75rem',
+            fontWeight: 500,
+            color: 'rgba(255,255,255,0.8)',
+            mb: 0.5
           },
           value: {
+            fontSize: '1.25rem',
             fontWeight: 700,
             color: 'white',
-            mb: 1
+            mb: 0.5
           }
         };
     }
@@ -146,111 +164,154 @@ const KPICard = memo(({
 
   const styles = getVariantStyles();
 
-  if (loading) {
-    return (
-      <Fade in timeout={300}>
-        <Box sx={styles.container}>
-          <Box sx={{ 
-            width: styles.icon.fontSize, 
-            height: styles.icon.fontSize, 
-            borderRadius: '50%', 
-            bgcolor: 'rgba(255,255,255,0.2)', 
-            mb: 2,
-            animation: 'pulse 1.5s ease-in-out infinite'
-          }} />
-          <Box sx={{ 
-            width: '60%', 
-            height: 20, 
-            bgcolor: 'rgba(255,255,255,0.2)', 
-            borderRadius: 1,
-            mb: 1,
-            animation: 'pulse 1.5s ease-in-out infinite'
-          }} />
-          <Box sx={{ 
-            width: '40%', 
-            height: 16, 
-            bgcolor: 'rgba(255,255,255,0.1)', 
-            borderRadius: 1,
-            animation: 'pulse 1.5s ease-in-out infinite'
-          }} />
-        </Box>
-      </Fade>
-    );
-  }
-
   return (
-    <Zoom in timeout={600}>
+    <Zoom in timeout={800}>
       <Box
         sx={styles.container}
         onClick={onClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          mb: variant === 'elegant' ? 2 : 1 
-        }}>
-          {Icon && <Icon sx={styles.icon} />}
+        {/* Badge pour les nouvelles fonctionnalités */}
+        {badge && (
+          <Chip
+            label={badge}
+            size="small"
+            sx={{
+              position: 'absolute',
+              top: -8,
+              right: 16,
+              zIndex: 2,
+              background: badgeColor,
+              color: 'white',
+              fontWeight: 600,
+              fontSize: '0.7rem',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+              '& .MuiChip-label': {
+                px: 1
+              }
+            }}
+          />
+        )}
+
+        {/* Indicateur de nouveauté */}
+        {isNew && (
+          <Box sx={{
+            position: 'absolute',
+            top: 8,
+            left: 8,
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            background: '#FF6B6B',
+            boxShadow: '0 0 8px rgba(255, 107, 107, 0.6)',
+            animation: 'pulse 2s infinite'
+          }} />
+        )}
+
+        {/* Icône */}
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: variant === 'elegant' ? 2 : 1 }}>
+          <Icon 
+            className="kpi-icon"
+            sx={styles.icon} 
+          />
         </Box>
-        
+
+        {/* Titre */}
         <Typography variant="h6" sx={styles.title}>
           {title}
         </Typography>
-        
+
+        {/* Valeur */}
         <Typography variant="h4" sx={styles.value}>
-          {typeof value === 'number' ? <CurrencyFormatter amount={value} /> : value}
+          {loading ? (
+            <Box sx={{ 
+              width: '60%', 
+              height: '2rem', 
+              background: 'rgba(255,255,255,0.1)', 
+              borderRadius: 1,
+              mx: 'auto'
+            }} />
+          ) : (
+            <CurrencyFormatter value={value} />
+          )}
         </Typography>
-        
+
+        {/* Sous-titre */}
         {subtitle && (
-          <Typography variant="body2" sx={{ 
-            opacity: 0.8, 
-            fontWeight: 500,
-            color: 'rgba(255,255,255,0.9)'
-          }}>
+          <Typography variant="body2" sx={styles.subtitle}>
             {subtitle}
           </Typography>
         )}
-        
+
+        {/* Tendance */}
         {trend && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 1 }}>
-            <Typography variant="body2" sx={{ 
-              color: getTrendColor(),
-              fontWeight: 600,
-              fontSize: '0.875rem'
-            }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            mt: 1,
+            gap: 0.5
+          }}>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                color: getTrendColor(),
+                fontWeight: 600,
+                fontSize: '0.875rem'
+              }}
+            >
               {getTrendIcon()} {trend}
             </Typography>
           </Box>
         )}
-        
+
+        {/* Barre de progression */}
         {progress !== undefined && (
-          <LinearProgress 
-            variant="determinate" 
-            value={progress} 
-            sx={{ 
-              mt: 2, 
-              height: 6,
-              borderRadius: 3,
-              bgcolor: 'rgba(255,255,255,0.2)', 
-              '& .MuiLinearProgress-bar': { 
-                bgcolor: color,
-                borderRadius: 3
-              } 
-            }}
-          />
+          <Box sx={{ mt: 2 }}>
+            <LinearProgress
+              variant="determinate"
+              value={progress}
+              sx={{
+                height: 6,
+                borderRadius: 3,
+                background: 'rgba(255,255,255,0.1)',
+                '& .MuiLinearProgress-bar': {
+                  background: `linear-gradient(90deg, ${color} 0%, ${color}dd 100%)`,
+                  borderRadius: 3,
+                }
+              }}
+            />
+            <Typography 
+              variant="caption" 
+              sx={{ 
+                color: 'rgba(255,255,255,0.7)', 
+                mt: 0.5,
+                display: 'block',
+                textAlign: 'center'
+              }}
+            >
+              {Math.round(progress)}%
+            </Typography>
+          </Box>
         )}
-        
-        <style>
-          {`
-            @keyframes pulse {
-              0% { opacity: 1; }
-              50% { opacity: 0.5; }
-              100% { opacity: 1; }
+
+        {/* Effet de brillance au survol */}
+        {onClick && (
+          <Box sx={{
+            position: 'absolute',
+            top: 0,
+            left: '-100%',
+            width: '100%',
+            height: '100%',
+            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent)',
+            transition: 'left 0.5s ease',
+            pointerEvents: 'none',
+            '&:hover': {
+              left: '100%'
             }
-          `}
-        </style>
+          }} />
+        )}
       </Box>
     </Zoom>
   );

@@ -9,6 +9,8 @@ import Layout from './components/Layout';
 
 // Lazy loading des pages avec Suspense
 const HomeOptimized = lazy(() => import('./pages/HomeOptimized'));
+const ExpensesOptimized = lazy(() => import('./pages/ExpensesOptimized'));
+const IncomeOptimized = lazy(() => import('./pages/IncomeOptimized'));
 const Expenses = lazy(() => import('./pages/Expenses'));
 const Income = lazy(() => import('./pages/Income'));
 const Savings = lazy(() => import('./pages/Savings'));
@@ -73,7 +75,7 @@ const AppRoutesOptimized = () => {
             path="expenses" 
             element={
               <LazyPage 
-                component={Expenses} 
+                component={ExpensesOptimized} 
                 fallbackMessage="Chargement des dépenses..." 
               />
             } 
@@ -82,7 +84,7 @@ const AppRoutesOptimized = () => {
             path="income" 
             element={
               <LazyPage 
-                component={Income} 
+                component={IncomeOptimized} 
                 fallbackMessage="Chargement des revenus..." 
               />
             } 
