@@ -66,10 +66,6 @@ import {
   LocalOffer,
   AccountBalance
 } from '@mui/icons-material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { fr } from 'date-fns/locale';
 
 const TransactionManager = memo(({ 
   type = 'expenses', // 'expenses' ou 'income'
@@ -604,8 +600,7 @@ const TransactionManager = memo(({
           {editingTransaction ? t('transactionManager.editTransaction') : t('transactionManager.addTransaction')}
         </DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
-          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={fr}>
-            <Grid container spacing={3}>
+          <Grid container spacing={3}>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
@@ -657,15 +652,22 @@ const TransactionManager = memo(({
                 </FormControl>
               </Grid>
               <Grid item xs={12}>
-                <DatePicker
+                <TextField
+                  fullWidth
                   label={t('transactionManager.date')}
-                  value={newTransaction.date}
-                  onChange={(date) => setNewTransaction({ ...newTransaction, date })}
-                  renderInput={(params) => <TextField {...params} fullWidth />}
+                  type="date"
+                  value={newTransaction.date.toISOString().split('T')[0]}
+                  onChange={(e) => setNewTransaction({ 
+                    ...newTransaction, 
+                    date: new Date(e.target.value) 
+                  })}
+                  variant="outlined"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
                 />
               </Grid>
             </Grid>
-          </LocalizationProvider>
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 1 }}>
           <Button onClick={handleCloseDialog} color="inherit">
