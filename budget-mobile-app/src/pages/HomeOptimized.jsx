@@ -128,31 +128,120 @@ const BackgroundParticles = React.memo(() => (
 // Composant principal optimisé
 const HomeOptimized = () => {
   const { 
+    data, 
+    months, 
     selectedMonth, 
     selectedYear, 
     setSelectedMonth, 
     setSelectedYear,
+    categories,
+    revenus, 
+    incomes,
+    persons,
+    saved,
+    sideByMonth, 
+    totalPotentialSavings,
+    budgetLimits, 
+    expenses,
+    incomeTransactions,
+    savings,
+    debts,
+    bankAccounts,
+    transactions,
+    userProfile,
+    appSettings,
+    updateUserProfile,
+    updateAppSettings,
+    isLoading,
+    isSaving,
+    error,
+    serverConnected,
+    tutorialCompleted,
+    onboardingCompleted,
+    forceTutorial,
+    setTutorialCompleted,
+    clearForceTutorial,
+    validateAndCleanDates,
+    syncExpensesWithCategories,
+    showUpdateDialog,
+    closeUpdateDialog,
+    checkForUpdates,
+    checkAndFixOnboardingState,
+    activeAccount, 
+    accounts, 
+    setActiveAccount,
+    showTutorial: storeShowTutorial,
+    setShowTutorial: setStoreShowTutorial,
+    showOnboarding,
+    setShowOnboarding,
+    subscription,
+    subscriptionPlans,
+    getCurrentPlan,
+    isFeatureAvailable,
+    hasFullAI,
+    hasPartialAI,
+    getAILevel,
     isAuthenticated,
     user,
     logout,
-    serverConnected,
-    getCurrentPlan,
-    isFeatureAvailable,
     reloadBudgetData
   } = useStore();
   
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [localData, setLocalData] = useState({
+    income: [],
+    expenses: [],
+    savings: [],
+    recentTransactions: []
+  });
 
-  // Utilisation du hook optimisé pour les données
-  const { 
-    selectedMonthData, 
-    forecast, 
-    recommendations, 
-    isCalculating, 
-    hasData 
-  } = useOptimizedData();
+  // Charger les données depuis localStorage au démarrage
+  useEffect(() => {
+    const savedData = localStorage.getItem('budgetAppData');
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        setLocalData(parsed);
+      } catch (error) {
+        console.error('Erreur lors du chargement des données:', error);
+      }
+    }
+  }, []);
+
+  // Nettoyer les dates invalides au chargement de la page
+  useEffect(() => {
+    validateAndCleanDates();
+  }, [validateAndCleanDates]);
+
+  // Fonction de débogage pour tester les calculs de dates
+  const debugDateCalculations = useCallback(() => {
+    console.log('=== DÉBOGAGE DES CALCULS DE DATES ===');
+    console.log('Mois sélectionné:', selectedMonth, 'Année sélectionnée:', selectedYear);
+    
+    console.log('=== DÉPENSES ===');
+    expenses.forEach((expense, index) => {
+      const isInMonth = isDateInSelectedMonth(expense.date);
+      console.log(`Dépense ${index}: ${expense.category} - ${expense.amount}€ - Date: ${expense.date} -> InMonth: ${isInMonth}`);
+    });
+    
+    console.log('=== REVENUS ===');
+    incomeTransactions.forEach((income, index) => {
+      const isInMonth = isDateInSelectedMonth(income.date);
+      console.log(`Revenu ${index}: ${income.type} - ${income.amount}€ - Date: ${income.date} -> InMonth: ${isInMonth}`);
+    });
+  }, [selectedMonth, selectedYear, expenses, incomeTransactions]);
+
+  // Fonction pour sauvegarder les données
+  const saveData = useCallback((newData) => {
+    try {
+      localStorage.setItem('budgetAppData', JSON.stringify(newData));
+      setLocalData(newData);
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde:', error);
+    }
+  }, []);
 
   // Fonctions memoizées
   const getMonthName = useCallback((month, year) => {
@@ -175,6 +264,348 @@ const HomeOptimized = () => {
     
     setSelectedMonth(newMonth, newYear);
   }, [selectedMonth, selectedYear, setSelectedMonth]);
+
+  // Fonction pour parser les dates
+  const parseDate = useCallback((dateString) => {
+    if (!dateString) return new Date();
+    
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        console.warn('Date invalide détectée:', dateString);
+        return new Date();
+      }
+      return date;
+    } catch (error) {
+      console.error('Erreur lors du parsing de la date:', dateString, error);
+      return new Date();
+    }
+  }, []);
+
+  // Fonction pour vérifier si une date correspond au mois sélectionné
+  const isDateInSelectedMonth = useCallback((dateString) => {
+    if (!dateString) return false;
+    
+    try {
+      const date = parseDate(dateString);
+      const isInMonth = date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
+      
+      return isInMonth;
+    } catch (error) {
+      console.error('Erreur dans isDateInSelectedMonth:', error);
+      return false;
+    }
+  }, [selectedMonth, selectedYear, parseDate]);
+
+  // Calculer les données du mois sélectionné
+  const selectedMonthData = useMemo(() => {
+    // Calculer les revenus du mois sélectionné
+    const selectedMonthIncomeTransactions = incomeTransactions
+      .filter(t => isDateInSelectedMonth(t.date))
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+    
+    // Calculer les dépenses du mois sélectionné
+    const selectedMonthExpenses = expenses
+      .filter(e => isDateInSelectedMonth(e.date))
+      .reduce((sum, e) => sum + (e.amount || 0), 0);
+    
+    // Calculer les économies du mois sélectionné
+    const selectedMonthSaved = selectedMonthIncomeTransactions - selectedMonthExpenses;
+
+    return {
+      income: selectedMonthIncomeTransactions,
+      expenses: selectedMonthExpenses,
+      saved: selectedMonthSaved,
+      transactions: transactions.filter(t => isDateInSelectedMonth(t.date))
+    };
+  }, [incomeTransactions, expenses, transactions, isDateInSelectedMonth]);
+
+  // Système de prévisions intelligentes
+  const calculateIntelligentForecast = useCallback(() => {
+    const currentDate = new Date(selectedYear, selectedMonth, 1);
+    const nextMonth = new Date(selectedYear, selectedMonth + 1, 1);
+    const nextMonthYear = nextMonth.getFullYear();
+    const nextMonthIndex = nextMonth.getMonth();
+    
+    // Prévisions de revenus basées sur les transactions récentes
+    const calculateIncomeForecast = () => {
+      const recentMonths = [0, 1, 2].map(i => {
+        const monthDate = new Date(selectedYear, selectedMonth - i, 1);
+        
+        const monthIncomeTransactions = incomeTransactions
+          .filter(t => {
+            const date = parseDate(t.date);
+            return date.getMonth() === monthDate.getMonth() && 
+                   date.getFullYear() === monthDate.getFullYear();
+          })
+          .reduce((sum, t) => sum + (t.amount || 0), 0);
+        
+        return monthIncomeTransactions;
+      });
+      
+      const avgRecentIncome = recentMonths.reduce((sum, val, index) => {
+        const weights = [0.5, 0.3, 0.2];
+        return sum + (val * weights[index]);
+      }, 0);
+      
+      const trend = recentMonths[0] - recentMonths[2];
+      const trendPercentage = Math.abs(trend) / Math.max(avgRecentIncome, 1);
+      
+      let adjustedForecast = avgRecentIncome;
+      if (trendPercentage > 0.1) {
+        adjustedForecast = avgRecentIncome * (1 + (trend / avgRecentIncome) * 0.3);
+      }
+      
+      const variance = recentMonths.reduce((sum, val) => sum + Math.pow(val - avgRecentIncome, 2), 0) / recentMonths.length;
+      const volatility = Math.sqrt(variance) / Math.max(avgRecentIncome, 1);
+      
+      return {
+        forecast: Math.max(adjustedForecast, 0),
+        trend: trend,
+        volatility: volatility,
+        confidence: Math.max(0.5, 1 - volatility)
+      };
+    };
+    
+    // Prévisions de dépenses basées sur les transactions récentes
+    const calculateExpenseForecast = () => {
+      const recentExpenses = [0, 1, 2].map(i => {
+        const monthDate = new Date(selectedYear, selectedMonth - i, 1);
+        
+        const monthExpenses = expenses
+          .filter(e => {
+            const date = parseDate(e.date);
+            return date.getMonth() === monthDate.getMonth() && 
+                   date.getFullYear() === monthDate.getFullYear();
+          })
+          .reduce((sum, e) => sum + (e.amount || 0), 0);
+        
+        return monthExpenses;
+      });
+      
+      const avgRecentExpenses = recentExpenses.reduce((sum, val, index) => {
+        const weights = [0.5, 0.3, 0.2];
+        return sum + (val * weights[index]);
+      }, 0);
+      
+      const trend = recentExpenses[0] - recentExpenses[2];
+      const trendPercentage = Math.abs(trend) / Math.max(avgRecentExpenses, 1);
+      
+      let adjustedForecast = avgRecentExpenses;
+      if (trendPercentage > 0.1) {
+        adjustedForecast = avgRecentExpenses * (1 + (trend / avgRecentExpenses) * 0.3);
+      }
+      
+      const variance = recentExpenses.reduce((sum, val) => sum + Math.pow(val - avgRecentExpenses, 2), 0) / recentExpenses.length;
+      const volatility = Math.sqrt(variance) / Math.max(avgRecentExpenses, 1);
+      
+      const categoryAnalysis = Object.entries(data).map(([category, arr]) => {
+        const categoryExpenses = expenses
+          .filter(e => e.category === category && isDateInSelectedMonth(e.date))
+          .reduce((sum, e) => sum + (e.amount || 0), 0);
+        
+        return { category, amount: categoryExpenses };
+      });
+      
+      return {
+        forecast: Math.max(adjustedForecast, 0),
+        trend: trend,
+        volatility: volatility,
+        confidence: Math.max(0.5, 1 - volatility),
+        categoryBreakdown: categoryAnalysis
+      };
+    };
+    
+    const incomeForecast = calculateIncomeForecast();
+    const expenseForecast = calculateExpenseForecast();
+    const balanceForecast = incomeForecast.forecast - expenseForecast.forecast;
+    
+    return {
+      income: incomeForecast.forecast,
+      expenses: expenseForecast.forecast,
+      balance: balanceForecast,
+      incomeTrend: incomeForecast.trend,
+      expenseTrend: expenseForecast.trend,
+      incomeVolatility: incomeForecast.volatility,
+      expenseVolatility: expenseForecast.volatility,
+      incomeConfidence: incomeForecast.confidence,
+      expenseConfidence: expenseForecast.confidence,
+      categoryBreakdown: expenseForecast.categoryBreakdown
+    };
+  }, [selectedYear, selectedMonth, incomeTransactions, expenses, data, parseDate, isDateInSelectedMonth]);
+
+  const forecast = calculateIntelligentForecast();
+
+  // Générer des recommandations intelligentes
+  const generateRecommendations = useCallback(() => {
+    const recommendations = [];
+    
+    // Analyser le taux d'épargne
+    const savingsRate = forecast.income > 0 ? (forecast.balance / forecast.income) * 100 : 0;
+    if (savingsRate < 10) {
+      recommendations.push({
+        id: 'low_savings_rate',
+        title: t('ai.lowSavingsRate'),
+        description: t('ai.lowSavingsRateMessage', { savingsRate: Math.round(savingsRate) }),
+        actionType: 'create_savings_plan',
+        priority: 'high',
+        type: 'warning',
+        metrics: {
+          savings_rate: `${Math.round(savingsRate)}%`,
+          target: '20%'
+        },
+        tags: ['Épargne', 'Urgent'],
+        suggestedPlan: {
+          title: t('ai.emergencySavingsPlan'),
+          description: t('ai.emergencySavingsPlanDescription'),
+          category: 'Épargne',
+          targetAmount: Math.round(selectedMonthData.expenses * 3),
+          priority: 'high'
+        }
+      });
+    } else if (savingsRate > 30) {
+      recommendations.push({
+        id: 'excellent_savings_rate',
+        title: t('ai.excellentSavingsRate'),
+        description: t('ai.excellentSavingsRateMessage', { savingsRate: Math.round(savingsRate) }),
+        actionType: 'optimize_investment',
+        priority: 'low',
+        type: 'success',
+        metrics: {
+          savings_rate: `${Math.round(savingsRate)}%`,
+          performance: 'Excellent'
+        },
+        tags: ['Investissement', 'Opportunité'],
+        suggestedPlan: {
+          title: t('ai.investmentPlan'),
+          description: t('ai.diversifyInvestments'),
+          category: 'Investissement',
+          targetAmount: Math.round(forecast.balance * 0.5),
+          priority: 'medium'
+        }
+      });
+    }
+    
+    // Analyser les tendances des dépenses
+    const currentMonthExpense = selectedMonthData.expenses;
+    const expenseChange = ((forecast.expenses - currentMonthExpense) / Math.max(currentMonthExpense, 1)) * 100;
+    
+    if (expenseChange > 20) {
+      recommendations.push({
+        id: 'expense_increase',
+        title: t('expectedExpenseIncrease'),
+        description: t('expectedExpenseIncreaseMessage', { increase: Math.round(expenseChange) }),
+        actionType: 'create_reduction_plan',
+        priority: 'high',
+        type: 'error',
+        metrics: {
+          increase: `+${Math.round(expenseChange)}%`,
+          forecast: `${Math.round(forecast.expenses)}€`
+        },
+        tags: ['Dépenses', 'Réduction'],
+        suggestedPlan: {
+          title: t('reduceExpenses'),
+          description: t('reduceExpensesMessage', { increase: Math.round(expenseChange) }),
+          category: 'Réduction des dépenses',
+          targetAmount: Math.round(currentMonthExpense * (expenseChange / 100)),
+          priority: 'high'
+        }
+      });
+    }
+    
+    // Analyser la stabilité des revenus
+    const currentMonthIncome = selectedMonthData.income;
+    const incomeChange = ((forecast.income - currentMonthIncome) / Math.max(currentMonthIncome, 1)) * 100;
+    
+    if (incomeChange < -15) {
+      recommendations.push({
+        id: 'income_decrease',
+        title: t('ai.expectedIncomeDecrease'),
+        description: t('ai.expectedIncomeDecreaseMessage', { decrease: Math.round(Math.abs(incomeChange)) }),
+        actionType: 'prepare_contingency_plan',
+        priority: 'high',
+        type: 'warning',
+        metrics: {
+          decrease: `${Math.round(Math.abs(incomeChange))}%`,
+          impact: 'Significatif'
+        },
+        tags: ['Revenus', 'Contingence'],
+        suggestedPlan: {
+          title: t('ai.financialContingencyPlan'),
+          description: t('ai.financialContingencyPlanDescription'),
+          category: 'Budget',
+          targetAmount: Math.round(currentMonthIncome * (Math.abs(incomeChange) / 100)),
+          priority: 'high'
+        }
+      });
+    }
+    
+    // Recommandation générale si pas d'autres alertes
+    if (recommendations.length === 0) {
+      recommendations.push({
+        id: 'financial_health',
+        title: t('financialHealth'),
+        description: t('financialHealthMessage'),
+        actionType: 'continue_monitoring',
+        priority: 'low',
+        type: 'success',
+        metrics: {
+          status: 'Sain',
+          score: 'A+'
+        },
+        tags: ['Santé financière', 'Maintenance']
+      });
+    }
+    
+    // Trier par priorité
+    const priorityOrder = { high: 3, medium: 2, low: 1 };
+    return recommendations.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
+  }, [forecast, selectedMonthData, t]);
+
+  const recommendations = generateRecommendations();
+
+  // Gestion des actions des recommandations
+  const handleRecommendationAction = useCallback((recommendation) => {
+    switch (recommendation.actionType) {
+      case 'review_expenses':
+      case 'analyze_expenses':
+        navigate('/analytics');
+        break;
+      case 'create_savings_plan':
+      case 'optimize_investment':
+      case 'create_reduction_plan':
+      case 'prepare_contingency_plan':
+        if (recommendation.suggestedPlan) {
+          createSuggestedPlan(recommendation.suggestedPlan);
+        }
+        navigate('/action-plans');
+        break;
+      case 'continue_monitoring':
+        alert('Vos finances sont en bonne santé. Continuez à surveiller régulièrement.');
+        break;
+      default:
+        console.log('Action non reconnue:', recommendation.actionType);
+    }
+  }, [navigate]);
+
+  // Fonction pour créer automatiquement un plan suggéré
+  const createSuggestedPlan = useCallback((suggestedPlan) => {
+    const newPlan = {
+      id: Date.now(),
+      title: suggestedPlan.title,
+      description: suggestedPlan.description,
+      category: suggestedPlan.category,
+      targetAmount: suggestedPlan.targetAmount,
+      deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      priority: suggestedPlan.priority,
+      status: 'active',
+      progress: 0,
+      createdAt: new Date().toISOString()
+    };
+    
+    // Ici vous pouvez ajouter la logique pour sauvegarder le plan
+    console.log('Plan suggéré créé:', newPlan);
+  }, []);
 
   const getSubscriptionIcon = useCallback(() => {
     const currentPlan = getCurrentPlan();
@@ -241,8 +672,6 @@ const HomeOptimized = () => {
 
   // Données pour les graphiques memoizées
   const chartData = useMemo(() => {
-    if (!hasData) return { lineData: null, doughnutData: null };
-
     // Données pour le graphique en ligne (6 derniers mois)
     const last6Months = [];
     const revenuesByMonth = [];
@@ -252,9 +681,26 @@ const HomeOptimized = () => {
       const date = new Date(selectedYear, selectedMonth - i, 1);
       last6Months.push(getMonthName(date.getMonth(), date.getFullYear()));
       
-      // Données simulées pour l'exemple
-      revenuesByMonth.push(Math.random() * 5000 + 2000);
-      expensesByMonth.push(Math.random() * 4000 + 1500);
+      // Calculer les revenus pour ce mois
+      const monthIncome = incomeTransactions
+        .filter(t => {
+          const transactionDate = parseDate(t.date);
+          return transactionDate.getMonth() === date.getMonth() && 
+                 transactionDate.getFullYear() === date.getFullYear();
+        })
+        .reduce((sum, t) => sum + (t.amount || 0), 0);
+      
+      // Calculer les dépenses pour ce mois
+      const monthExpenses = expenses
+        .filter(e => {
+          const expenseDate = parseDate(e.date);
+          return expenseDate.getMonth() === date.getMonth() && 
+                 expenseDate.getFullYear() === date.getFullYear();
+        })
+        .reduce((sum, e) => sum + (e.amount || 0), 0);
+      
+      revenuesByMonth.push(monthIncome);
+      expensesByMonth.push(monthExpenses);
     }
 
     const lineData = {
@@ -277,11 +723,20 @@ const HomeOptimized = () => {
       ]
     };
 
+    // Données pour le graphique en anneau (répartition des dépenses par catégorie)
+    const categoryExpenses = Object.entries(data).map(([category, arr]) => {
+      const categoryAmount = expenses
+        .filter(e => e.category === category && isDateInSelectedMonth(e.date))
+        .reduce((sum, e) => sum + (e.amount || 0), 0);
+      return { category, amount: categoryAmount };
+    }).filter(item => item.amount > 0);
+
     const doughnutData = {
-      labels: ['Alimentation', 'Transport', 'Loisirs', 'Logement', 'Santé', 'Autres'],
+      labels: categoryExpenses.map(item => item.category),
       datasets: [{
-        data: [30, 20, 15, 25, 5, 5],
+        data: categoryExpenses.map(item => item.amount),
         backgroundColor: [
+          '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
           '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
         ],
         borderWidth: 2,
@@ -290,23 +745,7 @@ const HomeOptimized = () => {
     };
 
     return { lineData, doughnutData };
-  }, [hasData, selectedMonth, selectedYear, getMonthName]);
-
-  // Gestion des actions des recommandations
-  const handleRecommendationAction = useCallback((recommendation) => {
-    switch (recommendation.actionType) {
-      case 'review_expenses':
-      case 'analyze_expenses':
-        navigate('/analytics');
-        break;
-      case 'create_savings_plan':
-      case 'optimize_investment':
-        navigate('/action-plans');
-        break;
-      default:
-        console.log('Action non reconnue:', recommendation.actionType);
-    }
-  }, [navigate]);
+  }, [selectedYear, selectedMonth, incomeTransactions, expenses, data, getMonthName, parseDate, isDateInSelectedMonth]);
 
   // Calcul des métriques de performance
   const performanceMetrics = useMemo(() => {
@@ -326,7 +765,7 @@ const HomeOptimized = () => {
   }, [selectedMonthData]);
 
   // Si les données ne sont pas encore chargées
-  if (!hasData && isCalculating) {
+  if (isLoading) {
     return (
       <Box sx={{ 
         minHeight: '100vh',
@@ -476,7 +915,7 @@ const HomeOptimized = () => {
                 color="#4caf50"
                 subtitle={getMonthName(selectedMonth, selectedYear)}
                 variant="elegant"
-                loading={isCalculating}
+                loading={isLoading}
                 onClick={() => navigate('/income')}
               />
             </Grid>
@@ -488,7 +927,7 @@ const HomeOptimized = () => {
                 color="#f44336"
                 subtitle={getMonthName(selectedMonth, selectedYear)}
                 variant="elegant"
-                loading={isCalculating}
+                loading={isLoading}
                 onClick={() => navigate('/expenses')}
               />
             </Grid>
@@ -501,7 +940,7 @@ const HomeOptimized = () => {
                 subtitle={t('home.thisMonth')}
                 progress={performanceMetrics.savingsRate}
                 variant="elegant"
-                loading={isCalculating}
+                loading={isLoading}
                 onClick={() => navigate('/savings')}
               />
             </Grid>
@@ -513,7 +952,7 @@ const HomeOptimized = () => {
                 color="#ff9800"
                 subtitle={getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
                 variant="elegant"
-                loading={isCalculating}
+                loading={isLoading}
                 onClick={() => navigate('/analytics')}
               />
             </Grid>
@@ -540,7 +979,7 @@ const HomeOptimized = () => {
               <FinancialCharts
                 lineData={chartData.lineData}
                 doughnutData={chartData.doughnutData}
-                loading={isCalculating}
+                loading={isLoading}
               />
             </Box>
           </Suspense>
@@ -549,7 +988,7 @@ const HomeOptimized = () => {
           {isFeatureAvailable('aiAnalysis') && recommendations && recommendations.length > 0 && (
             <RecommendationsSection
               recommendations={recommendations}
-              loading={isCalculating}
+              loading={isLoading}
               onActionClick={handleRecommendationAction}
               t={t}
             />
@@ -582,7 +1021,7 @@ const HomeOptimized = () => {
               
               <VirtualizedTransactions
                 transactions={selectedMonthData.transactions}
-                loading={isCalculating}
+                loading={isLoading}
               />
             </Paper>
           )}
