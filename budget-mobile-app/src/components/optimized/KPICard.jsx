@@ -79,7 +79,7 @@ const KPICard = memo(({
       case 'elegant':
         return {
           container: {
-            p: 3,
+            p: { xs: 2, sm: 3 },
             borderRadius: 4,
             background: 'rgba(255,255,255,0.1)',
             backdropFilter: 'blur(20px)',
@@ -87,7 +87,7 @@ const KPICard = memo(({
             boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
             transition: 'all 0.3s ease',
             cursor: onClick ? 'pointer' : 'default',
-            minHeight: 210,
+            minHeight: { xs: 160, sm: 180, md: 210 },
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
@@ -104,24 +104,24 @@ const KPICard = memo(({
             } : {}
           },
           icon: {
-            fontSize: 32,
+            fontSize: { xs: 28, sm: 32 },
             color: color,
-            mb: 2,
+            mb: { xs: 1, sm: 2 },
             filter: `drop-shadow(0 2px 4px ${color}40)`,
             transition: 'all 0.3s ease'
           },
           title: {
-            fontSize: '1rem',
+            fontSize: { xs: '0.875rem', sm: '1rem' },
             fontWeight: 600,
             color: 'white',
-            mb: 1,
+            mb: { xs: 0.5, sm: 1 },
             textShadow: '0 2px 4px rgba(0,0,0,0.3)'
           },
           value: {
-            fontSize: '2rem',
+            fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
             fontWeight: 700,
             color: 'white',
-            mb: 1,
+            mb: { xs: 0.5, sm: 1 },
             textShadow: '0 2px 4px rgba(0,0,0,0.3)'
           },
           subtitle: {

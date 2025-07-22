@@ -972,63 +972,65 @@ const HomeOptimized = () => {
           />
 
           {/* KPIs optimisés */}
-          <Grid container spacing={2} sx={{ mb: 4 }}>
-            <Grid item xs={6} sm={6} md={3}>
-              <KPICard
-                title={t('home.revenues')}
-                value={selectedMonthData?.income || 0}
-                icon={TrendingUp}
-                color="#4caf50"
-                subtitle={getMonthName(selectedMonth, selectedYear)}
-                variant="elegant"
-                loading={isLoading}
-                onClick={() => navigate('/income')}
-                badge="Nouveau"
-                badgeColor="#FF9800"
-                isNew={true}
-              />
+          <Box sx={{ mb: 4, px: 2 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} md={3}>
+                <KPICard
+                  title={t('home.revenues')}
+                  value={selectedMonthData?.income || 0}
+                  icon={TrendingUp}
+                  color="#4caf50"
+                  subtitle={getMonthName(selectedMonth, selectedYear)}
+                  variant="elegant"
+                  loading={isLoading}
+                  onClick={() => navigate('/income')}
+                  badge="Nouveau"
+                  badgeColor="#FF9800"
+                  isNew={true}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <KPICard
+                  title={t('home.expenses')}
+                  value={selectedMonthData?.expenses || 0}
+                  icon={TrendingDown}
+                  color="#f44336"
+                  subtitle={getMonthName(selectedMonth, selectedYear)}
+                  variant="elegant"
+                  loading={isLoading}
+                  onClick={() => navigate('/expenses')}
+                  badge="Nouveau"
+                  badgeColor="#FF9800"
+                  isNew={true}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <KPICard
+                  title={t('home.savings')}
+                  value={selectedMonthData?.saved || 0}
+                  icon={Savings}
+                  color="#2196f3"
+                  subtitle={t('home.thisMonth')}
+                  progress={performanceMetrics.savingsRate}
+                  variant="elegant"
+                  loading={isLoading}
+                  onClick={() => navigate('/savings')}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <KPICard
+                  title={t('home.forecasts')}
+                  value={forecast?.balance || 0}
+                  icon={AccountBalance}
+                  color="#ff9800"
+                  subtitle={getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
+                  variant="elegant"
+                  loading={isLoading}
+                  onClick={() => navigate('/analytics')}
+                />
+              </Grid>
             </Grid>
-            <Grid item xs={6} sm={6} md={3}>
-              <KPICard
-                title={t('home.expenses')}
-                value={selectedMonthData?.expenses || 0}
-                icon={TrendingDown}
-                color="#f44336"
-                subtitle={getMonthName(selectedMonth, selectedYear)}
-                variant="elegant"
-                loading={isLoading}
-                onClick={() => navigate('/expenses')}
-                badge="Nouveau"
-                badgeColor="#FF9800"
-                isNew={true}
-              />
-            </Grid>
-            <Grid item xs={6} sm={6} md={3}>
-              <KPICard
-                title={t('home.savings')}
-                value={selectedMonthData?.saved || 0}
-                icon={Savings}
-                color="#2196f3"
-                subtitle={t('home.thisMonth')}
-                progress={performanceMetrics.savingsRate}
-                variant="elegant"
-                loading={isLoading}
-                onClick={() => navigate('/savings')}
-              />
-            </Grid>
-            <Grid item xs={6} sm={6} md={3}>
-              <KPICard
-                title={t('home.forecasts')}
-                value={forecast?.balance || 0}
-                icon={AccountBalance}
-                color="#ff9800"
-                subtitle={getMonthName((selectedMonth + 1) % 12, selectedMonth === 11 ? selectedYear + 1 : selectedYear)}
-                variant="elegant"
-                loading={isLoading}
-                onClick={() => navigate('/analytics')}
-              />
-            </Grid>
-          </Grid>
+          </Box>
 
           {/* Actions rapides améliorées */}
           <QuickActionsSection actions={quickActions} t={t} />
