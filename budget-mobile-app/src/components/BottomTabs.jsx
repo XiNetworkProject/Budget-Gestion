@@ -13,7 +13,6 @@ import {
   Home,
   Analytics,
   Add,
-  History,
   AccountBalance,
   Settings
 } from '@mui/icons-material';
@@ -31,12 +30,6 @@ const tabs = [
     label: 'Analytics', 
     icon: Analytics,
     color: '#2196f3'
-  },
-  { 
-    to: '/history', 
-    label: 'Historique', 
-    icon: History,
-    color: '#ff9800'
   },
   { 
     to: '/savings', 
@@ -79,8 +72,7 @@ const BottomTabs = () => {
         height: 80,
         display: 'flex',
         alignItems: 'flex-end',
-        px: 2,
-        pb: 1
+        px: 2
       }}>
         {/* Fond de la barre */}
         <Box sx={{
@@ -94,13 +86,13 @@ const BottomTabs = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          px: 3,
+          px: 4,
           position: 'relative'
         }}>
           {/* Onglets de gauche */}
           <Box sx={{ 
             display: 'flex', 
-            gap: 3,
+            gap: 4,
             flex: 1,
             justifyContent: 'flex-start'
           }}>
@@ -158,7 +150,7 @@ const BottomTabs = () => {
           {/* Onglets de droite */}
           <Box sx={{ 
             display: 'flex', 
-            gap: 3,
+            gap: 4,
             flex: 1,
             justifyContent: 'flex-end'
           }}>
@@ -182,11 +174,11 @@ const BottomTabs = () => {
                       borderRadius: '12px',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       color: active ? tab.color : 'rgba(0, 0, 0, 0.5)',
-                      background: active ? `rgba(${tab.color === '#ff9800' ? '255, 152, 0' : tab.color === '#9c27b0' ? '156, 39, 176' : '96, 125, 139'}, 0.1)` : 'transparent',
+                      background: active ? `rgba(${tab.color === '#9c27b0' ? '156, 39, 176' : '96, 125, 139'}, 0.1)` : 'transparent',
                       '&:hover': {
-                        background: active ? `rgba(${tab.color === '#ff9800' ? '255, 152, 0' : tab.color === '#9c27b0' ? '156, 39, 176' : '96, 125, 139'}, 0.15)` : 'rgba(0, 0, 0, 0.05)',
+                        background: active ? `rgba(${tab.color === '#9c27b0' ? '156, 39, 176' : '96, 125, 139'}, 0.15)` : 'rgba(0, 0, 0, 0.05)',
                         transform: 'translateY(-2px)',
-                        boxShadow: active ? `0 4px 12px rgba(${tab.color === '#ff9800' ? '255, 152, 0' : tab.color === '#9c27b0' ? '156, 39, 176' : '96, 125, 139'}, 0.3)` : '0 4px 12px rgba(0, 0, 0, 0.1)',
+                        boxShadow: active ? `0 4px 12px rgba(${tab.color === '#9c27b0' ? '156, 39, 176' : '96, 125, 139'}, 0.3)` : '0 4px 12px rgba(0, 0, 0, 0.1)',
                       }
                     }}>
                       <Icon sx={{ 

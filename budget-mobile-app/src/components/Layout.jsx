@@ -149,7 +149,7 @@ const Layout = () => {
   };
 
   return (
-    <Box sx={{ pb: 10 }}>
+    <Box sx={{ pb: 8 }}>
       <Tutorial 
         open={showTutorial}
         onClose={() => setShowTutorial(false)}
