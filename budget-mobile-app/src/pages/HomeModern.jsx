@@ -40,7 +40,6 @@ import ModernPageLayout, {
   StatusChip 
 } from '../components/optimized/ModernPageLayout';
 import CurrencyFormatter from '../components/CurrencyFormatter';
-import { useOptimizedData } from '../hooks/useOptimizedData';
 
 const HomeModern = () => {
   const { 
@@ -61,38 +60,7 @@ const HomeModern = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  // Utilisation du hook optimisé pour les données
-  const { 
-    selectedMonthData, 
-    forecast, 
-    recommendations, 
-    isCalculating, 
-    hasData 
-  } = useOptimizedData();
-
-  // Fonctions memoizées
-  const getMonthName = useCallback((month, year) => {
-    const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
-                       'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-    return `${monthNames[month]} ${year}`;
-  }, []);
-
-  const navigateMonth = useCallback((direction) => {
-    let newMonth = selectedMonth;
-    let newYear = selectedYear;
-    
-    if (direction === 'next') {
-      newMonth = (newMonth + 1) % 12;
-      if (newMonth === 0) newYear++;
-    } else {
-      newMonth = (newMonth - 1 + 12) % 12;
-      if (newMonth === 11) newYear--;
-    }
-    
-    setSelectedMonth(newMonth, newYear);
-  }, [selectedMonth, selectedYear, setSelectedMonth]);
-
-  // Calculs memoizés
+  // Données calculées localement pour éviter les erreurs de module
   const currentMonthStats = useMemo(() => {
     const currentMonth = new Date(selectedYear, selectedMonth);
     const currentMonthExpenses = expenses.filter(exp => {
@@ -119,6 +87,51 @@ const HomeModern = () => {
       incomeCount: currentMonthIncome.length
     };
   }, [expenses, incomeTransactions, selectedMonth, selectedYear]);
+
+  // Données simulées pour les recommandations
+  const recommendations = useMemo(() => {
+    const savingsRate = currentMonthStats.income > 0 ? (currentMonthStats.balance / currentMonthStats.income) * 100 : 0;
+    
+    if (savingsRate < 10) {
+      return [{
+        title: 'Taux d\'épargne faible',
+        description: `Votre taux d'épargne est de ${Math.round(savingsRate)}%. Il est recommandé d'épargner au moins 20% de vos revenus.`,
+        action: () => navigate('/savings'),
+        actionLabel: 'Créer un objectif'
+      }];
+    }
+    
+    return [{
+      title: 'Finances en bonne santé',
+      description: 'Vos finances sont bien gérées. Continuez sur cette voie !',
+      action: () => navigate('/analytics'),
+      actionLabel: 'Voir les analyses'
+    }];
+  }, [currentMonthStats, navigate]);
+
+  // Fonctions memoizées
+  const getMonthName = useCallback((month, year) => {
+    const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+                       'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+    return `${monthNames[month]} ${year}`;
+  }, []);
+
+  const navigateMonth = useCallback((direction) => {
+    let newMonth = selectedMonth;
+    let newYear = selectedYear;
+    
+    if (direction === 'next') {
+      newMonth = (newMonth + 1) % 12;
+      if (newMonth === 0) newYear++;
+    } else {
+      newMonth = (newMonth - 1 + 12) % 12;
+      if (newMonth === 11) newYear--;
+    }
+    
+    setSelectedMonth(newMonth, newYear);
+  }, [selectedMonth, selectedYear, setSelectedMonth]);
+
+
 
   // Actions rapides
   const quickActions = [
@@ -216,8 +229,6 @@ const HomeModern = () => {
               icon={TrendingUp}
               color="#4caf50"
               subtitle={`${currentMonthStats.incomeCount} transactions`}
-              trend={forecast?.incomeTrend}
-              trendDirection={forecast?.incomeTrend > 0 ? 'up' : 'down'}
             />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
@@ -227,8 +238,6 @@ const HomeModern = () => {
               icon={TrendingDown}
               color="#f44336"
               subtitle={`${currentMonthStats.expenseCount} transactions`}
-              trend={forecast?.expenseTrend}
-              trendDirection={forecast?.expenseTrend > 0 ? 'up' : 'down'}
             />
           </Grid>
           <Grid item xs={12} sm={6} md={3}>
