@@ -897,11 +897,11 @@ const useStore = create(
           
           // Supprimer les transactions associées si deleteWithData est true
           let newExpenses = [...state.expenses];
-          let newIncomes = [...state.income];
+          let newIncomeTransactions = [...state.incomeTransactions];
           
           if (deleteWithData) {
             newExpenses = newExpenses.filter(exp => exp.category !== categoryName);
-            newIncomes = newIncomes.filter(inc => inc.category !== categoryName);
+            newIncomeTransactions = newIncomeTransactions.filter(inc => inc.category !== categoryName);
           }
           
           set({ 
@@ -909,7 +909,7 @@ const useStore = create(
             data: newData, 
             budgetLimits: newLimits,
             expenses: newExpenses,
-            income: newIncomes
+            incomeTransactions: newIncomeTransactions
           });
           scheduleSave();
         },
