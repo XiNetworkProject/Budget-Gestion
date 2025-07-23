@@ -156,6 +156,12 @@ const useStore = create(
           return;
         }
         
+        // Éviter les appels API inutiles lors de la connexion initiale
+        if (!state.token) {
+          console.log('Pas de token - sauvegarde locale uniquement');
+          return;
+        }
+        
           set({ isSaving: true });
           try {
           console.log('Tentative de sauvegarde pour userId:', state.user.id);
@@ -254,7 +260,7 @@ const useStore = create(
       selectedYear: new Date().getFullYear(), // Année actuelle par défaut
 
       // Gestion des mises à jour
-              appVersion: "2.3.0",
+              appVersion: "2.2.0",
       lastUpdateShown: null,
       showUpdateDialog: false,
 
@@ -1256,79 +1262,38 @@ const useStore = create(
       setUser: async (user) => {
         console.log('setUser: Connexion de l\'utilisateur:', user);
         set({ user, isAuthenticated: !!user });
+        
         if (user) {
-          try {
-            set({ isLoading: true });
-            const data = await budgetService.getBudget(user.id);
-            console.log('setUser: Données reçues du serveur:', data);
-            
-            if (data) {
-              // Si l'utilisateur a des données, l'onboarding est forcément terminé
-              const shouldCompleteOnboarding = data.onboardingCompleted !== undefined ? data.onboardingCompleted : true;
-              
-              set({
-                months: data.months || defaultMonths,
-                categories: data.categories || defaultCategories,
-                data: data.data || defaultData,
-                revenus: data.revenus || defaultRevenus,
-                incomeTypes: data.incomeTypes || defaultIncomeTypes,
-                incomes: data.incomes || defaultIncomes,
-                persons: data.persons || defaultPersons,
-                saved: data.saved || defaultSaved,
-                sideByMonth: data.sideByMonth || defaultSideByMonth,
-                totalPotentialSavings: data.totalPotentialSavings || 0,
-                budgetLimits: data.budgetLimits || defaultCategoryLimits,
-                expenses: data.expenses || [],
-                incomeTransactions: data.incomeTransactions || [],
-                savings: data.savings || [],
-                debts: data.debts || [],
-                bankAccounts: data.bankAccounts || [],
-                transactions: data.transactions || [],
-                userProfile: data.userProfile || defaultUserProfile,
-                appSettings: data.appSettings || defaultAppSettings,
-                tutorialCompleted: data.tutorialCompleted || false,
-                onboardingCompleted: shouldCompleteOnboarding,
-                lastUpdateShown: data.lastUpdateShown || null,
-                appVersion: data.appVersion || "2.2.0",
-                isLoading: false
-              });
-              
-              console.log('setUser: Données chargées depuis le serveur, onboardingCompleted:', shouldCompleteOnboarding);
-            } else {
-              // Nouvel utilisateur, onboarding non terminé
-              const defaultBudget = {
-                months: defaultMonths,
-                categories: defaultCategories,
-                data: defaultData,
-                revenus: defaultRevenus,
-                incomeTypes: defaultIncomeTypes,
-                incomes: defaultIncomes,
-                persons: defaultPersons,
-                saved: defaultSaved,
-                sideByMonth: defaultSideByMonth,
-                totalPotentialSavings: 0,
-                budgetLimits: defaultCategoryLimits,
-                expenses: [],
-                incomeTransactions: [],
-                savings: [],
-                debts: [],
-                bankAccounts: [],
-                transactions: [],
-                userProfile: { ...defaultUserProfile, email: user.email },
-                appSettings: defaultAppSettings,
-                tutorialCompleted: false,
-                onboardingCompleted: false,
-                lastUpdateShown: null,
-                appVersion: "2.3.0"
-              };
-              set({ ...defaultBudget, isLoading: false });
-              await budgetService.saveBudget(user.id, defaultBudget);
-              console.log('setUser: Nouvel utilisateur créé, onboardingCompleted: false');
-            }
-          } catch (error) {
-            console.error('Error loading budget:', error);
-            set({ error: error.message, isLoading: false });
-          }
+          // Pour les nouveaux utilisateurs ou reconnexion, utiliser les données par défaut
+          // Les données seront chargées/sauvegardées plus tard si nécessaire
+          const defaultBudget = {
+            months: defaultMonths,
+            categories: defaultCategories,
+            data: defaultData,
+            revenus: defaultRevenus,
+            incomeTypes: defaultIncomeTypes,
+            incomes: defaultIncomes,
+            persons: defaultPersons,
+            saved: defaultSaved,
+            sideByMonth: defaultSideByMonth,
+            totalPotentialSavings: 0,
+            budgetLimits: defaultCategoryLimits,
+            expenses: [],
+            incomeTransactions: [],
+            savings: [],
+            debts: [],
+            bankAccounts: [],
+            transactions: [],
+            userProfile: { ...defaultUserProfile, email: user.email },
+            appSettings: defaultAppSettings,
+            tutorialCompleted: false,
+            onboardingCompleted: false,
+            lastUpdateShown: null,
+            appVersion: "2.3.0"
+          };
+          
+          set({ ...defaultBudget, isLoading: false });
+          console.log('setUser: Utilisateur connecté avec données par défaut');
         }
       },
 
@@ -1419,6 +1384,12 @@ const useStore = create(
         const state = get();
         if (!state.user) {
           console.warn('Pas d\'utilisateur connecté - sauvegarde locale uniquement');
+          return;
+        }
+        
+        // Éviter les appels API inutiles lors de la connexion initiale
+        if (!state.token) {
+          console.log('Pas de token - sauvegarde locale uniquement');
           return;
         }
         
