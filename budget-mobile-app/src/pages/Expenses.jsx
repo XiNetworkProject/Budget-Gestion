@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store';
+import { useTranslation } from 'react-i18next';
 import { 
   Box, 
   Typography, 
@@ -90,13 +91,14 @@ const Expenses = () => {
     setValue, 
     removeCategory,
     addCategory,
-    updateCategory,
     expenses,
     addExpense,
     updateExpense,
     deleteExpense,
     activeAccount
   } = useStore();
+  
+  const { t } = useTranslation();
   
   const idx = months.length - 1;
   const [editIdx, setEditIdx] = useState(null);
@@ -109,16 +111,11 @@ const Expenses = () => {
     amount: '',
     date: new Date().toISOString().split('T')[0],
     description: '',
-    recurring: false,
-    recurringType: 'monthly',
-    recurringEndDate: null
+    recurring: false
   });
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
   const [newCategory, setNewCategory] = useState('');
-
-  // Filtrer les catégories pour les dépenses
-  const expenseCategories = categories.filter(cat => cat.type === 'expenses' || !cat.type);
 
   const handleEdit = (i, val) => {
     setEditIdx(i);
@@ -128,26 +125,21 @@ const Expenses = () => {
   const handleEditSave = (cat) => {
     setValue(cat, idx, parseFloat(editValue) || 0);
     setEditIdx(null);
-    setSnack({ open: true, message: 'Dépense mise à jour avec succès', severity: 'success' });
+    setSnack({ open: true, message: t('expenses.expenseUpdated'), severity: 'success' });
   };
 
   const handleDelete = (cat) => {
     removeCategory(cat);
     setDeleteIdx(null);
-    setSnack({ open: true, message: 'Catégorie supprimée avec succès', severity: 'info' });
+    setSnack({ open: true, message: t('expenses.categoryDeleted'), severity: 'info' });
   };
 
   const handleAddCategory = () => {
     if (newCategory.trim()) {
-      addCategory({
-        name: newCategory.trim(),
-        type: 'expenses',
-        icon: 'Category',
-        color: '#2196f3'
-      });
+      addCategory(newCategory.trim());
       setNewCategory('');
       setShowCategoryDialog(false);
-      setSnack({ open: true, message: 'Catégorie ajoutée avec succès', severity: 'success' });
+      setSnack({ open: true, message: t('expenses.categoryAdded'), severity: 'success' });
     }
   };
 
@@ -181,18 +173,16 @@ const Expenses = () => {
         amount: '',
         date: new Date().toISOString().split('T')[0],
         description: '',
-        recurring: false,
-        recurringType: 'monthly',
-        recurringEndDate: null
+        recurring: false
       });
       setShowAddDialog(false);
-      setSnack({ open: true, message: 'Dépense ajoutée avec succès', severity: 'success' });
+      setSnack({ open: true, message: t('expenses.expenseAdded'), severity: 'success' });
     }
   };
 
   const handleDeleteExpense = (expenseId) => {
     deleteExpense(expenseId);
-    setSnack({ open: true, message: 'Dépense supprimée avec succès', severity: 'info' });
+    setSnack({ open: true, message: t('expenses.expenseDeleted'), severity: 'info' });
   };
 
   // Calculs pour les graphiques
@@ -815,23 +805,21 @@ const Expenses = () => {
 
       {/* Dialog d'ajout de dépense */}
       <Dialog open={showAddDialog} onClose={() => setShowAddDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Ajouter une dépense</DialogTitle>
+        <DialogTitle>{t('expenses.addExpense')}</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 1 }}>
             <FormControl fullWidth sx={{ mb: 2 }}>
-              <InputLabel>Catégorie</InputLabel>
+              <InputLabel>{t('expenses.category')}</InputLabel>
               <Select
                 value={newExpense.category}
                 onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
-                label="Catégorie"
+                label={t('expenses.category')}
               >
-                {expenseCategories.map((category) => (
-                  <MenuItem key={category.id} value={category.name}>
+                {categories.map((cat) => (
+                  <MenuItem key={cat} value={cat}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Box sx={{ color: category.color }}>
-                        {getCategoryIcon(category.icon)}
-                      </Box>
-                      {category.name}
+                      <span>{getCategoryIcon(cat)}</span>
+                      {cat}
                     </Box>
                   </MenuItem>
                 ))}
@@ -845,12 +833,12 @@ const Expenses = () => {
               sx={{ mb: 2 }}
               startIcon={<Add />}
             >
-              Créer une nouvelle catégorie
+              {t('expenses.createNewCategory')}
             </Button>
             
             <TextField
               fullWidth
-              label="Montant"
+              label={t('expenses.amount')}
               type="number"
               value={newExpense.amount}
               onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
@@ -862,7 +850,7 @@ const Expenses = () => {
             
             <TextField
               fullWidth
-              label="Date"
+              label={t('expenses.date')}
               type="date"
               value={newExpense.date}
               onChange={(e) => setNewExpense({ ...newExpense, date: e.target.value })}
@@ -872,7 +860,7 @@ const Expenses = () => {
             
             <TextField
               fullWidth
-              label="Description (optionnel)"
+              label={t('expenses.descriptionOptional')}
               value={newExpense.description}
               onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
               sx={{ mb: 2 }}
@@ -880,25 +868,25 @@ const Expenses = () => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowAddDialog(false)}>Annuler</Button>
+          <Button onClick={() => setShowAddDialog(false)}>{t('common.cancel')}</Button>
           <Button 
             onClick={handleAddExpense} 
             variant="contained"
             disabled={!newExpense.category || !newExpense.amount}
           >
-            Ajouter
+            {t('common.add')}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Dialog d'ajout de catégorie */}
       <Dialog open={showCategoryDialog} onClose={() => setShowCategoryDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Créer une nouvelle catégorie</DialogTitle>
+        <DialogTitle>{t('expenses.createNewCategory')}</DialogTitle>
         <DialogContent>
           <Box sx={{ pt: 1 }}>
             <TextField
               fullWidth
-              label="Nom de la catégorie"
+              label={t('expenses.categoryName')}
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
               sx={{ mb: 2 }}
@@ -908,13 +896,13 @@ const Expenses = () => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setShowCategoryDialog(false)}>Annuler</Button>
+          <Button onClick={() => setShowCategoryDialog(false)}>{t('common.cancel')}</Button>
           <Button 
             onClick={handleAddCategory} 
             variant="contained"
             disabled={!newCategory.trim()}
           >
-            Créer
+            {t('common.create')}
           </Button>
         </DialogActions>
       </Dialog>

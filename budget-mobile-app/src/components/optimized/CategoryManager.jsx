@@ -1,140 +1,142 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { useStore } from '../../store';
+import React, { useState, memo, useEffect, useMemo } from 'react';
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
+  Paper,
+  Grid,
   IconButton,
+  TextField,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
-  TextField,
-  Grid,
   Chip,
   Avatar,
+  Tooltip,
+  Alert,
+  Snackbar,
+  Fab,
+  Card,
+  CardContent,
+  CardActions,
+  Divider,
   List,
   ListItem,
-  ListItemText,
   ListItemAvatar,
+  ListItemText,
   ListItemSecondaryAction,
   Menu,
   MenuItem,
   FormControl,
   InputLabel,
   Select,
-  Alert,
-  Snackbar,
-  Tooltip,
-  Fab,
-  Divider
+  InputAdornment
 } from '@mui/material';
 import {
   Add,
   Edit,
   Delete,
-  MoreVert,
-  Category,
-  ColorLens,
-  Image,
   Save,
   Cancel,
-  Warning,
+  Category,
+  ColorLens,
+  Palette,
   CheckCircle,
-  Home,
-  LocalHospital,
+  Warning,
+  MoreVert,
+  TrendingDown,
+  TrendingUp,
+  AttachMoney,
+  ShoppingCart,
   Restaurant,
   DirectionsCar,
-  ShoppingCart,
+  Home,
   School,
   SportsEsports,
-  AttachMoney,
+  LocalHospital,
   Work,
-  Flight,
-  LocalGroceryStore,
-  LocalBar,
-  Movie,
-  MusicNote,
-  Pets,
-  ChildCare,
-  Elderly,
-  FitnessCenter,
-  Spa,
-  BeachAccess,
-  Park,
-  LocalLibrary,
-  LocalMall,
-  LocalGasStation,
-  LocalPharmacy,
-  LocalLaundryService,
-  LocalTaxi,
-  DirectionsBus,
-  DirectionsBike,
-  DirectionsWalk
+  Business,
+  AccountBalance,
+  Computer,
+  Person,
+  MonetizationOn
 } from '@mui/icons-material';
 
-// Icônes disponibles pour les catégories
-const AVAILABLE_ICONS = {
-  Home: <Home />,
-  LocalHospital: <LocalHospital />,
-  Restaurant: <Restaurant />,
-  DirectionsCar: <DirectionsCar />,
-  ShoppingCart: <ShoppingCart />,
-  School: <School />,
-  SportsEsports: <SportsEsports />,
-  AttachMoney: <AttachMoney />,
-  Work: <Work />,
-  Flight: <Flight />,
-  LocalGroceryStore: <LocalGroceryStore />,
-  LocalBar: <LocalBar />,
-  Movie: <Movie />,
-  MusicNote: <MusicNote />,
-  Pets: <Pets />,
-  ChildCare: <ChildCare />,
-  Elderly: <Elderly />,
-  FitnessCenter: <FitnessCenter />,
-  Spa: <Spa />,
-  BeachAccess: <BeachAccess />,
-  Park: <Park />,
-  LocalLibrary: <LocalLibrary />,
-  LocalMall: <LocalMall />,
-  LocalGasStation: <LocalGasStation />,
-  LocalPharmacy: <LocalPharmacy />,
-  LocalLaundryService: <LocalLaundryService />,
-  LocalTaxi: <LocalTaxi />,
-  DirectionsBus: <DirectionsBus />,
-  DirectionsBike: <DirectionsBike />,
-  DirectionsWalk: <DirectionsWalk />
+// Icônes par défaut pour les catégories
+const DEFAULT_ICONS = {
+  expenses: [
+    { icon: ShoppingCart, label: 'Shopping', color: '#FF6B6B' },
+    { icon: Restaurant, label: 'Restaurant', color: '#4ECDC4' },
+    { icon: DirectionsCar, label: 'Transport', color: '#45B7D1' },
+    { icon: Home, label: 'Logement', color: '#96CEB4' },
+    { icon: School, label: 'Éducation', color: '#FFEAA7' },
+    { icon: SportsEsports, label: 'Loisirs', color: '#DDA0DD' },
+    { icon: LocalHospital, label: 'Santé', color: '#FF8A80' },
+    { icon: AttachMoney, label: 'Autres', color: '#90A4AE' }
+  ],
+  income: [
+    { icon: Work, label: 'Salaire', color: '#4CAF50' },
+    { icon: Business, label: 'Freelance', color: '#2196F3' },
+    { icon: AccountBalance, label: 'Investissements', color: '#FF9800' },
+    { icon: Computer, label: 'Technologie', color: '#9C27B0' },
+    { icon: Person, label: 'Services', color: '#607D8B' },
+    { icon: MonetizationOn, label: 'Autres', color: '#795548' }
+  ]
 };
 
-// Couleurs disponibles
-const AVAILABLE_COLORS = [
-  '#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5',
-  '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50',
-  '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800',
-  '#ff5722', '#795548', '#9e9e9e', '#607d8b', '#000000'
-];
-
-const CategoryManager = React.memo(({ type = 'expenses' }) => {
-  const { categories, addCategory, updateCategory, removeCategory } = useStore();
+const CategoryManager = memo(({ 
+  type = 'expenses',
+  categories = [],
+  onAddCategory,
+  onUpdateCategory,
+  onDeleteCategory,
+  onSelectCategory,
+  selectedCategory,
+  t
+}) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
   const [newCategory, setNewCategory] = useState({
     name: '',
-    icon: 'Category',
+    icon: 'category',
     color: '#2196f3',
-    description: ''
+    budget: 0
   });
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCategoryForMenu, setSelectedCategoryForMenu] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [mounted, setMounted] = useState(false);
 
-  // Filtrer les catégories par type
-  const filteredCategories = useMemo(() => {
-    return categories.filter(cat => cat.type === type || !cat.type);
-  }, [categories, type]);
+  // Éviter les erreurs de rendu avant le montage
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  // Convertir les catégories du store (chaînes) en objets avec les propriétés nécessaires
+  const processedCategories = useMemo(() => {
+    return categories.map((category, index) => {
+      // Si c'est déjà un objet, l'utiliser tel quel
+      if (typeof category === 'object' && category !== null) {
+        return category;
+      }
+      
+      // Sinon, créer un objet à partir de la chaîne
+      const colors = ['#FF6B6B', '#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#607D8B', '#795548', '#E91E63'];
+      const icons = ['category', 'home', 'restaurant', 'directions_car', 'shopping_cart', 'movie', 'sports_soccer', 'school'];
+      
+      return {
+        id: `category-${index}`,
+        name: category,
+        icon: icons[index % icons.length],
+        color: colors[index % colors.length],
+        budget: 0
+      };
+    });
+  }, [categories]);
+
+  const defaultIcons = DEFAULT_ICONS[type] || DEFAULT_ICONS.expenses;
 
   const handleOpenDialog = (category = null) => {
     if (category) {
@@ -142,16 +144,16 @@ const CategoryManager = React.memo(({ type = 'expenses' }) => {
       setNewCategory({
         name: category.name,
         icon: category.icon || 'Category',
-        color: category.color || '#2196f3',
-        description: category.description || ''
+        color: category.color || '#4CAF50',
+        budget: category.budget || 0
       });
     } else {
       setEditingCategory(null);
       setNewCategory({
         name: '',
         icon: 'Category',
-        color: '#2196f3',
-        description: ''
+        color: '#4CAF50',
+        budget: 0
       });
     }
     setOpenDialog(true);
@@ -163,8 +165,8 @@ const CategoryManager = React.memo(({ type = 'expenses' }) => {
     setNewCategory({
       name: '',
       icon: 'Category',
-      color: '#2196f3',
-      description: ''
+      color: '#4CAF50',
+      budget: 0
     });
   };
 
@@ -172,46 +174,38 @@ const CategoryManager = React.memo(({ type = 'expenses' }) => {
     if (!newCategory.name.trim()) {
       setSnackbar({
         open: true,
-        message: 'Le nom de la catégorie est requis',
+        message: t('categoryManager.nameRequired'),
         severity: 'error'
       });
       return;
     }
 
-    const categoryData = {
-      ...newCategory,
-      type: type,
-      id: editingCategory ? editingCategory.id : Date.now().toString()
-    };
-
     if (editingCategory) {
-      updateCategory(editingCategory.id, categoryData);
+      onUpdateCategory(editingCategory.id, newCategory);
       setSnackbar({
         open: true,
-        message: 'Catégorie mise à jour avec succès',
+        message: t('categoryManager.updated'),
         severity: 'success'
       });
     } else {
-      addCategory(categoryData);
+      onAddCategory(newCategory);
       setSnackbar({
         open: true,
-        message: 'Catégorie créée avec succès',
+        message: t('categoryManager.added'),
         severity: 'success'
       });
     }
-
     handleCloseDialog();
   };
 
   const handleDelete = (category) => {
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer la catégorie "${category.name}" ?`)) {
-      removeCategory(category.id);
-      setSnackbar({
-        open: true,
-        message: 'Catégorie supprimée avec succès',
-        severity: 'success'
-      });
-    }
+    onDeleteCategory(category.id);
+    setSnackbar({
+      open: true,
+      message: t('categoryManager.deleted'),
+      severity: 'success'
+    });
+    setAnchorEl(null);
   };
 
   const handleMenuOpen = (event, category) => {
@@ -224,107 +218,201 @@ const CategoryManager = React.memo(({ type = 'expenses' }) => {
     setSelectedCategoryForMenu(null);
   };
 
-  const getCategoryIcon = useCallback((iconName) => {
-    return AVAILABLE_ICONS[iconName] || <Category />;
-  }, []);
+  const getIconComponent = (iconName) => {
+    const iconMap = {
+      Category, TrendingDown, TrendingUp, AttachMoney, ShoppingCart,
+      Restaurant, DirectionsCar, Home, School, SportsEsports,
+      LocalHospital, Work, Business, AccountBalance, Computer,
+      Person, MonetizationOn
+    };
+    return iconMap[iconName] || Category;
+  };
 
   return (
     <Box>
-      {/* En-tête avec bouton d'ajout */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h5" fontWeight="bold" sx={{ color: 'white' }}>
-          Gestion des Catégories
-        </Typography>
-        <Fab
-          color="primary"
-          size="small"
-          onClick={() => handleOpenDialog()}
-          sx={{
-            background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
-            '&:hover': {
-              background: 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)'
-            }
-          }}
-        >
-          <Add />
-        </Fab>
-      </Box>
-
-      {/* Liste des catégories */}
-      <Card sx={{
-        background: 'rgba(255, 255, 255, 0.05)',
-        backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        borderRadius: 3
+      {/* Header avec statistiques */}
+      <Paper sx={{
+        p: 3,
+        mb: 3,
+        background: 'rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(20px)',
+        borderRadius: 3,
+        border: '1px solid rgba(255, 255, 255, 0.2)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
       }}>
-        <CardContent>
-          {filteredCategories.length === 0 ? (
-            <Box textAlign="center" py={4}>
-              <Category sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
-              <Typography variant="h6" color="text.secondary" gutterBottom>
-                Aucune catégorie configurée
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, color: 'white' }}>
+            {type === 'expenses' ? t('categoryManager.expenseCategories') : t('categoryManager.incomeCategories')}
+          </Typography>
+          <Chip 
+            label={`${categories.length} ${t('categoryManager.categories')}`}
+            color="primary"
+            variant="outlined"
+            sx={{ color: 'white', borderColor: 'rgba(255, 255, 255, 0.3)' }}
+          />
+        </Box>
+        
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={4}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
+                {categories.length}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Créez votre première catégorie pour organiser vos transactions
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                {t('categoryManager.totalCategories')}
               </Typography>
             </Box>
-          ) : (
-            <List>
-              {filteredCategories.map((category, index) => (
-                <React.Fragment key={category.id}>
-                  <ListItem sx={{
-                    borderRadius: 2,
-                    mb: 1,
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: `1px solid ${category.color}20`,
-                    '&:hover': {
-                      background: 'rgba(255, 255, 255, 0.1)',
-                      transform: 'translateX(4px)'
-                    },
-                    transition: 'all 0.3s ease'
-                  }}>
-                    <ListItemAvatar>
-                      <Avatar sx={{
-                        bgcolor: category.color,
-                        width: 40,
-                        height: 40
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
+                {categories.filter(c => c.budget > 0).length}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                {t('categoryManager.withBudget')}
+              </Typography>
+            </Box>
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
+                {categories.filter(c => !c.budget || c.budget === 0).length}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                {t('categoryManager.withoutBudget')}
+              </Typography>
+            </Box>
+          </Grid>
+        </Grid>
+      </Paper>
+
+      {/* Liste des catégories */}
+      <Grid container spacing={2}>
+        {processedCategories.map((category, index) => {
+          const IconComponent = getIconComponent(category.icon);
+          const isSelected = selectedCategory?.id === category.id;
+          
+          return (
+            <Grid item xs={12} sm={6} md={4} key={category.id}>
+              <Card sx={{
+                background: isSelected 
+                  ? 'rgba(255, 255, 255, 0.2)' 
+                  : 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: 3,
+                border: isSelected 
+                  ? `2px solid ${category.color}` 
+                  : '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: isSelected 
+                  ? `0 8px 32px rgba(0, 0, 0, 0.2)` 
+                  : '0 4px 16px rgba(0, 0, 0, 0.1)',
+                transition: 'all 0.3s ease',
+                cursor: 'pointer',
+                animation: mounted ? `fadeInUp 0.6s ease ${index * 0.1}s both` : 'none',
+                '&:hover': {
+                  transform: 'translateY(-4px)',
+                  boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
+                  background: 'rgba(255, 255, 255, 0.15)'
+                },
+                '@keyframes fadeInUp': {
+                  '0%': {
+                    opacity: 0,
+                    transform: 'translateY(20px)'
+                  },
+                  '100%': {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                  }
+                },
+                '@keyframes fadeIn': {
+                  '0%': {
+                    opacity: 0
+                  },
+                  '100%': {
+                    opacity: 1
+                  }
+                }
+              }} onClick={() => onSelectCategory(category)}>
+                <CardContent sx={{ p: 2 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <Avatar sx={{ 
+                      bgcolor: category.color, 
+                      mr: 2,
+                      width: 40,
+                      height: 40
+                    }}>
+                      <IconComponent />
+                    </Avatar>
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography variant="h6" sx={{ 
+                        fontWeight: 600, 
+                        color: 'white',
+                        mb: 0.5
                       }}>
-                        {getCategoryIcon(category.icon)}
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        <Typography variant="subtitle1" fontWeight="600" sx={{ color: 'white' }}>
-                          {category.name}
+                        {category.name}
+                      </Typography>
+                      {category.budget > 0 && (
+                        <Typography variant="body2" sx={{ 
+                          color: 'rgba(255, 255, 255, 0.7)',
+                          fontWeight: 500
+                        }}>
+                          Budget: {category.budget}€
                         </Typography>
-                      }
-                      secondary={
-                        category.description && (
-                          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                            {category.description}
-                          </Typography>
-                        )
-                      }
-                    />
-                    <ListItemSecondaryAction>
-                      <IconButton
-                        edge="end"
-                        onClick={(e) => handleMenuOpen(e, category)}
-                        sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
-                      >
-                        <MoreVert />
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                  {index < filteredCategories.length - 1 && (
-                    <Divider sx={{ opacity: 0.3, borderColor: 'rgba(255, 255, 255, 0.2)' }} />
+                      )}
+                    </Box>
+                    <IconButton
+                      size="small"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleMenuOpen(e, category);
+                      }}
+                      sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                    >
+                      <MoreVert />
+                    </IconButton>
+                  </Box>
+                  
+                  {isSelected && (
+                    <Box sx={{ 
+                      mt: 1, 
+                      p: 1, 
+                      bgcolor: 'rgba(255, 255, 255, 0.1)', 
+                      borderRadius: 1,
+                      border: `1px solid ${category.color}`,
+                      animation: 'fadeIn 0.3s ease'
+                    }}>
+                      <Typography variant="caption" sx={{ color: 'white' }}>
+                        ✓ {t('categoryManager.selected')}
+                      </Typography>
+                    </Box>
                   )}
-                </React.Fragment>
-              ))}
-            </List>
-          )}
-        </CardContent>
-      </Card>
+                </CardContent>
+              </Card>
+            </Grid>
+          );
+        })}
+      </Grid>
+
+      {/* Bouton d'ajout flottant */}
+      <Fab
+        color="primary"
+        aria-label="add category"
+        onClick={() => handleOpenDialog()}
+        sx={{
+          position: 'fixed',
+          bottom: 80,
+          right: 16,
+          background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+          boxShadow: '0 8px 25px rgba(76, 175, 80, 0.4)',
+          '&:hover': {
+            background: 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)',
+            transform: 'scale(1.1)',
+            boxShadow: '0 12px 35px rgba(76, 175, 80, 0.6)',
+          }
+        }}
+      >
+        <Add />
+      </Fab>
 
       {/* Menu contextuel */}
       <Menu
@@ -334,8 +422,9 @@ const CategoryManager = React.memo(({ type = 'expenses' }) => {
         PaperProps={{
           sx: {
             background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: 2
+            backdropFilter: 'blur(20px)',
+            borderRadius: 2,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
           }
         }}
       >
@@ -344,17 +433,11 @@ const CategoryManager = React.memo(({ type = 'expenses' }) => {
           handleMenuClose();
         }}>
           <Edit sx={{ mr: 1 }} />
-          Modifier
+          {t('categoryManager.edit')}
         </MenuItem>
-        <MenuItem 
-          onClick={() => {
-            handleDelete(selectedCategoryForMenu);
-            handleMenuClose();
-          }}
-          sx={{ color: 'error.main' }}
-        >
+        <MenuItem onClick={() => handleDelete(selectedCategoryForMenu)} sx={{ color: 'error.main' }}>
           <Delete sx={{ mr: 1 }} />
-          Supprimer
+          {t('categoryManager.delete')}
         </MenuItem>
       </Menu>
 
@@ -362,126 +445,102 @@ const CategoryManager = React.memo(({ type = 'expenses' }) => {
       <Dialog 
         open={openDialog} 
         onClose={handleCloseDialog}
-        maxWidth="md"
+        maxWidth="sm"
         fullWidth
         PaperProps={{
           sx: {
             background: 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
-            borderRadius: 3
+            borderRadius: 3,
+            boxShadow: '0 16px 64px rgba(0, 0, 0, 0.2)'
           }
         }}
       >
-        <DialogTitle sx={{ fontWeight: 700 }}>
-          {editingCategory ? 'Modifier la catégorie' : 'Créer une nouvelle catégorie'}
+        <DialogTitle sx={{ 
+          fontWeight: 700,
+          borderBottom: '1px solid rgba(0, 0, 0, 0.1)'
+        }}>
+          {editingCategory ? t('categoryManager.editCategory') : t('categoryManager.addCategory')}
         </DialogTitle>
-        <DialogContent>
-          <Box sx={{ pt: 1 }}>
-            <Grid container spacing={3}>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Nom de la catégorie"
-                  value={newCategory.name}
-                  onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
-                  placeholder="Ex: Loisirs, Transport, Alimentation..."
-                  autoFocus
-                />
-              </Grid>
-              
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Description (optionnel)"
-                  value={newCategory.description}
-                  onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
-                  placeholder="Description de la catégorie..."
-                  multiline
-                  rows={2}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Icône</InputLabel>
-                  <Select
-                    value={newCategory.icon}
-                    onChange={(e) => setNewCategory({ ...newCategory, icon: e.target.value })}
-                    label="Icône"
-                  >
-                    {Object.keys(AVAILABLE_ICONS).map((iconName) => (
-                      <MenuItem key={iconName} value={iconName}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Box sx={{ color: newCategory.color }}>
-                            {AVAILABLE_ICONS[iconName]}
-                          </Box>
-                          {iconName}
-                        </Box>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Couleur</InputLabel>
-                  <Select
-                    value={newCategory.color}
-                    onChange={(e) => setNewCategory({ ...newCategory, color: e.target.value })}
-                    label="Couleur"
-                  >
-                    {AVAILABLE_COLORS.map((color) => (
-                      <MenuItem key={color} value={color}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Box
-                            sx={{
-                              width: 20,
-                              height: 20,
-                              borderRadius: '50%',
-                              bgcolor: color,
-                              border: '2px solid rgba(0,0,0,0.1)'
-                            }}
-                          />
-                          {color}
-                        </Box>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-
-              <Grid item xs={12}>
-                <Box sx={{ 
-                  p: 2, 
-                  border: '1px solid rgba(0,0,0,0.1)', 
-                  borderRadius: 2,
-                  background: 'rgba(0,0,0,0.02)'
-                }}>
-                  <Typography variant="subtitle2" gutterBottom>
-                    Aperçu
-                  </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Avatar sx={{ bgcolor: newCategory.color, width: 40, height: 40 }}>
-                      {getCategoryIcon(newCategory.icon)}
-                    </Avatar>
-                    <Typography variant="body1" fontWeight="600">
-                      {newCategory.name || 'Nom de la catégorie'}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Grid>
+        <DialogContent sx={{ pt: 2 }}>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label={t('categoryManager.name')}
+                value={newCategory.name}
+                onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+                variant="outlined"
+                required
+              />
             </Grid>
-          </Box>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>{t('categoryManager.icon')}</InputLabel>
+                <Select
+                  value={newCategory.icon}
+                  onChange={(e) => setNewCategory({ ...newCategory, icon: e.target.value })}
+                  label={t('categoryManager.icon')}
+                >
+                  {defaultIcons.map((iconOption) => {
+                    const IconComponent = iconOption.icon;
+                    return (
+                      <MenuItem key={iconOption.label} value={iconOption.icon.name}>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <IconComponent sx={{ mr: 1, color: iconOption.color }} />
+                          {iconOption.label}
+                        </Box>
+                      </MenuItem>
+                    );
+                  })}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label={t('categoryManager.color')}
+                value={newCategory.color}
+                onChange={(e) => setNewCategory({ ...newCategory, color: e.target.value })}
+                variant="outlined"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Box sx={{
+                        width: 20,
+                        height: 20,
+                        borderRadius: '50%',
+                        bgcolor: newCategory.color,
+                        border: '1px solid rgba(0, 0, 0, 0.2)'
+                      }} />
+                    </InputAdornment>
+                  )
+                }}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label={t('categoryManager.budget')}
+                type="number"
+                value={newCategory.budget}
+                onChange={(e) => setNewCategory({ ...newCategory, budget: parseFloat(e.target.value) || 0 })}
+                variant="outlined"
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">€</InputAdornment>
+                }}
+                helperText={t('categoryManager.budgetHelper')}
+              />
+            </Grid>
+          </Grid>
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 1 }}>
           <Button onClick={handleCloseDialog} color="inherit">
-            Annuler
+            {t('common.cancel')}
           </Button>
           <Button 
             onClick={handleSave} 
             variant="contained"
-            disabled={!newCategory.name.trim()}
             sx={{
               background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
               '&:hover': {
@@ -489,7 +548,7 @@ const CategoryManager = React.memo(({ type = 'expenses' }) => {
               }
             }}
           >
-            {editingCategory ? 'Modifier' : 'Créer'}
+            {editingCategory ? t('common.save') : t('common.add')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -499,11 +558,10 @@ const CategoryManager = React.memo(({ type = 'expenses' }) => {
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert 
           onClose={() => setSnackbar({ ...snackbar, open: false })} 
-          severity={snackbar.severity} 
+          severity={snackbar.severity}
           sx={{ width: '100%' }}
         >
           {snackbar.message}
