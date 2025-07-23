@@ -327,7 +327,7 @@ const Login = () => {
   return (
     <Box sx={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: 'linear-gradient(135deg, #10131a 0%, #232946 100%)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -350,16 +350,17 @@ const Login = () => {
               position: 'absolute',
               width: Math.random() * 4 + 2,
               height: Math.random() * 4 + 2,
-              background: `rgba(255, 255, 255, ${Math.random() * 0.3 + 0.1})`,
+              background: `rgba(${Math.random() * 255}, ${Math.random() * 255}, 255, ${Math.random() * 0.3 + 0.1})`,
               borderRadius: '50%',
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               animation: `floatParticle ${Math.random() * 10 + 10}s linear infinite`,
               animationDelay: `${Math.random() * 5}s`,
               filter: 'blur(0.5px)',
+              boxShadow: '0 0 10px rgba(255,255,255,0.3)',
               '@keyframes floatParticle': {
                 '0%': {
-                  transform: 'translateY(0px) translateX(0px)',
+                  transform: 'translateY(100vh) translateX(0px) rotate(0deg)',
                   opacity: 0
                 },
                 '10%': {
@@ -369,7 +370,42 @@ const Login = () => {
                   opacity: 1
                 },
                 '100%': {
-                  transform: 'translateY(-100vh) translateX(100px)',
+                  transform: 'translateY(-100px) translateX(${Math.random() * 200 - 100}px) rotate(360deg)',
+                  opacity: 0
+                }
+              }
+            }}
+          />
+        ))}
+        
+        {[...Array(8)].map((_, index) => (
+          <Box
+            key={`large-${index}`}
+            sx={{
+              position: 'absolute',
+              width: Math.random() * 8 + 4,
+              height: Math.random() * 8 + 4,
+              background: `rgba(255, ${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 0.2 + 0.05})`,
+              borderRadius: '50%',
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `floatParticleLarge ${Math.random() * 15 + 20}s linear infinite`,
+              animationDelay: `${Math.random() * 10}s`,
+              filter: 'blur(1px)',
+              boxShadow: '0 0 20px rgba(255,255,255,0.2)',
+              '@keyframes floatParticleLarge': {
+                '0%': {
+                  transform: 'translateY(100vh) translateX(0px) rotate(0deg)',
+                  opacity: 0
+                },
+                '10%': {
+                  opacity: 1
+                },
+                '90%': {
+                  opacity: 1
+                },
+                '100%': {
+                  transform: 'translateY(-100px) translateX(${Math.random() * 300 - 150}px) rotate(720deg)',
                   opacity: 0
                 }
               }
@@ -382,7 +418,7 @@ const Login = () => {
         <Fade in timeout={1000}>
           <Paper sx={{
             p: 4,
-            background: 'rgba(255, 255, 255, 0.95)',
+            background: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(20px)',
             borderRadius: 4,
             boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
@@ -412,7 +448,7 @@ const Login = () => {
                   }}>
                     BudgetGestion
                   </Typography>
-                  <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                  <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 3 }}>
                     Gérez vos finances en toute simplicité
                   </Typography>
                 </Box>
@@ -449,7 +485,18 @@ const Login = () => {
               value={activeTab} 
               onChange={handleTabChange}
               variant="fullWidth"
-              sx={{ mb: 3 }}
+              sx={{ 
+                mb: 3,
+                '& .MuiTab-root': {
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  '&.Mui-selected': {
+                    color: 'white'
+                  }
+                },
+                '& .MuiTabs-indicator': {
+                  backgroundColor: '#667eea'
+                }
+              }}
             >
               <Tab label="Connexion" />
               <Tab label="Inscription" />
@@ -474,41 +521,76 @@ const Login = () => {
                 <Box>
                   {/* Connexion par email */}
                   <form onSubmit={handleEmailLogin}>
-                    <TextField
-                      fullWidth
-                      label="Adresse email"
-                      type="email"
-                      value={loginForm.email}
-                      onChange={handleLoginFormChange('email')}
-                      margin="normal"
-                      InputProps={{
-                        startAdornment: <Email sx={{ mr: 1, color: 'text.secondary' }} />
-                      }}
-                      disabled={loading}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Mot de passe"
-                      type={showPassword ? 'text' : 'password'}
-                      value={loginForm.password}
-                      onChange={handleLoginFormChange('password')}
-                      margin="normal"
-                      InputProps={{
-                        startAdornment: <Lock sx={{ mr: 1, color: 'text.secondary' }} />,
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              onClick={() => setShowPassword(!showPassword)}
-                              edge="end"
-                              disabled={loading}
-                            >
-                              {showPassword ? <VisibilityOff /> : <Visibility />}
-                            </IconButton>
-                          </InputAdornment>
-                        )
-                      }}
-                      disabled={loading}
-                    />
+                                         <TextField
+                       fullWidth
+                       label="Adresse email"
+                       type="email"
+                       value={loginForm.email}
+                       onChange={handleLoginFormChange('email')}
+                       margin="normal"
+                       InputProps={{
+                         startAdornment: <Email sx={{ mr: 1, color: 'rgba(255, 255, 255, 0.7)' }} />
+                       }}
+                       disabled={loading}
+                       sx={{
+                         '& .MuiInputLabel-root': {
+                           color: 'rgba(255, 255, 255, 0.7)'
+                         },
+                         '& .MuiInputBase-root': {
+                           color: 'white',
+                           '& fieldset': {
+                             borderColor: 'rgba(255, 255, 255, 0.3)'
+                           },
+                           '&:hover fieldset': {
+                             borderColor: 'rgba(255, 255, 255, 0.5)'
+                           },
+                           '&.Mui-focused fieldset': {
+                             borderColor: '#667eea'
+                           }
+                         }
+                       }}
+                     />
+                                         <TextField
+                       fullWidth
+                       label="Mot de passe"
+                       type={showPassword ? 'text' : 'password'}
+                       value={loginForm.password}
+                       onChange={handleLoginFormChange('password')}
+                       margin="normal"
+                       InputProps={{
+                         startAdornment: <Lock sx={{ mr: 1, color: 'rgba(255, 255, 255, 0.7)' }} />,
+                         endAdornment: (
+                           <InputAdornment position="end">
+                             <IconButton
+                               onClick={() => setShowPassword(!showPassword)}
+                               edge="end"
+                               disabled={loading}
+                               sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                             >
+                               {showPassword ? <VisibilityOff /> : <Visibility />}
+                             </IconButton>
+                           </InputAdornment>
+                         )
+                       }}
+                       disabled={loading}
+                       sx={{
+                         '& .MuiInputLabel-root': {
+                           color: 'rgba(255, 255, 255, 0.7)'
+                         },
+                         '& .MuiInputBase-root': {
+                           color: 'white',
+                           '& fieldset': {
+                             borderColor: 'rgba(255, 255, 255, 0.3)'
+                           },
+                           '&:hover fieldset': {
+                             borderColor: 'rgba(255, 255, 255, 0.5)'
+                           },
+                           '&.Mui-focused fieldset': {
+                             borderColor: '#667eea'
+                           }
+                         }
+                       }}
+                     />
                     <Button
                       fullWidth
                       type="submit"
@@ -528,8 +610,16 @@ const Login = () => {
                     </Button>
                   </form>
 
-                  <Divider sx={{ my: 3 }}>
-                    <Typography variant="body2" color="text.secondary">
+                  <Divider sx={{ 
+                    my: 3,
+                    '& .MuiDivider-wrapper': {
+                      color: 'rgba(255, 255, 255, 0.7)'
+                    },
+                    '&::before, &::after': {
+                      borderColor: 'rgba(255, 255, 255, 0.3)'
+                    }
+                  }}>
+                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                       ou
                     </Typography>
                   </Divider>
@@ -552,75 +642,145 @@ const Login = () => {
                 <Box>
                   {/* Inscription par email */}
                   <form onSubmit={handleEmailRegister}>
-                    <TextField
-                      fullWidth
-                      label="Nom complet"
-                      value={registerForm.name}
-                      onChange={handleRegisterFormChange('name')}
-                      margin="normal"
-                      InputProps={{
-                        startAdornment: <Person sx={{ mr: 1, color: 'text.secondary' }} />
-                      }}
-                      disabled={loading}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Adresse email"
-                      type="email"
-                      value={registerForm.email}
-                      onChange={handleRegisterFormChange('email')}
-                      margin="normal"
-                      InputProps={{
-                        startAdornment: <Email sx={{ mr: 1, color: 'text.secondary' }} />
-                      }}
-                      disabled={loading}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Mot de passe"
-                      type={showPassword ? 'text' : 'password'}
-                      value={registerForm.password}
-                      onChange={handleRegisterFormChange('password')}
-                      margin="normal"
-                      InputProps={{
-                        startAdornment: <Lock sx={{ mr: 1, color: 'text.secondary' }} />,
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              onClick={() => setShowPassword(!showPassword)}
-                              edge="end"
-                              disabled={loading}
-                            >
-                              {showPassword ? <VisibilityOff /> : <Visibility />}
-                            </IconButton>
-                          </InputAdornment>
-                        )
-                      }}
-                      disabled={loading}
-                    />
-                    <TextField
-                      fullWidth
-                      label="Confirmer le mot de passe"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      value={registerForm.confirmPassword}
-                      onChange={handleRegisterFormChange('confirmPassword')}
-                      margin="normal"
-                      InputProps={{
-                        startAdornment: <Lock sx={{ mr: 1, color: 'text.secondary' }} />,
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton
-                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                              edge="end"
-                              disabled={loading}
-                            >
-                              {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                            </IconButton>
-                          </InputAdornment>
-                        )
-                      }}
-                      disabled={loading}
-                    />
+                                         <TextField
+                       fullWidth
+                       label="Nom complet"
+                       value={registerForm.name}
+                       onChange={handleRegisterFormChange('name')}
+                       margin="normal"
+                       InputProps={{
+                         startAdornment: <Person sx={{ mr: 1, color: 'rgba(255, 255, 255, 0.7)' }} />
+                       }}
+                       disabled={loading}
+                       sx={{
+                         '& .MuiInputLabel-root': {
+                           color: 'rgba(255, 255, 255, 0.7)'
+                         },
+                         '& .MuiInputBase-root': {
+                           color: 'white',
+                           '& fieldset': {
+                             borderColor: 'rgba(255, 255, 255, 0.3)'
+                           },
+                           '&:hover fieldset': {
+                             borderColor: 'rgba(255, 255, 255, 0.5)'
+                           },
+                           '&.Mui-focused fieldset': {
+                             borderColor: '#667eea'
+                           }
+                         }
+                       }}
+                     />
+                                         <TextField
+                       fullWidth
+                       label="Adresse email"
+                       type="email"
+                       value={registerForm.email}
+                       onChange={handleRegisterFormChange('email')}
+                       margin="normal"
+                       InputProps={{
+                         startAdornment: <Email sx={{ mr: 1, color: 'rgba(255, 255, 255, 0.7)' }} />
+                       }}
+                       disabled={loading}
+                       sx={{
+                         '& .MuiInputLabel-root': {
+                           color: 'rgba(255, 255, 255, 0.7)'
+                         },
+                         '& .MuiInputBase-root': {
+                           color: 'white',
+                           '& fieldset': {
+                             borderColor: 'rgba(255, 255, 255, 0.3)'
+                           },
+                           '&:hover fieldset': {
+                             borderColor: 'rgba(255, 255, 255, 0.5)'
+                           },
+                           '&.Mui-focused fieldset': {
+                             borderColor: '#667eea'
+                           }
+                         }
+                       }}
+                     />
+                                         <TextField
+                       fullWidth
+                       label="Mot de passe"
+                       type={showPassword ? 'text' : 'password'}
+                       value={registerForm.password}
+                       onChange={handleRegisterFormChange('password')}
+                       margin="normal"
+                       InputProps={{
+                         startAdornment: <Lock sx={{ mr: 1, color: 'rgba(255, 255, 255, 0.7)' }} />,
+                         endAdornment: (
+                           <InputAdornment position="end">
+                             <IconButton
+                               onClick={() => setShowPassword(!showPassword)}
+                               edge="end"
+                               disabled={loading}
+                               sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                             >
+                               {showPassword ? <VisibilityOff /> : <Visibility />}
+                             </IconButton>
+                           </InputAdornment>
+                         )
+                       }}
+                       disabled={loading}
+                       sx={{
+                         '& .MuiInputLabel-root': {
+                           color: 'rgba(255, 255, 255, 0.7)'
+                         },
+                         '& .MuiInputBase-root': {
+                           color: 'white',
+                           '& fieldset': {
+                             borderColor: 'rgba(255, 255, 255, 0.3)'
+                           },
+                           '&:hover fieldset': {
+                             borderColor: 'rgba(255, 255, 255, 0.5)'
+                           },
+                           '&.Mui-focused fieldset': {
+                             borderColor: '#667eea'
+                           }
+                         }
+                       }}
+                     />
+                                         <TextField
+                       fullWidth
+                       label="Confirmer le mot de passe"
+                       type={showConfirmPassword ? 'text' : 'password'}
+                       value={registerForm.confirmPassword}
+                       onChange={handleRegisterFormChange('confirmPassword')}
+                       margin="normal"
+                       InputProps={{
+                         startAdornment: <Lock sx={{ mr: 1, color: 'rgba(255, 255, 255, 0.7)' }} />,
+                         endAdornment: (
+                           <InputAdornment position="end">
+                             <IconButton
+                               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                               edge="end"
+                               disabled={loading}
+                               sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                             >
+                               {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                             </IconButton>
+                           </InputAdornment>
+                         )
+                       }}
+                       disabled={loading}
+                       sx={{
+                         '& .MuiInputLabel-root': {
+                           color: 'rgba(255, 255, 255, 0.7)'
+                         },
+                         '& .MuiInputBase-root': {
+                           color: 'white',
+                           '& fieldset': {
+                             borderColor: 'rgba(255, 255, 255, 0.3)'
+                           },
+                           '&:hover fieldset': {
+                             borderColor: 'rgba(255, 255, 255, 0.5)'
+                           },
+                           '&.Mui-focused fieldset': {
+                             borderColor: '#667eea'
+                           }
+                         }
+                       }}
+                     />
                     <Button
                       fullWidth
                       type="submit"
@@ -640,8 +800,16 @@ const Login = () => {
                     </Button>
                   </form>
 
-                  <Divider sx={{ my: 3 }}>
-                    <Typography variant="body2" color="text.secondary">
+                  <Divider sx={{ 
+                    my: 3,
+                    '& .MuiDivider-wrapper': {
+                      color: 'rgba(255, 255, 255, 0.7)'
+                    },
+                    '&::before, &::after': {
+                      borderColor: 'rgba(255, 255, 255, 0.3)'
+                    }
+                  }}>
+                    <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                       ou
                     </Typography>
                   </Divider>
@@ -661,10 +829,10 @@ const Login = () => {
 
             {/* Footer */}
             <Box sx={{ textAlign: 'center', mt: 4 }}>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                 En continuant, vous acceptez nos conditions d'utilisation
               </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block', mt: 1 }}>
                 © 2025 XimaMDev - BudgetGestion
               </Typography>
             </Box>
