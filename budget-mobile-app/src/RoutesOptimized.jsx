@@ -11,6 +11,7 @@ import Layout from './components/Layout';
 const HomeOptimized = lazy(() => import('./pages/HomeOptimized'));
 const ExpensesOptimized = lazy(() => import('./pages/ExpensesOptimized'));
 const IncomeOptimized = lazy(() => import('./pages/IncomeOptimized'));
+const AnalyticsOptimized = lazy(() => import('./pages/AnalyticsOptimized'));
 const Expenses = lazy(() => import('./pages/Expenses'));
 const Income = lazy(() => import('./pages/Income'));
 const Savings = lazy(() => import('./pages/Savings'));
@@ -108,14 +109,14 @@ const AppRoutesOptimized = () => {
             } 
           />
 
-          <Route 
-            path="analytics" 
+          <Route
+            path="analytics"
             element={
-              <LazyPage 
-                component={Analytics} 
-                fallbackMessage="Chargement des analyses..." 
+              <LazyPage
+                component={AnalyticsOptimized}
+                fallbackMessage="Chargement des analyses..."
               />
-            } 
+            }
           />
           <Route 
             path="history" 
