@@ -19,7 +19,11 @@ import {
   Grid,
   Card,
   CardContent,
-  LinearProgress
+  LinearProgress,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText
 } from '@mui/material';
 import {
   TrendingUp,
@@ -36,7 +40,23 @@ import {
   AccountBalance,
   Timeline,
   Assessment,
-  Settings
+  Settings,
+  Login,
+  Email,
+  Google,
+  Category,
+  Payment,
+  Psychology,
+  AutoAwesome,
+  Dashboard,
+  Receipt,
+  AccountBalanceWallet,
+  TrendingDown,
+  Schedule,
+  NotificationsActive,
+  Palette,
+  Speed,
+  Shield
 } from '@mui/icons-material';
 import { useStore } from '../store';
 
@@ -49,38 +69,136 @@ const Onboarding = () => {
 
 const steps = [
   {
-      title: t('onboarding.welcome'),
-      subtitle: t('onboarding.welcomeSubtitle'),
-      description: t('onboarding.welcomeDescription'),
+    title: "Bienvenue sur BudgetGestion",
+    subtitle: "Votre assistant financier intelligent",
+    description: "Découvrez une application moderne et intuitive pour prendre le contrôle de vos finances. Interface glassmorphism, IA intégrée et fonctionnalités avancées vous attendent.",
+    icon: <AccountBalance sx={{ fontSize: 60 }} />,
+    color: '#667eea',
+    features: [
+      "Interface moderne avec design glassmorphism",
+      "Thème sombre élégant et cohérent",
+      "Particules animées et effets visuels",
+      "Navigation fluide et intuitive"
+    ]
+  },
+  {
+    title: "Connexion sécurisée",
+    subtitle: "Plusieurs options d'authentification",
+    description: "Connectez-vous facilement avec Google ou créez un compte par email. Votre session est automatiquement sauvegardée pour une expérience sans friction.",
+    icon: <Security sx={{ fontSize: 60 }} />,
+    color: '#4caf50',
+    features: [
+      "Connexion Google en un clic",
+      "Inscription par email sécurisée",
+      "Connexion automatique activée",
+      "Déconnexion dans les paramètres"
+    ]
+  },
+  {
+    title: "Tableau de bord intelligent",
+    subtitle: "Vue d'ensemble de vos finances",
+    description: "Votre page d'accueil personnalisée avec KPIs en temps réel, graphiques interactifs et recommandations IA pour optimiser votre budget.",
+    icon: <Dashboard sx={{ fontSize: 60 }} />,
+    color: '#ff9800',
+    features: [
+      "KPIs financiers en temps réel",
+      "Graphiques interactifs et animés",
+      "Recommandations IA personnalisées",
+      "Prévisions intelligentes"
+    ]
+  },
+  {
+    title: "Gestion des dépenses",
+    subtitle: "Suivi détaillé et catégorisation",
+    description: "Enregistrez vos dépenses avec catégorisation automatique, gestion avancée des catégories avec icônes et couleurs personnalisées.",
+    icon: <Receipt sx={{ fontSize: 60 }} />,
+    color: '#f44336',
+    features: [
+      "Ajout rapide en un clic",
+      "Catégorisation automatique",
+      "Gestion avancée des catégories",
+      "Suppression avec options"
+    ]
+  },
+  {
+    title: "Gestion des revenus",
+    subtitle: "Suivi de vos sources de revenus",
+    description: "Organisez vos revenus par type, analysez vos sources de revenus et optimisez votre stratégie financière.",
     icon: <TrendingUp sx={{ fontSize: 60 }} />,
-    color: '#1976d2',
-      features: Array.isArray(t('onboarding.welcomeFeatures')) ? t('onboarding.welcomeFeatures') : []
+    color: '#4caf50',
+    features: [
+      "Types de revenus personnalisables",
+      "Analyse des sources de revenus",
+      "Suivi des tendances",
+      "Optimisation des revenus"
+    ]
   },
   {
-      title: t('onboarding.trackFinances'),
-      subtitle: t('onboarding.trackFinancesSubtitle'),
-      description: t('onboarding.trackFinancesDescription'),
+    title: "Analytics avancés",
+    subtitle: "Analyses détaillées et insights",
+    description: "Explorez vos données avec des graphiques interactifs, analyses par catégorie et insights personnalisés pour améliorer vos finances.",
     icon: <Analytics sx={{ fontSize: 60 }} />,
-    color: '#2e7d32',
-      features: Array.isArray(t('onboarding.trackFinancesFeatures')) ? t('onboarding.trackFinancesFeatures') : []
-  },
-  {
-      title: t('onboarding.reachGoals'),
-      subtitle: t('onboarding.reachGoalsSubtitle'),
-      description: t('onboarding.reachGoalsDescription'),
-    icon: <Savings sx={{ fontSize: 60 }} />,
-    color: '#ed6c02',
-      features: Array.isArray(t('onboarding.reachGoalsFeatures')) ? t('onboarding.reachGoalsFeatures') : []
-  },
-  {
-      title: t('onboarding.readyToStart'),
-      subtitle: t('onboarding.readyToStartSubtitle'),
-      description: t('onboarding.readyToStartDescription'),
-    icon: <CheckCircle sx={{ fontSize: 60 }} />,
     color: '#9c27b0',
-      features: Array.isArray(t('onboarding.readyToStartFeatures')) ? t('onboarding.readyToStartFeatures') : []
-    }
-  ];
+    features: [
+      "Graphiques interactifs",
+      "Analyses par catégorie",
+      "Insights personnalisés",
+      "Rapports détaillés"
+    ]
+  },
+  {
+    title: "Paiements récurrents",
+    subtitle: "Gestion des abonnements et factures",
+    description: "Suivez vos paiements récurrents, abonnements et factures avec rappels automatiques et gestion intelligente.",
+    icon: <Schedule sx={{ fontSize: 60 }} />,
+    color: '#2196f3',
+    features: [
+      "Gestion des abonnements",
+      "Rappels automatiques",
+      "Suivi des paiements",
+      "Alertes intelligentes"
+    ]
+  },
+  {
+    title: "Plans d'actions IA",
+    subtitle: "Objectifs personnalisés et suivi",
+    description: "Créez des plans d'actions personnalisés avec l'aide de l'IA, suivez vos objectifs et recevez des recommandations adaptées.",
+    icon: <Psychology sx={{ fontSize: 60 }} />,
+    color: '#ff5722',
+    features: [
+      "Plans d'actions IA",
+      "Objectifs personnalisés",
+      "Suivi des progrès",
+      "Recommandations adaptées"
+    ]
+  },
+  {
+    title: "Épargne et objectifs",
+    subtitle: "Atteignez vos objectifs financiers",
+    description: "Définissez des objectifs d'épargne, suivez vos progrès et recevez des conseils pour optimiser votre épargne.",
+    icon: <Savings sx={{ fontSize: 60 }} />,
+    color: '#00bcd4',
+    features: [
+      "Objectifs d'épargne",
+      "Suivi des progrès",
+      "Conseils d'optimisation",
+      "Alertes d'objectifs"
+    ]
+  },
+  {
+    title: "Prêt à commencer ?",
+    subtitle: "Votre avenir financier commence ici",
+    description: "Toutes les fonctionnalités sont prêtes ! Commencez par explorer votre tableau de bord et découvrez toutes les possibilités de BudgetGestion.",
+    icon: <CheckCircle sx={{ fontSize: 60 }} />,
+    color: '#4caf50',
+    features: [
+      "Configuration en 2 minutes",
+      "Données sécurisées",
+      "Support 24/7",
+      "Mises à jour régulières"
+    ]
+  }
+];
 
   const isLast = step === steps.length - 1;
 
@@ -118,7 +236,7 @@ const steps = [
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* Particules animées */}
+      {/* Particules animées améliorées */}
       <Box sx={{
         position: 'absolute',
         top: 0,
@@ -128,21 +246,24 @@ const steps = [
         overflow: 'hidden',
         zIndex: 0
       }}>
-        {[...Array(20)].map((_, i) => (
+        {[...Array(30)].map((_, i) => (
           <Box
             key={i}
             sx={{
               position: 'absolute',
-              width: Math.random() * 4 + 2,
-              height: Math.random() * 4 + 2,
-              background: 'rgba(255, 255, 255, 0.3)',
+              width: Math.random() * 6 + 3,
+              height: Math.random() * 6 + 3,
+              background: `rgba(${Math.random() * 255}, ${Math.random() * 255}, 255, ${Math.random() * 0.4 + 0.1})`,
               borderRadius: '50%',
-              animation: `float ${Math.random() * 10 + 10}s linear infinite`,
+              animation: `floatParticle ${Math.random() * 15 + 15}s linear infinite`,
+              animationDelay: `${Math.random() * 10}s`,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              '@keyframes float': {
+              filter: 'blur(0.5px)',
+              boxShadow: '0 0 10px rgba(255,255,255,0.3)',
+              '@keyframes floatParticle': {
                 '0%': {
-                  transform: 'translateY(0px) rotate(0deg)',
+                  transform: 'translateY(100vh) translateX(0px) rotate(0deg)',
                   opacity: 0
                 },
                 '10%': {
@@ -152,7 +273,42 @@ const steps = [
                   opacity: 1
                 },
                 '100%': {
-                  transform: 'translateY(-100vh) rotate(360deg)',
+                  transform: 'translateY(-100px) translateX(100px) rotate(360deg)',
+                  opacity: 0
+                }
+              }
+            }}
+          />
+        ))}
+        
+        {[...Array(10)].map((_, i) => (
+          <Box
+            key={`large-${i}`}
+            sx={{
+              position: 'absolute',
+              width: Math.random() * 12 + 6,
+              height: Math.random() * 12 + 6,
+              background: `rgba(255, ${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 0.3 + 0.05})`,
+              borderRadius: '50%',
+              animation: `floatParticleLarge ${Math.random() * 20 + 25}s linear infinite`,
+              animationDelay: `${Math.random() * 15}s`,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              filter: 'blur(1px)',
+              boxShadow: '0 0 20px rgba(255,255,255,0.2)',
+              '@keyframes floatParticleLarge': {
+                '0%': {
+                  transform: 'translateY(100vh) translateX(0px) rotate(0deg)',
+                  opacity: 0
+                },
+                '10%': {
+                  opacity: 1
+                },
+                '90%': {
+                  opacity: 1
+                },
+                '100%': {
+                  transform: 'translateY(-100px) translateX(200px) rotate(720deg)',
                   opacity: 0
                 }
               }
@@ -170,13 +326,23 @@ const steps = [
         position: 'relative',
         zIndex: 1
       }}>
-        <Typography variant="h6" sx={{ 
-          color: 'white',
-          fontWeight: 'bold',
-          textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-        }} component="span">
-          {t('appName')}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Avatar sx={{ 
+            width: 32, 
+            height: 32, 
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)'
+          }}>
+            <AccountBalance sx={{ fontSize: 20 }} />
+          </Avatar>
+          <Typography variant="h6" sx={{ 
+            color: 'white',
+            fontWeight: 'bold',
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          }} component="span">
+            BudgetGestion
+          </Typography>
+        </Box>
         <Button 
           variant="text" 
           onClick={skip}
@@ -187,7 +353,7 @@ const steps = [
             }
           }}
         >
-          {t('onboarding.skip')}
+          Passer
         </Button>
       </Box>
 
@@ -196,18 +362,19 @@ const steps = [
         variant="determinate" 
         value={((step + 1) / steps.length) * 100} 
         sx={{ 
-          height: 4, 
+          height: 6, 
           background: 'rgba(255, 255, 255, 0.2)',
           backdropFilter: 'blur(10px)',
+          borderRadius: 3,
           '& .MuiLinearProgress-bar': { 
-            background: 'linear-gradient(90deg, #4caf50 0%, #8bc34a 100%)',
-            borderRadius: 2
+            background: 'linear-gradient(90deg, #667eea 0%, #764ba2 100%)',
+            borderRadius: 3
           }
         }} 
       />
 
       {/* Main Content */}
-      <Container maxWidth="sm" sx={{ 
+      <Container maxWidth="md" sx={{ 
         flex: 1, 
         display: 'flex', 
         flexDirection: 'column', 
@@ -220,14 +387,14 @@ const steps = [
           <Zoom in timeout={600}>
             <Avatar 
               sx={{ 
-                width: 120, 
-                height: 120, 
+                width: 140, 
+                height: 140, 
                 mx: 'auto', 
                 mb: 3,
-                background: 'rgba(255, 255, 255, 0.2)',
+                background: 'rgba(255, 255, 255, 0.1)',
                 backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 12px 40px rgba(0, 0, 0, 0.2)',
                 color: 'white'
               }}
             >
@@ -237,15 +404,19 @@ const steps = [
           
           <Fade in timeout={800}>
             <Box>
-              <Typography variant="h4" sx={{ 
+              <Typography variant="h3" sx={{ 
                 fontWeight: 'bold', 
                 mb: 1, 
                 color: 'white',
-                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent'
               }}>
                 {currentStep.title}
               </Typography>
-              <Typography variant="h6" sx={{ 
+              <Typography variant="h5" sx={{ 
                 color: 'rgba(255, 255, 255, 0.9)', 
                 mb: 2, 
                 fontWeight: 500,
@@ -263,8 +434,9 @@ const steps = [
             <Typography variant="body1" sx={{ 
               textAlign: 'center', 
               color: 'rgba(255, 255, 255, 0.8)', 
-              lineHeight: 1.6,
-              textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+              lineHeight: 1.8,
+              textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+              fontSize: '1.1rem'
             }}>
               {currentStep.description}
             </Typography>
@@ -276,25 +448,32 @@ const steps = [
           <Box sx={{ mb: 4 }}>
             <Grid container spacing={2}>
               {Array.isArray(currentStep.features) && currentStep.features.map((feature, index) => (
-                <Grid item xs={12} key={index}>
+                <Grid item xs={12} sm={6} key={index}>
                   <Card sx={{ 
                     background: 'rgba(255, 255, 255, 0.1)',
                     backdropFilter: 'blur(20px)',
                     border: '1px solid rgba(255, 255, 255, 0.2)',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 12px 40px rgba(0, 0, 0, 0.2)',
+                      border: '1px solid rgba(255, 255, 255, 0.3)'
+                    }
                   }}>
                     <CardContent sx={{ py: 2, px: 3 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <CheckCircle sx={{ 
                           color: '#4caf50', 
                           mr: 2, 
-                          fontSize: 20,
+                          fontSize: 24,
                           filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
                         }} />
                         <Typography variant="body2" sx={{ 
                           fontWeight: 500,
                           color: 'white',
-                          textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+                          textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                          fontSize: '0.95rem'
                         }}>
                           {feature}
                         </Typography>
@@ -317,7 +496,7 @@ const steps = [
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(255, 255, 255, 0.2)',
           borderRadius: 3,
-          p: 2,
+          p: 3,
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
         }}>
           <Button
@@ -338,7 +517,7 @@ const steps = [
               }
             }}
           >
-            {t('onboarding.previous')}
+            Précédent
           </Button>
 
           {/* Step Indicators glassmorphism */}
@@ -347,12 +526,12 @@ const steps = [
               <Box
                 key={idx}
                 sx={{
-                  width: 8,
-                  height: 8,
+                  width: 10,
+                  height: 10,
                   borderRadius: '50%',
-                  background: idx === step ? '#4caf50' : 'rgba(255, 255, 255, 0.3)',
+                  background: idx === step ? '#667eea' : 'rgba(255, 255, 255, 0.3)',
                   transition: 'all 0.3s ease',
-                  boxShadow: idx === step ? '0 2px 8px rgba(76, 175, 80, 0.4)' : 'none'
+                  boxShadow: idx === step ? '0 2px 8px rgba(102, 126, 234, 0.4)' : 'none'
                 }}
               />
             ))}
@@ -364,14 +543,14 @@ const steps = [
             disabled={loading}
             endIcon={isLast ? <PlayArrow /> : <ArrowForward />}
             sx={{ 
-              background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
               px: 4,
               py: 1.5,
               borderRadius: 3,
-              boxShadow: '0 8px 32px rgba(76, 175, 80, 0.3)',
+              boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
               '&:hover': { 
-                background: 'linear-gradient(135deg, #45a049 0%, #7cb342 100%)',
-                boxShadow: '0 12px 40px rgba(76, 175, 80, 0.4)'
+                background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)'
               },
               '&.Mui-disabled': {
                 background: 'rgba(255, 255, 255, 0.2)',
@@ -382,12 +561,12 @@ const steps = [
             {loading ? (
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
                 <Typography variant="body2" sx={{ mr: 1 }}>
-                  {t('onboarding.configuring')}...
+                  Configuration...
                 </Typography>
                 <LinearProgress sx={{ width: 20, height: 2 }} />
               </Box>
             ) : (
-              isLast ? t('onboarding.start') : t('onboarding.next')
+              isLast ? 'Commencer' : 'Suivant'
             )}
           </Button>
         </Box>
@@ -409,14 +588,14 @@ const steps = [
             color: 'rgba(255, 255, 255, 0.8)',
             textShadow: '0 1px 2px rgba(0,0,0,0.3)'
           }} component="span">
-            {t('onboarding.satisfaction')}
+            Plus de 10,000 utilisateurs satisfaits
           </Typography>
         </Box>
         <Typography variant="caption" sx={{ 
           color: 'rgba(255, 255, 255, 0.6)',
           textShadow: '0 1px 2px rgba(0,0,0,0.3)'
         }} component="span">
-          {t('onboarding.dataSecurity')}
+          Vos données sont sécurisées et privées
         </Typography>
       </Box>
     </Box>
