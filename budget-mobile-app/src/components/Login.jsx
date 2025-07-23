@@ -199,8 +199,8 @@ const Login = () => {
       setToken(mockToken);
       setUser(decoded);
       
-      // Forcer la sauvegarde immédiate
-      forceSave();
+      // Ne pas forcer la sauvegarde immédiatement - laisser le store gérer
+      // forceSave();
       
       setSuccess('Connexion réussie !');
       
@@ -262,8 +262,8 @@ const Login = () => {
       setToken(mockToken);
       setUser(decoded);
       
-      // Forcer la sauvegarde immédiate
-      forceSave();
+      // Ne pas forcer la sauvegarde immédiatement - laisser le store gérer
+      // forceSave();
       
       setSuccess('Compte créé avec succès !');
       
@@ -308,8 +308,8 @@ const Login = () => {
         picture: decoded.picture
       });
       
-      // Forcer la sauvegarde immédiate
-      forceSave();
+      // Ne pas forcer la sauvegarde immédiatement - laisser le store gérer
+      // forceSave();
       
       setSuccess('Connexion Google réussie !');
       

@@ -1259,40 +1259,40 @@ const useStore = create(
           scheduleSave();
         },
 
-      setUser: async (user) => {
+      setUser: (user) => {
         console.log('setUser: Connexion de l\'utilisateur:', user);
         set({ user, isAuthenticated: !!user });
         
         if (user) {
           // Pour les nouveaux utilisateurs ou reconnexion, utiliser les données par défaut
           // Les données seront chargées/sauvegardées plus tard si nécessaire
-              const defaultBudget = {
-                months: defaultMonths,
-                categories: defaultCategories,
-                data: defaultData,
-                revenus: defaultRevenus,
-                incomeTypes: defaultIncomeTypes,
-                incomes: defaultIncomes,
-                persons: defaultPersons,
-                saved: defaultSaved,
-                sideByMonth: defaultSideByMonth,
-                totalPotentialSavings: 0,
-                budgetLimits: defaultCategoryLimits,
-                expenses: [],
-                incomeTransactions: [],
-                savings: [],
-                debts: [],
-                bankAccounts: [],
-                transactions: [],
-                userProfile: { ...defaultUserProfile, email: user.email },
-                appSettings: defaultAppSettings,
-                tutorialCompleted: false,
-                onboardingCompleted: false,
-                lastUpdateShown: null,
+          const defaultBudget = {
+            months: defaultMonths,
+            categories: defaultCategories,
+            data: defaultData,
+            revenus: defaultRevenus,
+            incomeTypes: defaultIncomeTypes,
+            incomes: defaultIncomes,
+            persons: defaultPersons,
+            saved: defaultSaved,
+            sideByMonth: defaultSideByMonth,
+            totalPotentialSavings: 0,
+            budgetLimits: defaultCategoryLimits,
+            expenses: [],
+            incomeTransactions: [],
+            savings: [],
+            debts: [],
+            bankAccounts: [],
+            transactions: [],
+            userProfile: { ...defaultUserProfile, email: user.email },
+            appSettings: defaultAppSettings,
+            tutorialCompleted: false,
+            onboardingCompleted: false,
+            lastUpdateShown: null,
             appVersion: "2.3.0"
-              };
+          };
           
-              set({ ...defaultBudget, isLoading: false });
+          set({ ...defaultBudget, isLoading: false });
           console.log('setUser: Utilisateur connecté avec données par défaut');
         }
       },
