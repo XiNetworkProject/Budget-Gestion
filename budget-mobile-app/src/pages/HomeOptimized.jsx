@@ -190,7 +190,15 @@ const HomeOptimized = () => {
   } = useStore();
   
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  
+  // Debug: vérifier si les traductions sont chargées
+  console.log('=== HOME OPTIMIZED DEBUG ===');
+  console.log('i18n ready:', i18n.isInitialized);
+  console.log('Current language:', i18n.language);
+  console.log('Test translation:', t('upcomingPayments.title'));
+  console.log('Direct i18n test:', i18n.t('upcomingPayments.title'));
+  console.log('=== END DEBUG ===');
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [localData, setLocalData] = useState({
     income: [],

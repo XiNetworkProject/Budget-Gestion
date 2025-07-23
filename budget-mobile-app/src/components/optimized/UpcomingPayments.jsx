@@ -284,6 +284,7 @@ const UpcomingPayments = React.memo(({
   const [filter, setFilter] = useState('all'); // 'all', 'critical', 'overdue', 'upcoming'
 
   // Debug: vérifier si les traductions sont chargées
+  console.log('=== UPCOMING PAYMENTS DEBUG ===');
   console.log('i18n ready:', i18n.isInitialized);
   console.log('Current language:', i18n.language);
   console.log('Available languages:', i18n.languages);
@@ -293,6 +294,7 @@ const UpcomingPayments = React.memo(({
   
   // Test direct avec i18n
   console.log('Direct i18n test:', i18n.t('upcomingPayments.title'));
+  console.log('=== END DEBUG ===');
 
   // Calculs optimisés avec useMemo
   const { 
