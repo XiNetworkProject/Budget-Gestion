@@ -69,7 +69,7 @@ import {
   LocalPharmacy,
   LocalLaundryService,
   LocalTaxi,
-  LocalBus,
+  DirectionsBus,
   Train,
   DirectionsBike,
   DirectionsWalk
@@ -105,7 +105,7 @@ const DEFAULT_ICONS = {
   'Pharmacie': <LocalPharmacy />,
   'Blanchisserie': <LocalLaundryService />,
   'Taxi': <LocalTaxi />,
-  'Bus': <LocalBus />,
+  'Bus': <DirectionsBus />,
   'Train': <Train />,
   'Vélo': <DirectionsBike />,
   'Marche': <DirectionsWalk />
@@ -171,7 +171,7 @@ const CategoryManager = React.memo(({
     { name: 'LocalPharmacy', icon: <LocalPharmacy /> },
     { name: 'LocalLaundryService', icon: <LocalLaundryService /> },
     { name: 'LocalTaxi', icon: <LocalTaxi /> },
-    { name: 'LocalBus', icon: <LocalBus /> },
+    { name: 'DirectionsBus', icon: <DirectionsBus /> },
     { name: 'Train', icon: <Train /> },
     { name: 'DirectionsBike', icon: <DirectionsBike /> },
     { name: 'DirectionsWalk', icon: <DirectionsWalk /> }
