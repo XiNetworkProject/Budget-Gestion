@@ -193,7 +193,8 @@ const CategoryManager = memo(({
     }
 
     if (editingCategory) {
-      onUpdateCategory(editingCategory.id, newCategory);
+      // Utiliser le nom de la catégorie au lieu de l'ID pour la mise à jour
+      onUpdateCategory(editingCategory.name, newCategory);
       setSnackbar({
         open: true,
         message: t('categoryManager.updated'),
@@ -218,7 +219,9 @@ const CategoryManager = memo(({
 
   const confirmDelete = () => {
     if (categoryToDelete) {
-      onDeleteCategory(categoryToDelete.id, deleteWithData);
+      // Utiliser le nom de la catégorie au lieu de l'ID pour la suppression
+      // car les catégories dans le store sont des chaînes simples
+      onDeleteCategory(categoryToDelete.name, deleteWithData);
       setSnackbar({
         open: true,
         message: `Catégorie "${categoryToDelete.name}" supprimée${deleteWithData ? ' avec toutes ses données' : ''}`,
