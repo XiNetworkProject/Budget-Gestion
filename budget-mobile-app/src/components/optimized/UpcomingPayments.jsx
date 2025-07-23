@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useStore } from '../../store';
-import { useTranslation } from 'react-i18next';
 import {
   Box,
   Card,
@@ -50,7 +49,6 @@ import LoadingSpinner from './LoadingSpinner';
 import ErrorBoundary from './ErrorBoundary';
 
 const UpcomingPayments = React.memo(({ maxItems = 5, showAll = false }) => {
-  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
   
@@ -207,13 +205,13 @@ const UpcomingPayments = React.memo(({ maxItems = 5, showAll = false }) => {
   // Fonction pour formater la fréquence
   const getFrequencyText = useCallback((recurringType) => {
     switch (recurringType) {
-      case 'daily': return t('upcomingPayments.frequency.daily');
-      case 'weekly': return t('upcomingPayments.frequency.weekly');
-      case 'monthly': return t('upcomingPayments.frequency.monthly');
-      case 'yearly': return t('upcomingPayments.frequency.yearly');
+      case 'daily': return 'Quotidien';
+      case 'weekly': return 'Hebdomadaire';
+      case 'monthly': return 'Mensuel';
+      case 'yearly': return 'Annuel';
       default: return 'Personnalisé';
     }
-  }, [t]);
+  }, []);
 
   // Fonction pour obtenir l'icône du type
   const getTypeIcon = useCallback((type) => {
@@ -233,11 +231,11 @@ const UpcomingPayments = React.memo(({ maxItems = 5, showAll = false }) => {
 
   // Fonction pour obtenir le message de délai
   const getDaysUntilText = useCallback((daysUntil) => {
-    if (daysUntil === 0) return t('upcomingPayments.today');
-    if (daysUntil === 1) return t('upcomingPayments.tomorrow');
-    if (daysUntil < 0) return t('upcomingPayments.daysOverdue', { days: Math.abs(daysUntil) });
-    return t('upcomingPayments.daysUntil', { days: daysUntil });
-  }, [t]);
+    if (daysUntil === 0) return "Aujourd'hui";
+    if (daysUntil === 1) return "Demain";
+    if (daysUntil < 0) return `${Math.abs(daysUntil)} jour(s) en retard`;
+    return `Dans ${daysUntil} jour(s)`;
+  }, []);
 
   const displayPayments = showAll ? upcomingPayments : upcomingPayments.slice(0, maxItems);
   const hasOverdue = upcomingPayments.some(p => p.daysUntil < 0);
@@ -255,11 +253,11 @@ const UpcomingPayments = React.memo(({ maxItems = 5, showAll = false }) => {
           <Box display="flex" alignItems="center" justifyContent="center" py={3}>
             <Schedule sx={{ fontSize: 48, color: 'text.secondary', mr: 2 }} />
             <Typography variant="h6" color="text.secondary">
-              {t('upcomingPayments.noPayments')}
+              Aucun paiement récurrent configuré
             </Typography>
           </Box>
           <Typography variant="body2" color="text.secondary" textAlign="center">
-            {t('upcomingPayments.noPaymentsDescription')}
+            Ajoutez des transactions récurrentes pour voir vos prochains paiements ici
           </Typography>
         </CardContent>
       </Card>
@@ -283,7 +281,7 @@ const UpcomingPayments = React.memo(({ maxItems = 5, showAll = false }) => {
                 <Schedule sx={{ fontSize: 28, color: 'primary.main', mr: 1 }} />
               </Badge>
               <Typography variant="h6" fontWeight="bold">
-                {t('upcomingPayments.title')}
+                Prochains Paiements
               </Typography>
             </Box>
             
@@ -312,8 +310,8 @@ const UpcomingPayments = React.memo(({ maxItems = 5, showAll = false }) => {
           {hasOverdue && (
             <Fade in={true}>
               <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
-                <AlertTitle>{t('upcomingPayments.overdue')}</AlertTitle>
-                {t('upcomingPayments.overdueDescription')}
+                <AlertTitle>Paiements en retard</AlertTitle>
+                Vous avez des paiements qui sont en retard. Pensez à les régulariser rapidement.
               </Alert>
             </Fade>
           )}
@@ -321,8 +319,8 @@ const UpcomingPayments = React.memo(({ maxItems = 5, showAll = false }) => {
           {hasHighPriority && !hasOverdue && (
             <Fade in={true}>
               <Alert severity="warning" sx={{ mb: 2, borderRadius: 2 }}>
-                <AlertTitle>{t('upcomingPayments.highPriority')}</AlertTitle>
-                {t('upcomingPayments.highPriorityDescription')}
+                <AlertTitle>Paiements prioritaires</AlertTitle>
+                Vous avez des paiements importants dans les 3 prochains jours.
               </Alert>
             </Fade>
           )}
@@ -414,7 +412,7 @@ const UpcomingPayments = React.memo(({ maxItems = 5, showAll = false }) => {
                 startIcon={expanded ? <ExpandLess /> : <ExpandMore />}
                 sx={{ borderRadius: 2 }}
               >
-                {expanded ? t('upcomingPayments.seeLess') : `${t('upcomingPayments.seeMore')} ${upcomingPayments.length - maxItems}`}
+                {expanded ? 'Voir moins' : `Voir ${upcomingPayments.length - maxItems} de plus`}
               </Button>
             </Box>
           )}
@@ -429,7 +427,7 @@ const UpcomingPayments = React.memo(({ maxItems = 5, showAll = false }) => {
                     {upcomingPayments.filter(p => p.priority === 'high').length}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {t('upcomingPayments.priority.high')}
+                    Priorité haute
                   </Typography>
                 </Box>
                 <Box>
@@ -437,7 +435,7 @@ const UpcomingPayments = React.memo(({ maxItems = 5, showAll = false }) => {
                     {upcomingPayments.filter(p => p.priority === 'medium').length}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {t('upcomingPayments.priority.medium')}
+                    Priorité moyenne
                   </Typography>
                 </Box>
                 <Box>
@@ -445,7 +443,7 @@ const UpcomingPayments = React.memo(({ maxItems = 5, showAll = false }) => {
                     {upcomingPayments.filter(p => p.priority === 'low').length}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    {t('upcomingPayments.priority.low')}
+                    Priorité basse
                   </Typography>
                 </Box>
               </Box>
