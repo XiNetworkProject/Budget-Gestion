@@ -340,7 +340,12 @@ const HomeOptimized = () => {
 
   // Générer les paiements à venir
   const upcomingPayments = useMemo(() => {
-    return useStore.getState().generateUpcomingPayments();
+    try {
+      return useStore.getState().generateUpcomingPayments() || [];
+    } catch (error) {
+      console.error('Erreur lors de la génération des paiements à venir:', error);
+      return [];
+    }
   }, []);
 
   // Calculer les données du mois sélectionné

@@ -1469,8 +1469,9 @@ const useStore = create(
           updatedAt: new Date().toISOString()
         };
         
+        const currentPayments = state.recurringPayments || [];
         set({
-          recurringPayments: [...state.recurringPayments, newPayment]
+          recurringPayments: [...currentPayments, newPayment]
         });
         scheduleSave();
         toast.success('Paiement récurrent ajouté');
@@ -1478,7 +1479,8 @@ const useStore = create(
 
       updateRecurringPayment: (paymentId, updates) => {
         const state = get();
-        const updatedPayments = state.recurringPayments.map(payment => 
+        const currentPayments = state.recurringPayments || [];
+        const updatedPayments = currentPayments.map(payment => 
           payment.id === paymentId 
             ? { ...payment, ...updates, updatedAt: new Date().toISOString() }
             : payment
@@ -1491,7 +1493,8 @@ const useStore = create(
 
       deleteRecurringPayment: (paymentId) => {
         const state = get();
-        const filteredPayments = state.recurringPayments.filter(payment => payment.id !== paymentId);
+        const currentPayments = state.recurringPayments || [];
+        const filteredPayments = currentPayments.filter(payment => payment.id !== paymentId);
         
         set({ recurringPayments: filteredPayments });
         scheduleSave();
@@ -1500,7 +1503,8 @@ const useStore = create(
 
       toggleRecurringPaymentReminder: (paymentId) => {
         const state = get();
-        const updatedPayments = state.recurringPayments.map(payment => 
+        const currentPayments = state.recurringPayments || [];
+        const updatedPayments = currentPayments.map(payment => 
           payment.id === paymentId 
             ? { ...payment, reminderEnabled: !payment.reminderEnabled, updatedAt: new Date().toISOString() }
             : payment
@@ -1516,6 +1520,11 @@ const useStore = create(
         const state = get();
         const now = new Date();
         const upcomingPayments = [];
+
+        // Vérification de sécurité pour éviter l'erreur undefined
+        if (!state.recurringPayments || !Array.isArray(state.recurringPayments)) {
+          return upcomingPayments;
+        }
 
         state.recurringPayments.forEach(payment => {
           // Vérifier si le paiement n'a pas de date de fin ou si la date de fin n'est pas dépassée
