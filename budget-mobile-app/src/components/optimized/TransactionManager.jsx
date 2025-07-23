@@ -284,67 +284,18 @@ const TransactionManager = memo(({
 
   return (
     <Box>
-      {/* Header avec statistiques */}
-      <Paper sx={{
-        p: 3,
-        mb: 3,
-        background: 'rgba(255, 255, 255, 0.1)',
-        backdropFilter: 'blur(20px)',
-        borderRadius: 3,
-        border: '1px solid rgba(255, 255, 255, 0.2)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-      }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: 'white' }}>
-            {type === 'expenses' ? t('transactionManager.expenses') : t('transactionManager.income')}
-          </Typography>
-          <Chip 
-            label={`${filteredTransactions.length} ${t('transactionManager.transactions')}`}
-            color="primary"
-            variant="outlined"
-            sx={{ color: 'white', borderColor: 'rgba(255, 255, 255, 0.3)' }}
-          />
-        </Box>
-        
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={4}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
-                {new Intl.NumberFormat('fr-FR', {
-                  style: 'currency',
-                  currency: 'EUR'
-                }).format(stats.total)}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                {t('transactionManager.total')}
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
-                {stats.count}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                {t('transactionManager.count')}
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
-                {new Intl.NumberFormat('fr-FR', {
-                  style: 'currency',
-                  currency: 'EUR'
-                }).format(stats.avg)}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                {t('transactionManager.average')}
-              </Typography>
-            </Box>
-          </Grid>
-        </Grid>
-      </Paper>
+      {/* Header simple */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, color: 'white' }}>
+          {type === 'expenses' ? t('transactionManager.expenses') : t('transactionManager.income')}
+        </Typography>
+        <Chip 
+          label={`${filteredTransactions.length} ${t('transactionManager.transactions')}`}
+          color="primary"
+          variant="outlined"
+          sx={{ color: 'white', borderColor: 'rgba(255, 255, 255, 0.3)' }}
+        />
+      </Box>
 
       {/* Filtres et recherche */}
       <Paper sx={{
