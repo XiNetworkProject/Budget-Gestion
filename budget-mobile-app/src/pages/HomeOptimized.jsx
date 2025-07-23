@@ -63,6 +63,8 @@ import HeaderSection from '../components/optimized/HeaderSection';
 import BalanceCard from '../components/optimized/BalanceCard';
 import { QuickActionsSection } from '../components/optimized/ActionCard';
 import { RecommendationsSection } from '../components/optimized/RecommendationCard';
+import UpcomingPayments from '../components/optimized/UpcomingPayments';
+import RecurringPaymentDialog from '../components/optimized/RecurringPaymentDialog';
 
 // Hooks optimisés
 import useOptimizedData from '../hooks/useOptimizedData';
@@ -197,6 +199,10 @@ const HomeOptimized = () => {
     recentTransactions: []
   });
 
+  // État pour les paiements récurrents
+  const [showRecurringPaymentDialog, setShowRecurringPaymentDialog] = useState(false);
+  const [editingPayment, setEditingPayment] = useState(null);
+
   // Charger les données depuis localStorage au démarrage
   useEffect(() => {
     const savedData = localStorage.getItem('budgetAppData');
@@ -292,10 +298,50 @@ const HomeOptimized = () => {
       
       return isInMonth;
     } catch (error) {
-      console.error('Erreur dans isDateInSelectedMonth:', error);
+      console.error('Erreur lors de la vérification de la date:', error);
       return false;
     }
   }, [selectedMonth, selectedYear, parseDate]);
+
+  // Fonctions pour les paiements récurrents
+  const handleAddRecurringPayment = useCallback(() => {
+    setEditingPayment(null);
+    setShowRecurringPaymentDialog(true);
+  }, []);
+
+  const handleEditRecurringPayment = useCallback((payment) => {
+    setEditingPayment(payment);
+    setShowRecurringPaymentDialog(true);
+  }, []);
+
+  const handleSaveRecurringPayment = useCallback(async (paymentData) => {
+    try {
+      if (editingPayment) {
+        // Mise à jour
+        useStore.getState().updateRecurringPayment(editingPayment.id, paymentData);
+      } else {
+        // Ajout
+        useStore.getState().addRecurringPayment(paymentData);
+      }
+      setShowRecurringPaymentDialog(false);
+      setEditingPayment(null);
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde du paiement récurrent:', error);
+    }
+  }, [editingPayment]);
+
+  const handleDeleteRecurringPayment = useCallback((paymentId) => {
+    useStore.getState().deleteRecurringPayment(paymentId);
+  }, []);
+
+  const handleToggleReminder = useCallback((paymentId) => {
+    useStore.getState().toggleRecurringPaymentReminder(paymentId);
+  }, []);
+
+  // Générer les paiements à venir
+  const upcomingPayments = useMemo(() => {
+    return useStore.getState().generateUpcomingPayments();
+  }, []);
 
   // Calculer les données du mois sélectionné
   const selectedMonthData = useMemo(() => {
@@ -958,6 +1004,17 @@ const HomeOptimized = () => {
             </Grid>
           </Grid>
 
+          {/* Paiements récurrents à venir */}
+          <UpcomingPayments
+            payments={upcomingPayments}
+            onAddPayment={handleAddRecurringPayment}
+            onEditPayment={handleEditRecurringPayment}
+            onDeletePayment={handleDeleteRecurringPayment}
+            onToggleReminder={handleToggleReminder}
+            loading={isLoading}
+            error={error}
+          />
+
           {/* Actions rapides améliorées */}
           <QuickActionsSection actions={quickActions} t={t} />
 
@@ -1049,6 +1106,19 @@ const HomeOptimized = () => {
 
           {/* Popup QuickAdd */}
           <QuickAdd open={showQuickAdd} onClose={() => setShowQuickAdd(false)} />
+
+          {/* Dialogue de paiement récurrent */}
+          <RecurringPaymentDialog
+            open={showRecurringPaymentDialog}
+            onClose={() => {
+              setShowRecurringPaymentDialog(false);
+              setEditingPayment(null);
+            }}
+            onSave={handleSaveRecurringPayment}
+            payment={editingPayment}
+            categories={categories}
+            incomeTypes={Object.keys(incomes)}
+          />
         </Box>
       </Box>
     </ErrorBoundary>
