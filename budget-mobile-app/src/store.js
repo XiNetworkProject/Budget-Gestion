@@ -1345,11 +1345,71 @@ const useStore = create(
       // Vérifier et restaurer la session automatiquement
       checkAutoLogin: async () => {
         const state = get();
+        console.log('checkAutoLogin - État actuel:', { 
+          autoLogin: state.autoLogin, 
+          hasToken: !!state.token, 
+          hasUser: !!state.user,
+          isAuthenticated: state.isAuthenticated 
+        });
+        
         if (state.autoLogin && state.token && state.user) {
-          console.log('Connexion automatique détectée');
+          console.log('Connexion automatique détectée - restauration de la session');
+          // Restaurer l'état d'authentification
+          set({ isAuthenticated: true });
           return true;
         }
+        
+        console.log('Aucune session valide trouvée pour la connexion automatique');
         return false;
+      },
+      
+      // Forcer la sauvegarde immédiate
+      forceSave: () => {
+        console.log('Forçage de la sauvegarde des données');
+        if (saveTimeout) clearTimeout(saveTimeout);
+        
+        const state = get();
+        if (!state.user) {
+          console.warn('Pas d\'utilisateur connecté - sauvegarde locale uniquement');
+          return;
+        }
+        
+        set({ isSaving: true });
+        
+        // Sauvegarde immédiate sans délai
+        budgetService.saveBudget(state.user.id, {
+          months: state.months,
+          categories: state.categories,
+          data: state.data,
+          revenus: state.revenus,
+          incomeTypes: state.incomeTypes,
+          incomes: state.incomes,
+          persons: state.persons,
+          saved: state.saved,
+          sideByMonth: state.sideByMonth,
+          totalPotentialSavings: state.totalPotentialSavings,
+          budgetLimits: state.budgetLimits,
+          expenses: state.expenses,
+          incomeTransactions: state.incomeTransactions,
+          savings: state.savings,
+          debts: state.debts,
+          bankAccounts: state.bankAccounts,
+          transactions: state.transactions,
+          userProfile: state.userProfile,
+          appSettings: state.appSettings,
+          accounts: state.accounts,
+          activeAccount: state.activeAccount,
+          tutorialCompleted: state.tutorialCompleted,
+          onboardingCompleted: state.onboardingCompleted,
+          lastUpdateShown: state.lastUpdateShown,
+          appVersion: state.appVersion
+        }).then(() => {
+          console.log('Sauvegarde forcée réussie');
+          set({ isSaving: false });
+        }).catch((error) => {
+          console.error('Erreur lors de la sauvegarde forcée:', error);
+          set({ isSaving: false });
+        });
       },
 
       // Gestion du profil utilisateur

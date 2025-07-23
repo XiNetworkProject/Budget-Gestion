@@ -47,7 +47,9 @@ const Login = () => {
     checkAndFixOnboardingState,
     isAuthenticated,
     user,
-    autoLogin
+    autoLogin,
+    checkAutoLogin: storeCheckAutoLogin,
+    forceSave
   } = useStore();
   
   const navigate = useNavigate();
@@ -77,14 +79,36 @@ const Login = () => {
   // Vérifier la connexion automatique au chargement
   useEffect(() => {
     const checkAutoLogin = async () => {
+      console.log('Vérification de la connexion automatique:', { autoLogin, isAuthenticated, user: !!user });
+      
       if (autoLogin && isAuthenticated && user) {
-        console.log('Connexion automatique détectée');
+        console.log('Connexion automatique détectée - utilisateur déjà connecté');
         redirectToApp();
+        return;
       }
+      
+      // Vérifier s'il y a des données persistées pour la reconnexion automatique
+      if (autoLogin && !isAuthenticated) {
+        try {
+          const canAutoLogin = await storeCheckAutoLogin();
+          if (canAutoLogin) {
+            console.log('Connexion automatique détectée - restauration de session');
+            redirectToApp();
+            return;
+          }
+        } catch (error) {
+          console.error('Erreur lors de la vérification de la connexion automatique:', error);
+        }
+      }
+      
+      console.log('Aucune connexion automatique détectée');
     };
     
-    checkAutoLogin();
-  }, [autoLogin, isAuthenticated, user]);
+    // Délai pour laisser le temps au store de se charger
+    const timer = setTimeout(checkAutoLogin, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [autoLogin, isAuthenticated, user, storeCheckAutoLogin]);
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
@@ -163,6 +187,11 @@ const Login = () => {
       await setUser(user);
       
       setSuccess('Connexion réussie !');
+      
+      // Forcer la sauvegarde des données de session
+      console.log('Login Email: Sauvegarde de la session pour la reconnexion automatique');
+      forceSave();
+      
       setTimeout(() => {
         redirectToApp();
       }, 1000);
@@ -228,6 +257,11 @@ const Login = () => {
       await setUser(user);
       
       setSuccess('Compte créé avec succès !');
+      
+      // Forcer la sauvegarde des données de session
+      console.log('Inscription Email: Sauvegarde de la session pour la reconnexion automatique');
+      forceSave();
+      
       setTimeout(() => {
         redirectToApp();
       }, 1000);
@@ -293,6 +327,11 @@ const Login = () => {
       });
       
       setSuccess('Connexion Google réussie !');
+      
+      // Forcer la sauvegarde des données de session
+      console.log('Login Google: Sauvegarde de la session pour la reconnexion automatique');
+      forceSave();
+      
       setTimeout(() => {
         redirectToApp();
       }, 1000);

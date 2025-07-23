@@ -54,7 +54,7 @@ const steps = [
       description: t('onboarding.welcomeDescription'),
     icon: <TrendingUp sx={{ fontSize: 60 }} />,
     color: '#1976d2',
-      features: t('onboarding.welcomeFeatures')
+      features: Array.isArray(t('onboarding.welcomeFeatures')) ? t('onboarding.welcomeFeatures') : []
   },
   {
       title: t('onboarding.trackFinances'),
@@ -62,7 +62,7 @@ const steps = [
       description: t('onboarding.trackFinancesDescription'),
     icon: <Analytics sx={{ fontSize: 60 }} />,
     color: '#2e7d32',
-      features: t('onboarding.trackFinancesFeatures')
+      features: Array.isArray(t('onboarding.trackFinancesFeatures')) ? t('onboarding.trackFinancesFeatures') : []
   },
   {
       title: t('onboarding.reachGoals'),
@@ -70,7 +70,7 @@ const steps = [
       description: t('onboarding.reachGoalsDescription'),
     icon: <Savings sx={{ fontSize: 60 }} />,
     color: '#ed6c02',
-      features: t('onboarding.reachGoalsFeatures')
+      features: Array.isArray(t('onboarding.reachGoalsFeatures')) ? t('onboarding.reachGoalsFeatures') : []
   },
   {
       title: t('onboarding.readyToStart'),
@@ -78,7 +78,7 @@ const steps = [
       description: t('onboarding.readyToStartDescription'),
     icon: <CheckCircle sx={{ fontSize: 60 }} />,
     color: '#9c27b0',
-      features: t('onboarding.readyToStartFeatures')
+      features: Array.isArray(t('onboarding.readyToStartFeatures')) ? t('onboarding.readyToStartFeatures') : []
     }
   ];
 
@@ -275,7 +275,7 @@ const steps = [
         <Fade in timeout={1200}>
           <Box sx={{ mb: 4 }}>
             <Grid container spacing={2}>
-              {currentStep.features.map((feature, index) => (
+              {Array.isArray(currentStep.features) && currentStep.features.map((feature, index) => (
                 <Grid item xs={12} key={index}>
                   <Card sx={{ 
                     background: 'rgba(255, 255, 255, 0.1)',
