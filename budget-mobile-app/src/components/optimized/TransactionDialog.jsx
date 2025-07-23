@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
+  Box,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -10,20 +11,18 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Box,
-  Grid,
+  FormControlLabel,
+  Checkbox,
   Alert,
   AlertTitle,
+  Grid,
   Chip,
   Avatar,
   Typography,
-  FormControlLabel,
-  Checkbox,
   Divider,
-  IconButton,
+  InputAdornment,
   Tooltip,
-  Fade,
-  Zoom
+  IconButton
 } from '@mui/material';
 import {
   Add,
@@ -31,16 +30,14 @@ import {
   Save,
   Cancel,
   Category,
-  Euro,
   CalendarToday,
+  Euro,
   Description,
   TrendingUp,
   TrendingDown,
   Schedule,
   Warning,
   CheckCircle,
-  ColorLens,
-  Palette,
   Home,
   LocalHospital,
   Restaurant,
@@ -52,79 +49,31 @@ import {
   Work,
   Flight,
   Pets,
-  ChildCare,
-  Elderly,
-  FitnessCenter,
-  Spa,
-  Movie,
-  MusicNote,
-  Book,
-  Computer,
-  Phone,
-  Wifi,
-  LocalGasStation,
   LocalGroceryStore,
   LocalPharmacy,
+  LocalGasStation,
   LocalLaundryService,
-  LocalTaxi,
-  DirectionsBus,
-  Train,
-  DirectionsBike,
-  DirectionsWalk
+  LocalBarber,
+  LocalFlorist,
+  LocalPizza,
+  LocalCafe,
+  LocalConvenienceStore,
+  LocalBank,
+  LocalPostOffice
 } from '@mui/icons-material';
 
-// Icônes par défaut pour les catégories
-const DEFAULT_ICONS = {
-  'Loyer': <Home />,
-  'Électricité': <TrendingUp />,
-  'Assurance': <AttachMoney />,
-  'Banque': <TrendingDown />,
-  'Nourriture': <Restaurant />,
-  'Loisirs': <SportsEsports />,
-  'Voiture': <DirectionsCar />,
-  'Santé': <LocalHospital />,
-  'Shopping': <ShoppingCart />,
-  'Éducation': <School />,
-  'Travail': <Work />,
-  'Voyage': <Flight />,
-  'Animaux': <Pets />,
-  'Enfants': <ChildCare />,
-  'Personnes âgées': <Elderly />,
-  'Sport': <FitnessCenter />,
-  'Bien-être': <Spa />,
-  'Cinéma': <Movie />,
-  'Musique': <MusicNote />,
-  'Livres': <Book />,
-  'Informatique': <Computer />,
-  'Téléphone': <Phone />,
-  'Internet': <Wifi />,
-  'Carburant': <LocalGasStation />,
-  'Épicerie': <LocalGroceryStore />,
-  'Pharmacie': <LocalPharmacy />,
-  'Blanchisserie': <LocalLaundryService />,
-  'Taxi': <LocalTaxi />,
-  'Bus': <DirectionsBus />,
-  'Train': <Train />,
-  'Vélo': <DirectionsBike />,
-  'Marche': <DirectionsWalk />
-};
+// Composants optimisés
+import ErrorBoundary from './ErrorBoundary';
+import LoadingSpinner from './LoadingSpinner';
 
-// Couleurs par défaut
-const DEFAULT_COLORS = [
-  '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-  '#FF9F40', '#FF6384', '#C9CBCF', '#FF6B6B', '#4ECDC4',
-  '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8',
-  '#F7DC6F', '#BB8FCE', '#85C1E9', '#F8C471', '#82E0AA'
-];
-
-const TransactionDialog = React.memo(({
-  open = false,
+const TransactionDialog = React.memo(({ 
+  open,
   onClose,
   onSave,
+  type = 'expense', // 'expense' ou 'income'
   transaction = null, // Pour l'édition
   categories = [],
-  type = 'expenses', // 'expenses' ou 'income'
-  onAddCategory
+  title = null
 }) => {
   const [formData, setFormData] = useState({
     category: '',
@@ -135,17 +84,75 @@ const TransactionDialog = React.memo(({
     recurringType: 'monthly',
     recurringEndDate: null
   });
-  
   const [errors, setErrors] = useState({});
   const [showCategoryDialog, setShowCategoryDialog] = useState(false);
-  const [newCategory, setNewCategory] = useState({
-    name: '',
-    icon: 'Category',
-    color: DEFAULT_COLORS[0],
-    description: ''
-  });
+  const [newCategory, setNewCategory] = useState('');
 
-  // Initialiser le formulaire avec les données de la transaction à éditer
+  // Icônes par défaut pour les catégories
+  const defaultIcons = {
+    'Loyer': <Home />,
+    'Électricité': <LocalHospital />,
+    'Assurance': <AttachMoney />,
+    'Banque': <LocalBank />,
+    'Nourriture': <Restaurant />,
+    'Loisirs': <SportsEsports />,
+    'Voiture': <DirectionsCar />,
+    'Shopping': <ShoppingCart />,
+    'Éducation': <School />,
+    'Travail': <Work />,
+    'Voyage': <Flight />,
+    'Animaux': <Pets />,
+    'Courses': <LocalGroceryStore />,
+    'Pharmacie': <LocalPharmacy />,
+    'Essence': <LocalGasStation />,
+    'Lavage': <LocalLaundryService />,
+    'Coiffeur': <LocalBarber />,
+    'Fleurs': <LocalFlorist />,
+    'Pizza': <LocalPizza />,
+    'Café': <LocalCafe />,
+    'Convenience': <LocalConvenienceStore />,
+    'Poste': <LocalPostOffice />,
+    'Salaire': <Work />,
+    'Aides': <AttachMoney />,
+    'Freelance': <Work />,
+    'Investissements': <AttachMoney />,
+    'Cadeaux': <LocalFlorist />,
+    'Dons': <AttachMoney />
+  };
+
+  // Couleurs par défaut pour les catégories
+  const defaultColors = {
+    'Loyer': '#FF6384',
+    'Électricité': '#36A2EB',
+    'Assurance': '#FFCE56',
+    'Banque': '#4BC0C0',
+    'Nourriture': '#9966FF',
+    'Loisirs': '#FF9F40',
+    'Voiture': '#FF6384',
+    'Shopping': '#C9CBCF',
+    'Éducation': '#FF6384',
+    'Travail': '#36A2EB',
+    'Voyage': '#FFCE56',
+    'Animaux': '#4BC0C0',
+    'Courses': '#9966FF',
+    'Pharmacie': '#FF9F40',
+    'Essence': '#FF6384',
+    'Lavage': '#C9CBCF',
+    'Coiffeur': '#FF6384',
+    'Fleurs': '#36A2EB',
+    'Pizza': '#FFCE56',
+    'Café': '#4BC0C0',
+    'Convenience': '#9966FF',
+    'Poste': '#FF9F40',
+    'Salaire': '#4CAF50',
+    'Aides': '#8BC34A',
+    'Freelance': '#CDDC39',
+    'Investissements': '#FFEB3B',
+    'Cadeaux': '#FF9800',
+    'Dons': '#FF5722'
+  };
+
+  // Initialiser le formulaire avec les données de la transaction (édition)
   useEffect(() => {
     if (transaction) {
       setFormData({
@@ -158,6 +165,7 @@ const TransactionDialog = React.memo(({
         recurringEndDate: transaction.recurringEndDate ? new Date(transaction.recurringEndDate).toISOString().split('T')[0] : null
       });
     } else {
+      // Réinitialiser le formulaire pour un nouvel ajout
       setFormData({
         category: '',
         amount: '',
@@ -173,15 +181,13 @@ const TransactionDialog = React.memo(({
 
   // Fonction pour obtenir l'icône d'une catégorie
   const getCategoryIcon = useCallback((categoryName) => {
-    const iconName = categoryName in DEFAULT_ICONS ? categoryName : 'Category';
-    return DEFAULT_ICONS[iconName] || <Category />;
+    return defaultIcons[categoryName] || <Category />;
   }, []);
 
   // Fonction pour obtenir la couleur d'une catégorie
   const getCategoryColor = useCallback((categoryName) => {
-    const index = categories.findIndex(cat => cat.name === categoryName);
-    return index >= 0 ? DEFAULT_COLORS[index % DEFAULT_COLORS.length] : DEFAULT_COLORS[0];
-  }, [categories]);
+    return defaultColors[categoryName] || '#9E9E9E';
+  }, []);
 
   // Validation du formulaire
   const validateForm = useCallback(() => {
@@ -191,29 +197,29 @@ const TransactionDialog = React.memo(({
       newErrors.category = 'La catégorie est requise';
     }
 
-    if (!formData.amount.trim()) {
-      newErrors.amount = 'Le montant est requis';
-    } else if (isNaN(parseFloat(formData.amount)) || parseFloat(formData.amount) <= 0) {
-      newErrors.amount = 'Le montant doit être un nombre positif';
+    if (!formData.amount || parseFloat(formData.amount) <= 0) {
+      newErrors.amount = 'Le montant doit être supérieur à 0';
     }
 
     if (!formData.date) {
       newErrors.date = 'La date est requise';
     }
 
-    if (formData.recurring && formData.recurringEndDate && new Date(formData.recurringEndDate) <= new Date(formData.date)) {
-      newErrors.recurringEndDate = 'La date de fin doit être postérieure à la date de début';
+    if (formData.recurring && formData.recurringEndDate) {
+      const startDate = new Date(formData.date);
+      const endDate = new Date(formData.recurringEndDate);
+      if (endDate <= startDate) {
+        newErrors.recurringEndDate = 'La date de fin doit être postérieure à la date de début';
+      }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [formData]);
 
-  // Gestion de la sauvegarde
+  // Fonction pour sauvegarder
   const handleSave = useCallback(() => {
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     const transactionData = {
       category: formData.category.trim(),
@@ -229,74 +235,28 @@ const TransactionDialog = React.memo(({
     onClose();
   }, [formData, validateForm, onSave, onClose]);
 
-  // Gestion de l'ajout de catégorie
+  // Fonction pour fermer le dialog
+  const handleClose = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
+  // Fonction pour ajouter une nouvelle catégorie
   const handleAddCategory = useCallback(() => {
-    if (!newCategory.name.trim()) {
-      return;
+    if (newCategory.trim()) {
+      // Ici vous pouvez ajouter la logique pour ajouter une catégorie
+      // Pour l'instant, on ferme juste le dialog
+      setShowCategoryDialog(false);
+      setNewCategory('');
     }
+  }, [newCategory]);
 
-    if (categories.some(cat => cat.name.toLowerCase() === newCategory.name.toLowerCase())) {
-      return;
-    }
-
-    onAddCategory({
-      name: newCategory.name.trim(),
-      icon: newCategory.icon,
-      color: newCategory.color,
-      description: newCategory.description.trim()
-    });
-
-    setFormData(prev => ({ ...prev, category: newCategory.name.trim() }));
-    setNewCategory({
-      name: '',
-      icon: 'Category',
-      color: DEFAULT_COLORS[0],
-      description: ''
-    });
-    setShowCategoryDialog(false);
-  }, [newCategory, categories, onAddCategory]);
-
-  // Icônes disponibles pour les nouvelles catégories
-  const availableIcons = useMemo(() => [
-    { name: 'Category', icon: <Category /> },
-    { name: 'Home', icon: <Home /> },
-    { name: 'LocalHospital', icon: <LocalHospital /> },
-    { name: 'Restaurant', icon: <Restaurant /> },
-    { name: 'DirectionsCar', icon: <DirectionsCar /> },
-    { name: 'ShoppingCart', icon: <ShoppingCart /> },
-    { name: 'School', icon: <School /> },
-    { name: 'SportsEsports', icon: <SportsEsports /> },
-    { name: 'AttachMoney', icon: <AttachMoney /> },
-    { name: 'Work', icon: <Work /> },
-    { name: 'Flight', icon: <Flight /> },
-    { name: 'Pets', icon: <Pets /> },
-    { name: 'ChildCare', icon: <ChildCare /> },
-    { name: 'Elderly', icon: <Elderly /> },
-    { name: 'FitnessCenter', icon: <FitnessCenter /> },
-    { name: 'Spa', icon: <Spa /> },
-    { name: 'Movie', icon: <Movie /> },
-    { name: 'MusicNote', icon: <MusicNote /> },
-    { name: 'Book', icon: <Book /> },
-    { name: 'Computer', icon: <Computer /> },
-    { name: 'Phone', icon: <Phone /> },
-    { name: 'Wifi', icon: <Wifi /> },
-    { name: 'LocalGasStation', icon: <LocalGasStation /> },
-    { name: 'LocalGroceryStore', icon: <LocalGroceryStore /> },
-    { name: 'LocalPharmacy', icon: <LocalPharmacy /> },
-    { name: 'LocalLaundryService', icon: <LocalLaundryService /> },
-    { name: 'LocalTaxi', icon: <LocalTaxi /> },
-    { name: 'DirectionsBus', icon: <DirectionsBus /> },
-    { name: 'Train', icon: <Train /> },
-    { name: 'DirectionsBike', icon: <DirectionsBike /> },
-    { name: 'DirectionsWalk', icon: <DirectionsWalk /> }
-  ], []);
+  const dialogTitle = title || (transaction ? `Modifier ${type === 'expense' ? 'la dépense' : 'le revenu'}` : `Ajouter ${type === 'expense' ? 'une dépense' : 'un revenu'}`);
 
   return (
-    <>
-      {/* Dialog principal */}
+    <ErrorBoundary>
       <Dialog 
         open={open} 
-        onClose={onClose}
+        onClose={handleClose}
         maxWidth="md"
         fullWidth
         PaperProps={{
@@ -313,108 +273,118 @@ const TransactionDialog = React.memo(({
           borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
           display: 'flex',
           alignItems: 'center',
-          gap: 2
+          gap: 1
         }}>
-          {transaction ? <Edit sx={{ color: 'primary.main' }} /> : <Add sx={{ color: 'primary.main' }} />}
-          {transaction ? 'Modifier' : 'Ajouter'} {type === 'expenses' ? 'une dépense' : 'un revenu'}
+          {type === 'expense' ? <TrendingDown color="error" /> : <TrendingUp color="success" />}
+          {dialogTitle}
         </DialogTitle>
         
-        <DialogContent sx={{ pt: 2 }}>
+        <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={3}>
-            {/* Formulaire principal */}
-            <Grid item xs={12} md={8}>
-              <Box>
-                {/* Catégorie */}
-                <FormControl fullWidth sx={{ mb: 2 }} error={!!errors.category}>
-                  <InputLabel>Catégorie *</InputLabel>
-                  <Select
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                    label="Catégorie *"
-                  >
-                    {categories.map((cat) => (
-                      <MenuItem key={cat.name} value={cat.name}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Avatar sx={{ 
-                            bgcolor: cat.color || getCategoryColor(cat.name),
-                            width: 24,
-                            height: 24
-                          }}>
-                            {getCategoryIcon(cat.name)}
-                          </Avatar>
-                          <Typography>{cat.name}</Typography>
-                        </Box>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {errors.category && (
-                    <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
-                      {errors.category}
-                    </Typography>
-                  )}
-                </FormControl>
-
-                {/* Bouton pour ajouter une catégorie */}
-                <Button 
-                  variant="outlined" 
-                  size="small" 
-                  onClick={() => setShowCategoryDialog(true)}
-                  sx={{ mb: 2 }}
-                  startIcon={<Add />}
+            {/* Catégorie */}
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth error={!!errors.category}>
+                <InputLabel>Catégorie *</InputLabel>
+                <Select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  label="Catégorie *"
+                  startAdornment={
+                    formData.category && (
+                      <Box sx={{ mr: 1, display: 'flex', alignItems: 'center' }}>
+                        <Avatar sx={{ 
+                          bgcolor: getCategoryColor(formData.category),
+                          width: 24,
+                          height: 24,
+                          mr: 1
+                        }}>
+                          {getCategoryIcon(formData.category)}
+                        </Avatar>
+                      </Box>
+                    )
+                  }
                 >
-                  Créer une nouvelle catégorie
-                </Button>
+                  {categories.map((cat) => (
+                    <MenuItem key={cat} value={cat}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Avatar sx={{ 
+                          bgcolor: getCategoryColor(cat),
+                          width: 24,
+                          height: 24
+                        }}>
+                          {getCategoryIcon(cat)}
+                        </Avatar>
+                        {cat}
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
+                {errors.category && (
+                  <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>
+                    {errors.category}
+                  </Typography>
+                )}
+              </FormControl>
+              
+              <Button 
+                variant="outlined" 
+                size="small" 
+                onClick={() => setShowCategoryDialog(true)}
+                sx={{ mt: 1 }}
+                startIcon={<Add />}
+              >
+                Créer une nouvelle catégorie
+              </Button>
+            </Grid>
 
-                <Grid container spacing={2}>
-                  {/* Montant */}
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Montant *"
-                      type="number"
-                      value={formData.amount}
-                      onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                      error={!!errors.amount}
-                      helperText={errors.amount}
-                      InputProps={{
-                        startAdornment: <Euro sx={{ color: 'text.secondary', mr: 1 }} />,
-                      }}
-                    />
-                  </Grid>
+            {/* Montant */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Montant *"
+                type="number"
+                value={formData.amount}
+                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+                error={!!errors.amount}
+                helperText={errors.amount}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">€</InputAdornment>,
+                }}
+              />
+            </Grid>
 
-                  {/* Date */}
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Date *"
-                      type="date"
-                      value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      error={!!errors.date}
-                      helperText={errors.date}
-                      InputLabelProps={{ shrink: true }}
-                    />
-                  </Grid>
-                </Grid>
+            {/* Date */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Date *"
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                error={!!errors.date}
+                helperText={errors.date}
+                InputLabelProps={{ shrink: true }}
+              />
+            </Grid>
 
-                {/* Description */}
-                <TextField
-                  fullWidth
-                  label="Description (optionnel)"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  sx={{ mt: 2, mb: 2 }}
-                  multiline
-                  rows={2}
-                  placeholder="Description détaillée de la transaction..."
-                />
+            {/* Description */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Description (optionnel)"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Ex: Courses du week-end, Facture électricité..."
+              />
+            </Grid>
 
-                {/* Section Récurrence */}
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+            {/* Section Récurrence */}
+            <Grid item xs={12}>
+              <Divider sx={{ my: 2 }} />
+              <Box sx={{ mb: 2 }}>
+                <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>
                   Récurrence
                 </Typography>
-
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -425,152 +395,67 @@ const TransactionDialog = React.memo(({
                   }
                   label="Transaction récurrente"
                 />
-
-                {formData.recurring && (
-                  <Fade in={true}>
-                    <Box sx={{ mt: 2, p: 2, bgcolor: 'rgba(0, 0, 0, 0.02)', borderRadius: 2 }}>
-                      <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                          <FormControl fullWidth>
-                            <InputLabel>Fréquence</InputLabel>
-                            <Select
-                              value={formData.recurringType}
-                              onChange={(e) => setFormData({ ...formData, recurringType: e.target.value })}
-                              label="Fréquence"
-                            >
-                              <MenuItem value="daily">Quotidien</MenuItem>
-                              <MenuItem value="weekly">Hebdomadaire</MenuItem>
-                              <MenuItem value="monthly">Mensuel</MenuItem>
-                              <MenuItem value="yearly">Annuel</MenuItem>
-                            </Select>
-                          </FormControl>
-                        </Grid>
-                        
-                        <Grid item xs={12} sm={6}>
-                          <TextField
-                            fullWidth
-                            label="Date de fin (optionnel)"
-                            type="date"
-                            value={formData.recurringEndDate || ''}
-                            onChange={(e) => setFormData({ ...formData, recurringEndDate: e.target.value })}
-                            error={!!errors.recurringEndDate}
-                            helperText={errors.recurringEndDate || "Laissez vide pour une récurrence illimitée"}
-                            InputLabelProps={{ shrink: true }}
-                          />
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  </Fade>
-                )}
               </Box>
-            </Grid>
-
-            {/* Aperçu et informations */}
-            <Grid item xs={12} md={4}>
-              <Box sx={{ 
-                p: 3,
-                background: type === 'expenses' 
-                  ? 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)'
-                  : 'linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)',
-                color: 'white',
-                height: 'fit-content'
-              }}>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
-                  Aperçu
-                </Typography>
-                
-                {formData.category && (
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Catégorie
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-                      <Avatar sx={{ 
-                        bgcolor: 'rgba(255, 255, 255, 0.2)',
-                        width: 24,
-                        height: 24
-                      }}>
-                        {getCategoryIcon(formData.category)}
-                      </Avatar>
-                      <Typography variant="subtitle2" fontWeight={600}>
-                        {formData.category}
-                      </Typography>
-                    </Box>
-                  </Box>
-                )}
-
-                {formData.amount && (
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Montant
-                    </Typography>
-                    <Typography variant="h5" fontWeight={700}>
-                      {parseFloat(formData.amount).toLocaleString()}€
-                    </Typography>
-                  </Box>
-                )}
-
-                {formData.date && (
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Date
-                    </Typography>
-                    <Typography variant="subtitle2" fontWeight={600}>
-                      {new Date(formData.date).toLocaleDateString('fr-FR')}
-                    </Typography>
-                  </Box>
-                )}
-
-                {formData.recurring && (
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Récurrence
-                    </Typography>
-                    <Chip 
-                      label={formData.recurringType === 'daily' ? 'Quotidien' :
-                             formData.recurringType === 'weekly' ? 'Hebdomadaire' :
-                             formData.recurringType === 'monthly' ? 'Mensuel' : 'Annuel'}
-                      size="small"
-                      sx={{ 
-                        bgcolor: 'rgba(255, 255, 255, 0.2)',
-                        color: 'white',
-                        mt: 0.5
-                      }}
+              
+              {formData.recurring && (
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Fréquence</InputLabel>
+                      <Select
+                        value={formData.recurringType}
+                        onChange={(e) => setFormData({ ...formData, recurringType: e.target.value })}
+                        label="Fréquence"
+                      >
+                        <MenuItem value="daily">Quotidien</MenuItem>
+                        <MenuItem value="weekly">Hebdomadaire</MenuItem>
+                        <MenuItem value="monthly">Mensuel</MenuItem>
+                        <MenuItem value="yearly">Annuel</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  
+                  <Grid item xs={12} md={6}>
+                    <TextField
+                      fullWidth
+                      label="Date de fin (optionnel)"
+                      type="date"
+                      value={formData.recurringEndDate || ''}
+                      onChange={(e) => setFormData({ 
+                        ...formData, 
+                        recurringEndDate: e.target.value || null 
+                      })}
+                      error={!!errors.recurringEndDate}
+                      helperText={errors.recurringEndDate || "Laissez vide pour une récurrence illimitée"}
+                      InputLabelProps={{ shrink: true }}
                     />
-                  </Box>
-                )}
-
-                <Typography variant="body2" sx={{ opacity: 0.8, mt: 2 }}>
-                  {type === 'expenses' 
-                    ? 'Cette transaction sera ajoutée à vos dépenses'
-                    : 'Cette transaction sera ajoutée à vos revenus'
-                  }
-                </Typography>
-              </Box>
+                  </Grid>
+                </Grid>
+              )}
             </Grid>
           </Grid>
         </DialogContent>
         
         <DialogActions sx={{ p: 3, pt: 1 }}>
-          <Button onClick={onClose} variant="outlined">
+          <Button onClick={handleClose} color="inherit">
             Annuler
           </Button>
           <Button 
             onClick={handleSave} 
             variant="contained"
-            disabled={!formData.category || !formData.amount}
+            startIcon={transaction ? <Save /> : <Add />}
             sx={{
-              background: type === 'expenses' 
-                ? 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)'
-                : 'linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%)',
+              background: type === 'expense' 
+                ? 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)'
+                : 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
               '&:hover': {
-                background: type === 'expenses' 
-                  ? 'linear-gradient(135deg, #ee5a52 0%, #d63031 100%)'
-                  : 'linear-gradient(135deg, #44a08d 0%, #2d3436 100%)'
+                background: type === 'expense'
+                  ? 'linear-gradient(135deg, #d32f2f 0%, #c62828 100%)'
+                  : 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)'
               }
             }}
           >
-            {transaction ? 'Sauvegarder' : 'Ajouter'}
+            {transaction ? 'Modifier' : 'Ajouter'}
           </Button>
         </DialogActions>
       </Dialog>
@@ -590,96 +475,34 @@ const TransactionDialog = React.memo(({
         }}
       >
         <DialogTitle sx={{ fontWeight: 700 }}>
-          Nouvelle catégorie
+          Créer une nouvelle catégorie
         </DialogTitle>
-        
-        <DialogContent>
-          <Box sx={{ pt: 1 }}>
-            <TextField
-              fullWidth
-              label="Nom de la catégorie"
-              value={newCategory.name}
-              onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
-              sx={{ mb: 2 }}
-              placeholder="Ex: Loisirs, Transport, Alimentation..."
-              autoFocus
-            />
-            
-            <TextField
-              fullWidth
-              label="Description (optionnel)"
-              value={newCategory.description}
-              onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
-              sx={{ mb: 2 }}
-              placeholder="Description de la catégorie..."
-              multiline
-              rows={2}
-            />
-            
-            <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Icône</InputLabel>
-                  <Select
-                    value={newCategory.icon}
-                    onChange={(e) => setNewCategory({ ...newCategory, icon: e.target.value })}
-                    label="Icône"
-                  >
-                    {availableIcons.map((iconOption) => (
-                      <MenuItem key={iconOption.name} value={iconOption.name}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          {iconOption.icon}
-                          {iconOption.name}
-                        </Box>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              
-              <Grid item xs={6}>
-                <FormControl fullWidth>
-                  <InputLabel>Couleur</InputLabel>
-                  <Select
-                    value={newCategory.color}
-                    onChange={(e) => setNewCategory({ ...newCategory, color: e.target.value })}
-                    label="Couleur"
-                  >
-                    {DEFAULT_COLORS.map((color) => (
-                      <MenuItem key={color} value={color}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Box sx={{
-                            width: 20,
-                            height: 20,
-                            borderRadius: '50%',
-                            bgcolor: color,
-                            border: '1px solid rgba(0,0,0,0.1)'
-                          }} />
-                          {color}
-                        </Box>
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
-          </Box>
+        <DialogContent sx={{ pt: 2 }}>
+          <TextField
+            fullWidth
+            label="Nom de la catégorie"
+            value={newCategory}
+            onChange={(e) => setNewCategory(e.target.value)}
+            placeholder="Ex: Loisirs, Transport, Alimentation..."
+            autoFocus
+            sx={{ mb: 2 }}
+          />
         </DialogContent>
-        
-        <DialogActions>
-          <Button onClick={() => setShowCategoryDialog(false)}>
+        <DialogActions sx={{ p: 3, pt: 1 }}>
+          <Button onClick={() => setShowCategoryDialog(false)} color="inherit">
             Annuler
           </Button>
           <Button 
             onClick={handleAddCategory} 
             variant="contained"
-            disabled={!newCategory.name.trim()}
+            disabled={!newCategory.trim()}
+            startIcon={<Add />}
           >
             Créer
           </Button>
         </DialogActions>
       </Dialog>
-    </>
+    </ErrorBoundary>
   );
 });
 
