@@ -111,7 +111,6 @@ import {
   LocalBoatRental,
   LocalHelicopter,
   LocalPlane,
-  LocalShip,
   DirectionsSubway,
   LocalSki,
   LocalSnowboarding,
