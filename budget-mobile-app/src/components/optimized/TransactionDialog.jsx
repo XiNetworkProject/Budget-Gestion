@@ -58,7 +58,7 @@ import {
   LocalPizza,
   LocalCafe,
   LocalConvenienceStore,
-  LocalBank,
+  AccountBalance,
   LocalPostOffice
 } from '@mui/icons-material';
 
@@ -93,7 +93,7 @@ const TransactionDialog = React.memo(({
     'Loyer': <Home />,
     'Électricité': <LocalHospital />,
     'Assurance': <AttachMoney />,
-    'Banque': <LocalBank />,
+    'Banque': <AccountBalance />,
     'Nourriture': <Restaurant />,
     'Loisirs': <SportsEsports />,
     'Voiture': <DirectionsCar />,
