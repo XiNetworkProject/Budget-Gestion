@@ -553,7 +553,11 @@ const useStore = create(
           const newExpense = {
             id: Date.now().toString(),
             ...expense,
-          date: expenseDate,
+            date: expenseDate,
+            // Gestion des transactions récurrentes
+            recurring: expense.recurring || false,
+            recurringType: expense.recurringType || 'monthly',
+            recurringEndDate: expense.recurringEndDate || null,
             createdAt: new Date().toISOString()
           };
         
@@ -623,7 +627,11 @@ const useStore = create(
           const newIncome = {
             id: Date.now().toString(),
             ...income,
-          date: incomeDate,
+            date: incomeDate,
+            // Gestion des transactions récurrentes
+            recurring: income.recurring || false,
+            recurringType: income.recurringType || 'monthly',
+            recurringEndDate: income.recurringEndDate || null,
             createdAt: new Date().toISOString()
           };
         
@@ -1409,7 +1417,6 @@ const useStore = create(
               debts: data.debts || [],
               bankAccounts: data.bankAccounts || [],
               transactions: data.transactions || [],
-              recurringPayments: data.recurringPayments || [],
               userProfile: data.userProfile || defaultUserProfile,
               appSettings: data.appSettings || defaultAppSettings,
               tutorialCompleted: data.tutorialCompleted || false,
@@ -1440,7 +1447,6 @@ const useStore = create(
               debts: [],
               bankAccounts: [],
               transactions: [],
-              recurringPayments: [],
               userProfile: { ...defaultUserProfile, email: state.user.email },
               appSettings: defaultAppSettings,
               tutorialCompleted: false,
@@ -1459,110 +1465,87 @@ const useStore = create(
         }
       },
 
-      // Gestion des paiements récurrents
-      addRecurringPayment: (payment) => {
+      // Gestion des transactions récurrentes
+      processRecurringTransactions: () => {
         const state = get();
-        const newPayment = {
-          ...payment,
-          id: payment.id || `recurring_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          createdAt: payment.createdAt || new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        
-        const currentPayments = state.recurringPayments || [];
-        set({
-          recurringPayments: [...currentPayments, newPayment]
-        });
-        scheduleSave();
-        toast.success('Paiement récurrent ajouté');
-      },
+        const today = new Date();
+        let hasChanges = false;
 
-      updateRecurringPayment: (paymentId, updates) => {
-        const state = get();
-        const currentPayments = state.recurringPayments || [];
-        const updatedPayments = currentPayments.map(payment => 
-          payment.id === paymentId 
-            ? { ...payment, ...updates, updatedAt: new Date().toISOString() }
-            : payment
-        );
-        
-        set({ recurringPayments: updatedPayments });
-        scheduleSave();
-        toast.success('Paiement récurrent mis à jour');
-      },
+        // Traiter les dépenses récurrentes
+        const updatedExpenses = state.expenses.map(expense => {
+          if (!expense.recurring) return expense;
 
-      deleteRecurringPayment: (paymentId) => {
-        const state = get();
-        const currentPayments = state.recurringPayments || [];
-        const filteredPayments = currentPayments.filter(payment => payment.id !== paymentId);
-        
-        set({ recurringPayments: filteredPayments });
-        scheduleSave();
-        toast.success('Paiement récurrent supprimé');
-      },
+          const lastDate = new Date(expense.date);
+          let nextDate = new Date(lastDate);
 
-      toggleRecurringPaymentReminder: (paymentId) => {
-        const state = get();
-        const currentPayments = state.recurringPayments || [];
-        const updatedPayments = currentPayments.map(payment => 
-          payment.id === paymentId 
-            ? { ...payment, reminderEnabled: !payment.reminderEnabled, updatedAt: new Date().toISOString() }
-            : payment
-        );
-        
-        set({ recurringPayments: updatedPayments });
-        scheduleSave();
-        toast.success('Rappel mis à jour');
-      },
-
-      // Générer les prochains paiements récurrents
-      generateUpcomingPayments: () => {
-        const state = get();
-        const now = new Date();
-        const upcomingPayments = [];
-
-        // Vérification de sécurité pour éviter l'erreur undefined
-        if (!state.recurringPayments || !Array.isArray(state.recurringPayments)) {
-          return upcomingPayments;
-        }
-
-        state.recurringPayments.forEach(payment => {
-          // Vérifier si le paiement n'a pas de date de fin ou si la date de fin n'est pas dépassée
-          if (!payment.recurringEndDate || new Date(payment.recurringEndDate) > now) {
-            let nextDueDate = new Date(payment.nextDueDate);
-            
-            // Générer les paiements jusqu'à 3 mois dans le futur
-            const maxDate = new Date();
-            maxDate.setMonth(maxDate.getMonth() + 3);
-            
-            while (nextDueDate <= maxDate) {
-              if (nextDueDate >= now) {
-                upcomingPayments.push({
-                  ...payment,
-                  nextDueDate: nextDueDate.toISOString(),
-                  isGenerated: true
-                });
-              }
-              
-              // Calculer la prochaine date selon le type de récurrence
-              switch (payment.recurringType) {
-                case 'weekly':
-                  nextDueDate = new Date(nextDueDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-                  break;
-                case 'monthly':
-                  nextDueDate.setMonth(nextDueDate.getMonth() + 1);
-                  break;
-                case 'yearly':
-                  nextDueDate.setFullYear(nextDueDate.getFullYear() + 1);
-                  break;
-                default:
-                  nextDueDate = new Date(nextDueDate.getTime() + 30 * 24 * 60 * 60 * 1000); // Par défaut mensuel
-              }
-            }
+          // Calculer la prochaine date selon le type de récurrence
+          switch (expense.recurringType) {
+            case 'daily':
+              nextDate = new Date(lastDate.getTime() + 24 * 60 * 60 * 1000);
+              break;
+            case 'weekly':
+              nextDate = new Date(lastDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+              break;
+            case 'monthly':
+              nextDate = new Date(lastDate.getFullYear(), lastDate.getMonth() + 1, lastDate.getDate());
+              break;
+            case 'yearly':
+              nextDate = new Date(lastDate.getFullYear() + 1, lastDate.getMonth(), lastDate.getDate());
+              break;
+            default:
+              return expense;
           }
+
+          // Vérifier si la prochaine date est passée et si la transaction n'a pas de date de fin
+          if (nextDate <= today && (!expense.recurringEndDate || new Date(expense.recurringEndDate) > today)) {
+            hasChanges = true;
+            return { ...expense, date: nextDate.toISOString() };
+          }
+
+          return expense;
         });
 
-        return upcomingPayments.sort((a, b) => new Date(a.nextDueDate) - new Date(b.nextDueDate));
+        // Traiter les revenus récurrents
+        const updatedIncomes = state.incomeTransactions.map(income => {
+          if (!income.recurring) return income;
+
+          const lastDate = new Date(income.date);
+          let nextDate = new Date(lastDate);
+
+          // Calculer la prochaine date selon le type de récurrence
+          switch (income.recurringType) {
+            case 'daily':
+              nextDate = new Date(lastDate.getTime() + 24 * 60 * 60 * 1000);
+              break;
+            case 'weekly':
+              nextDate = new Date(lastDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+              break;
+            case 'monthly':
+              nextDate = new Date(lastDate.getFullYear(), lastDate.getMonth() + 1, lastDate.getDate());
+              break;
+            case 'yearly':
+              nextDate = new Date(lastDate.getFullYear() + 1, lastDate.getMonth(), lastDate.getDate());
+              break;
+            default:
+              return income;
+          }
+
+          // Vérifier si la prochaine date est passée et si la transaction n'a pas de date de fin
+          if (nextDate <= today && (!income.recurringEndDate || new Date(income.recurringEndDate) > today)) {
+            hasChanges = true;
+            return { ...income, date: nextDate.toISOString() };
+          }
+
+          return income;
+        });
+
+        if (hasChanges) {
+          set({ 
+            expenses: updatedExpenses,
+            incomeTransactions: updatedIncomes
+          });
+          scheduleSave();
+        }
       },
 
       // Récupérer les informations d'abonnement depuis Stripe

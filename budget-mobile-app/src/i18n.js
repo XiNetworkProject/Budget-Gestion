@@ -15,10 +15,7 @@ i18n
     },
     fallbackLng: 'fr',
     debug: false,
-    interpolation: { escapeValue: false },
-    react: {
-      useSuspense: false
-    }
+    interpolation: { escapeValue: false }
   });
 
 export default i18n; 

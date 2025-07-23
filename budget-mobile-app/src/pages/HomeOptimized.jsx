@@ -64,7 +64,6 @@ import BalanceCard from '../components/optimized/BalanceCard';
 import { QuickActionsSection } from '../components/optimized/ActionCard';
 import { RecommendationsSection } from '../components/optimized/RecommendationCard';
 import UpcomingPayments from '../components/optimized/UpcomingPayments';
-import RecurringPaymentDialog from '../components/optimized/RecurringPaymentDialog';
 
 // Hooks optimisés
 import useOptimizedData from '../hooks/useOptimizedData';
@@ -186,19 +185,12 @@ const HomeOptimized = () => {
     isAuthenticated,
     user,
     logout,
-    reloadBudgetData
+    reloadBudgetData,
+    processRecurringTransactions
   } = useStore();
   
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
-  
-  // Debug: vérifier si les traductions sont chargées
-  console.log('=== HOME OPTIMIZED DEBUG ===');
-  console.log('i18n ready:', i18n.isInitialized);
-  console.log('Current language:', i18n.language);
-  console.log('Test translation:', t('upcomingPayments.title'));
-  console.log('Direct i18n test:', i18n.t('upcomingPayments.title'));
-  console.log('=== END DEBUG ===');
+  const { t } = useTranslation();
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [localData, setLocalData] = useState({
     income: [],
@@ -206,10 +198,6 @@ const HomeOptimized = () => {
     savings: [],
     recentTransactions: []
   });
-
-  // État pour les paiements récurrents
-  const [showRecurringPaymentDialog, setShowRecurringPaymentDialog] = useState(false);
-  const [editingPayment, setEditingPayment] = useState(null);
 
   // Charger les données depuis localStorage au démarrage
   useEffect(() => {
@@ -219,7 +207,7 @@ const HomeOptimized = () => {
         const parsed = JSON.parse(savedData);
         setLocalData(parsed);
       } catch (error) {
-        console.error(t('common.errorLoadingData'), error);
+        console.error('Erreur lors du chargement des données:', error);
       }
     }
   }, []);
@@ -228,6 +216,11 @@ const HomeOptimized = () => {
   useEffect(() => {
     validateAndCleanDates();
   }, [validateAndCleanDates]);
+
+  // Traiter les transactions récurrentes au chargement
+  useEffect(() => {
+    processRecurringTransactions();
+  }, [processRecurringTransactions]);
 
   // Fonction de débogage pour tester les calculs de dates
   const debugDateCalculations = useCallback(() => {
@@ -253,7 +246,7 @@ const HomeOptimized = () => {
       localStorage.setItem('budgetAppData', JSON.stringify(newData));
       setLocalData(newData);
     } catch (error) {
-      console.error(t('common.errorSavingData'), error);
+      console.error('Erreur lors de la sauvegarde:', error);
     }
   }, []);
 
@@ -306,60 +299,10 @@ const HomeOptimized = () => {
       
       return isInMonth;
     } catch (error) {
-      console.error('Erreur lors de la vérification de la date:', error);
+      console.error('Erreur dans isDateInSelectedMonth:', error);
       return false;
     }
   }, [selectedMonth, selectedYear, parseDate]);
-
-  // Fonctions pour les paiements récurrents
-  const handleAddRecurringPayment = useCallback(() => {
-    setEditingPayment(null);
-    setShowRecurringPaymentDialog(true);
-  }, []);
-
-  const handleEditRecurringPayment = useCallback((payment) => {
-    setEditingPayment(payment);
-    setShowRecurringPaymentDialog(true);
-  }, []);
-
-  const handleSaveRecurringPayment = useCallback(async (paymentData) => {
-    try {
-      if (editingPayment) {
-        // Mise à jour
-        useStore.getState().updateRecurringPayment(editingPayment.id, paymentData);
-      } else {
-        // Ajout
-        useStore.getState().addRecurringPayment(paymentData);
-      }
-      setShowRecurringPaymentDialog(false);
-      setEditingPayment(null);
-    } catch (error) {
-      console.error(t('recurringPayment.errors.saveFailed'), error);
-    }
-  }, [editingPayment]);
-
-  const handleDeleteRecurringPayment = useCallback((paymentId) => {
-    useStore.getState().deleteRecurringPayment(paymentId);
-  }, []);
-
-  const handleToggleReminder = useCallback((paymentId) => {
-    useStore.getState().toggleRecurringPaymentReminder(paymentId);
-  }, []);
-
-  // Générer les paiements à venir
-  const upcomingPayments = useMemo(() => {
-    try {
-      const payments = useStore.getState().generateUpcomingPayments() || [];
-      console.log('=== UPCOMING PAYMENTS GENERATED ===');
-      console.log('Number of payments:', payments.length);
-      console.log('Payments:', payments);
-      console.log('=== END GENERATED ===');
-      return payments;
-    } catch (error) {
-      console.error(t('upcomingPayments.errorGeneration'), error);
-      return [];
-    }
-  }, [t]); // Ajouter t comme dépendance
 
   // Calculer les données du mois sélectionné
   const selectedMonthData = useMemo(() => {
@@ -518,7 +461,7 @@ const HomeOptimized = () => {
           savings_rate: `${Math.round(savingsRate)}%`,
           target: '20%'
         },
-        tags: [t('common.savings'), t('common.urgent')],
+        tags: ['Épargne', 'Urgent'],
         suggestedPlan: {
           title: t('ai.emergencySavingsPlan'),
           description: t('ai.emergencySavingsPlanDescription'),
@@ -539,7 +482,7 @@ const HomeOptimized = () => {
           savings_rate: `${Math.round(savingsRate)}%`,
           performance: 'Excellent'
         },
-        tags: [t('common.investment'), t('common.opportunity')],
+        tags: ['Investissement', 'Opportunité'],
         suggestedPlan: {
           title: t('ai.investmentPlan'),
           description: t('ai.diversifyInvestments'),
@@ -593,7 +536,7 @@ const HomeOptimized = () => {
           decrease: `${Math.round(Math.abs(incomeChange))}%`,
           impact: 'Significatif'
         },
-        tags: [t('common.income'), t('common.contingency')],
+        tags: ['Revenus', 'Contingence'],
         suggestedPlan: {
           title: t('ai.financialContingencyPlan'),
           description: t('ai.financialContingencyPlanDescription'),
@@ -617,7 +560,7 @@ const HomeOptimized = () => {
           status: 'Sain',
           score: 'A+'
         },
-        tags: [t('common.financialHealth'), t('common.maintenance')]
+        tags: ['Santé financière', 'Maintenance']
       });
     }
     
@@ -645,7 +588,7 @@ const HomeOptimized = () => {
         navigate('/action-plans');
         break;
       case 'continue_monitoring':
-        alert(t('ai.financialHealthMessage'));
+        alert('Vos finances sont en bonne santé. Continuez à surveiller régulièrement.');
         break;
       default:
         console.log('Action non reconnue:', recommendation.actionType);
@@ -702,24 +645,24 @@ const HomeOptimized = () => {
   const quickActions = useMemo(() => [
     {
       icon: Add,
-      label: t('common.add'),
-      description: t('common.newTransaction'),
+      label: 'Ajouter',
+      description: 'Nouvelle transaction',
       color: '#4caf50',
       onClick: () => setShowQuickAdd(true),
       variant: 'primary'
     },
     {
       icon: Assignment,
-      label: t('common.plans'),
-      description: t('common.actionPlans'),
+      label: 'Plans',
+      description: 'Plans d\'action',
       color: '#667eea',
       onClick: () => navigate('/action-plans'),
       variant: 'secondary'
     },
     {
       icon: Analytics,
-      label: t('common.analytics'),
-      description: t('common.detailedAnalytics'),
+      label: 'Analytics',
+      description: 'Analyses détaillées',
       color: '#ff9800',
       onClick: () => navigate('/analytics'),
       variant: 'secondary'
@@ -1022,40 +965,13 @@ const HomeOptimized = () => {
             </Grid>
           </Grid>
 
-          {/* Paiements récurrents à venir */}
-          {console.log('=== RENDERING UPCOMING PAYMENTS ===', { upcomingPayments, isLoading, error })}
-          
-          {/* Test simple pour voir si la section se rend */}
-          <Box sx={{ p: 3, mb: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 2 }}>
-            <Typography variant="h5" sx={{ color: 'white', mb: 2 }}>
-              TEST - Section Paiements Récurrents
-            </Typography>
-            <Typography sx={{ color: 'white' }}>
-              Nombre de paiements: {upcomingPayments.length}
-            </Typography>
-            <Typography sx={{ color: 'white' }}>
-              Loading: {isLoading ? 'Oui' : 'Non'}
-            </Typography>
-            <Typography sx={{ color: 'white' }}>
-              Error: {error ? 'Oui' : 'Non'}
-            </Typography>
-          </Box>
-          
-          {/* Composant original avec ErrorBoundary */}
-          <ErrorBoundary>
-            <UpcomingPayments
-              payments={upcomingPayments}
-              onAddPayment={handleAddRecurringPayment}
-              onEditPayment={handleEditRecurringPayment}
-              onDeletePayment={handleDeleteRecurringPayment}
-              onToggleReminder={handleToggleReminder}
-              loading={isLoading}
-              error={error}
-            />
-          </ErrorBoundary>
-
           {/* Actions rapides améliorées */}
           <QuickActionsSection actions={quickActions} t={t} />
+
+          {/* Prochains paiements */}
+          <Grid item xs={12} md={6}>
+            <UpcomingPayments maxItems={3} />
+          </Grid>
 
           {/* Graphiques optimisés */}
           <Suspense fallback={<LoadingSpinner message="Chargement des graphiques..." />}>
@@ -1145,19 +1061,6 @@ const HomeOptimized = () => {
 
           {/* Popup QuickAdd */}
           <QuickAdd open={showQuickAdd} onClose={() => setShowQuickAdd(false)} />
-
-          {/* Dialogue de paiement récurrent */}
-          <RecurringPaymentDialog
-            open={showRecurringPaymentDialog}
-            onClose={() => {
-              setShowRecurringPaymentDialog(false);
-              setEditingPayment(null);
-            }}
-            onSave={handleSaveRecurringPayment}
-            payment={editingPayment}
-            categories={categories}
-            incomeTypes={Object.keys(incomes)}
-          />
         </Box>
       </Box>
     </ErrorBoundary>

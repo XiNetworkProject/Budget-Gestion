@@ -37,7 +37,9 @@ import {
   Badge,
   Accordion,
   AccordionSummary,
-  AccordionDetails
+  AccordionDetails,
+  FormControlLabel,
+  Checkbox
 } from '@mui/material';
 import {
   Add,
@@ -84,7 +86,8 @@ const TransactionManager = memo(({
     description: '',
     date: new Date(),
     recurring: false,
-    recurringType: 'monthly'
+    recurringType: 'monthly',
+    recurringEndDate: null
   });
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedTransactionForMenu, setSelectedTransactionForMenu] = useState(null);
@@ -174,7 +177,8 @@ const TransactionManager = memo(({
         description: transaction.description,
         date: new Date(transaction.date),
         recurring: transaction.recurring || false,
-        recurringType: transaction.recurringType || 'monthly'
+        recurringType: transaction.recurringType || 'monthly',
+        recurringEndDate: transaction.recurringEndDate ? new Date(transaction.recurringEndDate) : null
       });
     } else {
       setEditingTransaction(null);
@@ -690,6 +694,64 @@ const TransactionManager = memo(({
                   }}
                 />
               </Grid>
+              
+              {/* Section Récurrence */}
+              <Grid item xs={12}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={newTransaction.recurring}
+                      onChange={(e) => setNewTransaction({ 
+                        ...newTransaction, 
+                        recurring: e.target.checked 
+                      })}
+                      color="primary"
+                    />
+                  }
+                  label="Transaction récurrente"
+                />
+              </Grid>
+              
+              {newTransaction.recurring && (
+                <>
+                  <Grid item xs={12} sm={6}>
+                    <FormControl fullWidth>
+                      <InputLabel>Fréquence</InputLabel>
+                      <Select
+                        value={newTransaction.recurringType}
+                        onChange={(e) => setNewTransaction({ 
+                          ...newTransaction, 
+                          recurringType: e.target.value 
+                        })}
+                        label="Fréquence"
+                      >
+                        <MenuItem value="daily">Quotidien</MenuItem>
+                        <MenuItem value="weekly">Hebdomadaire</MenuItem>
+                        <MenuItem value="monthly">Mensuel</MenuItem>
+                        <MenuItem value="yearly">Annuel</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Date de fin (optionnel)"
+                      type="date"
+                      value={newTransaction.recurringEndDate ? newTransaction.recurringEndDate.toISOString().split('T')[0] : ''}
+                      onChange={(e) => setNewTransaction({ 
+                        ...newTransaction, 
+                        recurringEndDate: e.target.value ? new Date(e.target.value) : null 
+                      })}
+                      variant="outlined"
+                      InputLabelProps={{
+                        shrink: true,
+                      }}
+                      helperText="Laissez vide pour une récurrence illimitée"
+                    />
+                  </Grid>
+                </>
+              )}
             </Grid>
         </DialogContent>
         <DialogActions sx={{ p: 3, pt: 1 }}>

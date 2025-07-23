@@ -1,550 +1,456 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Card, 
-  CardContent, 
-  Chip, 
-  IconButton, 
+import React, { useState, useMemo, useCallback } from 'react';
+import { useStore } from '../../store';
+import { useTranslation } from 'react-i18next';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Chip,
+  IconButton,
   Collapse,
-  Fab,
-  Tooltip,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  ListItemSecondaryAction,
+  Divider,
+  Button,
   Alert,
-  LinearProgress,
+  AlertTitle,
   Fade,
   Zoom,
-  Slide
+  Tooltip,
+  Badge
 } from '@mui/material';
 import {
   Schedule,
   Warning,
   CheckCircle,
-  Error,
   ExpandMore,
   ExpandLess,
-  Add,
-  Notifications,
-  NotificationsOff,
+  PriorityHigh,
   CalendarToday,
+  AttachMoney,
   TrendingUp,
   TrendingDown,
-  PriorityHigh,
-  LowPriority,
   MoreVert,
   Edit,
   Delete,
-  Refresh
+  Add,
+  Notifications,
+  NotificationsActive,
+  NotificationsOff
 } from '@mui/icons-material';
-import { useTranslation } from 'react-i18next';
-import { format, addDays, addMonths, addYears, isBefore, isAfter, differenceInDays } from 'date-fns';
+import { format, addDays, addWeeks, addMonths, addYears, isAfter, isBefore, differenceInDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 // Composants optimisés
 import LoadingSpinner from './LoadingSpinner';
 import ErrorBoundary from './ErrorBoundary';
 
-// Configuration
-import { PERFORMANCE_CONFIG } from '../../config/performance';
-
-// Composant de priorité avec couleurs et icônes
-const PriorityIndicator = React.memo(({ priority, dueDate }) => {
-  const { t } = useTranslation();
-  const daysUntilDue = differenceInDays(new Date(dueDate), new Date());
-  
-  const getPriorityConfig = () => {
-    if (daysUntilDue < 0) return { color: '#f44336', icon: Error, label: t('upcomingPayments.priority.overdue') };
-    if (daysUntilDue <= 3) return { color: '#ff9800', icon: Warning, label: t('upcomingPayments.priority.critical') };
-    if (daysUntilDue <= 7) return { color: '#ff5722', icon: PriorityHigh, label: t('upcomingPayments.priority.high') };
-    if (daysUntilDue <= 14) return { color: '#2196f3', icon: Schedule, label: t('upcomingPayments.priority.medium') };
-    return { color: '#4caf50', icon: LowPriority, label: t('upcomingPayments.priority.low') };
-  };
-
-  const config = getPriorityConfig();
-  const IconComponent = config.icon;
-
-  return (
-    <Chip
-      icon={<IconComponent />}
-      label={config.label}
-      size="small"
-      sx={{
-        backgroundColor: config.color,
-        color: 'white',
-        fontWeight: 'bold',
-        '& .MuiChip-icon': { color: 'white' }
-      }}
-    />
-  );
-});
-
-// Carte de paiement individuelle
-const PaymentCard = React.memo(({ payment, onEdit, onDelete, onToggleReminder }) => {
+const UpcomingPayments = React.memo(({ maxItems = 5, showAll = false }) => {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState(null);
   
-  const daysUntilDue = differenceInDays(new Date(payment.nextDueDate), new Date());
-  const isOverdue = daysUntilDue < 0;
-  const isCritical = daysUntilDue <= 3;
-  
-  const getProgressColor = () => {
-    if (isOverdue) return '#f44336';
-    if (isCritical) return '#ff9800';
-    if (daysUntilDue <= 7) return '#ff5722';
-    return '#4caf50';
-  };
+  const { expenses, incomes, debts } = useStore();
 
-  const progressValue = Math.max(0, Math.min(100, (30 - daysUntilDue) / 30 * 100));
+  // Calcul des prochains paiements avec priorités
+  const upcomingPayments = useMemo(() => {
+    const payments = [];
+    const today = new Date();
 
-  return (
-    <Fade in timeout={300}>
-      <Card 
-        sx={{ 
-          mb: 2,
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          transition: 'all 0.3s ease',
-          '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: '0 8px 25px rgba(0,0,0,0.3)',
-            border: `1px solid ${getProgressColor()}40`
-          }
-        }}
-      >
-        <CardContent sx={{ p: 2 }}>
-          {/* En-tête avec priorité et actions */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <PriorityIndicator priority={payment.priority} dueDate={payment.nextDueDate} />
-              <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
-                {payment.description || payment.category}
-              </Typography>
-            </Box>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <Tooltip title={payment.reminderEnabled ? t('upcomingPayments.disableReminder') : t('upcomingPayments.enableReminder')}>
-                <IconButton 
-                  size="small" 
-                  onClick={() => onToggleReminder(payment.id)}
-                  sx={{ color: payment.reminderEnabled ? '#4caf50' : '#666' }}
-                >
-                  {payment.reminderEnabled ? <Notifications /> : <NotificationsOff />}
-                </IconButton>
-              </Tooltip>
-              
-              <IconButton 
-                size="small" 
-                onClick={() => setExpanded(!expanded)}
-                sx={{ color: 'white' }}
-              >
-                {expanded ? <ExpandLess /> : <ExpandMore />}
-              </IconButton>
-            </Box>
-          </Box>
+    // Fonction pour calculer la prochaine date de paiement
+    const getNextPaymentDate = (transaction, baseDate = today) => {
+      if (!transaction.recurring) return null;
 
-          {/* Informations principales */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-            <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#4caf50' }}>
-              {payment.amount.toLocaleString()}€
-            </Typography>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <CalendarToday sx={{ fontSize: 16, color: '#666' }} />
-              <Typography variant="body2" sx={{ color: '#ccc' }}>
-                {format(new Date(payment.nextDueDate), 'dd MMM yyyy', { locale: fr })}
-              </Typography>
-            </Box>
-          </Box>
+      let nextDate = new Date(transaction.date);
+      
+      // Trouver la prochaine occurrence
+      while (isBefore(nextDate, baseDate)) {
+        switch (transaction.recurringType) {
+          case 'daily':
+            nextDate = addDays(nextDate, 1);
+            break;
+          case 'weekly':
+            nextDate = addWeeks(nextDate, 1);
+            break;
+          case 'monthly':
+            nextDate = addMonths(nextDate, 1);
+            break;
+          case 'yearly':
+            nextDate = addYears(nextDate, 1);
+            break;
+          default:
+            return null;
+        }
+      }
 
-          {/* Barre de progression */}
-          <Box sx={{ mb: 1 }}>
-            <LinearProgress 
-              variant="determinate" 
-              value={progressValue}
-              sx={{ 
-                height: 4, 
-                borderRadius: 2,
-                backgroundColor: 'rgba(255,255,255,0.1)',
-                '& .MuiLinearProgress-bar': {
-                  backgroundColor: getProgressColor()
-                }
-              }} 
-            />
-          </Box>
-
-          {/* Informations supplémentaires */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="body2" sx={{ color: '#ccc' }}>
-              {isOverdue 
-                ? `${Math.abs(daysUntilDue)} ${t('upcomingPayments.daysOverdue')}`
-                : `${daysUntilDue} ${t('upcomingPayments.daysUntilDue')}`
-              }
-            </Typography>
-            
-            <Chip 
-              label={t(`upcomingPayments.frequency.${payment.recurringType}`)}
-              size="small"
-              sx={{ 
-                backgroundColor: 'rgba(255,255,255,0.1)',
-                color: 'white',
-                fontSize: '0.7rem'
-              }}
-            />
-          </Box>
-
-          {/* Section dépliable */}
-          <Collapse in={expanded} timeout="auto" unmountOnExit>
-            <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="body2" sx={{ color: '#ccc' }}>
-                  {t('upcomingPayments.category')}:
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'white' }}>
-                  {payment.category}
-                </Typography>
-              </Box>
-              
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="body2" sx={{ color: '#ccc' }}>
-                  {t('upcomingPayments.recurringEnd')}:
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'white' }}>
-                  {payment.recurringEndDate 
-                    ? format(new Date(payment.recurringEndDate), 'dd MMM yyyy', { locale: fr })
-                    : t('upcomingPayments.noEndDate')
-                  }
-                </Typography>
-              </Box>
-              
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="body2" sx={{ color: '#ccc' }}>
-                  {t('upcomingPayments.autoRenew')}:
-                </Typography>
-                <Chip 
-                  icon={payment.autoRenew ? <CheckCircle /> : <Error />}
-                  label={payment.autoRenew ? t('upcomingPayments.enabled') : t('upcomingPayments.disabled')}
-                  size="small"
-                  sx={{ 
-                    backgroundColor: payment.autoRenew ? 'rgba(76,175,80,0.2)' : 'rgba(244,67,54,0.2)',
-                    color: payment.autoRenew ? '#4caf50' : '#f44336'
-                  }}
-                />
-              </Box>
-              
-              {/* Actions */}
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Tooltip title={t('upcomingPayments.edit')}>
-                  <IconButton 
-                    size="small" 
-                    onClick={() => onEdit(payment)}
-                    sx={{ 
-                      backgroundColor: 'rgba(33,150,243,0.2)',
-                      color: '#2196f3',
-                      '&:hover': { backgroundColor: 'rgba(33,150,243,0.3)' }
-                    }}
-                  >
-                    <Edit />
-                  </IconButton>
-                </Tooltip>
-                
-                <Tooltip title={t('upcomingPayments.delete')}>
-                  <IconButton 
-                    size="small" 
-                    onClick={() => onDelete(payment.id)}
-                    sx={{ 
-                      backgroundColor: 'rgba(244,67,54,0.2)',
-                      color: '#f44336',
-                      '&:hover': { backgroundColor: 'rgba(244,67,54,0.3)' }
-                    }}
-                  >
-                    <Delete />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            </Box>
-          </Collapse>
-        </CardContent>
-      </Card>
-    </Fade>
-  );
-});
-
-// Composant principal
-const UpcomingPayments = React.memo(({ 
-  payments = [], 
-  onAddPayment, 
-  onEditPayment, 
-  onDeletePayment, 
-  onToggleReminder,
-  loading = false,
-  error = null
-}) => {
-  console.log('=== UPCOMING PAYMENTS COMPONENT RENDERING ===');
-  console.log('Props received:', { payments, loading, error });
-  
-  const { t, i18n } = useTranslation();
-  const [expanded, setExpanded] = useState(true);
-  const [filter, setFilter] = useState('all'); // 'all', 'critical', 'overdue', 'upcoming'
-
-  // Debug: vérifier si les traductions sont chargées
-  console.log('=== UPCOMING PAYMENTS DEBUG ===');
-  console.log('i18n ready:', i18n.isInitialized);
-  console.log('Current language:', i18n.language);
-  console.log('Available languages:', i18n.languages);
-  console.log('Test translation:', t('upcomingPayments.title'));
-  console.log('Test translation 2:', t('recurringPayment.type'));
-  console.log('Test translation 3:', t('common.add'));
-  
-  // Test direct avec i18n
-  console.log('Direct i18n test:', i18n.t('upcomingPayments.title'));
-  console.log('=== END DEBUG ===');
-
-  // Calculs optimisés avec useMemo
-  const { 
-    criticalPayments, 
-    overduePayments, 
-    upcomingPayments, 
-    totalAmount, 
-    stats 
-  } = useMemo(() => {
-    const now = new Date();
-    
-    const critical = payments.filter(p => {
-      const daysUntil = differenceInDays(new Date(p.nextDueDate), now);
-      return daysUntil <= 3 && daysUntil >= 0;
-    });
-    
-    const overdue = payments.filter(p => {
-      const daysUntil = differenceInDays(new Date(p.nextDueDate), now);
-      return daysUntil < 0;
-    });
-    
-    const upcoming = payments.filter(p => {
-      const daysUntil = differenceInDays(new Date(p.nextDueDate), now);
-      return daysUntil > 3;
-    });
-
-    const total = payments.reduce((sum, p) => sum + p.amount, 0);
-    
-    const stats = {
-      total: payments.length,
-      critical: critical.length,
-      overdue: overdue.length,
-      upcoming: upcoming.length,
-      totalAmount: total
+      return nextDate;
     };
 
-    return { criticalPayments: critical, overduePayments: overdue, upcomingPayments: upcoming, totalAmount: total, stats };
-  }, [payments]);
-
-  // Filtrer les paiements selon le filtre sélectionné
-  const filteredPayments = useMemo(() => {
-    switch (filter) {
-      case 'critical':
-        return criticalPayments;
-      case 'overdue':
-        return overduePayments;
-      case 'upcoming':
-        return upcomingPayments;
-      default:
-        return payments;
-    }
-  }, [filter, payments, criticalPayments, overduePayments, upcomingPayments]);
-
-  // Tri par priorité et date
-  const sortedPayments = useMemo(() => {
-    return [...filteredPayments].sort((a, b) => {
-      const daysA = differenceInDays(new Date(a.nextDueDate), new Date());
-      const daysB = differenceInDays(new Date(b.nextDueDate), new Date());
-      
-      // Priorité aux paiements en retard
-      if (daysA < 0 && daysB >= 0) return -1;
-      if (daysA >= 0 && daysB < 0) return 1;
-      
-      // Puis par nombre de jours restants
-      return daysA - daysB;
+    // Ajouter les dépenses récurrentes
+    expenses.forEach(expense => {
+      if (expense.recurring) {
+        const nextDate = getNextPaymentDate(expense);
+        if (nextDate) {
+          const daysUntil = differenceInDays(nextDate, today);
+          const priority = daysUntil <= 3 ? 'high' : daysUntil <= 7 ? 'medium' : 'low';
+          
+          payments.push({
+            id: `expense-${expense.id}`,
+            type: 'expense',
+            title: expense.description,
+            amount: expense.amount,
+            category: expense.category,
+            date: nextDate,
+            daysUntil,
+            priority,
+            recurringType: expense.recurringType,
+            originalTransaction: expense
+          });
+        }
+      }
     });
-  }, [filteredPayments]);
 
-  // Gestionnaires d'événements optimisés
-  const handleEdit = useCallback((payment) => {
-    onEditPayment?.(payment);
-  }, [onEditPayment]);
+    // Ajouter les revenus récurrents
+    incomes.forEach(income => {
+      if (income.recurring) {
+        const nextDate = getNextPaymentDate(income);
+        if (nextDate) {
+          const daysUntil = differenceInDays(nextDate, today);
+          const priority = daysUntil <= 3 ? 'high' : daysUntil <= 7 ? 'medium' : 'low';
+          
+          payments.push({
+            id: `income-${income.id}`,
+            type: 'income',
+            title: income.description,
+            amount: income.amount,
+            category: income.category,
+            date: nextDate,
+            daysUntil,
+            priority,
+            recurringType: income.recurringType,
+            originalTransaction: income
+          });
+        }
+      }
+    });
 
-  const handleDelete = useCallback((paymentId) => {
-    onDeletePayment?.(paymentId);
-  }, [onDeletePayment]);
+    // Ajouter les paiements de dettes
+    debts.forEach(debt => {
+      if (debt.monthlyPayment > 0) {
+        const nextDate = getNextPaymentDate({
+          date: debt.date,
+          recurring: true,
+          recurringType: 'monthly'
+        });
+        
+        if (nextDate) {
+          const daysUntil = differenceInDays(nextDate, today);
+          const priority = daysUntil <= 3 ? 'high' : daysUntil <= 7 ? 'medium' : 'low';
+          
+          payments.push({
+            id: `debt-${debt.id}`,
+            type: 'debt',
+            title: `Paiement dette: ${debt.description}`,
+            amount: debt.monthlyPayment,
+            category: 'Dettes',
+            date: nextDate,
+            daysUntil,
+            priority,
+            recurringType: 'monthly',
+            originalTransaction: debt
+          });
+        }
+      }
+    });
 
-  const handleToggleReminder = useCallback((paymentId) => {
-    onToggleReminder?.(paymentId);
-  }, [onToggleReminder]);
+    // Trier par priorité et date
+    return payments.sort((a, b) => {
+      // Priorité haute en premier
+      if (a.priority === 'high' && b.priority !== 'high') return -1;
+      if (b.priority === 'high' && a.priority !== 'high') return 1;
+      
+      // Puis par date
+      return a.daysUntil - b.daysUntil;
+    });
+  }, [expenses, incomes, debts]);
 
-  console.log('=== UPCOMING PAYMENTS BEFORE RENDER ===');
-  
-  if (loading) {
-    console.log('=== UPCOMING PAYMENTS LOADING ===');
+  // Fonction pour obtenir la couleur de priorité
+  const getPriorityColor = useCallback((priority) => {
+    switch (priority) {
+      case 'high': return 'error';
+      case 'medium': return 'warning';
+      case 'low': return 'success';
+      default: return 'default';
+    }
+  }, []);
+
+  // Fonction pour obtenir l'icône de priorité
+  const getPriorityIcon = useCallback((priority) => {
+    switch (priority) {
+      case 'high': return <PriorityHigh color="error" />;
+      case 'medium': return <Warning color="warning" />;
+      case 'low': return <CheckCircle color="success" />;
+      default: return <Schedule />;
+    }
+  }, []);
+
+  // Fonction pour formater la fréquence
+  const getFrequencyText = useCallback((recurringType) => {
+    switch (recurringType) {
+      case 'daily': return t('upcomingPayments.frequency.daily');
+      case 'weekly': return t('upcomingPayments.frequency.weekly');
+      case 'monthly': return t('upcomingPayments.frequency.monthly');
+      case 'yearly': return t('upcomingPayments.frequency.yearly');
+      default: return 'Personnalisé';
+    }
+  }, [t]);
+
+  // Fonction pour obtenir l'icône du type
+  const getTypeIcon = useCallback((type) => {
+    switch (type) {
+      case 'income': return <TrendingUp color="success" />;
+      case 'expense': return <TrendingDown color="error" />;
+      case 'debt': return <AttachMoney color="warning" />;
+      default: return <Schedule />;
+    }
+  }, []);
+
+  // Fonction pour formater le montant
+  const formatAmount = useCallback((amount, type) => {
+    const sign = type === 'income' ? '+' : '-';
+    return `${sign}${amount.toLocaleString()}€`;
+  }, []);
+
+  // Fonction pour obtenir le message de délai
+  const getDaysUntilText = useCallback((daysUntil) => {
+    if (daysUntil === 0) return t('upcomingPayments.today');
+    if (daysUntil === 1) return t('upcomingPayments.tomorrow');
+    if (daysUntil < 0) return t('upcomingPayments.daysOverdue', { days: Math.abs(daysUntil) });
+    return t('upcomingPayments.daysUntil', { days: daysUntil });
+  }, [t]);
+
+  const displayPayments = showAll ? upcomingPayments : upcomingPayments.slice(0, maxItems);
+  const hasOverdue = upcomingPayments.some(p => p.daysUntil < 0);
+  const hasHighPriority = upcomingPayments.some(p => p.priority === 'high');
+
+  if (upcomingPayments.length === 0) {
     return (
-      <Box sx={{ p: 2 }}>
-        <LoadingSpinner message={t('upcomingPayments.loading')} />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Alert severity="error" sx={{ m: 2 }}>
-        {error}
-      </Alert>
+      <Card sx={{ 
+        background: 'rgba(255, 255, 255, 0.05)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: 3
+      }}>
+        <CardContent>
+          <Box display="flex" alignItems="center" justifyContent="center" py={3}>
+            <Schedule sx={{ fontSize: 48, color: 'text.secondary', mr: 2 }} />
+            <Typography variant="h6" color="text.secondary">
+              {t('upcomingPayments.noPayments')}
+            </Typography>
+          </Box>
+          <Typography variant="body2" color="text.secondary" textAlign="center">
+            {t('upcomingPayments.noPaymentsDescription')}
+          </Typography>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
     <ErrorBoundary>
       <Card sx={{ 
-        background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+        background: 'rgba(255, 255, 255, 0.05)',
         backdropFilter: 'blur(10px)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        mb: 3
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        borderRadius: 3,
+        overflow: 'visible'
       }}>
-        <CardContent sx={{ p: 0 }}>
-          {/* En-tête avec statistiques */}
-          <Box sx={{ 
-            p: 2, 
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-            borderBottom: '1px solid rgba(255,255,255,0.1)'
-          }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Schedule sx={{ color: '#4caf50' }} />
-                <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'white' }}>
-                  {t('upcomingPayments.title')}
-                </Typography>
-                <Chip 
-                  label={stats.total}
-                  size="small"
-                  sx={{ 
-                    backgroundColor: 'rgba(76,175,80,0.2)',
-                    color: '#4caf50',
-                    fontWeight: 'bold'
-                  }}
-                />
-              </Box>
-              
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Tooltip title={t('upcomingPayments.addPayment')}>
-                  <Fab 
-                    size="small" 
-                    color="primary"
-                    onClick={onAddPayment}
-                    sx={{ 
-                      background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
-                      '&:hover': { background: 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)' }
-                    }}
-                  >
-                    <Add />
-                  </Fab>
+        <CardContent>
+          {/* En-tête avec alertes */}
+          <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+            <Box display="flex" alignItems="center">
+              <Badge badgeContent={upcomingPayments.length} color="primary">
+                <Schedule sx={{ fontSize: 28, color: 'primary.main', mr: 1 }} />
+              </Badge>
+              <Typography variant="h6" fontWeight="bold">
+                {t('upcomingPayments.title')}
+              </Typography>
+            </Box>
+            
+            <Box display="flex" alignItems="center" gap={1}>
+              {hasOverdue && (
+                <Tooltip title="Paiements en retard">
+                  <Warning color="error" />
                 </Tooltip>
-                
-                <IconButton 
-                  onClick={() => setExpanded(!expanded)}
-                  sx={{ color: 'white' }}
-                >
-                  {expanded ? <ExpandLess /> : <ExpandMore />}
-                </IconButton>
-              </Box>
-            </Box>
-
-            {/* Statistiques rapides */}
-            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-              <Box sx={{ textAlign: 'center', flex: 1 }}>
-                <Typography variant="h6" sx={{ color: '#ff9800', fontWeight: 'bold' }}>
-                  {stats.critical}
-                </Typography>
-                <Typography variant="caption" sx={{ color: '#ccc' }}>
-                  {t('upcomingPayments.critical')}
-                </Typography>
-              </Box>
-              
-              <Box sx={{ textAlign: 'center', flex: 1 }}>
-                <Typography variant="h6" sx={{ color: '#f44336', fontWeight: 'bold' }}>
-                  {stats.overdue}
-                </Typography>
-                <Typography variant="caption" sx={{ color: '#ccc' }}>
-                  {t('upcomingPayments.overdue')}
-                </Typography>
-              </Box>
-              
-              <Box sx={{ textAlign: 'center', flex: 1 }}>
-                <Typography variant="h6" sx={{ color: '#4caf50', fontWeight: 'bold' }}>
-                  {totalAmount.toLocaleString()}€
-                </Typography>
-                <Typography variant="caption" sx={{ color: '#ccc' }}>
-                  {t('upcomingPayments.totalAmount')}
-                </Typography>
-              </Box>
-            </Box>
-
-            {/* Filtres */}
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              {[
-                { key: 'all', label: t('upcomingPayments.filters.all'), color: '#2196f3' },
-                { key: 'critical', label: t('upcomingPayments.filters.critical'), color: '#ff9800' },
-                { key: 'overdue', label: t('upcomingPayments.filters.overdue'), color: '#f44336' },
-                { key: 'upcoming', label: t('upcomingPayments.filters.upcoming'), color: '#4caf50' }
-              ].map((filterOption) => (
-                <Chip
-                  key={filterOption.key}
-                  label={filterOption.label}
-                  size="small"
-                  onClick={() => setFilter(filterOption.key)}
-                  sx={{
-                    backgroundColor: filter === filterOption.key ? filterOption.color : 'rgba(255,255,255,0.1)',
-                    color: filter === filterOption.key ? 'white' : '#ccc',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      backgroundColor: filter === filterOption.key ? filterOption.color : 'rgba(255,255,255,0.2)'
-                    }
-                  }}
-                />
-              ))}
+              )}
+              {hasHighPriority && (
+                <Tooltip title="Paiements prioritaires">
+                  <PriorityHigh color="error" />
+                </Tooltip>
+              )}
+              <IconButton
+                size="small"
+                onClick={() => setExpanded(!expanded)}
+                sx={{ color: 'text.secondary' }}
+              >
+                {expanded ? <ExpandLess /> : <ExpandMore />}
+              </IconButton>
             </Box>
           </Box>
 
+          {/* Alertes importantes */}
+          {hasOverdue && (
+            <Fade in={true}>
+              <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+                <AlertTitle>{t('upcomingPayments.overdue')}</AlertTitle>
+                {t('upcomingPayments.overdueDescription')}
+              </Alert>
+            </Fade>
+          )}
+
+          {hasHighPriority && !hasOverdue && (
+            <Fade in={true}>
+              <Alert severity="warning" sx={{ mb: 2, borderRadius: 2 }}>
+                <AlertTitle>{t('upcomingPayments.highPriority')}</AlertTitle>
+                {t('upcomingPayments.highPriorityDescription')}
+              </Alert>
+            </Fade>
+          )}
+
           {/* Liste des paiements */}
-          <Collapse in={expanded} timeout="auto" unmountOnExit>
-            <Box sx={{ p: 2, maxHeight: 400, overflow: 'auto' }}>
-              {sortedPayments.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <CheckCircle sx={{ fontSize: 48, color: '#4caf50', mb: 2 }} />
-                  <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
-                    {t('upcomingPayments.noPayments')}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: '#ccc' }}>
-                    {t('upcomingPayments.noPaymentsDescription')}
-                  </Typography>
-                </Box>
-              ) : (
-                <Box>
-                  {sortedPayments.map((payment, index) => (
-                    <Slide direction="up" in timeout={300 + index * 100} key={payment.id}>
-                      <Box>
-                        <PaymentCard
-                          payment={payment}
-                          onEdit={handleEdit}
-                          onDelete={handleDelete}
-                          onToggleReminder={handleToggleReminder}
+          <List sx={{ p: 0 }}>
+            {displayPayments.map((payment, index) => (
+              <Zoom in={true} style={{ transitionDelay: `${index * 100}ms` }} key={payment.id}>
+                <ListItem
+                  sx={{
+                    background: payment.priority === 'high' 
+                      ? 'rgba(244, 67, 54, 0.1)' 
+                      : payment.priority === 'medium'
+                      ? 'rgba(255, 152, 0, 0.1)'
+                      : 'rgba(76, 175, 80, 0.1)',
+                    borderRadius: 2,
+                    mb: 1,
+                    border: payment.priority === 'high' 
+                      ? '1px solid rgba(244, 67, 54, 0.3)'
+                      : payment.priority === 'medium'
+                      ? '1px solid rgba(255, 152, 0, 0.3)'
+                      : '1px solid rgba(76, 175, 80, 0.3)',
+                    '&:hover': {
+                      background: payment.priority === 'high' 
+                        ? 'rgba(244, 67, 54, 0.15)' 
+                        : payment.priority === 'medium'
+                        ? 'rgba(255, 152, 0, 0.15)'
+                        : 'rgba(76, 175, 80, 0.15)',
+                    }
+                  }}
+                >
+                  <ListItemIcon>
+                    {getTypeIcon(payment.type)}
+                  </ListItemIcon>
+                  
+                  <ListItemText
+                    primary={
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Typography variant="subtitle1" fontWeight="medium">
+                          {payment.title}
+                        </Typography>
+                        <Chip
+                          label={getFrequencyText(payment.recurringType)}
+                          size="small"
+                          variant="outlined"
+                          sx={{ fontSize: '0.7rem' }}
                         />
                       </Box>
-                    </Slide>
-                  ))}
-                </Box>
-              )}
+                    }
+                    secondary={
+                      <Box display="flex" alignItems="center" gap={2} mt={0.5}>
+                        <Typography variant="body2" color="text.secondary">
+                          {format(payment.date, 'dd MMMM yyyy', { locale: fr })}
+                        </Typography>
+                        <Typography 
+                          variant="body2" 
+                          color={payment.daysUntil < 0 ? 'error.main' : 'text.secondary'}
+                          fontWeight={payment.daysUntil <= 3 ? 'bold' : 'normal'}
+                        >
+                          {getDaysUntilText(payment.daysUntil)}
+                        </Typography>
+                      </Box>
+                    }
+                  />
+                  
+                  <ListItemSecondaryAction>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Typography 
+                        variant="subtitle1" 
+                        fontWeight="bold"
+                        color={payment.type === 'income' ? 'success.main' : 'error.main'}
+                      >
+                        {formatAmount(payment.amount, payment.type)}
+                      </Typography>
+                      {getPriorityIcon(payment.priority)}
+                    </Box>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              </Zoom>
+            ))}
+          </List>
+
+          {/* Bouton pour voir plus */}
+          {!showAll && upcomingPayments.length > maxItems && (
+            <Box display="flex" justifyContent="center" mt={2}>
+              <Button
+                variant="outlined"
+                onClick={() => setExpanded(!expanded)}
+                startIcon={expanded ? <ExpandLess /> : <ExpandMore />}
+                sx={{ borderRadius: 2 }}
+              >
+                {expanded ? t('upcomingPayments.seeLess') : `${t('upcomingPayments.seeMore')} ${upcomingPayments.length - maxItems}`}
+              </Button>
             </Box>
-          </Collapse>
+          )}
+
+          {/* Résumé des priorités */}
+          {expanded && (
+            <Collapse in={expanded}>
+              <Divider sx={{ my: 2 }} />
+              <Box display="flex" justifyContent="space-around" textAlign="center">
+                <Box>
+                  <Typography variant="h6" color="error.main">
+                    {upcomingPayments.filter(p => p.priority === 'high').length}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t('upcomingPayments.priority.high')}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="h6" color="warning.main">
+                    {upcomingPayments.filter(p => p.priority === 'medium').length}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t('upcomingPayments.priority.medium')}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="h6" color="success.main">
+                    {upcomingPayments.filter(p => p.priority === 'low').length}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {t('upcomingPayments.priority.low')}
+                  </Typography>
+                </Box>
+              </Box>
+            </Collapse>
+          )}
         </CardContent>
       </Card>
     </ErrorBoundary>
   );
 });
+
+UpcomingPayments.displayName = 'UpcomingPayments';
 
 export default UpcomingPayments; 
