@@ -29,68 +29,29 @@ if (process.env.NODE_ENV === 'development') {
   startPerformanceMonitoring();
 }
 
-// Attendre que i18n soit initialisé avant de rendre l'app
-i18n.on('initialized', () => {
-  console.log('i18n initialized successfully');
-  console.log('Current language:', i18n.language);
-  console.log('Available languages:', i18n.languages);
-  
-  // Optimisation du rendu avec ErrorBoundary et routes optimisées
-  createRoot(document.getElementById('root')).render(
-    <StrictMode>
-      <ErrorBoundary>
-        <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-          <BrowserRouter>
-            <AppRoutesOptimized />
-            <SmartNotifications />
-            <Toaster 
-              position="bottom-right"
-              toastOptions={{
-                duration: 4000,
-                style: {
-                  background: 'rgba(0,0,0,0.9)',
-                  color: 'white',
-                  borderRadius: '8px',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255,255,255,0.1)'
-                }
-              }}
-            />
-          </BrowserRouter>
-        </GoogleOAuthProvider>
-      </ErrorBoundary>
-    </StrictMode>,
-  )
-});
-
-// Fallback si i18n ne s'initialise pas
-setTimeout(() => {
-  if (!i18n.isInitialized) {
-    console.warn('i18n not initialized, rendering app anyway');
-    createRoot(document.getElementById('root')).render(
-      <StrictMode>
-        <ErrorBoundary>
-          <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-            <BrowserRouter>
-              <AppRoutesOptimized />
-              <SmartNotifications />
-              <Toaster 
-                position="bottom-right"
-                toastOptions={{
-                  duration: 4000,
-                  style: {
-                    background: 'rgba(0,0,0,0.9)',
-                    color: 'white',
-                    borderRadius: '8px',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255,255,255,0.1)'
-                  }
-                }}
-              />
-            </BrowserRouter>
-          </GoogleOAuthProvider>
-        </ErrorBoundary>
-      </StrictMode>,
-    )
-  }
-}, 2000);
+// Optimisation du rendu avec ErrorBoundary et routes optimisées
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <ErrorBoundary>
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+        <BrowserRouter>
+          <AppRoutesOptimized />
+          <SmartNotifications />
+          <Toaster 
+            position="bottom-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: 'rgba(0,0,0,0.9)',
+                color: 'white',
+                borderRadius: '8px',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.1)'
+              }
+            }}
+          />
+        </BrowserRouter>
+      </GoogleOAuthProvider>
+    </ErrorBoundary>
+  </StrictMode>,
+)
