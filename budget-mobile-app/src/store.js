@@ -229,7 +229,7 @@ const useStore = create(
         isAuthenticated: false,
         isLoading: false,
         error: null,
-        serverConnected: true,
+      serverConnected: true,
         autoLogin: true, // Connexion automatique
         
         // Données budgétaires
@@ -561,7 +561,7 @@ const useStore = create(
           const newExpense = {
             id: Date.now().toString(),
             ...expense,
-            date: expenseDate,
+          date: expenseDate,
             // Gestion des transactions récurrentes
             recurring: expense.recurring || false,
             recurringType: expense.recurringType || 'monthly',
@@ -635,7 +635,7 @@ const useStore = create(
           const newIncome = {
             id: Date.now().toString(),
             ...income,
-            date: incomeDate,
+          date: incomeDate,
             // Gestion des transactions récurrentes
             recurring: income.recurring || false,
             recurringType: income.recurringType || 'monthly',
@@ -1266,33 +1266,33 @@ const useStore = create(
         if (user) {
           // Pour les nouveaux utilisateurs ou reconnexion, utiliser les données par défaut
           // Les données seront chargées/sauvegardées plus tard si nécessaire
-          const defaultBudget = {
-            months: defaultMonths,
-            categories: defaultCategories,
-            data: defaultData,
-            revenus: defaultRevenus,
-            incomeTypes: defaultIncomeTypes,
-            incomes: defaultIncomes,
-            persons: defaultPersons,
-            saved: defaultSaved,
-            sideByMonth: defaultSideByMonth,
-            totalPotentialSavings: 0,
-            budgetLimits: defaultCategoryLimits,
-            expenses: [],
-            incomeTransactions: [],
-            savings: [],
-            debts: [],
-            bankAccounts: [],
-            transactions: [],
-            userProfile: { ...defaultUserProfile, email: user.email },
-            appSettings: defaultAppSettings,
-            tutorialCompleted: false,
-            onboardingCompleted: false,
-            lastUpdateShown: null,
+              const defaultBudget = {
+                months: defaultMonths,
+                categories: defaultCategories,
+                data: defaultData,
+                revenus: defaultRevenus,
+                incomeTypes: defaultIncomeTypes,
+                incomes: defaultIncomes,
+                persons: defaultPersons,
+                saved: defaultSaved,
+                sideByMonth: defaultSideByMonth,
+                totalPotentialSavings: 0,
+                budgetLimits: defaultCategoryLimits,
+                expenses: [],
+                incomeTransactions: [],
+                savings: [],
+                debts: [],
+                bankAccounts: [],
+                transactions: [],
+                userProfile: { ...defaultUserProfile, email: user.email },
+                appSettings: defaultAppSettings,
+                tutorialCompleted: false,
+                onboardingCompleted: false,
+                lastUpdateShown: null,
             appVersion: "2.3.0"
-          };
+              };
           
-          set({ ...defaultBudget, isLoading: false });
+              set({ ...defaultBudget, isLoading: false });
           console.log('setUser: Utilisateur connecté avec données par défaut');
         }
       },

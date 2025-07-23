@@ -78,17 +78,17 @@ const Login = () => {
 
   // Fonction de redirection vers l'app
   const redirectToApp = useCallback(() => {
-    // Récupérer l'état final
-    const finalState = useStore.getState();
+      // Récupérer l'état final
+      const finalState = useStore.getState();
       
-    // Rediriger vers l'onboarding seulement si ce n'est pas encore terminé
-    if (!finalState.onboardingCompleted) {
-      console.log('Login: Redirection vers onboarding');
-      navigate('/onboarding', { replace: true });
-    } else {
-      console.log('Login: Redirection vers home');
-      navigate('/home', { replace: true });
-    }
+      // Rediriger vers l'onboarding seulement si ce n'est pas encore terminé
+      if (!finalState.onboardingCompleted) {
+        console.log('Login: Redirection vers onboarding');
+        navigate('/onboarding', { replace: true });
+      } else {
+        console.log('Login: Redirection vers home');
+        navigate('/home', { replace: true });
+      }
   }, [navigate]);
 
   // Vérifier la connexion automatique au chargement
@@ -803,10 +803,10 @@ const Login = () => {
 
                   {/* Inscription Google */}
                   <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                    <GoogleLogin
+        <GoogleLogin
                       onSuccess={handleGoogleSuccess}
                       onError={handleGoogleError}
-                      useOneTap
+          useOneTap
                       disabled={loading}
                     />
                   </Box>
