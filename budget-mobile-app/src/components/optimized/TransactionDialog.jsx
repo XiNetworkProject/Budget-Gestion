@@ -89,36 +89,36 @@ const TransactionDialog = React.memo(({
   const [newCategory, setNewCategory] = useState('');
 
   // Icônes par défaut pour les catégories
-  const defaultIcons = {
-    'Loyer': <Home />,
-    'Électricité': <LocalHospital />,
-    'Assurance': <AttachMoney />,
-    'Banque': <AccountBalance />,
-    'Nourriture': <Restaurant />,
-    'Loisirs': <SportsEsports />,
-    'Voiture': <DirectionsCar />,
-    'Shopping': <ShoppingCart />,
-    'Éducation': <School />,
-    'Travail': <Work />,
-    'Voyage': <Flight />,
-    'Animaux': <Pets />,
-    'Courses': <LocalGroceryStore />,
-    'Pharmacie': <LocalPharmacy />,
-    'Essence': <LocalGasStation />,
-    'Lavage': <LocalLaundryService />,
-    'Coiffeur': <ContentCut />,
-    'Fleurs': <LocalFlorist />,
-    'Pizza': <LocalPizza />,
-    'Café': <LocalCafe />,
-    'Convenience': <LocalConvenienceStore />,
-    'Poste': <LocalPostOffice />,
-    'Salaire': <Work />,
-    'Aides': <AttachMoney />,
-    'Freelance': <Work />,
-    'Investissements': <AttachMoney />,
-    'Cadeaux': <LocalFlorist />,
-    'Dons': <AttachMoney />
-  };
+  const defaultIcons = useMemo(() => ({
+    'Loyer': Home,
+    'Électricité': LocalHospital,
+    'Assurance': AttachMoney,
+    'Banque': AccountBalance,
+    'Nourriture': Restaurant,
+    'Loisirs': SportsEsports,
+    'Voiture': DirectionsCar,
+    'Shopping': ShoppingCart,
+    'Éducation': School,
+    'Travail': Work,
+    'Voyage': Flight,
+    'Animaux': Pets,
+    'Courses': LocalGroceryStore,
+    'Pharmacie': LocalPharmacy,
+    'Essence': LocalGasStation,
+    'Lavage': LocalLaundryService,
+    'Coiffeur': ContentCut,
+    'Fleurs': LocalFlorist,
+    'Pizza': LocalPizza,
+    'Café': LocalCafe,
+    'Convenience': LocalConvenienceStore,
+    'Poste': LocalPostOffice,
+    'Salaire': Work,
+    'Aides': AttachMoney,
+    'Freelance': Work,
+    'Investissements': AttachMoney,
+    'Cadeaux': LocalFlorist,
+    'Dons': AttachMoney
+  }), []);
 
   // Couleurs par défaut pour les catégories
   const defaultColors = {
@@ -181,8 +181,9 @@ const TransactionDialog = React.memo(({
 
   // Fonction pour obtenir l'icône d'une catégorie
   const getCategoryIcon = useCallback((categoryName) => {
-    return defaultIcons[categoryName] || <Category />;
-  }, []);
+    const IconComponent = defaultIcons[categoryName] || Category;
+    return <IconComponent />;
+  }, [defaultIcons]);
 
   // Fonction pour obtenir la couleur d'une catégorie
   const getCategoryColor = useCallback((categoryName) => {
