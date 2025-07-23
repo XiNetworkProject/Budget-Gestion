@@ -29,7 +29,7 @@ import {
   TrendingUp,
   TrendingDown,
   PriorityHigh,
-  PriorityLow,
+  LowPriority,
   MoreVert,
   Edit,
   Delete,
@@ -55,7 +55,7 @@ const PriorityIndicator = React.memo(({ priority, dueDate }) => {
     if (daysUntilDue <= 3) return { color: '#ff9800', icon: Warning, label: 'Critique' };
     if (daysUntilDue <= 7) return { color: '#ff5722', icon: PriorityHigh, label: 'Haute' };
     if (daysUntilDue <= 14) return { color: '#2196f3', icon: Schedule, label: 'Moyenne' };
-    return { color: '#4caf50', icon: PriorityLow, label: 'Basse' };
+    return { color: '#4caf50', icon: LowPriority, label: 'Basse' };
   };
 
   const config = getPriorityConfig();
