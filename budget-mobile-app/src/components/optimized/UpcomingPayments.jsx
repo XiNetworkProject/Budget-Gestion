@@ -51,11 +51,11 @@ const PriorityIndicator = React.memo(({ priority, dueDate }) => {
   const daysUntilDue = differenceInDays(new Date(dueDate), new Date());
   
   const getPriorityConfig = () => {
-    if (daysUntilDue < 0) return { color: '#f44336', icon: Error, label: 'En retard' };
-    if (daysUntilDue <= 3) return { color: '#ff9800', icon: Warning, label: 'Critique' };
-    if (daysUntilDue <= 7) return { color: '#ff5722', icon: PriorityHigh, label: 'Haute' };
-    if (daysUntilDue <= 14) return { color: '#2196f3', icon: Schedule, label: 'Moyenne' };
-    return { color: '#4caf50', icon: LowPriority, label: 'Basse' };
+    if (daysUntilDue < 0) return { color: '#f44336', icon: Error, label: t('upcomingPayments.priority.overdue') };
+    if (daysUntilDue <= 3) return { color: '#ff9800', icon: Warning, label: t('upcomingPayments.priority.critical') };
+    if (daysUntilDue <= 7) return { color: '#ff5722', icon: PriorityHigh, label: t('upcomingPayments.priority.high') };
+    if (daysUntilDue <= 14) return { color: '#2196f3', icon: Schedule, label: t('upcomingPayments.priority.medium') };
+    return { color: '#4caf50', icon: LowPriority, label: t('upcomingPayments.priority.low') };
   };
 
   const config = getPriorityConfig();

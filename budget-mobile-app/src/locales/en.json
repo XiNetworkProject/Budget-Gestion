@@ -102,7 +102,23 @@
     "cancel": "Cancel",
     "save": "Save",
     "update": "Update",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "errorLoadingData": "Error loading data",
+    "errorSavingData": "Error saving data",
+    "savings": "Savings",
+    "urgent": "Urgent",
+    "investment": "Investment",
+    "opportunity": "Opportunity",
+    "income": "Income",
+    "contingency": "Contingency",
+    "financialHealth": "Financial Health",
+    "maintenance": "Maintenance",
+    "add": "Add",
+    "newTransaction": "New transaction",
+    "plans": "Plans",
+    "actionPlans": "Action plans",
+    "analytics": "Analytics",
+    "detailedAnalytics": "Detailed analytics"
   },
   "upcomingPayments": {
     "title": "Upcoming Payments",
@@ -136,7 +152,15 @@
       "monthly": "Monthly",
       "yearly": "Yearly",
       "custom": "Custom"
-    }
+    },
+    "priority": {
+      "overdue": "Overdue",
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "errorGeneration": "Error generating upcoming payments"
   },
   "recurringPayment": {
     "addTitle": "Add Recurring Payment",

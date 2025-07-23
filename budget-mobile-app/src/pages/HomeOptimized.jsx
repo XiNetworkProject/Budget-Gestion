@@ -211,7 +211,7 @@ const HomeOptimized = () => {
         const parsed = JSON.parse(savedData);
         setLocalData(parsed);
       } catch (error) {
-        console.error('Erreur lors du chargement des données:', error);
+        console.error(t('common.errorLoadingData'), error);
       }
     }
   }, []);
@@ -245,7 +245,7 @@ const HomeOptimized = () => {
       localStorage.setItem('budgetAppData', JSON.stringify(newData));
       setLocalData(newData);
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
+      console.error(t('common.errorSavingData'), error);
     }
   }, []);
 
@@ -326,7 +326,7 @@ const HomeOptimized = () => {
       setShowRecurringPaymentDialog(false);
       setEditingPayment(null);
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde du paiement récurrent:', error);
+      console.error(t('recurringPayment.errors.saveFailed'), error);
     }
   }, [editingPayment]);
 
@@ -343,7 +343,7 @@ const HomeOptimized = () => {
     try {
       return useStore.getState().generateUpcomingPayments() || [];
     } catch (error) {
-      console.error('Erreur lors de la génération des paiements à venir:', error);
+      console.error(t('upcomingPayments.errorGeneration'), error);
       return [];
     }
   }, []);
@@ -505,7 +505,7 @@ const HomeOptimized = () => {
           savings_rate: `${Math.round(savingsRate)}%`,
           target: '20%'
         },
-        tags: ['Épargne', 'Urgent'],
+        tags: [t('common.savings'), t('common.urgent')],
         suggestedPlan: {
           title: t('ai.emergencySavingsPlan'),
           description: t('ai.emergencySavingsPlanDescription'),
@@ -526,7 +526,7 @@ const HomeOptimized = () => {
           savings_rate: `${Math.round(savingsRate)}%`,
           performance: 'Excellent'
         },
-        tags: ['Investissement', 'Opportunité'],
+        tags: [t('common.investment'), t('common.opportunity')],
         suggestedPlan: {
           title: t('ai.investmentPlan'),
           description: t('ai.diversifyInvestments'),
@@ -580,7 +580,7 @@ const HomeOptimized = () => {
           decrease: `${Math.round(Math.abs(incomeChange))}%`,
           impact: 'Significatif'
         },
-        tags: ['Revenus', 'Contingence'],
+        tags: [t('common.income'), t('common.contingency')],
         suggestedPlan: {
           title: t('ai.financialContingencyPlan'),
           description: t('ai.financialContingencyPlanDescription'),
@@ -604,7 +604,7 @@ const HomeOptimized = () => {
           status: 'Sain',
           score: 'A+'
         },
-        tags: ['Santé financière', 'Maintenance']
+        tags: [t('common.financialHealth'), t('common.maintenance')]
       });
     }
     
@@ -632,7 +632,7 @@ const HomeOptimized = () => {
         navigate('/action-plans');
         break;
       case 'continue_monitoring':
-        alert('Vos finances sont en bonne santé. Continuez à surveiller régulièrement.');
+        alert(t('ai.financialHealthMessage'));
         break;
       default:
         console.log('Action non reconnue:', recommendation.actionType);
@@ -689,24 +689,24 @@ const HomeOptimized = () => {
   const quickActions = useMemo(() => [
     {
       icon: Add,
-      label: 'Ajouter',
-      description: 'Nouvelle transaction',
+      label: t('common.add'),
+      description: t('common.newTransaction'),
       color: '#4caf50',
       onClick: () => setShowQuickAdd(true),
       variant: 'primary'
     },
     {
       icon: Assignment,
-      label: 'Plans',
-      description: 'Plans d\'action',
+      label: t('common.plans'),
+      description: t('common.actionPlans'),
       color: '#667eea',
       onClick: () => navigate('/action-plans'),
       variant: 'secondary'
     },
     {
       icon: Analytics,
-      label: 'Analytics',
-      description: 'Analyses détaillées',
+      label: t('common.analytics'),
+      description: t('common.detailedAnalytics'),
       color: '#ff9800',
       onClick: () => navigate('/analytics'),
       variant: 'secondary'

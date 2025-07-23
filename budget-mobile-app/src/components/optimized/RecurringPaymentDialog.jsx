@@ -206,7 +206,7 @@ const RecurringPaymentDialog = React.memo(({
       await onSave(paymentData);
       onClose();
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
+      console.error(t('recurringPayment.errors.saveFailed'), error);
       setErrors({ submit: t('recurringPayment.errors.saveFailed') });
     } finally {
       setIsSubmitting(false);

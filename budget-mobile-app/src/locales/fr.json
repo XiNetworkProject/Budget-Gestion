@@ -102,7 +102,23 @@
     "cancel": "Annuler",
     "save": "Sauvegarder",
     "update": "Mettre à jour",
-    "saving": "Sauvegarde..."
+    "saving": "Sauvegarde...",
+    "errorLoadingData": "Erreur lors du chargement des données",
+    "errorSavingData": "Erreur lors de la sauvegarde",
+    "savings": "Épargne",
+    "urgent": "Urgent",
+    "investment": "Investissement",
+    "opportunity": "Opportunité",
+    "income": "Revenus",
+    "contingency": "Contingence",
+    "financialHealth": "Santé financière",
+    "maintenance": "Maintenance",
+    "add": "Ajouter",
+    "newTransaction": "Nouvelle transaction",
+    "plans": "Plans",
+    "actionPlans": "Plans d'action",
+    "analytics": "Analytics",
+    "detailedAnalytics": "Analyses détaillées"
   },
   "upcomingPayments": {
     "title": "Prochains Paiements",
@@ -136,7 +152,15 @@
       "monthly": "Mensuel",
       "yearly": "Annuel",
       "custom": "Personnalisé"
-    }
+    },
+    "priority": {
+      "overdue": "En retard",
+      "critical": "Critique",
+      "high": "Haute",
+      "medium": "Moyenne",
+      "low": "Basse"
+    },
+    "errorGeneration": "Erreur lors de la génération des paiements à venir"
   },
   "recurringPayment": {
     "addTitle": "Ajouter un Paiement Récurrent",
