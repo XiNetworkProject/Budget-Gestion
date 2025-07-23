@@ -147,7 +147,7 @@ const IncomeOptimized = () => {
 
   const handleUpdateCategory = (oldName, newName) => {
     // Mettre à jour toutes les transactions qui utilisent cette catégorie
-    const updatedIncomes = incomes.map(income => 
+    const updatedIncomes = incomeTransactions.map(income => 
       income.category === oldName ? { ...income, category: newName } : income
     );
     // Mettre à jour le store
@@ -165,7 +165,7 @@ const IncomeOptimized = () => {
 
   const handleDeleteCategory = (categoryName) => {
     // Supprimer toutes les transactions de cette catégorie
-    const incomesToDelete = incomes.filter(income => income.category === categoryName);
+    const incomesToDelete = incomeTransactions.filter(income => income.category === categoryName);
     incomesToDelete.forEach(income => {
       deleteIncome(income.id);
     });
