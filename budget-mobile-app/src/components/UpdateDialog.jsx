@@ -27,16 +27,51 @@ import {
 } from '@mui/icons-material';
 
 const UpdateDialog = ({ open, onClose }) => {
-  const currentVersion = "2.1.0";
-  const previousVersion = "2.0.0";
+  const currentVersion = "2.2.0";
+  const previousVersion = "2.1.0";
   
   const updates = [
     {
       type: 'feature',
       icon: <NewReleases color="primary" />,
+      title: 'Page de login modernisée',
+      description: 'Interface glassmorphism avec particules animées et design cohérent avec le thème sombre',
+      category: 'Nouveau'
+    },
+    {
+      type: 'feature',
+      icon: <Star color="primary" />,
+      title: 'Connexion par email',
+      description: 'Nouveau système de connexion et inscription par email en plus de Google',
+      category: 'Nouveau'
+    },
+    {
+      type: 'feature',
+      icon: <Security color="primary" />,
+      title: 'Connexion automatique',
+      description: 'Reconnexion automatique à l\'ouverture de l\'application avec option de déconnexion dans les paramètres',
+      category: 'Nouveau'
+    },
+    {
+      type: 'feature',
+      icon: <CheckCircle color="primary" />,
+      title: 'Gestion avancée des catégories',
+      description: 'Suppression des catégories avec choix d\'icônes et couleurs personnalisées',
+      category: 'Amélioration'
+    },
+    {
+      type: 'feature',
+      icon: <Speed color="primary" />,
+      title: 'Paiements récurrents',
+      description: 'Système complet de gestion des paiements récurrents avec rappels et suivi',
+      category: 'Nouveau'
+    },
+    {
+      type: 'feature',
+      icon: <Rocket color="primary" />,
       title: 'Système de plans d\'actions',
       description: 'Créez et suivez des plans d\'actions personnalisés pour améliorer vos finances',
-      category: 'Nouveau'
+      category: 'Amélioration'
     },
     {
       type: 'feature',
@@ -57,7 +92,14 @@ const UpdateDialog = ({ open, onClose }) => {
       icon: <CheckCircle color="primary" />,
       title: 'Recommandations IA avancées',
       description: 'Conseils personnalisés avec création automatique de plans d\'actions',
-      category: 'Nouveau'
+      category: 'Amélioration'
+    },
+    {
+      type: 'fix',
+      icon: <BugReport color="success" />,
+      title: 'Correction de l\'onboarding',
+      description: 'Correction de l\'erreur JavaScript dans l\'affichage des fonctionnalités',
+      category: 'Correction'
     },
     {
       type: 'fix',

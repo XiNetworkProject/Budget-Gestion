@@ -254,7 +254,7 @@ const useStore = create(
       selectedYear: new Date().getFullYear(), // Année actuelle par défaut
 
       // Gestion des mises à jour
-      appVersion: "2.1.0",
+      appVersion: "2.2.0",
       lastUpdateShown: null,
       showUpdateDialog: false,
 
@@ -278,7 +278,7 @@ const useStore = create(
       // Fonction pour vérifier et afficher les mises à jour
       checkForUpdates: () => {
         const state = get();
-        const currentVersion = "2.1.0";
+        const currentVersion = "2.2.0";
         const lastShown = state.lastUpdateShown;
         
         console.log('CheckForUpdates:', { currentVersion, lastShown, showUpdateDialog: state.showUpdateDialog });
@@ -1170,7 +1170,7 @@ const useStore = create(
             tutorialCompleted: false,
             onboardingCompleted: false,
             lastUpdateShown: null,
-            appVersion: "2.1.0"
+            appVersion: "2.2.0"
           };
           
           // Sauvegarder de manière synchrone pour s'assurer que c'est fait
@@ -1289,7 +1289,7 @@ const useStore = create(
                 tutorialCompleted: data.tutorialCompleted || false,
                 onboardingCompleted: shouldCompleteOnboarding,
                 lastUpdateShown: data.lastUpdateShown || null,
-                appVersion: data.appVersion || "2.1.0",
+                appVersion: data.appVersion || "2.2.0",
                 isLoading: false
               });
               
@@ -1319,7 +1319,7 @@ const useStore = create(
                 tutorialCompleted: false,
                 onboardingCompleted: false,
                 lastUpdateShown: null,
-                appVersion: "2.1.0"
+                appVersion: "2.2.0"
               };
               set({ ...defaultBudget, isLoading: false });
               await budgetService.saveBudget(user.id, defaultBudget);
@@ -1656,7 +1656,7 @@ const useStore = create(
               tutorialCompleted: false,
               onboardingCompleted: false,
               lastUpdateShown: null,
-              appVersion: "2.1.0"
+              appVersion: "2.2.0"
             };
             set({ ...defaultBudget, isLoading: false });
             await budgetService.saveBudget(state.user.id, defaultBudget);
