@@ -349,12 +349,17 @@ const HomeOptimized = () => {
   // Générer les paiements à venir
   const upcomingPayments = useMemo(() => {
     try {
-      return useStore.getState().generateUpcomingPayments() || [];
+      const payments = useStore.getState().generateUpcomingPayments() || [];
+      console.log('=== UPCOMING PAYMENTS GENERATED ===');
+      console.log('Number of payments:', payments.length);
+      console.log('Payments:', payments);
+      console.log('=== END GENERATED ===');
+      return payments;
     } catch (error) {
       console.error(t('upcomingPayments.errorGeneration'), error);
       return [];
     }
-  }, []);
+  }, [t]); // Ajouter t comme dépendance
 
   // Calculer les données du mois sélectionné
   const selectedMonthData = useMemo(() => {
@@ -1018,6 +1023,7 @@ const HomeOptimized = () => {
           </Grid>
 
           {/* Paiements récurrents à venir */}
+          {console.log('=== RENDERING UPCOMING PAYMENTS ===', { upcomingPayments, isLoading, error })}
           <UpcomingPayments
             payments={upcomingPayments}
             onAddPayment={handleAddRecurringPayment}
