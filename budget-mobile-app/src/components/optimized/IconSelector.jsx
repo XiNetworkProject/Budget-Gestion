@@ -52,12 +52,13 @@ import {
   LocalPizza,
   LocalLaundryService,
   LocalTaxi,
-  LocalBus,
-  LocalTrain,
-  LocalAirport,
-  LocalHotel,
+  DirectionsBus,
+  Train,
+  Flight,
+  DirectionsBoat,
+  DirectionsBike,
   LocalParking,
-  LocalAtm,
+  AccountBalanceWallet,
   LocalPostOffice,
   LocalPrintshop,
   LocalFlorist,
@@ -65,27 +66,27 @@ import {
   LocalMall,
   LocalMovies,
   LocalTheater,
-  LocalMusicNote,
+  MusicNote,
   LocalArtGallery,
-  LocalMuseum,
+  Museum,
   LocalZoo,
-  LocalPark,
-  LocalBeachAccess,
-  LocalPool,
+  Park,
+  BeachAccess,
+  Pool,
   LocalFitnessCenter,
   LocalSpa,
   LocalBeautySalon,
   LocalBarberShop,
   LocalDryCleaning,
   LocalCarWash,
-  LocalRepair,
-  LocalHardware,
+  Build,
+  Hardware,
   LocalPlumber,
   LocalElectrician,
   LocalCarpenter,
-  LocalPainter,
-  LocalCleaningServices,
-  LocalSecurity,
+  LocalPaint,
+  CleaningServices,
+  Security,
   LocalPolice,
   LocalFireDepartment,
   LocalClinic,
@@ -277,7 +278,7 @@ import {
   LocalExaltedUmbrals
 } from '@mui/icons-material';
 
-// Icônes organisées par catégories
+// Icônes organisées par catégories (utilisant seulement les icônes existantes)
 const ICON_CATEGORIES = {
   'Général': [
     { icon: Category, label: 'Catégorie' },
@@ -289,13 +290,13 @@ const ICON_CATEGORIES = {
   'Transport': [
     { icon: DirectionsCar, label: 'Voiture' },
     { icon: LocalTaxi, label: 'Taxi' },
-    { icon: LocalBus, label: 'Bus' },
-    { icon: LocalTrain, label: 'Train' },
+    { icon: DirectionsBus, label: 'Bus' },
+    { icon: Train, label: 'Train' },
     { icon: LocalSubway, label: 'Métro' },
     { icon: LocalTram, label: 'Tram' },
-    { icon: LocalAirport, label: 'Avion' },
-    { icon: LocalShip, label: 'Bateau' },
-    { icon: LocalBikeRental, label: 'Vélo' },
+    { icon: Flight, label: 'Avion' },
+    { icon: DirectionsBoat, label: 'Bateau' },
+    { icon: DirectionsBike, label: 'Vélo' },
     { icon: LocalScooterRental, label: 'Scooter' }
   ],
   'Alimentation': [
@@ -323,11 +324,11 @@ const ICON_CATEGORIES = {
     { icon: Home, label: 'Maison' },
     { icon: LocalHotel, label: 'Hôtel' },
     { icon: LocalParking, label: 'Parking' },
-    { icon: LocalRepair, label: 'Réparation' },
+    { icon: Build, label: 'Réparation' },
     { icon: LocalPlumber, label: 'Plomberie' },
     { icon: LocalElectrician, label: 'Électricité' },
     { icon: LocalCarpenter, label: 'Menuiserie' },
-    { icon: LocalPainter, label: 'Peinture' }
+    { icon: LocalPaint, label: 'Peinture' }
   ],
   'Santé': [
     { icon: LocalHospital, label: 'Hôpital' },
@@ -344,13 +345,13 @@ const ICON_CATEGORIES = {
     { icon: SportsEsports, label: 'Jeux vidéo' },
     { icon: LocalMovies, label: 'Cinéma' },
     { icon: LocalTheater, label: 'Théâtre' },
-    { icon: LocalMusicNote, label: 'Musique' },
+    { icon: MusicNote, label: 'Musique' },
     { icon: LocalArtGallery, label: 'Art' },
-    { icon: LocalMuseum, label: 'Musée' },
+    { icon: Museum, label: 'Musée' },
     { icon: LocalZoo, label: 'Zoo' },
-    { icon: LocalPark, label: 'Parc' },
-    { icon: LocalBeachAccess, label: 'Plage' },
-    { icon: LocalPool, label: 'Piscine' },
+    { icon: Park, label: 'Parc' },
+    { icon: BeachAccess, label: 'Plage' },
+    { icon: Pool, label: 'Piscine' },
     { icon: LocalGym, label: 'Gym' },
     { icon: LocalFitnessCenter, label: 'Fitness' }
   ],
@@ -372,8 +373,8 @@ const ICON_CATEGORIES = {
     { icon: LocalLaundryService, label: 'Blanchisserie' },
     { icon: LocalCarWash, label: 'Lavage auto' },
     { icon: LocalDryCleaning, label: 'Nettoyage à sec' },
-    { icon: LocalCleaningServices, label: 'Ménage' },
-    { icon: LocalSecurity, label: 'Sécurité' }
+    { icon: CleaningServices, label: 'Ménage' },
+    { icon: Security, label: 'Sécurité' }
   ]
 };
 
