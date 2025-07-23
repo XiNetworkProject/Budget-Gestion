@@ -159,6 +159,44 @@ const useStore = create(
         // Éviter les appels API inutiles lors de la connexion initiale
         if (!state.token) {
           console.log('Pas de token - sauvegarde locale uniquement');
+          // Sauvegarder en local seulement
+          try {
+            const localData = {
+              months: state.months,
+              categories: state.categories,
+              data: state.data,
+              revenus: state.revenus,
+              incomeTypes: state.incomeTypes,
+              incomes: state.incomes,
+              persons: state.persons,
+              saved: state.saved,
+              sideByMonth: state.sideByMonth,
+              totalPotentialSavings: state.totalPotentialSavings,
+              budgetLimits: state.budgetLimits,
+              expenses: state.expenses,
+              incomeTransactions: state.incomeTransactions,
+              savings: state.savings,
+              debts: state.debts,
+              bankAccounts: state.bankAccounts,
+              transactions: state.transactions,
+              userProfile: state.userProfile,
+              appSettings: state.appSettings,
+              accounts: state.accounts,
+              activeAccount: state.activeAccount,
+              tutorialCompleted: state.tutorialCompleted,
+              onboardingCompleted: state.onboardingCompleted,
+              lastUpdateShown: state.lastUpdateShown,
+              appVersion: state.appVersion
+            };
+            
+            if (state.user && state.user.id) {
+              const key = `budget_${state.user.id}`;
+              localStorage.setItem(key, JSON.stringify(localData));
+              console.log('Sauvegarde locale réussie:', key);
+            }
+          } catch (error) {
+            console.error('Erreur sauvegarde locale:', error);
+          }
           return;
         }
         
@@ -1232,8 +1270,16 @@ const useStore = create(
       setOnboardingCompleted: (completed) => {
         console.log('Onboarding: setOnboardingCompleted appelé avec', completed);
         set({ onboardingCompleted: completed });
+        
+        // Ne pas sauvegarder immédiatement si pas de token
+        const state = get();
+        if (state.token) {
+          console.log('Onboarding: Token présent, sauvegarde programmée');
           scheduleSave();
-        },
+        } else {
+          console.log('Onboarding: Pas de token, sauvegarde différée');
+        }
+      },
 
         showTutorial: () => {
           console.log('Tutoriel: showTutorial appelé');
