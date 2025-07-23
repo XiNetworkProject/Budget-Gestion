@@ -46,7 +46,8 @@ import {
   Info,
   BarChart,
   History,
-  Settings
+  Settings,
+  Savings
 } from '@mui/icons-material';
 
 // Composants optimisés
