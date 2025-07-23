@@ -1016,16 +1016,16 @@ const useStore = create(
           const newIncomeTypes = state.incomeTypes.filter((t) => t !== type);
           
           // Supprimer les transactions associées si deleteWithData est true
-          let newIncome = [...state.income];
+          let newIncomeTransactions = [...state.incomeTransactions];
           
           if (deleteWithData) {
-            newIncome = newIncome.filter(inc => inc.category !== type);
+            newIncomeTransactions = newIncomeTransactions.filter(inc => inc.category !== type);
           }
           
           set({ 
             incomeTypes: newIncomeTypes, 
             incomes: rest,
-            income: newIncome
+            incomeTransactions: newIncomeTransactions
           });
           scheduleSave();
         },
