@@ -370,7 +370,7 @@ const AnalyticsOptimized = () => {
     <ErrorBoundary>
       <Box sx={{ 
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
         pb: 8
       }}>
         {/* Header */}
