@@ -48,6 +48,7 @@ import { PERFORMANCE_CONFIG } from '../../config/performance';
 
 // Composant de priorité avec couleurs et icônes
 const PriorityIndicator = React.memo(({ priority, dueDate }) => {
+  const { t } = useTranslation();
   const daysUntilDue = differenceInDays(new Date(dueDate), new Date());
   
   const getPriorityConfig = () => {
@@ -278,9 +279,14 @@ const UpcomingPayments = React.memo(({
   loading = false,
   error = null
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [expanded, setExpanded] = useState(true);
   const [filter, setFilter] = useState('all'); // 'all', 'critical', 'overdue', 'upcoming'
+
+  // Debug: vérifier si les traductions sont chargées
+  console.log('i18n ready:', i18n.isInitialized);
+  console.log('Current language:', i18n.language);
+  console.log('Test translation:', t('upcomingPayments.title'));
 
   // Calculs optimisés avec useMemo
   const { 
