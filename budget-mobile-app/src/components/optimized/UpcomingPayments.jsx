@@ -91,57 +91,62 @@ const UpcomingPayments = React.memo(({ maxItems = 5, showAll = false }) => {
     };
 
     // Ajouter les dépenses récurrentes
-    expenses.forEach(expense => {
-      if (expense.recurring) {
-        const nextDate = getNextPaymentDate(expense);
-        if (nextDate) {
-          const daysUntil = differenceInDays(nextDate, today);
-          const priority = daysUntil <= 3 ? 'high' : daysUntil <= 7 ? 'medium' : 'low';
-          
-          payments.push({
-            id: `expense-${expense.id}`,
-            type: 'expense',
-            title: expense.description,
-            amount: expense.amount,
-            category: expense.category,
-            date: nextDate,
-            daysUntil,
-            priority,
-            recurringType: expense.recurringType,
-            originalTransaction: expense
-          });
+    if (Array.isArray(expenses)) {
+      expenses.forEach(expense => {
+        if (expense && expense.recurring) {
+          const nextDate = getNextPaymentDate(expense);
+          if (nextDate) {
+            const daysUntil = differenceInDays(nextDate, today);
+            const priority = daysUntil <= 3 ? 'high' : daysUntil <= 7 ? 'medium' : 'low';
+            
+            payments.push({
+              id: `expense-${expense.id}`,
+              type: 'expense',
+              title: expense.description,
+              amount: expense.amount,
+              category: expense.category,
+              date: nextDate,
+              daysUntil,
+              priority,
+              recurringType: expense.recurringType,
+              originalTransaction: expense
+            });
+          }
         }
-      }
-    });
+      });
+    }
 
     // Ajouter les revenus récurrents
-    incomes.forEach(income => {
-      if (income.recurring) {
-        const nextDate = getNextPaymentDate(income);
-        if (nextDate) {
-          const daysUntil = differenceInDays(nextDate, today);
-          const priority = daysUntil <= 3 ? 'high' : daysUntil <= 7 ? 'medium' : 'low';
-          
-          payments.push({
-            id: `income-${income.id}`,
-            type: 'income',
-            title: income.description,
-            amount: income.amount,
-            category: income.category,
-            date: nextDate,
-            daysUntil,
-            priority,
-            recurringType: income.recurringType,
-            originalTransaction: income
-          });
+    if (Array.isArray(incomes)) {
+      incomes.forEach(income => {
+        if (income && income.recurring) {
+          const nextDate = getNextPaymentDate(income);
+          if (nextDate) {
+            const daysUntil = differenceInDays(nextDate, today);
+            const priority = daysUntil <= 3 ? 'high' : daysUntil <= 7 ? 'medium' : 'low';
+            
+            payments.push({
+              id: `income-${income.id}`,
+              type: 'income',
+              title: income.description,
+              amount: income.amount,
+              category: income.category,
+              date: nextDate,
+              daysUntil,
+              priority,
+              recurringType: income.recurringType,
+              originalTransaction: income
+            });
+          }
         }
-      }
-    });
+      });
+    }
 
     // Ajouter les paiements de dettes
-    debts.forEach(debt => {
-      if (debt.monthlyPayment > 0) {
-        const nextDate = getNextPaymentDate({
+    if (Array.isArray(debts)) {
+      debts.forEach(debt => {
+        if (debt && debt.monthlyPayment > 0) {
+                  const nextDate = getNextPaymentDate({
           date: debt.date,
           recurring: true,
           recurringType: 'monthly'
@@ -166,6 +171,7 @@ const UpcomingPayments = React.memo(({ maxItems = 5, showAll = false }) => {
         }
       }
     });
+    }
 
     // Trier par priorité et date
     return payments.sort((a, b) => {
