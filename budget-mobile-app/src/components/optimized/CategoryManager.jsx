@@ -105,6 +105,7 @@ const CategoryManager = memo(({
   });
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCategoryForMenu, setSelectedCategoryForMenu] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [mounted, setMounted] = useState(false);
 
   // Éviter les erreurs de rendu avant le montage
