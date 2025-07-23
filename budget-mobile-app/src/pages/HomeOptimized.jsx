@@ -1041,18 +1041,18 @@ const HomeOptimized = () => {
             </Typography>
           </Box>
           
-          {/* Composant original commenté pour test */}
-          {/*
-          <UpcomingPayments
-            payments={upcomingPayments}
-            onAddPayment={handleAddRecurringPayment}
-            onEditPayment={handleEditRecurringPayment}
-            onDeletePayment={handleDeleteRecurringPayment}
-            onToggleReminder={handleToggleReminder}
-            loading={isLoading}
-            error={error}
-          />
-          */}
+          {/* Composant original avec ErrorBoundary */}
+          <ErrorBoundary>
+            <UpcomingPayments
+              payments={upcomingPayments}
+              onAddPayment={handleAddRecurringPayment}
+              onEditPayment={handleEditRecurringPayment}
+              onDeletePayment={handleDeleteRecurringPayment}
+              onToggleReminder={handleToggleReminder}
+              loading={isLoading}
+              error={error}
+            />
+          </ErrorBoundary>
 
           {/* Actions rapides améliorées */}
           <QuickActionsSection actions={quickActions} t={t} />

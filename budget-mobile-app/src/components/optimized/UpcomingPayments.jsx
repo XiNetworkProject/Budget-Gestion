@@ -279,6 +279,9 @@ const UpcomingPayments = React.memo(({
   loading = false,
   error = null
 }) => {
+  console.log('=== UPCOMING PAYMENTS COMPONENT RENDERING ===');
+  console.log('Props received:', { payments, loading, error });
+  
   const { t, i18n } = useTranslation();
   const [expanded, setExpanded] = useState(true);
   const [filter, setFilter] = useState('all'); // 'all', 'critical', 'overdue', 'upcoming'
@@ -376,7 +379,10 @@ const UpcomingPayments = React.memo(({
     onToggleReminder?.(paymentId);
   }, [onToggleReminder]);
 
+  console.log('=== UPCOMING PAYMENTS BEFORE RENDER ===');
+  
   if (loading) {
+    console.log('=== UPCOMING PAYMENTS LOADING ===');
     return (
       <Box sx={{ p: 2 }}>
         <LoadingSpinner message={t('upcomingPayments.loading')} />
