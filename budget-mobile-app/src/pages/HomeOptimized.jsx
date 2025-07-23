@@ -185,7 +185,9 @@ const HomeOptimized = () => {
     user,
     logout,
     reloadBudgetData,
-    processRecurringTransactions
+    processRecurringTransactions,
+    checkAutoLogin,
+    autoLogin
   } = useStore();
   
   const navigate = useNavigate();
@@ -220,6 +222,42 @@ const HomeOptimized = () => {
   useEffect(() => {
     processRecurringTransactions();
   }, [processRecurringTransactions]);
+
+  // Vérifier la reconnexion automatique au chargement de la page
+  useEffect(() => {
+    const handleAutoLogin = async () => {
+      console.log('HomeOptimized: Vérification de la reconnexion automatique');
+      
+      // Vérifier si l'utilisateur n'est pas authentifié mais que la reconnexion automatique est activée
+      if (!isAuthenticated && autoLogin) {
+        console.log('HomeOptimized: Tentative de reconnexion automatique');
+        try {
+          const canAutoLogin = await checkAutoLogin();
+          if (canAutoLogin) {
+            console.log('HomeOptimized: Reconnexion automatique réussie');
+            // Les données seront automatiquement chargées par checkAutoLogin
+          } else {
+            console.log('HomeOptimized: Aucune session valide pour la reconnexion automatique');
+            // Rediriger vers la page de login si pas de session valide
+            navigate('/login', { replace: true });
+          }
+        } catch (error) {
+          console.error('HomeOptimized: Erreur lors de la reconnexion automatique:', error);
+          navigate('/login', { replace: true });
+        }
+      } else if (!isAuthenticated && !autoLogin) {
+        console.log('HomeOptimized: Utilisateur non authentifié et reconnexion automatique désactivée');
+        navigate('/login', { replace: true });
+      } else if (isAuthenticated) {
+        console.log('HomeOptimized: Utilisateur déjà authentifié');
+      }
+    };
+
+    // Délai pour laisser le temps au store de se charger
+    const timer = setTimeout(handleAutoLogin, 500);
+    
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, autoLogin, checkAutoLogin, navigate]);
 
   // Fonction de débogage pour tester les calculs de dates
   const debugDateCalculations = useCallback(() => {

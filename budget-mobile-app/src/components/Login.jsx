@@ -79,10 +79,11 @@ const Login = () => {
   // Vérifier la connexion automatique au chargement
   useEffect(() => {
     const checkAutoLogin = async () => {
-      console.log('Vérification de la connexion automatique:', { autoLogin, isAuthenticated, user: !!user });
+      console.log('Login: Vérification de la connexion automatique:', { autoLogin, isAuthenticated, user: !!user });
       
-      if (autoLogin && isAuthenticated && user) {
-        console.log('Connexion automatique détectée - utilisateur déjà connecté');
+      // Si l'utilisateur est déjà authentifié, rediriger directement
+      if (isAuthenticated && user) {
+        console.log('Login: Utilisateur déjà connecté - redirection vers l\'app');
         redirectToApp();
         return;
       }
@@ -90,25 +91,30 @@ const Login = () => {
       // Vérifier s'il y a des données persistées pour la reconnexion automatique
       if (autoLogin && !isAuthenticated) {
         try {
+          console.log('Login: Tentative de reconnexion automatique');
           const canAutoLogin = await storeCheckAutoLogin();
           if (canAutoLogin) {
-            console.log('Connexion automatique détectée - restauration de session');
+            console.log('Login: Connexion automatique réussie - redirection vers l\'app');
             redirectToApp();
             return;
+          } else {
+            console.log('Login: Aucune session valide pour la reconnexion automatique');
           }
         } catch (error) {
-          console.error('Erreur lors de la vérification de la connexion automatique:', error);
+          console.error('Login: Erreur lors de la vérification de la connexion automatique:', error);
         }
+      } else if (!autoLogin) {
+        console.log('Login: Reconnexion automatique désactivée');
       }
       
-      console.log('Aucune connexion automatique détectée');
+      console.log('Login: Aucune connexion automatique détectée - affichage du formulaire de connexion');
     };
     
     // Délai pour laisser le temps au store de se charger
     const timer = setTimeout(checkAutoLogin, 1000);
     
     return () => clearTimeout(timer);
-  }, [autoLogin, isAuthenticated, user, storeCheckAutoLogin]);
+  }, [autoLogin, isAuthenticated, user, storeCheckAutoLogin, redirectToApp]);
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);

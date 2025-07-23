@@ -27,8 +27,8 @@ import {
 } from '@mui/icons-material';
 
 const UpdateDialog = ({ open, onClose }) => {
-  const currentVersion = "2.2.0";
-  const previousVersion = "2.1.0";
+  const currentVersion = "2.3.0";
+const previousVersion = "2.2.0";
   
   const updates = [
     {

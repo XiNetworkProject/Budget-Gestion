@@ -254,7 +254,7 @@ const useStore = create(
       selectedYear: new Date().getFullYear(), // Année actuelle par défaut
 
       // Gestion des mises à jour
-      appVersion: "2.2.0",
+              appVersion: "2.3.0",
       lastUpdateShown: null,
       showUpdateDialog: false,
 
@@ -1319,7 +1319,7 @@ const useStore = create(
                 tutorialCompleted: false,
                 onboardingCompleted: false,
                 lastUpdateShown: null,
-                appVersion: "2.2.0"
+                appVersion: "2.3.0"
               };
               set({ ...defaultBudget, isLoading: false });
               await budgetService.saveBudget(user.id, defaultBudget);
@@ -1352,10 +1352,58 @@ const useStore = create(
           isAuthenticated: state.isAuthenticated 
         });
         
-        if (state.autoLogin && state.token && state.user) {
+        // Vérifier si la connexion automatique est activée
+        if (!state.autoLogin) {
+          console.log('Connexion automatique désactivée');
+          return false;
+        }
+        
+        // Vérifier s'il y a un token et un utilisateur
+        if (state.token && state.user) {
           console.log('Connexion automatique détectée - restauration de la session');
           // Restaurer l'état d'authentification
           set({ isAuthenticated: true });
+          
+          // Charger les données utilisateur si nécessaire
+          if (!state.isLoading && !state.months.length) {
+            try {
+              console.log('Chargement des données utilisateur pour la reconnexion automatique');
+              const data = await budgetService.getBudget(state.user.id);
+              if (data) {
+                set({
+                  months: data.months || state.months,
+                  categories: data.categories || state.categories,
+                  data: data.data || state.data,
+                  revenus: data.revenus || state.revenus,
+                  incomeTypes: data.incomeTypes || state.incomeTypes,
+                  incomes: data.incomes || state.incomes,
+                  persons: data.persons || state.persons,
+                  saved: data.saved || state.saved,
+                  sideByMonth: data.sideByMonth || state.sideByMonth,
+                  totalPotentialSavings: data.totalPotentialSavings || state.totalPotentialSavings,
+                  budgetLimits: data.budgetLimits || state.budgetLimits,
+                  expenses: data.expenses || state.expenses,
+                  incomeTransactions: data.incomeTransactions || state.incomeTransactions,
+                  savings: data.savings || state.savings,
+                  debts: data.debts || state.debts,
+                  bankAccounts: data.bankAccounts || state.bankAccounts,
+                  transactions: data.transactions || state.transactions,
+                  userProfile: data.userProfile || state.userProfile,
+                  appSettings: data.appSettings || state.appSettings,
+                  accounts: data.accounts || state.accounts,
+                  activeAccount: data.activeAccount || state.activeAccount,
+                  tutorialCompleted: data.tutorialCompleted !== undefined ? data.tutorialCompleted : state.tutorialCompleted,
+                  onboardingCompleted: data.onboardingCompleted !== undefined ? data.onboardingCompleted : state.onboardingCompleted,
+                  lastUpdateShown: data.lastUpdateShown || state.lastUpdateShown,
+                  appVersion: data.appVersion || state.appVersion
+                });
+                console.log('Données utilisateur chargées avec succès pour la reconnexion automatique');
+              }
+            } catch (error) {
+              console.error('Erreur lors du chargement des données pour la reconnexion automatique:', error);
+            }
+          }
+          
           return true;
         }
         
@@ -1656,7 +1704,7 @@ const useStore = create(
               tutorialCompleted: false,
               onboardingCompleted: false,
               lastUpdateShown: null,
-              appVersion: "2.2.0"
+              appVersion: "2.3.0"
             };
             set({ ...defaultBudget, isLoading: false });
             await budgetService.saveBudget(state.user.id, defaultBudget);
