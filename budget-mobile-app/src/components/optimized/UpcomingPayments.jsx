@@ -286,7 +286,13 @@ const UpcomingPayments = React.memo(({
   // Debug: vérifier si les traductions sont chargées
   console.log('i18n ready:', i18n.isInitialized);
   console.log('Current language:', i18n.language);
+  console.log('Available languages:', i18n.languages);
   console.log('Test translation:', t('upcomingPayments.title'));
+  console.log('Test translation 2:', t('recurringPayment.type'));
+  console.log('Test translation 3:', t('common.add'));
+  
+  // Test direct avec i18n
+  console.log('Direct i18n test:', i18n.t('upcomingPayments.title'));
 
   // Calculs optimisés avec useMemo
   const { 
