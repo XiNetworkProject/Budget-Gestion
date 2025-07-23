@@ -141,37 +141,22 @@ const IncomeOptimized = () => {
     setSelectedCategory(category);
   };
 
-  const handleAddCategory = (categoryName) => {
-    addIncomeType(categoryName);
+  const handleAddCategory = (categoryData) => {
+    const newCategory = {
+      id: Date.now().toString(),
+      ...categoryData,
+      type: 'income'
+    };
+    addIncomeType(newCategory);
   };
 
-  const handleUpdateCategory = (oldName, newName) => {
-    // Mettre à jour toutes les transactions qui utilisent cette catégorie
-    const updatedIncomes = incomeTransactions.map(income => 
-      income.category === oldName ? { ...income, category: newName } : income
-    );
-    // Mettre à jour le store
-    updatedIncomes.forEach(income => {
-      updateIncome(income.id, income);
-    });
-    // Mettre à jour la catégorie
-    const incomeTypesCopy = [...incomeTypes];
-    const index = incomeTypesCopy.indexOf(oldName);
-    if (index !== -1) {
-      incomeTypesCopy[index] = newName;
-      // Ici vous devriez avoir une fonction pour mettre à jour les catégories
-    }
+  const handleUpdateCategory = (categoryId, categoryData) => {
+    updateIncomeType(categoryId, categoryData);
   };
 
-  const handleDeleteCategory = (categoryName) => {
-    // Supprimer toutes les transactions de cette catégorie
-    const incomesToDelete = incomeTransactions.filter(income => income.category === categoryName);
-    incomesToDelete.forEach(income => {
-      deleteIncome(income.id);
-    });
-    // Supprimer la catégorie
-    removeIncomeType(categoryName);
-    if (selectedCategory === categoryName) {
+  const handleDeleteCategory = (categoryId) => {
+    removeIncomeType(categoryId);
+    if (selectedCategory?.id === categoryId) {
       setSelectedCategory(null);
     }
   };
@@ -357,6 +342,7 @@ const IncomeOptimized = () => {
                 onDeleteCategory={handleDeleteCategory}
                 onSelectCategory={handleCategorySelect}
                 selectedCategory={selectedCategory}
+                t={t}
               />
             </Box>
           )}

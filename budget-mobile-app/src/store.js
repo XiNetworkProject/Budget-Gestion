@@ -778,24 +778,72 @@ const useStore = create(
           scheduleSave();
         },
 
-        addCategory: (cat) => {
+        addCategory: (categoryData) => {
           const state = get();
-          if (state.categories.includes(cat)) return;
+          const categoryName = typeof categoryData === 'string' ? categoryData : categoryData.name;
+          
+          // Vérifier si la catégorie existe déjà
+          if (state.categories.some(cat => cat.name === categoryName)) return;
 
+          const newCategory = typeof categoryData === 'string' ? {
+            id: Date.now().toString(),
+            name: categoryData,
+            icon: 'Category',
+            color: '#2196f3',
+            type: 'expenses'
+          } : {
+            id: categoryData.id || Date.now().toString(),
+            name: categoryData.name,
+            icon: categoryData.icon || 'Category',
+            color: categoryData.color || '#2196f3',
+            description: categoryData.description || '',
+            type: categoryData.type || 'expenses'
+          };
+
+          const newCategories = [...state.categories, newCategory];
           const newData = { ...state.data };
-          newData[cat] = state.months.map(() => 0);
-          const newCategories = [...state.categories, cat];
-          const newLimits = { ...state.budgetLimits, [cat]: 0 };
+          newData[categoryName] = state.months.map(() => 0);
+          const newLimits = { ...state.budgetLimits, [categoryName]: 0 };
           
           set({ categories: newCategories, data: newData, budgetLimits: newLimits });
           scheduleSave();
         },
 
-        removeCategory: (cat) => {
+        updateCategory: (categoryId, updates) => {
           const state = get();
-          const { [cat]: _, ...rest } = state.data;
-          const newCategories = state.categories.filter((c) => c !== cat);
-          const { [cat]: __, ...newLimits } = state.budgetLimits;
+          const updatedCategories = state.categories.map(cat => 
+            cat.id === categoryId ? { ...cat, ...updates } : cat
+          );
+          
+          // Mettre à jour les données si le nom a changé
+          const oldCategory = state.categories.find(cat => cat.id === categoryId);
+          const newCategory = updatedCategories.find(cat => cat.id === categoryId);
+          
+          if (oldCategory && newCategory && oldCategory.name !== newCategory.name) {
+            const newData = { ...state.data };
+            newData[newCategory.name] = newData[oldCategory.name] || state.months.map(() => 0);
+            delete newData[oldCategory.name];
+            
+            const newLimits = { ...state.budgetLimits };
+            newLimits[newCategory.name] = newLimits[oldCategory.name] || 0;
+            delete newLimits[oldCategory.name];
+            
+            set({ categories: updatedCategories, data: newData, budgetLimits: newLimits });
+          } else {
+            set({ categories: updatedCategories });
+          }
+          
+          scheduleSave();
+        },
+
+        removeCategory: (categoryId) => {
+          const state = get();
+          const categoryToRemove = state.categories.find(cat => cat.id === categoryId);
+          if (!categoryToRemove) return;
+
+          const newCategories = state.categories.filter(cat => cat.id !== categoryId);
+          const { [categoryToRemove.name]: _, ...rest } = state.data;
+          const { [categoryToRemove.name]: __, ...newLimits } = state.budgetLimits;
           
           set({ categories: newCategories, data: rest, budgetLimits: newLimits });
           scheduleSave();

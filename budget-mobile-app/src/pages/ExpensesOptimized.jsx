@@ -141,37 +141,22 @@ const ExpensesOptimized = () => {
     setSelectedCategory(category);
   };
 
-  const handleAddCategory = (categoryName) => {
-    addCategory(categoryName);
+  const handleAddCategory = (categoryData) => {
+    const newCategory = {
+      id: Date.now().toString(),
+      ...categoryData,
+      type: 'expense'
+    };
+    addCategory(newCategory);
   };
 
-  const handleUpdateCategory = (oldName, newName) => {
-    // Mettre à jour toutes les transactions qui utilisent cette catégorie
-    const updatedExpenses = expenses.map(expense => 
-      expense.category === oldName ? { ...expense, category: newName } : expense
-    );
-    // Mettre à jour le store
-    updatedExpenses.forEach(expense => {
-      updateExpense(expense.id, expense);
-    });
-    // Mettre à jour la catégorie
-    const categoriesCopy = [...categories];
-    const index = categoriesCopy.indexOf(oldName);
-    if (index !== -1) {
-      categoriesCopy[index] = newName;
-      // Ici vous devriez avoir une fonction pour mettre à jour les catégories
-    }
+  const handleUpdateCategory = (categoryId, categoryData) => {
+    updateCategory(categoryId, categoryData);
   };
 
-  const handleDeleteCategory = (categoryName) => {
-    // Supprimer toutes les transactions de cette catégorie
-    const expensesToDelete = expenses.filter(expense => expense.category === categoryName);
-    expensesToDelete.forEach(expense => {
-      deleteExpense(expense.id);
-    });
-    // Supprimer la catégorie
-    removeCategory(categoryName);
-    if (selectedCategory === categoryName) {
+  const handleDeleteCategory = (categoryId) => {
+    removeCategory(categoryId);
+    if (selectedCategory?.id === categoryId) {
       setSelectedCategory(null);
     }
   };
@@ -407,6 +392,7 @@ const ExpensesOptimized = () => {
                 onDeleteCategory={handleDeleteCategory}
                 onSelectCategory={handleCategorySelect}
                 selectedCategory={selectedCategory}
+                t={t}
               />
             </Box>
           )}
