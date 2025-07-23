@@ -154,8 +154,8 @@ const ExpensesOptimized = () => {
     updateCategory(categoryId, categoryData);
   };
 
-  const handleDeleteCategory = (categoryId) => {
-    removeCategory(categoryId);
+  const handleDeleteCategory = (categoryId, deleteWithData = false) => {
+    removeCategory(categoryId, deleteWithData);
     if (selectedCategory?.id === categoryId) {
       setSelectedCategory(null);
     }

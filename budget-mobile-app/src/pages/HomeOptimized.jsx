@@ -37,13 +37,11 @@ import {
   Lightbulb,
   Analytics,
   Logout,
-  Assignment,
   Star,
   Diamond,
   CardMembership,
   Notifications,
   Refresh,
-  Savings,
   MoreVert,
   Info,
   BarChart,
@@ -61,7 +59,7 @@ import { FinancialCharts } from '../components/optimized/OptimizedCharts';
 // Nouveaux composants modulaires
 import HeaderSection from '../components/optimized/HeaderSection';
 import BalanceCard from '../components/optimized/BalanceCard';
-import { QuickActionsSection } from '../components/optimized/ActionCard';
+
 import { RecommendationsSection } from '../components/optimized/RecommendationCard';
 import UpcomingPayments from '../components/optimized/UpcomingPayments';
 
@@ -641,41 +639,7 @@ const HomeOptimized = () => {
     return '#9E9E9E';
   }, [getCurrentPlan]);
 
-  // Actions rapides memoizées
-  const quickActions = useMemo(() => [
-    {
-      icon: Add,
-      label: 'Ajouter',
-      description: 'Nouvelle transaction',
-      color: '#4caf50',
-      onClick: () => setShowQuickAdd(true),
-      variant: 'primary'
-    },
-    {
-      icon: Assignment,
-      label: 'Plans',
-      description: 'Plans d\'action',
-      color: '#667eea',
-      onClick: () => navigate('/action-plans'),
-      variant: 'secondary'
-    },
-    {
-      icon: Analytics,
-      label: 'Analytics',
-      description: 'Analyses détaillées',
-      color: '#ff9800',
-      onClick: () => navigate('/analytics'),
-      variant: 'secondary'
-    },
-    {
-      icon: Savings,
-      label: 'Épargne',
-      description: 'Objectifs d\'épargne',
-      color: '#9c27b0',
-      onClick: () => navigate('/savings'),
-      variant: 'secondary'
-    }
-  ], [navigate, setShowQuickAdd]);
+
 
   // Données pour les graphiques memoizées
   const chartData = useMemo(() => {
@@ -965,8 +929,7 @@ const HomeOptimized = () => {
             </Grid>
           </Grid>
 
-          {/* Actions rapides améliorées */}
-          <QuickActionsSection actions={quickActions} t={t} />
+
 
           {/* Prochains paiements */}
           <Grid item xs={12} md={6}>

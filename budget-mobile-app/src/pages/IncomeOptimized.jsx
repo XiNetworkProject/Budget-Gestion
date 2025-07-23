@@ -154,8 +154,8 @@ const IncomeOptimized = () => {
     updateIncomeType(categoryId, categoryData);
   };
 
-  const handleDeleteCategory = (categoryId) => {
-    removeIncomeType(categoryId);
+  const handleDeleteCategory = (categoryId, deleteWithData = false) => {
+    removeIncomeType(categoryId, deleteWithData);
     if (selectedCategory?.id === categoryId) {
       setSelectedCategory(null);
     }

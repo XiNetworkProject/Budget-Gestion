@@ -31,7 +31,10 @@ import {
   FormControl,
   InputLabel,
   Select,
-  InputAdornment
+  InputAdornment,
+  FormControlLabel,
+  Checkbox,
+  DialogContentText
 } from '@mui/material';
 import {
   Add,
@@ -62,6 +65,10 @@ import {
   Person,
   MonetizationOn
 } from '@mui/icons-material';
+
+// Import des sélecteurs
+import IconSelector from './IconSelector';
+import ColorSelector from './ColorSelector';
 
 // Icônes par défaut pour les catégories
 const DEFAULT_ICONS = {
@@ -107,6 +114,11 @@ const CategoryManager = memo(({
   const [selectedCategoryForMenu, setSelectedCategoryForMenu] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [mounted, setMounted] = useState(false);
+  const [showIconSelector, setShowIconSelector] = useState(false);
+  const [showColorSelector, setShowColorSelector] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [deleteWithData, setDeleteWithData] = useState(false);
 
   // Éviter les erreurs de rendu avant le montage
   useEffect(() => {
@@ -199,13 +211,39 @@ const CategoryManager = memo(({
   };
 
   const handleDelete = (category) => {
-    onDeleteCategory(category.id);
-    setSnackbar({
-      open: true,
-      message: t('categoryManager.deleted'),
-      severity: 'success'
-    });
+    setCategoryToDelete(category);
+    setShowDeleteDialog(true);
     setAnchorEl(null);
+  };
+
+  const confirmDelete = () => {
+    if (categoryToDelete) {
+      onDeleteCategory(categoryToDelete.id, deleteWithData);
+      setSnackbar({
+        open: true,
+        message: `Catégorie "${categoryToDelete.name}" supprimée${deleteWithData ? ' avec toutes ses données' : ''}`,
+        severity: 'success'
+      });
+    }
+    setShowDeleteDialog(false);
+    setCategoryToDelete(null);
+    setDeleteWithData(false);
+  };
+
+  const cancelDelete = () => {
+    setShowDeleteDialog(false);
+    setCategoryToDelete(null);
+    setDeleteWithData(false);
+  };
+
+  const handleIconSelect = (iconName) => {
+    setNewCategory({ ...newCategory, icon: iconName });
+    setShowIconSelector(false);
+  };
+
+  const handleColorSelect = (color) => {
+    setNewCategory({ ...newCategory, color: color });
+    setShowColorSelector(false);
   };
 
   const handleMenuOpen = (event, category) => {
@@ -475,48 +513,66 @@ const CategoryManager = memo(({
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>{t('categoryManager.icon')}</InputLabel>
-                <Select
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TextField
+                  fullWidth
+                  label="Icône"
                   value={newCategory.icon}
-                  onChange={(e) => setNewCategory({ ...newCategory, icon: e.target.value })}
-                  label={t('categoryManager.icon')}
+                  variant="outlined"
+                  InputProps={{
+                    readOnly: true,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Box
+                          component={getIconComponent(newCategory.icon)}
+                          sx={{ 
+                            color: newCategory.color,
+                            fontSize: 20
+                          }}
+                        />
+                      </InputAdornment>
+                    )
+                  }}
+                />
+                <Button
+                  variant="outlined"
+                  onClick={() => setShowIconSelector(true)}
+                  sx={{ minWidth: 'auto', px: 2 }}
                 >
-                  {defaultIcons.map((iconOption) => {
-                    const IconComponent = iconOption.icon;
-                    return (
-                      <MenuItem key={iconOption.label} value={iconOption.icon.name}>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <IconComponent sx={{ mr: 1, color: iconOption.color }} />
-                          {iconOption.label}
-                        </Box>
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              </FormControl>
+                  Choisir
+                </Button>
+              </Box>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label={t('categoryManager.color')}
-                value={newCategory.color}
-                onChange={(e) => setNewCategory({ ...newCategory, color: e.target.value })}
-                variant="outlined"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Box sx={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: '50%',
-                        bgcolor: newCategory.color,
-                        border: '1px solid rgba(0, 0, 0, 0.2)'
-                      }} />
-                    </InputAdornment>
-                  )
-                }}
-              />
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TextField
+                  fullWidth
+                  label="Couleur"
+                  value={newCategory.color}
+                  variant="outlined"
+                  InputProps={{
+                    readOnly: true,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Box sx={{
+                          width: 20,
+                          height: 20,
+                          borderRadius: '50%',
+                          bgcolor: newCategory.color,
+                          border: '1px solid rgba(0, 0, 0, 0.2)'
+                        }} />
+                      </InputAdornment>
+                    )
+                  }}
+                />
+                <Button
+                  variant="outlined"
+                  onClick={() => setShowColorSelector(true)}
+                  sx={{ minWidth: 'auto', px: 2 }}
+                >
+                  Choisir
+                </Button>
+              </Box>
             </Grid>
             <Grid item xs={12}>
               <TextField
@@ -549,6 +605,76 @@ const CategoryManager = memo(({
             }}
           >
             {editingCategory ? t('common.save') : t('common.add')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Sélecteur d'icônes */}
+      <IconSelector
+        open={showIconSelector}
+        onClose={() => setShowIconSelector(false)}
+        onSelect={handleIconSelect}
+        currentIcon={newCategory.icon}
+      />
+
+      {/* Sélecteur de couleurs */}
+      <ColorSelector
+        open={showColorSelector}
+        onClose={() => setShowColorSelector(false)}
+        onSelect={handleColorSelect}
+        currentColor={newCategory.color}
+      />
+
+      {/* Dialogue de confirmation de suppression */}
+      <Dialog
+        open={showDeleteDialog}
+        onClose={cancelDelete}
+        PaperProps={{
+          sx: {
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 3,
+            boxShadow: '0 16px 64px rgba(0, 0, 0, 0.2)'
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: 'error.main' }}>
+          Confirmer la suppression
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>
+            Êtes-vous sûr de vouloir supprimer la catégorie "{categoryToDelete?.name}" ?
+          </DialogContentText>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={deleteWithData}
+                onChange={(e) => setDeleteWithData(e.target.checked)}
+                color="error"
+              />
+            }
+            label="Supprimer également toutes les transactions associées à cette catégorie"
+          />
+          <Alert severity="warning" sx={{ mt: 2 }}>
+            <strong>Attention :</strong> Cette action est irréversible !
+          </Alert>
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 1 }}>
+          <Button onClick={cancelDelete} color="inherit">
+            Annuler
+          </Button>
+          <Button 
+            onClick={confirmDelete} 
+            variant="contained"
+            color="error"
+            sx={{
+              background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)'
+              }
+            }}
+          >
+            Supprimer
           </Button>
         </DialogActions>
       </Dialog>

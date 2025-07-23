@@ -43,7 +43,7 @@ const QuickAdd = ({ open: externalOpen, onClose: externalOnClose }) => {
   
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(0); // 0 = dépense, 1 = revenu
-  const [category, setCategory] = useState(categories[0] || '');
+  const [category, setCategory] = useState(categories[0]?.name || '');
   const [incomeType, setIncomeType] = useState(availableIncomeTypes[0] || '');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
@@ -60,7 +60,7 @@ const QuickAdd = ({ open: externalOpen, onClose: externalOnClose }) => {
   // Réinitialiser les valeurs quand la popup s'ouvre
   useEffect(() => {
     if (currentOpen) {
-      setCategory(categories[0] || '');
+      setCategory(categories[0]?.name || '');
       setIncomeType(availableIncomeTypes[0] || '');
       setAmount('');
       setDescription('');
@@ -78,7 +78,7 @@ const QuickAdd = ({ open: externalOpen, onClose: externalOnClose }) => {
   // Gérer les changements de catégories sans affecter le montant
   useEffect(() => {
     if (currentOpen && categories.length > 0 && !category) {
-      setCategory(categories[0]);
+      setCategory(categories[0]?.name || '');
     }
   }, [categories, currentOpen, category]);
 
@@ -248,7 +248,7 @@ const QuickAdd = ({ open: externalOpen, onClose: externalOnClose }) => {
               >
                 {activeTab === 0 ? 
                   categories.map((cat) => (
-                    <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+                    <MenuItem key={cat.id} value={cat.name}>{cat.name}</MenuItem>
                   )) :
                   incomeTypes.map((type) => (
                     <MenuItem key={type} value={type}>{type}</MenuItem>
