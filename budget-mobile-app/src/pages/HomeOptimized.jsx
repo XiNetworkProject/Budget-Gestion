@@ -1024,6 +1024,25 @@ const HomeOptimized = () => {
 
           {/* Paiements récurrents à venir */}
           {console.log('=== RENDERING UPCOMING PAYMENTS ===', { upcomingPayments, isLoading, error })}
+          
+          {/* Test simple pour voir si la section se rend */}
+          <Box sx={{ p: 3, mb: 4, background: 'rgba(255,255,255,0.1)', borderRadius: 2 }}>
+            <Typography variant="h5" sx={{ color: 'white', mb: 2 }}>
+              TEST - Section Paiements Récurrents
+            </Typography>
+            <Typography sx={{ color: 'white' }}>
+              Nombre de paiements: {upcomingPayments.length}
+            </Typography>
+            <Typography sx={{ color: 'white' }}>
+              Loading: {isLoading ? 'Oui' : 'Non'}
+            </Typography>
+            <Typography sx={{ color: 'white' }}>
+              Error: {error ? 'Oui' : 'Non'}
+            </Typography>
+          </Box>
+          
+          {/* Composant original commenté pour test */}
+          {/*
           <UpcomingPayments
             payments={upcomingPayments}
             onAddPayment={handleAddRecurringPayment}
@@ -1033,6 +1052,7 @@ const HomeOptimized = () => {
             loading={isLoading}
             error={error}
           />
+          */}
 
           {/* Actions rapides améliorées */}
           <QuickActionsSection actions={quickActions} t={t} />
