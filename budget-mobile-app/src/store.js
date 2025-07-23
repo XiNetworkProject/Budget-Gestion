@@ -38,6 +38,7 @@ const defaultAppSettings = {
   theme: 'light',
   currency: 'EUR',
   language: 'fr',
+  autoLogin: true, // Connexion automatique activée par défaut
   notifications: {
     budgetAlerts: true,
     billReminders: true,
@@ -222,7 +223,8 @@ const useStore = create(
         isAuthenticated: false,
         isLoading: false,
         error: null,
-      serverConnected: true,
+        serverConnected: true,
+        autoLogin: true, // Connexion automatique
         
         // Données budgétaires
         months: defaultMonths,
@@ -1333,6 +1335,22 @@ const useStore = create(
       setLoading: (isLoading) => set({ isLoading }),
       setError: (error) => set({ error }),
       setToken: (token) => set({ token }),
+      
+      // Gestion de la connexion automatique
+      setAutoLogin: (enabled) => {
+        set({ autoLogin: enabled });
+        scheduleSave();
+      },
+      
+      // Vérifier et restaurer la session automatiquement
+      checkAutoLogin: async () => {
+        const state = get();
+        if (state.autoLogin && state.token && state.user) {
+          console.log('Connexion automatique détectée');
+          return true;
+        }
+        return false;
+      },
 
       // Gestion du profil utilisateur
       updateUserProfile: (updates) => {

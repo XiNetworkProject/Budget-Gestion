@@ -250,6 +250,15 @@ const Settings = () => {
     setSnack({ open: true, message: t('settings.updateDialogReloaded'), severity: 'success' });
   };
 
+  const handleLogout = () => {
+    // Déconnecter l'utilisateur
+    setUser(null);
+    setToken(null);
+    setSnack({ open: true, message: 'Déconnexion réussie', severity: 'success' });
+    // Rediriger vers la page de login
+    navigate('/login');
+  };
+
   return (
     <Box sx={{
       minHeight: '100vh',
@@ -757,6 +766,39 @@ const Settings = () => {
                 <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
                 <ListItem>
                   <ListItemText 
+                    primary="Connexion automatique" 
+                    secondary="Se connecter automatiquement à l'ouverture de l'application"
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Switch 
+                    checked={appSettings.autoLogin !== false} 
+                    onChange={e => updateAppSettings({ 
+                      autoLogin: e.target.checked 
+                    })}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': {
+                        color: '#4caf50',
+                        '&:hover': {
+                          backgroundColor: 'rgba(76, 175, 80, 0.08)'
+                        }
+                      },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        backgroundColor: '#4caf50'
+                      }
+                    }}
+                  />
+                </ListItem>
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                <ListItem>
+                  <ListItemText 
                     primary={t('settings.dataSharing')} 
                     secondary={t('settings.dataSharingDescription')}
                     sx={{
@@ -1071,6 +1113,51 @@ const Settings = () => {
                   >
                     {t('settings.import')}
                     <input type="file" hidden accept=".json" onChange={handleImport} />
+                  </Button>
+                </ListItem>
+              </List>
+            </Paper>
+
+            {/* Actions de compte glassmorphism */}
+            <Paper sx={{ 
+              mb: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <List>
+                <ListItem>
+                  <ListItemIcon>
+                    <Logout sx={{ color: 'rgba(255, 255, 255, 0.8)' }} />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Déconnexion" 
+                    secondary="Se déconnecter de l'application"
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <Button 
+                    variant="outlined" 
+                    size="small" 
+                    onClick={handleLogout}
+                    sx={{
+                      borderColor: 'rgba(255, 255, 255, 0.3)',
+                      color: 'white',
+                      '&:hover': {
+                        borderColor: 'rgba(255, 255, 255, 0.5)',
+                        background: 'rgba(255, 255, 255, 0.1)'
+                      }
+                    }}
+                  >
+                    Se déconnecter
                   </Button>
                 </ListItem>
               </List>
