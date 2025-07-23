@@ -207,10 +207,12 @@ const steps = [
       setLoading(true);
       // Marquer l'onboarding comme terminé
       setOnboardingCompleted(true);
-      // Simuler un délai de chargement
+      
+      // Attendre un peu pour que l'état soit mis à jour
       setTimeout(() => {
+        console.log('Onboarding: Navigation vers home après completion');
         navigate('/home', { replace: true });
-      }, 1000);
+      }, 1500);
     } else {
       setStep(s => s + 1);
     }

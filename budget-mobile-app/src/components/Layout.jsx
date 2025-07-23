@@ -20,6 +20,8 @@ const Layout = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { 
+    user,
+    isAuthenticated,
     tutorialCompleted, 
     onboardingCompleted,
     forceTutorial,
@@ -48,12 +50,34 @@ const Layout = () => {
   // Log des états initiaux
   useEffect(() => {
     console.log('Layout: États initiaux:', {
+      user: !!user,
+      isAuthenticated,
       tutorialCompleted,
       onboardingCompleted,
       forceTutorial,
       showUpdateDialog
     });
-  }, []);
+  }, [user, isAuthenticated, tutorialCompleted, onboardingCompleted, forceTutorial, showUpdateDialog]);
+
+  // Protection des routes - rediriger si non authentifié
+  useEffect(() => {
+    console.log('Layout: Vérification de l\'authentification:', { user: !!user, isAuthenticated });
+    
+    if (!user || !isAuthenticated) {
+      console.log('Layout: Utilisateur non authentifié, redirection vers login');
+      navigate('/login', { replace: true });
+      return;
+    }
+    
+    // Si l'utilisateur est authentifié mais que l'onboarding n'est pas terminé
+    if (isAuthenticated && !onboardingCompleted) {
+      console.log('Layout: Onboarding non terminé, redirection vers onboarding');
+      navigate('/onboarding', { replace: true });
+      return;
+    }
+    
+    console.log('Layout: Utilisateur authentifié et onboarding terminé');
+  }, [user, isAuthenticated, onboardingCompleted, navigate]);
 
   // Nettoyer les dates invalides et synchroniser les dépenses au chargement
   useEffect(() => {
