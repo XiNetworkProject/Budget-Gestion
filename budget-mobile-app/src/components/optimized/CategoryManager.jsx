@@ -1,451 +1,295 @@
-import React, { useState, memo, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   Box,
-  Typography,
-  Paper,
-  Grid,
-  IconButton,
-  TextField,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Button,
-  Chip,
-  Avatar,
-  Tooltip,
-  Alert,
-  Snackbar,
-  Fab,
-  Card,
-  CardContent,
-  CardActions,
-  Divider,
+  TextField,
   List,
   ListItem,
-  ListItemAvatar,
   ListItemText,
   ListItemSecondaryAction,
-  Menu,
-  MenuItem,
+  IconButton,
+  Chip,
+  Typography,
+  Alert,
+  AlertTitle,
+  Divider,
+  Grid,
+  Card,
+  CardContent,
+  Avatar,
+  Tooltip,
+  Fade,
+  Zoom,
   FormControl,
   InputLabel,
   Select,
+  MenuItem,
   InputAdornment
 } from '@mui/material';
 import {
   Add,
   Edit,
   Delete,
+  Category,
   Save,
   Cancel,
-  Category,
+  Warning,
+  CheckCircle,
   ColorLens,
   Palette,
-  CheckCircle,
-  Warning,
-  MoreVert,
-  TrendingDown,
   TrendingUp,
-  AttachMoney,
-  ShoppingCart,
+  TrendingDown,
+  Home,
+  LocalHospital,
   Restaurant,
   DirectionsCar,
-  Home,
+  ShoppingCart,
   School,
   SportsEsports,
-  LocalHospital,
+  AttachMoney,
   Work,
-  Business,
-  AccountBalance,
+  Flight,
+  Pets,
+  ChildCare,
+  Elderly,
+  FitnessCenter,
+  Spa,
+  Movie,
+  MusicNote,
+  Book,
   Computer,
-  Person,
-  MonetizationOn
+  Phone,
+  Wifi,
+  LocalGasStation,
+  LocalGroceryStore,
+  LocalPharmacy,
+  LocalLaundryService,
+  LocalTaxi,
+  LocalBus,
+  Train,
+  DirectionsBike,
+  DirectionsWalk
 } from '@mui/icons-material';
 
 // Icônes par défaut pour les catégories
 const DEFAULT_ICONS = {
-  expenses: [
-    { icon: ShoppingCart, label: 'Shopping', color: '#FF6B6B' },
-    { icon: Restaurant, label: 'Restaurant', color: '#4ECDC4' },
-    { icon: DirectionsCar, label: 'Transport', color: '#45B7D1' },
-    { icon: Home, label: 'Logement', color: '#96CEB4' },
-    { icon: School, label: 'Éducation', color: '#FFEAA7' },
-    { icon: SportsEsports, label: 'Loisirs', color: '#DDA0DD' },
-    { icon: LocalHospital, label: 'Santé', color: '#FF8A80' },
-    { icon: AttachMoney, label: 'Autres', color: '#90A4AE' }
-  ],
-  income: [
-    { icon: Work, label: 'Salaire', color: '#4CAF50' },
-    { icon: Business, label: 'Freelance', color: '#2196F3' },
-    { icon: AccountBalance, label: 'Investissements', color: '#FF9800' },
-    { icon: Computer, label: 'Technologie', color: '#9C27B0' },
-    { icon: Person, label: 'Services', color: '#607D8B' },
-    { icon: MonetizationOn, label: 'Autres', color: '#795548' }
-  ]
+  'Loyer': <Home />,
+  'Électricité': <TrendingUp />,
+  'Assurance': <AttachMoney />,
+  'Banque': <TrendingDown />,
+  'Nourriture': <Restaurant />,
+  'Loisirs': <SportsEsports />,
+  'Voiture': <DirectionsCar />,
+  'Santé': <LocalHospital />,
+  'Shopping': <ShoppingCart />,
+  'Éducation': <School />,
+  'Travail': <Work />,
+  'Voyage': <Flight />,
+  'Animaux': <Pets />,
+  'Enfants': <ChildCare />,
+  'Personnes âgées': <Elderly />,
+  'Sport': <FitnessCenter />,
+  'Bien-être': <Spa />,
+  'Cinéma': <Movie />,
+  'Musique': <MusicNote />,
+  'Livres': <Book />,
+  'Informatique': <Computer />,
+  'Téléphone': <Phone />,
+  'Internet': <Wifi />,
+  'Carburant': <LocalGasStation />,
+  'Épicerie': <LocalGroceryStore />,
+  'Pharmacie': <LocalPharmacy />,
+  'Blanchisserie': <LocalLaundryService />,
+  'Taxi': <LocalTaxi />,
+  'Bus': <LocalBus />,
+  'Train': <Train />,
+  'Vélo': <DirectionsBike />,
+  'Marche': <DirectionsWalk />
 };
 
-const CategoryManager = memo(({ 
-  type = 'expenses',
-  categories = [],
-  onAddCategory,
-  onUpdateCategory,
+// Couleurs par défaut
+const DEFAULT_COLORS = [
+  '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+  '#FF9F40', '#FF6384', '#C9CBCF', '#FF6B6B', '#4ECDC4',
+  '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8',
+  '#F7DC6F', '#BB8FCE', '#85C1E9', '#F8C471', '#82E0AA'
+];
+
+const CategoryManager = React.memo(({ 
+  categories = [], 
+  onAddCategory, 
+  onUpdateCategory, 
   onDeleteCategory,
-  onSelectCategory,
-  selectedCategory,
-  t
+  type = 'expenses', // 'expenses' ou 'income'
+  open = false,
+  onClose
 }) => {
-  const [openDialog, setOpenDialog] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null);
   const [newCategory, setNewCategory] = useState({
     name: '',
-    icon: 'category',
-    color: '#2196f3',
-    budget: 0
+    icon: 'Category',
+    color: DEFAULT_COLORS[0],
+    description: ''
   });
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedCategoryForMenu, setSelectedCategoryForMenu] = useState(null);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  const [mounted, setMounted] = useState(false);
+  
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
+  const [error, setError] = useState('');
 
-  // Éviter les erreurs de rendu avant le montage
-  useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
+  // Icônes disponibles
+  const availableIcons = useMemo(() => [
+    { name: 'Category', icon: <Category /> },
+    { name: 'Home', icon: <Home /> },
+    { name: 'LocalHospital', icon: <LocalHospital /> },
+    { name: 'Restaurant', icon: <Restaurant /> },
+    { name: 'DirectionsCar', icon: <DirectionsCar /> },
+    { name: 'ShoppingCart', icon: <ShoppingCart /> },
+    { name: 'School', icon: <School /> },
+    { name: 'SportsEsports', icon: <SportsEsports /> },
+    { name: 'AttachMoney', icon: <AttachMoney /> },
+    { name: 'Work', icon: <Work /> },
+    { name: 'Flight', icon: <Flight /> },
+    { name: 'Pets', icon: <Pets /> },
+    { name: 'ChildCare', icon: <ChildCare /> },
+    { name: 'Elderly', icon: <Elderly /> },
+    { name: 'FitnessCenter', icon: <FitnessCenter /> },
+    { name: 'Spa', icon: <Spa /> },
+    { name: 'Movie', icon: <Movie /> },
+    { name: 'MusicNote', icon: <MusicNote /> },
+    { name: 'Book', icon: <Book /> },
+    { name: 'Computer', icon: <Computer /> },
+    { name: 'Phone', icon: <Phone /> },
+    { name: 'Wifi', icon: <Wifi /> },
+    { name: 'LocalGasStation', icon: <LocalGasStation /> },
+    { name: 'LocalGroceryStore', icon: <LocalGroceryStore /> },
+    { name: 'LocalPharmacy', icon: <LocalPharmacy /> },
+    { name: 'LocalLaundryService', icon: <LocalLaundryService /> },
+    { name: 'LocalTaxi', icon: <LocalTaxi /> },
+    { name: 'LocalBus', icon: <LocalBus /> },
+    { name: 'Train', icon: <Train /> },
+    { name: 'DirectionsBike', icon: <DirectionsBike /> },
+    { name: 'DirectionsWalk', icon: <DirectionsWalk /> }
+  ], []);
+
+  // Fonction pour obtenir l'icône d'une catégorie
+  const getCategoryIcon = useCallback((categoryName) => {
+    const iconName = categoryName in DEFAULT_ICONS ? categoryName : 'Category';
+    return DEFAULT_ICONS[iconName] || <Category />;
   }, []);
 
-  // Convertir les catégories du store (chaînes) en objets avec les propriétés nécessaires
-  const processedCategories = useMemo(() => {
-    return categories.map((category, index) => {
-      // Si c'est déjà un objet, l'utiliser tel quel
-      if (typeof category === 'object' && category !== null) {
-        return category;
-      }
-      
-      // Sinon, créer un objet à partir de la chaîne
-      const colors = ['#FF6B6B', '#4CAF50', '#2196F3', '#FF9800', '#9C27B0', '#607D8B', '#795548', '#E91E63'];
-      const icons = ['category', 'home', 'restaurant', 'directions_car', 'shopping_cart', 'movie', 'sports_soccer', 'school'];
-      
-      return {
-        id: `category-${index}`,
-        name: category,
-        icon: icons[index % icons.length],
-        color: colors[index % colors.length],
-        budget: 0
-      };
-    });
+  // Fonction pour obtenir la couleur d'une catégorie
+  const getCategoryColor = useCallback((categoryName) => {
+    const index = categories.findIndex(cat => cat.name === categoryName);
+    return index >= 0 ? DEFAULT_COLORS[index % DEFAULT_COLORS.length] : DEFAULT_COLORS[0];
   }, [categories]);
 
-  const defaultIcons = DEFAULT_ICONS[type] || DEFAULT_ICONS.expenses;
-
-  const handleOpenDialog = (category = null) => {
-    if (category) {
-      setEditingCategory(category);
-      setNewCategory({
-        name: category.name,
-        icon: category.icon || 'Category',
-        color: category.color || '#4CAF50',
-        budget: category.budget || 0
-      });
-    } else {
-      setEditingCategory(null);
-      setNewCategory({
-        name: '',
-        icon: 'Category',
-        color: '#4CAF50',
-        budget: 0
-      });
-    }
-    setOpenDialog(true);
-  };
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setEditingCategory(null);
-    setNewCategory({
-      name: '',
-      icon: 'Category',
-      color: '#4CAF50',
-      budget: 0
-    });
-  };
-
-  const handleSave = () => {
+  // Gestion de l'ajout de catégorie
+  const handleAddCategory = useCallback(() => {
     if (!newCategory.name.trim()) {
-      setSnackbar({
-        open: true,
-        message: t('categoryManager.nameRequired'),
-        severity: 'error'
-      });
+      setError('Le nom de la catégorie est requis');
       return;
     }
 
-    if (editingCategory) {
-      onUpdateCategory(editingCategory.id, newCategory);
-      setSnackbar({
-        open: true,
-        message: t('categoryManager.updated'),
-        severity: 'success'
-      });
-    } else {
-      onAddCategory(newCategory);
-      setSnackbar({
-        open: true,
-        message: t('categoryManager.added'),
-        severity: 'success'
-      });
+    if (categories.some(cat => cat.name.toLowerCase() === newCategory.name.toLowerCase())) {
+      setError('Une catégorie avec ce nom existe déjà');
+      return;
     }
-    handleCloseDialog();
-  };
 
-  const handleDelete = (category) => {
-    onDeleteCategory(category.id);
-    setSnackbar({
-      open: true,
-      message: t('categoryManager.deleted'),
-      severity: 'success'
+    onAddCategory({
+      name: newCategory.name.trim(),
+      icon: newCategory.icon,
+      color: newCategory.color,
+      description: newCategory.description.trim()
     });
-    setAnchorEl(null);
-  };
 
-  const handleMenuOpen = (event, category) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedCategoryForMenu(category);
-  };
+    setNewCategory({
+      name: '',
+      icon: 'Category',
+      color: DEFAULT_COLORS[0],
+      description: ''
+    });
+    setShowAddDialog(false);
+    setError('');
+  }, [newCategory, categories, onAddCategory]);
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedCategoryForMenu(null);
-  };
+  // Gestion de la modification de catégorie
+  const handleUpdateCategory = useCallback(() => {
+    if (!editingCategory.name.trim()) {
+      setError('Le nom de la catégorie est requis');
+      return;
+    }
 
-  const getIconComponent = (iconName) => {
-    const iconMap = {
-      Category, TrendingDown, TrendingUp, AttachMoney, ShoppingCart,
-      Restaurant, DirectionsCar, Home, School, SportsEsports,
-      LocalHospital, Work, Business, AccountBalance, Computer,
-      Person, MonetizationOn
-    };
-    return iconMap[iconName] || Category;
-  };
+    const existingCategory = categories.find(cat => 
+      cat.name.toLowerCase() === editingCategory.name.toLowerCase() && 
+      cat.name !== editingCategory.originalName
+    );
+
+    if (existingCategory) {
+      setError('Une catégorie avec ce nom existe déjà');
+      return;
+    }
+
+    onUpdateCategory(editingCategory.originalName, {
+      name: editingCategory.name.trim(),
+      icon: editingCategory.icon,
+      color: editingCategory.color,
+      description: editingCategory.description.trim()
+    });
+
+    setEditingCategory(null);
+    setShowEditDialog(false);
+    setError('');
+  }, [editingCategory, categories, onUpdateCategory]);
+
+  // Gestion de la suppression de catégorie
+  const handleDeleteCategory = useCallback(() => {
+    if (categoryToDelete) {
+      onDeleteCategory(categoryToDelete);
+      setCategoryToDelete(null);
+      setShowDeleteDialog(false);
+    }
+  }, [categoryToDelete, onDeleteCategory]);
+
+  // Ouvrir le dialogue d'édition
+  const openEditDialog = useCallback((category) => {
+    setEditingCategory({
+      ...category,
+      originalName: category.name
+    });
+    setShowEditDialog(true);
+    setError('');
+  }, []);
+
+  // Ouvrir le dialogue de suppression
+  const openDeleteDialog = useCallback((category) => {
+    setCategoryToDelete(category);
+    setShowDeleteDialog(true);
+  }, []);
+
+  // Réinitialiser le formulaire d'ajout
+  const resetAddForm = useCallback(() => {
+    setNewCategory({
+      name: '',
+      icon: 'Category',
+      color: DEFAULT_COLORS[0],
+      description: ''
+    });
+    setError('');
+  }, []);
 
   return (
-    <Box>
-      {/* Header avec statistiques */}
-      <Paper sx={{
-        p: 3,
-        mb: 3,
-        background: 'rgba(255, 255, 255, 0.1)',
-        backdropFilter: 'blur(20px)',
-        borderRadius: 3,
-        border: '1px solid rgba(255, 255, 255, 0.2)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-      }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: 'white' }}>
-            {type === 'expenses' ? t('categoryManager.expenseCategories') : t('categoryManager.incomeCategories')}
-          </Typography>
-          <Chip 
-            label={`${categories.length} ${t('categoryManager.categories')}`}
-            color="primary"
-            variant="outlined"
-            sx={{ color: 'white', borderColor: 'rgba(255, 255, 255, 0.3)' }}
-          />
-        </Box>
-        
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={4}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
-                {categories.length}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                {t('categoryManager.totalCategories')}
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
-                {categories.filter(c => c.budget > 0).length}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                {t('categoryManager.withBudget')}
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
-                {categories.filter(c => !c.budget || c.budget === 0).length}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                {t('categoryManager.withoutBudget')}
-              </Typography>
-            </Box>
-          </Grid>
-        </Grid>
-      </Paper>
-
-      {/* Liste des catégories */}
-      <Grid container spacing={2}>
-        {processedCategories.map((category, index) => {
-          const IconComponent = getIconComponent(category.icon);
-          const isSelected = selectedCategory?.id === category.id;
-          
-          return (
-            <Grid item xs={12} sm={6} md={4} key={category.id}>
-              <Card sx={{
-                background: isSelected 
-                  ? 'rgba(255, 255, 255, 0.2)' 
-                  : 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(20px)',
-                borderRadius: 3,
-                border: isSelected 
-                  ? `2px solid ${category.color}` 
-                  : '1px solid rgba(255, 255, 255, 0.2)',
-                boxShadow: isSelected 
-                  ? `0 8px 32px rgba(0, 0, 0, 0.2)` 
-                  : '0 4px 16px rgba(0, 0, 0, 0.1)',
-                transition: 'all 0.3s ease',
-                cursor: 'pointer',
-                animation: mounted ? `fadeInUp 0.6s ease ${index * 0.1}s both` : 'none',
-                '&:hover': {
-                  transform: 'translateY(-4px)',
-                  boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)',
-                  background: 'rgba(255, 255, 255, 0.15)'
-                },
-                '@keyframes fadeInUp': {
-                  '0%': {
-                    opacity: 0,
-                    transform: 'translateY(20px)'
-                  },
-                  '100%': {
-                    opacity: 1,
-                    transform: 'translateY(0)'
-                  }
-                },
-                '@keyframes fadeIn': {
-                  '0%': {
-                    opacity: 0
-                  },
-                  '100%': {
-                    opacity: 1
-                  }
-                }
-              }} onClick={() => onSelectCategory(category)}>
-                <CardContent sx={{ p: 2 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <Avatar sx={{ 
-                      bgcolor: category.color, 
-                      mr: 2,
-                      width: 40,
-                      height: 40
-                    }}>
-                      <IconComponent />
-                    </Avatar>
-                    <Box sx={{ flexGrow: 1 }}>
-                      <Typography variant="h6" sx={{ 
-                        fontWeight: 600, 
-                        color: 'white',
-                        mb: 0.5
-                      }}>
-                        {category.name}
-                      </Typography>
-                      {category.budget > 0 && (
-                        <Typography variant="body2" sx={{ 
-                          color: 'rgba(255, 255, 255, 0.7)',
-                          fontWeight: 500
-                        }}>
-                          Budget: {category.budget}€
-                        </Typography>
-                      )}
-                    </Box>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleMenuOpen(e, category);
-                      }}
-                      sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
-                    >
-                      <MoreVert />
-                    </IconButton>
-                  </Box>
-                  
-                  {isSelected && (
-                    <Box sx={{ 
-                      mt: 1, 
-                      p: 1, 
-                      bgcolor: 'rgba(255, 255, 255, 0.1)', 
-                      borderRadius: 1,
-                      border: `1px solid ${category.color}`,
-                      animation: 'fadeIn 0.3s ease'
-                    }}>
-                      <Typography variant="caption" sx={{ color: 'white' }}>
-                        ✓ {t('categoryManager.selected')}
-                      </Typography>
-                    </Box>
-                  )}
-                </CardContent>
-              </Card>
-            </Grid>
-          );
-        })}
-      </Grid>
-
-      {/* Bouton d'ajout flottant */}
-      <Fab
-        color="primary"
-        aria-label="add category"
-        onClick={() => handleOpenDialog()}
-        sx={{
-          position: 'fixed',
-          bottom: 80,
-          right: 16,
-          background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
-          boxShadow: '0 8px 25px rgba(76, 175, 80, 0.4)',
-          '&:hover': {
-            background: 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)',
-            transform: 'scale(1.1)',
-            boxShadow: '0 12px 35px rgba(76, 175, 80, 0.6)',
-          }
-        }}
-      >
-        <Add />
-      </Fab>
-
-      {/* Menu contextuel */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        PaperProps={{
-          sx: {
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: 2,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-          }
-        }}
-      >
-        <MenuItem onClick={() => {
-          handleOpenDialog(selectedCategoryForMenu);
-          handleMenuClose();
-        }}>
-          <Edit sx={{ mr: 1 }} />
-          {t('categoryManager.edit')}
-        </MenuItem>
-        <MenuItem onClick={() => handleDelete(selectedCategoryForMenu)} sx={{ color: 'error.main' }}>
-          <Delete sx={{ mr: 1 }} />
-          {t('categoryManager.delete')}
-        </MenuItem>
-      </Menu>
-
-      {/* Dialog d'ajout/édition */}
+    <>
+      {/* Dialog principal */}
       <Dialog 
-        open={openDialog} 
-        onClose={handleCloseDialog}
-        maxWidth="sm"
+        open={open} 
+        onClose={onClose}
+        maxWidth="md"
         fullWidth
         PaperProps={{
           sx: {
@@ -458,116 +302,433 @@ const CategoryManager = memo(({
       >
         <DialogTitle sx={{ 
           fontWeight: 700,
-          borderBottom: '1px solid rgba(0, 0, 0, 0.1)'
+          borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 2
         }}>
-          {editingCategory ? t('categoryManager.editCategory') : t('categoryManager.addCategory')}
+          <Category sx={{ color: 'primary.main' }} />
+          Gestion des Catégories - {type === 'expenses' ? 'Dépenses' : 'Revenus'}
         </DialogTitle>
+        
         <DialogContent sx={{ pt: 2 }}>
           <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label={t('categoryManager.name')}
-                value={newCategory.name}
-                onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
-                variant="outlined"
-                required
-              />
+            {/* Liste des catégories existantes */}
+            <Grid item xs={12} md={8}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+                Catégories existantes ({categories.length})
+              </Typography>
+              
+              {categories.length === 0 ? (
+                <Card sx={{ 
+                  p: 3, 
+                  textAlign: 'center',
+                  background: 'rgba(0, 0, 0, 0.02)',
+                  border: '2px dashed rgba(0, 0, 0, 0.1)'
+                }}>
+                  <Category sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
+                  <Typography variant="h6" color="text.secondary" gutterBottom>
+                    Aucune catégorie configurée
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Créez votre première catégorie pour commencer à organiser vos {type === 'expenses' ? 'dépenses' : 'revenus'}
+                  </Typography>
+                </Card>
+              ) : (
+                <List sx={{ p: 0 }}>
+                  {categories.map((category, index) => (
+                    <Zoom in={true} style={{ transitionDelay: `${index * 100}ms` }} key={category.name}>
+                      <Card sx={{ 
+                        mb: 2,
+                        background: 'rgba(255, 255, 255, 0.8)',
+                        border: '1px solid rgba(0, 0, 0, 0.1)',
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.15)',
+                        }
+                      }}>
+                        <CardContent sx={{ p: 2 }}>
+                          <Box display="flex" alignItems="center" justifyContent="space-between">
+                            <Box display="flex" alignItems="center" gap={2}>
+                              <Avatar sx={{ 
+                                bgcolor: category.color || getCategoryColor(category.name),
+                                width: 40,
+                                height: 40
+                              }}>
+                                {getCategoryIcon(category.name)}
+                              </Avatar>
+                              <Box>
+                                <Typography variant="subtitle1" fontWeight={600}>
+                                  {category.name}
+                                </Typography>
+                                {category.description && (
+                                  <Typography variant="body2" color="text.secondary">
+                                    {category.description}
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                            
+                            <Box display="flex" gap={1}>
+                              <Tooltip title="Modifier">
+                                <IconButton 
+                                  size="small"
+                                  onClick={() => openEditDialog(category)}
+                                  sx={{ color: 'primary.main' }}
+                                >
+                                  <Edit />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Supprimer">
+                                <IconButton 
+                                  size="small"
+                                  onClick={() => openDeleteDialog(category)}
+                                  sx={{ color: 'error.main' }}
+                                >
+                                  <Delete />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Zoom>
+                  ))}
+                </List>
+              )}
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>{t('categoryManager.icon')}</InputLabel>
-                <Select
-                  value={newCategory.icon}
-                  onChange={(e) => setNewCategory({ ...newCategory, icon: e.target.value })}
-                  label={t('categoryManager.icon')}
+
+            {/* Actions rapides */}
+            <Grid item xs={12} md={4}>
+              <Card sx={{ 
+                p: 3,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                height: 'fit-content'
+              }}>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 700 }}>
+                  Actions rapides
+                </Typography>
+                
+                <Button
+                  variant="contained"
+                  fullWidth
+                  startIcon={<Add />}
+                  onClick={() => setShowAddDialog(true)}
+                  sx={{ 
+                    mb: 2,
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(10px)',
+                    '&:hover': {
+                      background: 'rgba(255, 255, 255, 0.3)',
+                    }
+                  }}
                 >
-                  {defaultIcons.map((iconOption) => {
-                    const IconComponent = iconOption.icon;
-                    return (
-                      <MenuItem key={iconOption.label} value={iconOption.icon.name}>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <IconComponent sx={{ mr: 1, color: iconOption.color }} />
-                          {iconOption.label}
-                        </Box>
-                      </MenuItem>
-                    );
-                  })}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label={t('categoryManager.color')}
-                value={newCategory.color}
-                onChange={(e) => setNewCategory({ ...newCategory, color: e.target.value })}
-                variant="outlined"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Box sx={{
-                        width: 20,
-                        height: 20,
-                        borderRadius: '50%',
-                        bgcolor: newCategory.color,
-                        border: '1px solid rgba(0, 0, 0, 0.2)'
-                      }} />
-                    </InputAdornment>
-                  )
-                }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label={t('categoryManager.budget')}
-                type="number"
-                value={newCategory.budget}
-                onChange={(e) => setNewCategory({ ...newCategory, budget: parseFloat(e.target.value) || 0 })}
-                variant="outlined"
-                InputProps={{
-                  startAdornment: <InputAdornment position="start">€</InputAdornment>
-                }}
-                helperText={t('categoryManager.budgetHelper')}
-              />
+                  Nouvelle catégorie
+                </Button>
+
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Gérez vos catégories pour mieux organiser vos {type === 'expenses' ? 'dépenses' : 'revenus'} et obtenir des analyses plus précises.
+                </Typography>
+              </Card>
             </Grid>
           </Grid>
         </DialogContent>
+        
         <DialogActions sx={{ p: 3, pt: 1 }}>
-          <Button onClick={handleCloseDialog} color="inherit">
-            {t('common.cancel')}
-          </Button>
-          <Button 
-            onClick={handleSave} 
-            variant="contained"
-            sx={{
-              background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)'
-              }
-            }}
-          >
-            {editingCategory ? t('common.save') : t('common.add')}
+          <Button onClick={onClose} variant="outlined">
+            Fermer
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={3000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      {/* Dialog d'ajout de catégorie */}
+      <Dialog 
+        open={showAddDialog} 
+        onClose={() => {
+          setShowAddDialog(false);
+          resetAddForm();
+        }}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 3
+          }
+        }}
       >
-        <Alert 
-          onClose={() => setSnackbar({ ...snackbar, open: false })} 
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+        <DialogTitle sx={{ fontWeight: 700 }}>
+          Nouvelle catégorie
+        </DialogTitle>
+        
+        <DialogContent>
+          <Box sx={{ pt: 1 }}>
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
+            
+            <TextField
+              fullWidth
+              label="Nom de la catégorie"
+              value={newCategory.name}
+              onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
+              sx={{ mb: 2 }}
+              placeholder="Ex: Loisirs, Transport, Alimentation..."
+              autoFocus
+            />
+            
+            <TextField
+              fullWidth
+              label="Description (optionnel)"
+              value={newCategory.description}
+              onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
+              sx={{ mb: 2 }}
+              placeholder="Description de la catégorie..."
+              multiline
+              rows={2}
+            />
+            
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Icône</InputLabel>
+                  <Select
+                    value={newCategory.icon}
+                    onChange={(e) => setNewCategory({ ...newCategory, icon: e.target.value })}
+                    label="Icône"
+                  >
+                    {availableIcons.map((iconOption) => (
+                      <MenuItem key={iconOption.name} value={iconOption.name}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {iconOption.icon}
+                          {iconOption.name}
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              
+              <Grid item xs={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Couleur</InputLabel>
+                  <Select
+                    value={newCategory.color}
+                    onChange={(e) => setNewCategory({ ...newCategory, color: e.target.value })}
+                    label="Couleur"
+                  >
+                    {DEFAULT_COLORS.map((color) => (
+                      <MenuItem key={color} value={color}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box sx={{
+                            width: 20,
+                            height: 20,
+                            borderRadius: '50%',
+                            bgcolor: color,
+                            border: '1px solid rgba(0,0,0,0.1)'
+                          }} />
+                          {color}
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+        
+        <DialogActions>
+          <Button 
+            onClick={() => {
+              setShowAddDialog(false);
+              resetAddForm();
+            }}
+          >
+            Annuler
+          </Button>
+          <Button 
+            onClick={handleAddCategory} 
+            variant="contained"
+            disabled={!newCategory.name.trim()}
+          >
+            Créer
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Dialog d'édition de catégorie */}
+      <Dialog 
+        open={showEditDialog} 
+        onClose={() => {
+          setShowEditDialog(false);
+          setEditingCategory(null);
+          setError('');
+        }}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 3
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700 }}>
+          Modifier la catégorie
+        </DialogTitle>
+        
+        <DialogContent>
+          <Box sx={{ pt: 1 }}>
+            {error && (
+              <Alert severity="error" sx={{ mb: 2 }}>
+                {error}
+              </Alert>
+            )}
+            
+            <TextField
+              fullWidth
+              label="Nom de la catégorie"
+              value={editingCategory?.name || ''}
+              onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
+              sx={{ mb: 2 }}
+            />
+            
+            <TextField
+              fullWidth
+              label="Description (optionnel)"
+              value={editingCategory?.description || ''}
+              onChange={(e) => setEditingCategory({ ...editingCategory, description: e.target.value })}
+              sx={{ mb: 2 }}
+              multiline
+              rows={2}
+            />
+            
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Icône</InputLabel>
+                  <Select
+                    value={editingCategory?.icon || 'Category'}
+                    onChange={(e) => setEditingCategory({ ...editingCategory, icon: e.target.value })}
+                    label="Icône"
+                  >
+                    {availableIcons.map((iconOption) => (
+                      <MenuItem key={iconOption.name} value={iconOption.name}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {iconOption.icon}
+                          {iconOption.name}
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              
+              <Grid item xs={6}>
+                <FormControl fullWidth>
+                  <InputLabel>Couleur</InputLabel>
+                  <Select
+                    value={editingCategory?.color || DEFAULT_COLORS[0]}
+                    onChange={(e) => setEditingCategory({ ...editingCategory, color: e.target.value })}
+                    label="Couleur"
+                  >
+                    {DEFAULT_COLORS.map((color) => (
+                      <MenuItem key={color} value={color}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Box sx={{
+                            width: 20,
+                            height: 20,
+                            borderRadius: '50%',
+                            bgcolor: color,
+                            border: '1px solid rgba(0,0,0,0.1)'
+                          }} />
+                          {color}
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+        
+        <DialogActions>
+          <Button 
+            onClick={() => {
+              setShowEditDialog(false);
+              setEditingCategory(null);
+              setError('');
+            }}
+          >
+            Annuler
+          </Button>
+          <Button 
+            onClick={handleUpdateCategory} 
+            variant="contained"
+            disabled={!editingCategory?.name?.trim()}
+          >
+            Sauvegarder
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Dialog de confirmation de suppression */}
+      <Dialog 
+        open={showDeleteDialog} 
+        onClose={() => setShowDeleteDialog(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 3
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: 'error.main' }}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Warning />
+            Confirmer la suppression
+          </Box>
+        </DialogTitle>
+        
+        <DialogContent>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            <AlertTitle>Attention !</AlertTitle>
+            Êtes-vous sûr de vouloir supprimer la catégorie <strong>"{categoryToDelete?.name}"</strong> ?
+          </Alert>
+          
+          <Typography variant="body2" color="text.secondary">
+            Cette action est irréversible. Toutes les {type === 'expenses' ? 'dépenses' : 'revenus'} associées à cette catégorie devront être reclassées.
+          </Typography>
+        </DialogContent>
+        
+        <DialogActions>
+          <Button 
+            onClick={() => setShowDeleteDialog(false)}
+            variant="outlined"
+          >
+            Annuler
+          </Button>
+          <Button 
+            onClick={handleDeleteCategory} 
+            variant="contained"
+            color="error"
+          >
+            Supprimer définitivement
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 });
 
