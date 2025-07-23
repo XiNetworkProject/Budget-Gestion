@@ -14,364 +14,58 @@ import {
   Chip
 } from '@mui/material';
 import {
-  Add,
-  Edit,
-  Delete,
-  Save,
-  Cancel,
+  // Icônes de base
   Category,
-  ColorLens,
-  Palette,
-  CheckCircle,
-  Warning,
-  MoreVert,
-  TrendingDown,
-  TrendingUp,
   AttachMoney,
   ShoppingCart,
   Restaurant,
   DirectionsCar,
   Home,
-  School,
-  SportsEsports,
-  LocalHospital,
   Work,
-  Business,
-  AccountBalance,
-  Computer,
-  Person,
-  MonetizationOn,
+  School,
+  LocalHospital,
+  SportsEsports,
+  
+  // Icônes de services
   LocalGroceryStore,
   LocalDining,
   LocalGasStation,
   LocalPharmacy,
-  LocalLibrary,
-  LocalGym,
-  LocalBar,
+  FitnessCenter,
   LocalCafe,
-  LocalPizza,
-  LocalLaundryService,
-  LocalTaxi,
-  DirectionsBus,
-  Train,
-  Flight,
-  DirectionsBike,
-  LocalParking,
-  AccountBalanceWallet,
-  LocalPostOffice,
-  LocalPrintshop,
-  LocalFlorist,
-  LocalConvenienceStore,
-  LocalMall,
+  LocalBar,
   LocalMovies,
-  LocalTheater,
   MusicNote,
-  LocalArtGallery,
-  Museum,
-  LocalZoo,
   Park,
-  BeachAccess,
-  Pool,
-  LocalFitnessCenter,
-  LocalSpa,
-  LocalBeautySalon,
-  LocalBarberShop,
-  LocalDryCleaning,
-  LocalCarWash,
-  Build,
-  Hardware,
-  LocalPlumber,
-  LocalElectrician,
-  LocalCarpenter,
-  LocalPaint,
-  CleaningServices,
-  Security,
-  LocalPolice,
-  LocalFireDepartment,
-  LocalClinic,
-  LocalDentist,
-  LocalOptician,
-  LocalVet,
-  LocalPetStore,
-  LocalGardenCenter,
-  LocalNursery,
-  LocalFarm,
-  LocalMarket,
-  LocalBakery,
-  LocalButcher,
-  LocalFishMarket,
-  LocalWineBar,
-  LocalBrewery,
-  LocalDistillery,
-  LocalTobacco,
-  LocalLiquorStore,
-  LocalCarRental,
-  LocalBikeRental,
-  LocalScooterRental,
-  LocalBoatRental,
-  LocalHelicopter,
-  LocalPlane,
-  DirectionsSubway,
-  LocalSki,
-  LocalSnowboarding,
-  LocalSurfing,
-  LocalSkateboarding,
-  LocalRollerSkating,
-  LocalIceSkating,
-  LocalBowling,
-  LocalGolf,
-  LocalTennis,
-  LocalBasketball,
-  LocalSoccer,
-  LocalFootball,
-  LocalBaseball,
-  LocalHockey,
-  LocalVolleyball,
-  LocalBadminton,
-  LocalTableTennis,
-  LocalSwimming,
-  LocalDiving,
-  LocalWaterPolo,
-  LocalRowing,
-  LocalCanoe,
-  LocalKayak,
-  LocalRafting,
-  LocalFishing,
-  LocalHunting,
-  LocalCamping,
-  LocalHiking,
-  LocalClimbing,
-  LocalMountainBiking,
-  LocalRoadBiking,
-  LocalCycling,
-  LocalRunning,
-  LocalWalking,
-  LocalJogging,
-  LocalYoga,
-  LocalPilates,
-  LocalMeditation,
-  LocalTaiChi,
-  LocalKarate,
-  LocalJudo,
-  LocalBoxing,
-  LocalWrestling,
-  LocalMMA,
-  LocalFencing,
-  LocalArchery,
-  LocalShooting,
-  LocalPaintball,
-  LocalLaserTag,
-  LocalEscapeRoom,
-  LocalArcade,
-  LocalCasino,
-  LocalLottery,
-  LocalBingo,
-  LocalPoker,
-  LocalChess,
-  LocalCheckers,
-  LocalBackgammon,
-  LocalMahjong,
-  LocalScrabble,
-  LocalMonopoly,
-  LocalRisk,
-  LocalSettlers,
-  LocalCatan,
-  LocalTicketToRide,
-  LocalPandemic,
-  LocalCodenames,
-  LocalDixit,
-  LocalMysterium,
-  LocalBetrayal,
-  LocalDeadOfWinter,
-  LocalArkhamHorror,
-  LocalEldritchHorror,
-  LocalMansionsOfMadness,
-  LocalTerraformingMars,
-  LocalWingspan,
-  LocalScythe,
-  LocalGloomhaven,
-  LocalSpiritIsland,
-  LocalRoot,
-  LocalVast,
-  LocalMechsVsMinions,
-  LocalRisingSun,
-  LocalBloodRage,
-  LocalAnkh,
-  LocalGodfather,
-  LocalCyclades,
-  LocalKemet,
-  LocalInis,
-  LocalIwari,
-  LocalYamatai,
-  LocalFiveTribes,
-  LocalIstanbul,
-  LocalMarcoPolo,
-  LocalVoyagesOfMarcoPolo,
-  LocalOrleans,
-  LocalAlchemists,
-  LocalDungeonPetz,
-  LocalDungeonLords,
-  LocalLastWill,
-  LocalProdigalsClub,
-  LocalAdrenaline,
-  LocalSpaceAlert,
-  LocalGalaxyTrucker,
-  LocalDungeonQuest,
-  LocalHeroQuest,
-  LocalDescent,
-  LocalImperialAssault,
-  LocalElderSign,
-  LocalCthulhuWars,
-  LocalCthulhuDeathMayDie,
-  LocalMythosTales,
-  LocalCallOfCthulhu,
-  LocalTrailOfCthulhu,
-  LocalDeltaGreen,
-  LocalUnknownArmies,
-  LocalOverTheEdge,
-  LocalParanoia,
-  LocalShadowrun,
-  LocalCyberpunk,
-  LocalVampire,
-  LocalWerewolf,
-  LocalMage,
-  LocalChangeling,
-  LocalWraith,
-  LocalMummy,
-  LocalDemon,
-  LocalBeast,
-  LocalDeviant,
-  LocalPromethean,
-  LocalGeist,
-  LocalHunter,
-  LocalMortal,
-  LocalOrpheus,
-  LocalScion,
-  LocalExalted,
-  LocalTrinity,
-  LocalAberrant,
-  LocalAdventure,
-  LocalAeon,
-  LocalTrinityContinuum,
-  LocalScionOrigin,
-  LocalScionHero,
-  LocalScionDemigod,
-  LocalScionGod,
-  LocalExaltedEssence,
-  LocalExaltedThirdEdition,
-  LocalExaltedLunars,
-  LocalExaltedSidereals,
-  LocalExaltedAbyssals,
-  LocalExaltedInfernals,
-  LocalExaltedAlchemicals,
-  LocalExaltedDragonBlooded,
-  LocalExaltedGetimians,
-  LocalExaltedLiminals,
-  LocalExaltedDreamSouled,
-  LocalExaltedHeartEaters,
-  LocalExaltedUmbrals
+  MoreHoriz
 } from '@mui/icons-material';
 
-// Icônes organisées par catégories (utilisant seulement les icônes existantes)
-const ICON_CATEGORIES = {
-  'Général': [
-    { icon: Category, label: 'Catégorie' },
-    { icon: TrendingDown, label: 'Dépense' },
-    { icon: TrendingUp, label: 'Revenu' },
-    { icon: AttachMoney, label: 'Argent' },
-    { icon: MonetizationOn, label: 'Monétisation' }
-  ],
-  'Transport': [
-    { icon: DirectionsCar, label: 'Voiture' },
-    { icon: LocalTaxi, label: 'Taxi' },
-    { icon: DirectionsBus, label: 'Bus' },
-    { icon: Train, label: 'Train' },
-    { icon: DirectionsSubway, label: 'Métro' },
-    { icon: Flight, label: 'Avion' },
-    { icon: LocalShip, label: 'Bateau' },
-    { icon: DirectionsBike, label: 'Vélo' },
-    { icon: LocalScooterRental, label: 'Scooter' }
-  ],
-  'Alimentation': [
-    { icon: Restaurant, label: 'Restaurant' },
-    { icon: LocalDining, label: 'Dîner' },
-    { icon: LocalCafe, label: 'Café' },
-    { icon: LocalPizza, label: 'Pizza' },
-    { icon: LocalBar, label: 'Bar' },
-    { icon: LocalWineBar, label: 'Vin' },
-    { icon: LocalBrewery, label: 'Bière' },
-    { icon: LocalBakery, label: 'Boulangerie' },
-    { icon: LocalButcher, label: 'Boucherie' },
-    { icon: LocalFishMarket, label: 'Poissonnerie' }
-  ],
-  'Shopping': [
-    { icon: ShoppingCart, label: 'Shopping' },
-    { icon: LocalGroceryStore, label: 'Épicerie' },
-    { icon: LocalMall, label: 'Centre commercial' },
-    { icon: LocalConvenienceStore, label: 'Convenience' },
-    { icon: LocalMarket, label: 'Marché' },
-    { icon: LocalGardenCenter, label: 'Jardinage' },
-    { icon: LocalPetStore, label: 'Animalerie' }
-  ],
-  'Logement': [
-    { icon: Home, label: 'Maison' },
-    { icon: LocalParking, label: 'Parking' },
-    { icon: Build, label: 'Réparation' },
-    { icon: LocalPlumber, label: 'Plomberie' },
-    { icon: LocalElectrician, label: 'Électricité' },
-    { icon: LocalCarpenter, label: 'Menuiserie' },
-    { icon: LocalPaint, label: 'Peinture' }
-  ],
-  'Santé': [
-    { icon: LocalHospital, label: 'Hôpital' },
-    { icon: LocalClinic, label: 'Clinique' },
-    { icon: LocalDentist, label: 'Dentiste' },
-    { icon: LocalPharmacy, label: 'Pharmacie' },
-    { icon: LocalOptician, label: 'Opticien' },
-    { icon: LocalVet, label: 'Vétérinaire' },
-    { icon: LocalSpa, label: 'Spa' },
-    { icon: LocalBeautySalon, label: 'Beauté' },
-    { icon: LocalBarberShop, label: 'Coiffeur' }
-  ],
-  'Loisirs': [
-    { icon: SportsEsports, label: 'Jeux vidéo' },
-    { icon: LocalMovies, label: 'Cinéma' },
-    { icon: LocalTheater, label: 'Théâtre' },
-    { icon: MusicNote, label: 'Musique' },
-    { icon: LocalArtGallery, label: 'Art' },
-    { icon: Museum, label: 'Musée' },
-    { icon: LocalZoo, label: 'Zoo' },
-    { icon: Park, label: 'Parc' },
-    { icon: BeachAccess, label: 'Plage' },
-    { icon: Pool, label: 'Piscine' },
-    { icon: LocalGym, label: 'Gym' },
-    { icon: LocalFitnessCenter, label: 'Fitness' }
-  ],
-  'Éducation': [
-    { icon: School, label: 'École' },
-    { icon: LocalLibrary, label: 'Bibliothèque' },
-    { icon: Work, label: 'Travail' },
-    { icon: Business, label: 'Business' },
-    { icon: Computer, label: 'Informatique' }
-  ],
-  'Finance': [
-    { icon: AccountBalance, label: 'Banque' },
-    { icon: AccountBalanceWallet, label: 'Portefeuille' },
-    { icon: LocalPostOffice, label: 'Poste' },
-    { icon: LocalPrintshop, label: 'Impression' }
-  ],
-  'Services': [
-    { icon: Person, label: 'Personne' },
-    { icon: LocalLaundryService, label: 'Blanchisserie' },
-    { icon: LocalCarWash, label: 'Lavage auto' },
-    { icon: LocalDryCleaning, label: 'Nettoyage à sec' },
-    { icon: CleaningServices, label: 'Ménage' },
-    { icon: Security, label: 'Sécurité' }
-  ]
-};
+// Liste des icônes disponibles avec leurs noms d'affichage
+const availableIcons = [
+  { name: 'Category', label: 'Catégorie', icon: Category },
+  { name: 'AttachMoney', label: 'Argent', icon: AttachMoney },
+  { name: 'ShoppingCart', label: 'Shopping', icon: ShoppingCart },
+  { name: 'Restaurant', label: 'Restaurant', icon: Restaurant },
+  { name: 'DirectionsCar', label: 'Voiture', icon: DirectionsCar },
+  { name: 'Home', label: 'Maison', icon: Home },
+  { name: 'Work', label: 'Travail', icon: Work },
+  { name: 'School', label: 'École', icon: School },
+  { name: 'LocalHospital', label: 'Santé', icon: LocalHospital },
+  { name: 'SportsEsports', label: 'Loisirs', icon: SportsEsports },
+  { name: 'LocalGroceryStore', label: 'Épicerie', icon: LocalGroceryStore },
+  { name: 'LocalDining', label: 'Repas', icon: LocalDining },
+  { name: 'LocalGasStation', label: 'Essence', icon: LocalGasStation },
+  { name: 'LocalPharmacy', label: 'Pharmacie', icon: LocalPharmacy },
+  { name: 'FitnessCenter', label: 'Sport', icon: FitnessCenter },
+  { name: 'LocalCafe', label: 'Café', icon: LocalCafe },
+  { name: 'LocalBar', label: 'Bar', icon: LocalBar },
+  { name: 'LocalMovies', label: 'Cinéma', icon: LocalMovies },
+  { name: 'MusicNote', label: 'Musique', icon: MusicNote },
+  { name: 'Park', label: 'Parc', icon: Park },
+  { name: 'MoreHoriz', label: 'Autre', icon: MoreHoriz }
+];
 
 const IconSelector = ({ open, onClose, onSelect, currentIcon = 'Category' }) => {
-  const [selectedCategory, setSelectedCategory] = useState('Général');
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleIconSelect = (iconName) => {
@@ -379,127 +73,102 @@ const IconSelector = ({ open, onClose, onSelect, currentIcon = 'Category' }) => 
     onClose();
   };
 
-  const filteredCategories = Object.keys(ICON_CATEGORIES).filter(cat =>
-    cat.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredIcons = availableIcons.filter(icon =>
+    icon.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    icon.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredIcons = ICON_CATEGORIES[selectedCategory]?.filter(icon =>
-    icon.label.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
-
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose}
-      maxWidth="md"
-      fullWidth
-      PaperProps={{
-        sx: {
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: 3,
-          boxShadow: '0 16px 64px rgba(0, 0, 0, 0.2)'
-        }
-      }}
-    >
-      <DialogTitle sx={{ 
-        fontWeight: 700,
-        borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
-        Sélectionner une icône
-        <Button onClick={onClose} color="inherit">
-          <Cancel />
-        </Button>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          <Typography variant="h6">Sélectionner une icône</Typography>
+          <IconButton onClick={onClose} size="small">
+            <Button variant="outlined" size="small">Fermer</Button>
+          </IconButton>
+        </Box>
       </DialogTitle>
       
-      <DialogContent sx={{ pt: 2 }}>
-        {/* Barre de recherche */}
+      <DialogContent>
         <TextField
           fullWidth
-          label="Rechercher une icône"
+          variant="outlined"
+          placeholder="Rechercher une icône..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ mb: 3 }}
           InputProps={{
-            startAdornment: <InputAdornment position="start">🔍</InputAdornment>
+            startAdornment: (
+              <InputAdornment position="start">
+                <Category />
+              </InputAdornment>
+            ),
           }}
+          sx={{ mb: 2 }}
         />
-
-        {/* Catégories d'icônes */}
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-            Catégories
-          </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {filteredCategories.map((category) => (
-              <Chip
-                key={category}
-                label={category}
-                onClick={() => setSelectedCategory(category)}
-                color={selectedCategory === category ? 'primary' : 'default'}
-                variant={selectedCategory === category ? 'filled' : 'outlined'}
-                sx={{ cursor: 'pointer' }}
-              />
-            ))}
-          </Box>
-        </Box>
-
-        {/* Grille d'icônes */}
-        <Box>
-          <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-            {selectedCategory}
-          </Typography>
-          <Grid container spacing={2}>
-            {filteredIcons.map((iconData) => {
-              const IconComponent = iconData.icon;
-              const isSelected = currentIcon === iconData.icon.name;
-              
-              return (
-                <Grid item xs={6} sm={4} md={3} key={iconData.icon.name}>
-                  <Box
-                    sx={{
-                      p: 2,
-                      border: isSelected ? '2px solid #2196f3' : '1px solid rgba(0, 0, 0, 0.1)',
-                      borderRadius: 2,
-                      cursor: 'pointer',
+        
+        <Grid container spacing={1}>
+          {filteredIcons.map((icon) => {
+            const IconComponent = icon.icon;
+            const isSelected = currentIcon === icon.name;
+            
+            return (
+              <Grid item xs={3} sm={2} key={icon.name}>
+                <Box
+                  onClick={() => handleIconSelect(icon.name)}
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    p: 1,
+                    border: isSelected ? 2 : 1,
+                    borderColor: isSelected ? 'primary.main' : 'divider',
+                    borderRadius: 1,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    '&:hover': {
+                      backgroundColor: 'action.hover',
+                      borderColor: 'primary.main',
+                    },
+                    backgroundColor: isSelected ? 'primary.light' : 'transparent',
+                  }}
+                >
+                  <IconComponent 
+                    sx={{ 
+                      fontSize: 24, 
+                      color: isSelected ? 'primary.contrastText' : 'text.primary',
+                      mb: 0.5 
+                    }} 
+                  />
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
                       textAlign: 'center',
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        backgroundColor: 'rgba(33, 150, 243, 0.1)',
-                        transform: 'translateY(-2px)',
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
-                      },
-                      backgroundColor: isSelected ? 'rgba(33, 150, 243, 0.1)' : 'transparent'
+                      color: isSelected ? 'primary.contrastText' : 'text.secondary',
+                      fontSize: '0.7rem'
                     }}
-                    onClick={() => handleIconSelect(iconData.icon.name)}
                   >
-                    <IconComponent 
-                      sx={{ 
-                        fontSize: 32, 
-                        color: isSelected ? '#2196f3' : '#666',
-                        mb: 1
-                      }} 
-                    />
-                    <Typography 
-                      variant="caption" 
-                      sx={{ 
-                        display: 'block',
-                        color: isSelected ? '#2196f3' : '#666',
-                        fontWeight: isSelected ? 600 : 400
-                      }}
-                    >
-                      {iconData.label}
-                    </Typography>
-                  </Box>
-                </Grid>
-              );
-            })}
-          </Grid>
-        </Box>
+                    {icon.label}
+                  </Typography>
+                </Box>
+              </Grid>
+            );
+          })}
+        </Grid>
+        
+        {filteredIcons.length === 0 && (
+          <Box textAlign="center" py={3}>
+            <Typography variant="body2" color="text.secondary">
+              Aucune icône trouvée pour "{searchTerm}"
+            </Typography>
+          </Box>
+        )}
       </DialogContent>
+      
+      <DialogActions>
+        <Button onClick={onClose} color="primary">
+          Annuler
+        </Button>
+      </DialogActions>
     </Dialog>
   );
 };
