@@ -268,61 +268,18 @@ const CategoryManager = memo(({
 
   return (
     <Box>
-      {/* Header avec statistiques */}
-      <Paper sx={{
-        p: 3,
-        mb: 3,
-        background: 'rgba(255, 255, 255, 0.1)',
-        backdropFilter: 'blur(20px)',
-        borderRadius: 3,
-        border: '1px solid rgba(255, 255, 255, 0.2)',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-      }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: 'white' }}>
-            {type === 'expenses' ? t('categoryManager.expenseCategories') : t('categoryManager.incomeCategories')}
-          </Typography>
-          <Chip 
-            label={`${categories.length} ${t('categoryManager.categories')}`}
-            color="primary"
-            variant="outlined"
-            sx={{ color: 'white', borderColor: 'rgba(255, 255, 255, 0.3)' }}
-          />
-        </Box>
-        
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={4}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
-                {categories.length}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                {t('categoryManager.totalCategories')}
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
-                {categories.filter(c => c.budget > 0).length}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                {t('categoryManager.withBudget')}
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={12} sm={4}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="h4" sx={{ color: 'white', fontWeight: 700 }}>
-                {categories.filter(c => !c.budget || c.budget === 0).length}
-              </Typography>
-              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                {t('categoryManager.withoutBudget')}
-              </Typography>
-            </Box>
-          </Grid>
-        </Grid>
-      </Paper>
+      {/* Header simple */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, color: 'white' }}>
+          {type === 'expenses' ? t('categoryManager.expenseCategories') : t('categoryManager.incomeCategories')}
+        </Typography>
+        <Chip 
+          label={`${categories.length} ${t('categoryManager.categories')}`}
+          color="primary"
+          variant="outlined"
+          sx={{ color: 'white', borderColor: 'rgba(255, 255, 255, 0.3)' }}
+        />
+      </Box>
 
       {/* Liste des catégories */}
       <Grid container spacing={2}>

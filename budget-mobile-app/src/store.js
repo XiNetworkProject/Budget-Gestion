@@ -859,15 +859,28 @@ const useStore = create(
 
         removeCategory: (categoryId, deleteWithData = false) => {
           const state = get();
-          const categoryIndex = state.categories.findIndex(cat => 
-            (typeof cat === 'object' && cat.id === categoryId) ||
-            (typeof cat === 'string' && cat === categoryId)
-          );
           
-          if (categoryIndex === -1) return;
+          // Trouver la catégorie à supprimer
+          let categoryToRemove = null;
+          let categoryIndex = -1;
+          
+          // Chercher par ID ou par nom
+          for (let i = 0; i < state.categories.length; i++) {
+            const cat = state.categories[i];
+            if ((typeof cat === 'object' && cat.id === categoryId) ||
+                (typeof cat === 'string' && cat === categoryId)) {
+              categoryToRemove = cat;
+              categoryIndex = i;
+              break;
+            }
+          }
+          
+          if (categoryIndex === -1) {
+            console.warn('Catégorie non trouvée pour suppression:', categoryId);
+            return;
+          }
 
-          const category = state.categories[categoryIndex];
-          const categoryName = typeof category === 'string' ? category : category.name;
+          const categoryName = typeof categoryToRemove === 'string' ? categoryToRemove : categoryToRemove.name;
           
           // Supprimer les données de la catégorie
           const newData = { ...state.data };
@@ -882,7 +895,22 @@ const useStore = create(
           const newLimits = { ...state.budgetLimits };
           delete newLimits[categoryName];
           
-          set({ categories: newCategories, data: newData, budgetLimits: newLimits });
+          // Supprimer les transactions associées si deleteWithData est true
+          let newExpenses = [...state.expenses];
+          let newIncomes = [...state.income];
+          
+          if (deleteWithData) {
+            newExpenses = newExpenses.filter(exp => exp.category !== categoryName);
+            newIncomes = newIncomes.filter(inc => inc.category !== categoryName);
+          }
+          
+          set({ 
+            categories: newCategories, 
+            data: newData, 
+            budgetLimits: newLimits,
+            expenses: newExpenses,
+            income: newIncomes
+          });
           scheduleSave();
         },
 
@@ -980,12 +1008,25 @@ const useStore = create(
           scheduleSave();
         },
 
-        removeIncomeType: (type) => {
+        removeIncomeType: (type, deleteWithData = false) => {
           const state = get();
+          
+          // Supprimer les données de revenus
           const { [type]: _, ...rest } = state.incomes;
           const newIncomeTypes = state.incomeTypes.filter((t) => t !== type);
           
-          set({ incomeTypes: newIncomeTypes, incomes: rest });
+          // Supprimer les transactions associées si deleteWithData est true
+          let newIncome = [...state.income];
+          
+          if (deleteWithData) {
+            newIncome = newIncome.filter(inc => inc.category !== type);
+          }
+          
+          set({ 
+            incomeTypes: newIncomeTypes, 
+            incomes: rest,
+            income: newIncome
+          });
           scheduleSave();
         },
 
