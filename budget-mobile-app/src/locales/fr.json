@@ -186,7 +186,7 @@
     "monthly": "Mensuel",
     "yearly": "Annuel",
     "custom": "Personnalisé",
-    "priority": {
+    "priorityLevels": {
       "low": "Basse",
       "medium": "Moyenne",
       "high": "Haute",

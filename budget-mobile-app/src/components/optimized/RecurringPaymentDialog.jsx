@@ -121,10 +121,10 @@ const RecurringPaymentDialog = React.memo(({
 
   // Options de priorité
   const priorityOptions = useMemo(() => [
-    { value: 'low', label: t('recurringPayment.priority.low'), color: '#4caf50', icon: LowPriority },
-    { value: 'medium', label: t('recurringPayment.priority.medium'), color: '#2196f3', icon: Schedule },
-    { value: 'high', label: t('recurringPayment.priority.high'), color: '#ff9800', icon: Warning },
-    { value: 'critical', label: t('recurringPayment.priority.critical'), color: '#f44336', icon: Error }
+    { value: 'low', label: t('recurringPayment.priorityLevels.low'), color: '#4caf50', icon: LowPriority },
+    { value: 'medium', label: t('recurringPayment.priorityLevels.medium'), color: '#2196f3', icon: Schedule },
+    { value: 'high', label: t('recurringPayment.priorityLevels.high'), color: '#ff9800', icon: Warning },
+    { value: 'critical', label: t('recurringPayment.priorityLevels.critical'), color: '#f44336', icon: Error }
   ], [t]);
 
   // Options de rappel
