@@ -46,10 +46,15 @@ const QuickAdd = ({ open: externalOpen, onClose: externalOnClose }) => {
     return typeof cat === 'object' ? cat.name : cat;
   };
 
+  // Fonction helper pour extraire le nom d'un type de revenu
+  const getIncomeTypeName = (type) => {
+    return typeof type === 'object' ? type.name : type;
+  };
+
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(0); // 0 = dépense, 1 = revenu
   const [category, setCategory] = useState(getCategoryName(categories[0]) || '');
-  const [incomeType, setIncomeType] = useState(availableIncomeTypes[0] || '');
+  const [incomeType, setIncomeType] = useState(getIncomeTypeName(availableIncomeTypes[0]) || '');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]); // Date au format YYYY-MM-DD
@@ -66,7 +71,7 @@ const QuickAdd = ({ open: externalOpen, onClose: externalOnClose }) => {
   useEffect(() => {
     if (currentOpen) {
       setCategory(getCategoryName(categories[0]) || '');
-      setIncomeType(availableIncomeTypes[0] || '');
+      setIncomeType(getIncomeTypeName(availableIncomeTypes[0]) || '');
       setAmount('');
       setDescription('');
       setSelectedDate(new Date().toISOString().split('T')[0]);
@@ -89,7 +94,7 @@ const QuickAdd = ({ open: externalOpen, onClose: externalOnClose }) => {
 
   useEffect(() => {
     if (currentOpen && availableIncomeTypes.length > 0 && !incomeType) {
-      setIncomeType(availableIncomeTypes[0]);
+      setIncomeType(getIncomeTypeName(availableIncomeTypes[0]));
     }
   }, [availableIncomeTypes, currentOpen, incomeType]);
 
@@ -259,9 +264,13 @@ const QuickAdd = ({ open: externalOpen, onClose: externalOnClose }) => {
                       <MenuItem key={catKey} value={catName}>{catName}</MenuItem>
                     );
                   }) :
-                  availableIncomeTypes.map((type) => (
-                    <MenuItem key={type} value={type}>{type}</MenuItem>
-                  ))
+                  availableIncomeTypes.map((type) => {
+                    const typeName = getIncomeTypeName(type);
+                    const typeKey = typeof type === 'object' ? type.id : type;
+                    return (
+                      <MenuItem key={typeKey} value={typeName}>{typeName}</MenuItem>
+                    );
+                  })
                 }
               </Select>
             </FormControl>
