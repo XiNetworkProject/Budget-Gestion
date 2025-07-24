@@ -248,9 +248,9 @@ const QuickAdd = ({ open: externalOpen, onClose: externalOnClose }) => {
               >
                 {activeTab === 0 ? 
                   categories.map((cat) => (
-                    <MenuItem key={cat.id} value={cat.name}>{cat.name}</MenuItem>
+                    <MenuItem key={cat} value={cat}>{cat}</MenuItem>
                   )) :
-                  incomeTypes.map((type) => (
+                  availableIncomeTypes.map((type) => (
                     <MenuItem key={type} value={type}>{type}</MenuItem>
                   ))
                 }
