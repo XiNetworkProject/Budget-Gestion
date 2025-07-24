@@ -3,6 +3,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { useStore } from '../store';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
+import { useMobileAuth } from '../hooks/useMobileAuth';
 import {
   Box,
   Paper,
@@ -272,6 +273,8 @@ const Login = () => {
       setLoading(false);
     }
   };
+
+  const { isMobile, isCapacitor, handleGoogleAuth } = useMobileAuth();
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
@@ -663,14 +666,40 @@ const Login = () => {
                     </Typography>
                   </Divider>
 
-                  {/* Connexion Google */}
+                  {/* Connexion Google - Adaptatif selon la plateforme */}
                   <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                    <GoogleLogin
-                      onSuccess={handleGoogleSuccess}
-                      onError={handleGoogleError}
-                      useOneTap
-                      disabled={loading}
-                    />
+                    {isMobile || isCapacitor ? (
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        startIcon={<Google />}
+                        onClick={handleGoogleAuth}
+                        disabled={loading}
+                        sx={{
+                          py: 1.5,
+                          borderColor: '#4285f4',
+                          color: '#4285f4',
+                          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                          '&:hover': {
+                            borderColor: '#3367d6',
+                            backgroundColor: 'rgba(255, 255, 255, 0.15)'
+                          },
+                          '&:disabled': {
+                            borderColor: 'rgba(255, 255, 255, 0.3)',
+                            color: 'rgba(255, 255, 255, 0.5)'
+                          }
+                        }}
+                      >
+                        {isCapacitor ? 'Se connecter avec Google' : 'Continuer avec Google'}
+                      </Button>
+                    ) : (
+                      <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={handleGoogleError}
+                        useOneTap
+                        disabled={loading}
+                      />
+                    )}
                   </Box>
                 </Box>
               </Fade>
@@ -853,14 +882,40 @@ const Login = () => {
                     </Typography>
                   </Divider>
 
-                  {/* Inscription Google */}
+                  {/* Inscription Google - Adaptatif selon la plateforme */}
                   <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-        <GoogleLogin
-                      onSuccess={handleGoogleSuccess}
-                      onError={handleGoogleError}
-          useOneTap
-                      disabled={loading}
-                    />
+                    {isMobile || isCapacitor ? (
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        startIcon={<Google />}
+                        onClick={handleGoogleAuth}
+                        disabled={loading}
+                        sx={{
+                          py: 1.5,
+                          borderColor: '#4285f4',
+                          color: '#4285f4',
+                          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                          '&:hover': {
+                            borderColor: '#3367d6',
+                            backgroundColor: 'rgba(255, 255, 255, 0.15)'
+                          },
+                          '&:disabled': {
+                            borderColor: 'rgba(255, 255, 255, 0.3)',
+                            color: 'rgba(255, 255, 255, 0.5)'
+                          }
+                        }}
+                      >
+                        {isCapacitor ? 'S\'inscrire avec Google' : 'Continuer avec Google'}
+                      </Button>
+                    ) : (
+                      <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={handleGoogleError}
+                        useOneTap
+                        disabled={loading}
+                      />
+                    )}
                   </Box>
                 </Box>
               </Fade>

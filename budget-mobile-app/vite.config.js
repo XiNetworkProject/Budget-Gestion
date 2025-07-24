@@ -8,6 +8,7 @@ import { visualizer } from 'rollup-plugin-visualizer'
 export default defineConfig(({ command, mode }) => {
   const isProduction = mode === 'production' || mode === 'optimized'
   const isAnalyze = mode === 'analyze'
+  const isAndroid = mode === 'android'
   
   return {
     plugins: [
@@ -47,8 +48,8 @@ export default defineConfig(({ command, mode }) => {
       //     ]
       //   }
       // }),
-      // Compression pour la production
-      isProduction && viteCompression({
+      // Compression pour la production (désactivée pour Android)
+      isProduction && !isAndroid && viteCompression({
         algorithm: 'gzip',
         ext: '.gz'
       }),

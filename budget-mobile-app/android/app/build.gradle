@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "com.budgetgestion.app"
+    namespace "com.budgetgestion.ximam"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.budgetgestion.app"
+        applicationId "com.budgetgestion.ximam"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

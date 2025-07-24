@@ -26,15 +26,17 @@
     "optimize": "npm run build:optimized && npm run performance:test",
     "clean": "rm -rf dist node_modules/.vite",
     "clean:all": "rm -rf dist node_modules package-lock.json && npm install",
-    "android": "npm run build && npx cap sync android && npx cap open android",
-    "android:build": "npm run build && npx cap sync android",
+    "android": "npm run build:android && npx cap sync android && npx cap open android",
+    "android:build": "npm run build:android && npx cap sync android",
+    "build:android": "vite build --mode android",
     "android:run": "npx cap run android",
-    "android:build-apk": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug",
-    "android:build-aab": "npm run build && npx cap sync android && cd android && ./gradlew bundleRelease"
+    "android:build-apk": "npm run build:android && npx cap sync android && cd android && ./gradlew assembleDebug",
+    "android:build-aab": "npm run build:android && npx cap sync android && cd android && ./gradlew bundleRelease"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.2",
     "@capacitor/app": "^7.0.1",
+    "@capacitor/browser": "^7.0.1",
     "@capacitor/cli": "^7.4.2",
     "@capacitor/core": "^7.4.2",
     "@capacitor/splash-screen": "^7.0.1",

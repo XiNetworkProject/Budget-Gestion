@@ -1,4 +1,4 @@
-package com.budgetgestion.app;
+package com.budgetgestion.ximam;
 
 import com.getcapacitor.BridgeActivity;
 

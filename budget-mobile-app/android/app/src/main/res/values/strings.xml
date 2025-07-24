@@ -4,5 +4,5 @@
     <string name="title_activity_main">Budget Gestion</string>
     <string name="package_name">com.budgetgestion.app</string>
     <string name="custom_url_scheme">com.budgetgestion.app</string>
-    <string name="server_client_id">VOTRE_GOOGLE_CLIENT_ID_ICI</string>
+    <string name="server_client_id">524152832188-akr103mmbd8h11hbnvbqb22q3l1vnhuq.apps.googleusercontent.com</string>
 </resources>

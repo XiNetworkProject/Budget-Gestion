@@ -23,6 +23,7 @@ const Settings = lazy(() => import('./pages/Settings'));
 const ActionPlans = lazy(() => import('./pages/ActionPlans'));
 const Subscription = lazy(() => import('./pages/Subscription'));
 const Login = lazy(() => import('./components/Login'));
+const GoogleAuth = lazy(() => import('./pages/GoogleAuth'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const DebugConnection = lazy(() => import('./components/DebugConnection'));
 
@@ -164,6 +165,15 @@ const AppRoutesOptimized = () => {
             <LazyPage 
               component={Login} 
               fallbackMessage="Chargement de la connexion..." 
+            />
+          } 
+        />
+        <Route 
+          path="auth/google" 
+          element={
+            <LazyPage 
+              component={GoogleAuth} 
+              fallbackMessage="Chargement de l'authentification Google..." 
             />
           } 
         />
