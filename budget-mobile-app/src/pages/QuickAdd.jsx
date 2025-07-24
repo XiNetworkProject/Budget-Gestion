@@ -41,9 +41,14 @@ const QuickAdd = ({ open: externalOpen, onClose: externalOnClose }) => {
   const defaultIncomeTypes = ["Salaire", "Aides", "Freelance", "Investissements", "Autres"];
   const availableIncomeTypes = incomeTypes && incomeTypes.length > 0 ? incomeTypes : defaultIncomeTypes;
   
+  // Fonction helper pour extraire le nom d'une catégorie
+  const getCategoryName = (cat) => {
+    return typeof cat === 'object' ? cat.name : cat;
+  };
+
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(0); // 0 = dépense, 1 = revenu
-  const [category, setCategory] = useState(categories[0]?.name || '');
+  const [category, setCategory] = useState(getCategoryName(categories[0]) || '');
   const [incomeType, setIncomeType] = useState(availableIncomeTypes[0] || '');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
@@ -60,7 +65,7 @@ const QuickAdd = ({ open: externalOpen, onClose: externalOnClose }) => {
   // Réinitialiser les valeurs quand la popup s'ouvre
   useEffect(() => {
     if (currentOpen) {
-      setCategory(categories[0]?.name || '');
+      setCategory(getCategoryName(categories[0]) || '');
       setIncomeType(availableIncomeTypes[0] || '');
       setAmount('');
       setDescription('');
@@ -78,7 +83,7 @@ const QuickAdd = ({ open: externalOpen, onClose: externalOnClose }) => {
   // Gérer les changements de catégories sans affecter le montant
   useEffect(() => {
     if (currentOpen && categories.length > 0 && !category) {
-      setCategory(categories[0]?.name || '');
+      setCategory(getCategoryName(categories[0]) || '');
     }
   }, [categories, currentOpen, category]);
 
@@ -247,9 +252,13 @@ const QuickAdd = ({ open: externalOpen, onClose: externalOnClose }) => {
                 }}
               >
                 {activeTab === 0 ? 
-                  categories.map((cat) => (
-                    <MenuItem key={cat} value={cat}>{cat}</MenuItem>
-                  )) :
+                  categories.map((cat) => {
+                    const catName = typeof cat === 'object' ? cat.name : cat;
+                    const catKey = typeof cat === 'object' ? cat.id : cat;
+                    return (
+                      <MenuItem key={catKey} value={catName}>{catName}</MenuItem>
+                    );
+                  }) :
                   availableIncomeTypes.map((type) => (
                     <MenuItem key={type} value={type}>{type}</MenuItem>
                   ))
