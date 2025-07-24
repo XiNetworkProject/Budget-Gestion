@@ -60,23 +60,50 @@ const GoogleAuth = () => {
     try {
       setLoading(true);
       
-      // Échanger le code contre un token
-      const response = await fetch('/api/auth/google/callback', {
+      // Échanger le code contre un token directement avec Google
+      const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify({ code }),
+        body: new URLSearchParams({
+          code: code,
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET,
+          redirect_uri: 'https://budget-mobile-app-pa2n.onrender.com/auth/google',
+          grant_type: 'authorization_code',
+        }),
       });
 
-      if (!response.ok) {
-        throw new Error('Erreur lors de l\'authentification');
+      if (!tokenResponse.ok) {
+        throw new Error('Erreur lors de l\'échange du code');
       }
 
-      const data = await response.json();
+      const tokenData = await tokenResponse.json();
       
-      // Connecter l'utilisateur
-      await loginWithGoogle(data.token, data.user);
+      // Récupérer les informations utilisateur
+      const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+        headers: {
+          'Authorization': `Bearer ${tokenData.access_token}`,
+        },
+      });
+
+      if (!userResponse.ok) {
+        throw new Error('Erreur lors de la récupération des informations utilisateur');
+      }
+
+      const userData = await userResponse.json();
+      
+      // Créer l'objet utilisateur
+      const user = {
+        id: userData.id,
+        email: userData.email,
+        name: userData.name,
+        picture: userData.picture
+      };
+
+      // Connecter l'utilisateur via le store
+      await loginWithGoogle(tokenData.access_token, user);
       
       // Rediriger vers l'app
       if (window.Capacitor) {
@@ -90,7 +117,8 @@ const GoogleAuth = () => {
       }
       
     } catch (err) {
-      setError(err.message);
+      console.error('Erreur Google Auth:', err);
+      setError('Erreur lors de l\'authentification Google');
       setLoading(false);
     }
   };

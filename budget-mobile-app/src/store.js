@@ -1336,6 +1336,80 @@ const useStore = create(
       setError: (error) => set({ error }),
       setToken: (token) => set({ token }),
       
+      // Gestion de la connexion Google
+      loginWithGoogle: async (token, user) => {
+        console.log('loginWithGoogle: Connexion avec Google:', user);
+        set({ token, user, isAuthenticated: !!user });
+        
+        if (user) {
+          try {
+            set({ isLoading: true });
+            const data = await budgetService.getBudget(user.id);
+            
+            if (data) {
+              const shouldCompleteOnboarding = data.onboardingCompleted !== undefined ? data.onboardingCompleted : true;
+              set({
+                months: data.months || defaultMonths,
+                categories: data.categories || defaultCategories,
+                data: data.data || defaultData,
+                revenus: data.revenus || defaultRevenus,
+                incomeTypes: data.incomeTypes || defaultIncomeTypes,
+                incomes: data.incomes || defaultIncomes,
+                persons: data.persons || defaultPersons,
+                saved: data.saved || defaultSaved,
+                sideByMonth: data.sideByMonth || defaultSideByMonth,
+                totalPotentialSavings: data.totalPotentialSavings || 0,
+                budgetLimits: data.budgetLimits || defaultCategoryLimits,
+                expenses: data.expenses || [],
+                incomeTransactions: data.incomeTransactions || [],
+                savings: data.savings || [],
+                debts: data.debts || [],
+                bankAccounts: data.bankAccounts || [],
+                transactions: data.transactions || [],
+                userProfile: data.userProfile || defaultUserProfile,
+                appSettings: data.appSettings || defaultAppSettings,
+                tutorialCompleted: data.tutorialCompleted || false,
+                onboardingCompleted: shouldCompleteOnboarding,
+                lastUpdateShown: data.lastUpdateShown || null,
+                appVersion: data.appVersion || "2.2.0",
+                isLoading: false
+              });
+            } else {
+              const defaultBudget = {
+                months: defaultMonths,
+                categories: defaultCategories,
+                data: defaultData,
+                revenus: defaultRevenus,
+                incomeTypes: defaultIncomeTypes,
+                incomes: defaultIncomes,
+                persons: defaultPersons,
+                saved: defaultSaved,
+                sideByMonth: defaultSideByMonth,
+                totalPotentialSavings: 0,
+                budgetLimits: defaultCategoryLimits,
+                expenses: [],
+                incomeTransactions: [],
+                savings: [],
+                debts: [],
+                bankAccounts: [],
+                transactions: [],
+                userProfile: { ...defaultUserProfile, email: user.email },
+                appSettings: defaultAppSettings,
+                tutorialCompleted: false,
+                onboardingCompleted: false,
+                lastUpdateShown: null,
+                appVersion: "2.2.0"
+              };
+              set({ ...defaultBudget, isLoading: false });
+              await budgetService.saveBudget(user.id, defaultBudget);
+            }
+          } catch (error) {
+            console.error('Error loading budget for Google user:', error);
+            set({ error: error.message, isLoading: false });
+          }
+        }
+      },
+      
       // Gestion de la connexion automatique
       setAutoLogin: (enabled) => {
         set({ autoLogin: enabled });
