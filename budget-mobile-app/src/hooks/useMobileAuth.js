@@ -27,7 +27,7 @@ export const useMobileAuth = () => {
       // Dans Capacitor, ouvrir le navigateur externe
       try {
         // Utiliser l'URL de production au lieu de localhost
-        const authUrl = 'https://budget-gestion.onrender.com/auth/google';
+        const authUrl = 'https://budget-mobile-app-pa2n.onrender.com/auth/google';
         if (window.Capacitor?.Plugins?.Browser) {
           await window.Capacitor.Plugins.Browser.open({ url: authUrl });
         } else {
@@ -36,11 +36,11 @@ export const useMobileAuth = () => {
       } catch (error) {
         console.error('Erreur ouverture navigateur:', error);
         // Fallback vers l'ouverture normale
-        window.open('https://budget-gestion.onrender.com/auth/google', '_system');
+        window.open('https://budget-mobile-app-pa2n.onrender.com/auth/google', '_system');
       }
     } else if (isMobile) {
       // Sur mobile web, ouvrir dans un nouvel onglet
-      window.open('https://budget-gestion.onrender.com/auth/google', '_blank');
+      window.open('https://budget-mobile-app-pa2n.onrender.com/auth/google', '_blank');
     } else {
       // Sur desktop, utiliser l'auth normale
       // Votre logique Google Auth existante

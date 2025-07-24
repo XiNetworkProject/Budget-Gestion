@@ -42,7 +42,7 @@ const GoogleAuth = () => {
 
   const initiateGoogleAuth = () => {
     const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    const redirectUri = 'https://budget-gestion.onrender.com/auth/google';
+    const redirectUri = 'https://budget-mobile-app-pa2n.onrender.com/auth/google';
     const scope = 'email profile';
     
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
@@ -86,7 +86,7 @@ const GoogleAuth = () => {
         }
       } else {
         // Sur web, rediriger vers l'app de production
-        window.location.href = 'https://budget-gestion.onrender.com';
+        window.location.href = 'https://budget-mobile-app-pa2n.onrender.com';
       }
       
     } catch (err) {
@@ -109,7 +109,7 @@ const GoogleAuth = () => {
       }
     } else {
       // Sur web, rediriger vers la page de connexion de production
-      window.location.href = 'https://budget-gestion.onrender.com/login';
+      window.location.href = 'https://budget-mobile-app-pa2n.onrender.com/login';
     }
   };
 
