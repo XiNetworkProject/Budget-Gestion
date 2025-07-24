@@ -819,7 +819,7 @@ const useStore = create(
         updateCategory: (categoryId, updatedData) => {
           const state = get();
           const categoryIndex = state.categories.findIndex(cat => 
-            (typeof cat === 'object' && cat.id === categoryId) ||
+            (typeof cat === 'object' && (cat.id === categoryId || cat.name === categoryId)) ||
             (typeof cat === 'string' && cat === categoryId)
           );
           
@@ -830,7 +830,7 @@ const useStore = create(
           
           // Créer la nouvelle catégorie
           const newCategory = {
-            id: categoryId,
+            id: typeof oldCategory === 'object' ? oldCategory.id : `category-${Date.now()}`,
             name: updatedData.name,
             icon: updatedData.icon || 'Category',
             color: updatedData.color || '#2196f3',
@@ -866,10 +866,10 @@ const useStore = create(
           let categoryToRemove = null;
           let categoryIndex = -1;
           
-          // Chercher par ID ou par nom
+          // Chercher par ID, nom d'objet, ou nom de chaîne
           for (let i = 0; i < state.categories.length; i++) {
             const cat = state.categories[i];
-            if ((typeof cat === 'object' && cat.id === categoryId) ||
+            if ((typeof cat === 'object' && (cat.id === categoryId || cat.name === categoryId)) ||
                 (typeof cat === 'string' && cat === categoryId)) {
               categoryToRemove = cat;
               categoryIndex = i;

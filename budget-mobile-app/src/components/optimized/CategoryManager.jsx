@@ -219,9 +219,10 @@ const CategoryManager = memo(({
 
   const confirmDelete = () => {
     if (categoryToDelete) {
-      // Utiliser le nom de la catégorie au lieu de l'ID pour la suppression
-      // car les catégories dans le store sont des chaînes simples
-      onDeleteCategory(categoryToDelete.name, deleteWithData);
+      // Utiliser l'ID de la catégorie pour la suppression
+      // Le store peut gérer les IDs d'objets et les noms de chaînes
+      const categoryIdentifier = categoryToDelete.id || categoryToDelete.name;
+      onDeleteCategory(categoryIdentifier, deleteWithData);
       setSnackbar({
         open: true,
         message: `Catégorie "${categoryToDelete.name}" supprimée${deleteWithData ? ' avec toutes ses données' : ''}`,
