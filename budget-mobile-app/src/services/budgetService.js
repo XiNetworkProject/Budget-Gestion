@@ -40,19 +40,8 @@ export const budgetService = {
       const token = useStore.getState().token;
       console.log('Token présent:', !!token);
       
-      // Éviter les appels API si pas de token
-      if (!token) {
-        console.log('Pas de token - sauvegarde locale uniquement');
-        const localSuccess = saveToLocalStorage(userId, data);
-        if (localSuccess) {
-          return { success: true, local: true, message: 'Sauvegardé en local (pas de token)' };
-        } else {
-          throw new Error('Impossible de sauvegarder en local');
-        }
-      }
-      
       const headers = { 'Content-Type': 'application/json' };
-      headers['Authorization'] = `Bearer ${token}`;
+      if (token) headers['Authorization'] = `Bearer ${token}`;
       
       console.log('Headers:', headers);
       
@@ -114,19 +103,8 @@ export const budgetService = {
       const token = useStore.getState().token;
       console.log('Token présent:', !!token);
       
-      // Éviter les appels API si pas de token
-      if (!token) {
-        console.log('Pas de token - récupération locale uniquement');
-        const localData = getFromLocalStorage(userId);
-        if (localData) {
-          return { ...localData, local: true, message: 'Données locales (pas de token)' };
-        } else {
-          throw new Error('Aucune donnée disponible (pas de token)');
-        }
-      }
-      
       const headers = { 'Content-Type': 'application/json' };
-      headers['Authorization'] = `Bearer ${token}`;
+      if (token) headers['Authorization'] = `Bearer ${token}`;
       
       console.log('Headers:', headers);
       

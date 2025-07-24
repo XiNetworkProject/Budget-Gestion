@@ -20,40 +20,40 @@ import {
   List,
   ListItem,
   ListItemText,
+  ListItemAvatar,
+  Avatar,
   Divider,
   Snackbar,
   Alert,
-  Fab,
-  Container,
-  Fade,
-  Zoom
+  Tooltip,
+  AppBar,
+  Fab
 } from '@mui/material';
 import {
   Add,
   Edit,
   Delete,
   TrendingUp,
-  TrendingDown,
+  Savings as SavingsIcon,
+  Flag,
   CheckCircle,
   Warning,
   Info,
-  Close,
-  CalendarToday,
-  AccountBalance
+  AttachMoney,
+  MoreVert
 } from '@mui/icons-material';
-import { Bar } from 'react-chartjs-2';
+import { Bar, Doughnut } from 'react-chartjs-2';
 import { 
   Chart as ChartJS, 
   BarElement, 
   CategoryScale, 
   LinearScale, 
   Legend,
-  Title,
-  Tooltip
+  ArcElement
 } from 'chart.js';
 import CurrencyFormatter from '../components/CurrencyFormatter';
 
-ChartJS.register(BarElement, CategoryScale, LinearScale, Legend, Title, Tooltip);
+ChartJS.register(BarElement, CategoryScale, LinearScale, Legend, ArcElement);
 
 const Savings = () => {
   const { 
@@ -81,6 +81,7 @@ const Savings = () => {
     name: '', 
     target: '', 
     current: '', 
+    icon: <AttachMoney sx={{ fontSize: 24 }} />,
     deadline: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   });
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
@@ -92,169 +93,286 @@ const Savings = () => {
   const savingsGoalsLimit = checkUsageLimit('maxSavingsGoals', goals.length);
   const canAddMoreGoals = savingsGoalsLimit.allowed;
 
-  // Calculer les données d'épargne mensuelle
+  // Calculer les vraies données d'épargne mensuelle
   const getMonthlySavingsData = () => {
+    // Utiliser les 6 derniers mois disponibles
     const last6Months = months.slice(-6);
     const last6MonthsSavings = sideByMonth.slice(-6);
     
     return {
       labels: last6Months,
-      datasets: [
-        {
-          label: 'Épargne mensuelle',
-          data: last6MonthsSavings,
-          backgroundColor: 'rgba(76, 175, 80, 0.8)',
-          borderColor: 'rgba(76, 175, 80, 1)',
-          borderWidth: 2,
-          borderRadius: 8,
-          borderSkipped: false,
-        }
-      ]
+      data: last6MonthsSavings
     };
   };
+
+  const monthlyData = getMonthlySavingsData();
+
+  // Calculer l'épargne totale actuelle (objectifs + épargne mensuelle)
+  const totalSaved = goals.reduce((sum, goal) => sum + (goal.current || 0), 0);
+  const totalTarget = goals.reduce((sum, goal) => sum + (goal.target || 0), 0);
+  const overallProgress = totalTarget > 0 ? ((totalSaved / totalTarget) * 100).toFixed(1) : 0;
+
+  // Calculer l'épargne du mois actuel
+  const currentMonthSavings = sideByMonth[sideByMonth.length - 1] || 0;
+  const averageMonthlySavings = sideByMonth.length > 0 
+    ? sideByMonth.reduce((sum, val) => sum + val, 0) / sideByMonth.length 
+    : 0;
 
   // Calculer l'évolution de l'épargne
   const getSavingsEvolution = () => {
-    if (sideByMonth.length < 2) return { trend: 'stable', percentage: 0 };
-    
-    const current = sideByMonth[sideByMonth.length - 1];
-    const previous = sideByMonth[sideByMonth.length - 2];
-    
-    if (previous === 0) return { trend: 'stable', percentage: 0 };
-    
-    const percentage = ((current - previous) / previous) * 100;
-    return {
-      trend: percentage > 0 ? 'up' : percentage < 0 ? 'down' : 'stable',
-      percentage: Math.abs(percentage)
-    };
+    if (sideByMonth.length < 2) return 0;
+    const current = sideByMonth[sideByMonth.length - 1] || 0;
+    const previous = sideByMonth[sideByMonth.length - 2] || 0;
+    if (previous === 0) return 0;
+    return ((current - previous) / previous * 100).toFixed(1);
   };
 
   const savingsEvolution = getSavingsEvolution();
-  const totalSaved = sideByMonth[sideByMonth.length - 1] || 0;
-  const totalGoals = goals.reduce((sum, goal) => sum + goal.target, 0);
-  const totalProgress = goals.reduce((sum, goal) => sum + goal.current, 0);
-  const overallProgress = totalGoals > 0 ? (totalProgress / totalGoals) * 100 : 0;
+  const isEvolutionPositive = parseFloat(savingsEvolution) >= 0;
+
+  const barData = {
+    labels: monthlyData.labels,
+    datasets: [{
+      label: 'Épargne mensuelle',
+      data: monthlyData.data,
+      backgroundColor: 'rgba(75, 192, 192, 0.8)',
+      borderColor: 'rgba(75, 192, 192, 1)',
+      borderWidth: 1
+    }]
+  };
+
+  const doughnutData = {
+    labels: goals.map(goal => goal.name),
+    datasets: [{
+      data: goals.map(goal => goal.current || 0),
+      backgroundColor: goals.map(goal => goal.color || '#1976d2'),
+      borderWidth: 2,
+      borderColor: '#fff'
+    }]
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'bottom'
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            return `${context.label}: ${context.parsed}€`;
+          }
+        }
+      }
+    }
+  };
+
+  const barOptions = {
+    ...chartOptions,
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function(value) {
+            return value + '€';
+          }
+        }
+      }
+    },
+    plugins: {
+      ...chartOptions.plugins,
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            return `Épargne: ${context.parsed}€`;
+          },
+          title: function(context) {
+            return `Mois: ${context[0].label}`;
+          }
+        }
+      }
+    }
+  };
 
   const handleAddGoal = () => {
-    if (!newGoal.name || !newGoal.target) {
-      setSnack({ open: true, message: 'Veuillez remplir tous les champs', severity: 'error' });
-      return;
-    }
-
-    addSavingsGoal({
-      ...newGoal,
+    const goal = {
+      name: newGoal.name,
       target: parseFloat(newGoal.target),
       current: parseFloat(newGoal.current) || 0,
+      icon: newGoal.icon,
+      deadline: newGoal.deadline,
       accountId: activeAccount?.id
-    });
+    };
 
+    if (addSavingsGoal(goal)) {
+      setSnack({ open: true, message: t('savings.goalAdded'), severity: 'success' });
+      setAddDialog(false);
       setNewGoal({ 
         name: '', 
         target: '', 
         current: '', 
+        icon: <AttachMoney sx={{ fontSize: 24 }} />,
         deadline: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
       });
-    setAddDialog(false);
-    setSnack({ open: true, message: 'Objectif d\'épargne ajouté', severity: 'success' });
+    } else {
+      setSnack({ open: true, message: t('savings.errorAddingGoal'), severity: 'error' });
+    }
   };
 
   const handleEditGoal = () => {
-    if (!selectedGoal || !newGoal.name || !newGoal.target) {
-      setSnack({ open: true, message: 'Veuillez remplir tous les champs', severity: 'error' });
-      return;
-    }
-
-    updateSavingsGoal(selectedGoal.id, {
-      ...newGoal,
+    const updatedGoal = {
+      ...selectedGoal,
+      name: newGoal.name,
       target: parseFloat(newGoal.target),
-      current: parseFloat(newGoal.current)
-    });
+      current: parseFloat(newGoal.current) || 0,
+      icon: newGoal.icon,
+      deadline: newGoal.deadline
+    };
 
+    if (updateSavingsGoal(selectedGoal.id, updatedGoal)) {
+      setSnack({ open: true, message: t('savings.goalUpdated'), severity: 'success' });
       setEditDialog(false);
-    setSelectedGoal(null);
-    setSnack({ open: true, message: 'Objectif d\'épargne modifié', severity: 'success' });
+    } else {
+      setSnack({ open: true, message: t('savings.errorUpdatingGoal'), severity: 'error' });
+    }
   };
 
   const handleDeleteGoal = () => {
-    if (selectedGoal) {
-      deleteSavingsGoal(selectedGoal.id);
+    if (deleteSavingsGoal(selectedGoal.id)) {
+      setSnack({ open: true, message: t('savings.goalDeleted'), severity: 'success' });
       setDeleteDialog(false);
-      setSelectedGoal(null);
-      setSnack({ open: true, message: 'Objectif d\'épargne supprimé', severity: 'success' });
+    } else {
+      setSnack({ open: true, message: t('savings.errorDeletingGoal'), severity: 'error' });
     }
   };
 
   const handleUpdateProgress = (goalId, amount) => {
     const goal = goals.find(g => g.id === goalId);
     if (goal) {
-      const newCurrent = Math.min(goal.current + amount, goal.target);
+      const newCurrent = Math.min((goal.current || 0) + amount, goal.target);
       updateSavingsGoal(goalId, { current: newCurrent });
     }
   };
 
   const getProgressColor = (progress) => {
-    if (progress >= 100) return '#4caf50';
-    if (progress >= 75) return '#ff9800';
-    if (progress >= 50) return '#ffc107';
-    return '#f44336';
+    if (progress >= 100) return 'success';
+    if (progress >= 75) return 'warning';
+    return 'primary';
   };
 
   const getDaysUntilDeadline = (deadline) => {
+    if (!deadline) return null;
     const today = new Date();
     const deadlineDate = new Date(deadline);
     const diffTime = deadlineDate - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+    return diffDays > 0 ? diffDays : 0;
+  };
+
+  // Fonction pour gérer l'affichage sécurisé de l'icône
+  const getSafeIcon = (icon) => {
+    // Si l'icône est un élément React valide, l'utiliser
+    if (React.isValidElement(icon)) {
+      return icon;
+    }
+    // Sinon, retourner l'icône par défaut
+    return <AttachMoney sx={{ fontSize: 24 }} />;
   };
 
   return (
     <Box sx={{ 
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #10131a 0%, #232946 100%)',
-      pb: 8
+      padding: 2,
+      position: 'relative',
+      overflow: 'hidden'
     }}>
-      {/* Header */}
+      {/* Particules animées */}
       <Box sx={{
-        p: 3, 
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        overflow: 'hidden',
+        zIndex: 0
+      }}>
+        {[...Array(20)].map((_, i) => (
+          <Box
+            key={i}
+            sx={{
+              position: 'absolute',
+              width: Math.random() * 4 + 2,
+              height: Math.random() * 4 + 2,
+              background: 'rgba(255, 255, 255, 0.3)',
+              borderRadius: '50%',
+              animation: `float ${Math.random() * 10 + 10}s linear infinite`,
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              '@keyframes float': {
+                '0%': {
+                  transform: 'translateY(0px) rotate(0deg)',
+                  opacity: 0
+                },
+                '10%': {
+                  opacity: 1
+                },
+                '90%': {
+                  opacity: 1
+                },
+                '100%': {
+                  transform: 'translateY(-100vh) rotate(360deg)',
+                  opacity: 0
+                }
+              }
+            }}
+          />
+        ))}
+      </Box>
+
+      {/* AppBar glassmorphism */}
+      <AppBar 
+        position="static" 
+        sx={{ 
           background: 'rgba(255, 255, 255, 0.1)',
           backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.2)'
-      }}>
+          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: 'none',
+          mb: 2
+        }}
+      >
+        <Box sx={{ p: 2 }}>
           <Typography variant="h4" sx={{ 
+            fontWeight: 'bold',
             color: 'white',
-          fontWeight: 'bold',
             textShadow: '0 2px 4px rgba(0,0,0,0.3)'
           }}>
-          Épargne et Objectifs
-        </Typography>
-        <Typography variant="body1" sx={{ 
-          color: 'rgba(255, 255, 255, 0.8)',
-          mt: 1
-        }}>
-          Suivez vos objectifs d'épargne et votre progression
+            {t('savings.title')}
           </Typography>
         </Box>
+      </AppBar>
 
-      <Container maxWidth="lg" sx={{ mt: 3 }}>
-        {/* KPIs */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Box sx={{ p: 0, pb: 10, position: 'relative', zIndex: 1 }}>
+        {/* KPIs glassmorphism */}
+        <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={{ 
-              background: 'rgba(255, 255, 255, 0.1)',
+              background: 'rgba(25, 118, 210, 0.2)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-            }}>
-              <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 1 }}>
-                  Épargne Totale
-                </Typography>
-                <Typography variant="h4" sx={{ 
+              border: '1px solid rgba(25, 118, 210, 0.3)',
               color: 'white',
-                  fontWeight: 'bold',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              boxShadow: '0 8px 32px rgba(25, 118, 210, 0.3)'
             }}>
-                  <CurrencyFormatter value={totalSaved} />
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <SavingsIcon sx={{ mr: 1 }} />
+                  <Typography variant="h6">{t('savings.totalSaved')}</Typography>
+                </Box>
+                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                  {totalSaved.toLocaleString()}€
+                </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
+                  {t('savings.on')} {totalTarget.toLocaleString()}€
                 </Typography>
               </CardContent>
             </Card>
@@ -262,196 +380,160 @@ const Savings = () => {
 
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={{ 
-              background: 'rgba(255, 255, 255, 0.1)',
+              background: 'rgba(76, 175, 80, 0.2)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-            }}>
-              <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 1 }}>
-                  Objectifs
-                </Typography>
-                <Typography variant="h4" sx={{ 
+              border: '1px solid rgba(76, 175, 80, 0.3)',
               color: 'white',
-                  fontWeight: 'bold',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-                }}>
+              boxShadow: '0 8px 32px rgba(76, 175, 80, 0.3)'
+            }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <TrendingUp sx={{ mr: 1 }} />
+                  <Typography variant="h6">{t('savings.progression')}</Typography>
+                </Box>
+                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                  {overallProgress}%
+                </Typography>
+                <LinearProgress 
+                  variant="determinate" 
+                  value={parseFloat(overallProgress)} 
+                  sx={{ 
+                    mt: 1, 
+                    bgcolor: 'rgba(255,255,255,0.3)', 
+                    '& .MuiLinearProgress-bar': { 
+                      bgcolor: 'white',
+                      borderRadius: 1
+                    },
+                    borderRadius: 1,
+                    height: 8
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Card sx={{ 
+              background: 'rgba(3, 169, 244, 0.2)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(3, 169, 244, 0.3)',
+              color: 'white',
+              boxShadow: '0 8px 32px rgba(3, 169, 244, 0.3)'
+            }}>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <Flag sx={{ mr: 1 }} />
+                  <Typography variant="h6">{t('savings.goals')}</Typography>
+                </Box>
+                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
                   {goals.length}
                 </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
+                  {goals.filter(g => g.target > 0 && ((g.current || 0) / g.target) >= 1).length} {t('savings.achieved')}
+                </Typography>
               </CardContent>
             </Card>
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={{ 
-              background: 'rgba(255, 255, 255, 0.1)',
+              background: 'rgba(255, 152, 0, 0.2)',
               backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-            }}>
-              <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 1 }}>
-                  Progression
-                </Typography>
-                <Typography variant="h4" sx={{ 
+              border: '1px solid rgba(255, 152, 0, 0.3)',
               color: 'white',
-                  fontWeight: 'bold',
-                  textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              boxShadow: '0 8px 32px rgba(255, 152, 0, 0.3)'
             }}>
-                  {overallProgress.toFixed(0)}%
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={{ 
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-            }}>
-              <CardContent sx={{ textAlign: 'center', py: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-                  {savingsEvolution.trend === 'up' ? (
-                    <TrendingUp sx={{ color: '#4caf50', fontSize: 24 }} />
-                  ) : savingsEvolution.trend === 'down' ? (
-                    <TrendingDown sx={{ color: '#f44336', fontSize: 24 }} />
-                  ) : (
-                    <Info sx={{ color: '#ff9800', fontSize: 24 }} />
-                  )}
-                  <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-                    {savingsEvolution.trend === 'up' ? '+' : savingsEvolution.trend === 'down' ? '-' : ''}
-                    {savingsEvolution.percentage.toFixed(1)}%
-                  </Typography>
+              <CardContent>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <Info sx={{ mr: 1 }} />
+                  <Typography variant="h6">{t('savings.averageMonthly')}</Typography>
                 </Box>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 1 }}>
-                  vs mois précédent
+                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                  {Math.round(averageMonthlySavings)}€
                 </Typography>
+                <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
+                  {t('savings.thisMonth')}: {Math.round(currentMonthSavings)}€
+                </Typography>
+                {sideByMonth.length >= 2 && (
+                  <Typography 
+                    variant="body2" 
+                    sx={{ 
+                      opacity: 0.8, 
+                      color: isEvolutionPositive ? '#4caf50' : '#f44336',
+                      fontWeight: 'bold'
+                    }} 
+                    component="span"
+                  >
+                    {isEvolutionPositive ? '+' : ''}{savingsEvolution}% {t('savings.vsPreviousMonth')}
+                  </Typography>
+                )}
               </CardContent>
             </Card>
           </Grid>
         </Grid>
 
-        {/* Graphique d'épargne */}
-        <Card sx={{ 
+        {/* Objectifs d'épargne glassmorphism */}
+        <Paper sx={{ 
+          p: 2, 
+          mb: 3,
           background: 'rgba(255, 255, 255, 0.1)',
           backdropFilter: 'blur(20px)',
           border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-          mb: 4
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
         }}>
-          <CardContent>
-            <Typography variant="h6" sx={{ 
-              color: 'white', 
-              mb: 3,
-              fontWeight: 'bold'
-            }}>
-              Évolution de l'épargne
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
+              {t('savings.savingsGoals')}
             </Typography>
-            <Box sx={{ height: 300 }}>
-              <Bar 
-                data={getMonthlySavingsData()}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      labels: {
-                        color: 'rgba(255, 255, 255, 0.8)'
-                      }
-                    }
-                  },
-                  scales: {
-                    x: {
-                      ticks: {
-                        color: 'rgba(255, 255, 255, 0.8)'
-                      },
-                      grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                      }
-                    },
-                    y: {
-                      ticks: {
-                        color: 'rgba(255, 255, 255, 0.8)'
-                      },
-                      grid: {
-                        color: 'rgba(255, 255, 255, 0.1)'
-                      }
-                    }
-                  }
-                }}
-              />
-            </Box>
-          </CardContent>
-        </Card>
-
-        {/* Objectifs d'épargne */}
-        <Box sx={{ mb: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h5" sx={{ 
-              color: 'white', 
-              fontWeight: 'bold'
-            }}>
-              Objectifs d'épargne
-            </Typography>
-            {canAddMoreGoals && (
             <Button
               variant="contained"
               startIcon={<Add />}
               onClick={() => setAddDialog(true)}
+              disabled={!canAddMoreGoals}
               sx={{
-                  background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
+                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
                 '&:hover': {
-                    background: 'linear-gradient(135deg, #45a049 0%, #7cb342 100%)'
+                  background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)'
                 }
               }}
             >
-                Ajouter un objectif
+              {t('savings.addGoal')}
+              {!canAddMoreGoals && (
+                <Chip 
+                  label={t('savings.limitReached')} 
+                  size="small" 
+                  color="warning" 
+                  sx={{ ml: 1, height: 20 }}
+                />
+              )}
             </Button>
-            )}
           </Box>
           
+          <Grid container spacing={2}>
             {goals.length === 0 ? (
-            <Card sx={{ 
-              background: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
+              <Grid item xs={12}>
+                <Paper sx={{ 
+                  p: 4, 
                   textAlign: 'center',
-              py: 6
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)'
                 }}>
-              <Typography variant="h6" sx={{ color: 'rgba(255, 255, 255, 0.8)', mb: 2 }}>
-                Aucun objectif d'épargne
+                  <Typography variant="h6" gutterBottom sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    {t('savings.noSavingsGoals')}
                   </Typography>
-              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 3 }}>
-                Créez votre premier objectif d'épargne pour commencer à épargner
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }} component="span">
+                    {t('savings.addFirstGoal')}
                   </Typography>
-              {canAddMoreGoals && (
-                <Button
-                  variant="contained"
-                  startIcon={<Add />}
-                  onClick={() => setAddDialog(true)}
-                  sx={{
-                    background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #45a049 0%, #7cb342 100%)'
-                    }
-                  }}
-                >
-                  Créer un objectif
-                </Button>
-              )}
-            </Card>
+                </Paper>
+              </Grid>
             ) : (
-            <Grid container spacing={3}>
-              {goals.map((goal) => {
-                const progress = (goal.current / goal.target) * 100;
-                const daysUntilDeadline = getDaysUntilDeadline(goal.deadline);
-                const isCompleted = progress >= 100;
-                const isOverdue = daysUntilDeadline < 0;
+              goals.map((goal) => {
+                const progress = goal.target > 0 ? ((goal.current || 0) / goal.target * 100).toFixed(1) : 0;
+                const daysLeft = getDaysUntilDeadline(goal.deadline);
                 
                 return (
-                  <Grid item xs={12} md={6} key={goal.id}>
+                  <Grid item xs={12} md={6} lg={4} key={goal.id}>
                     <Card sx={{
                       background: 'rgba(255, 255, 255, 0.1)',
                       backdropFilter: 'blur(20px)',
@@ -459,46 +541,36 @@ const Savings = () => {
                       boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
                       transition: 'all 0.3s ease',
                       '&:hover': {
-                        transform: 'translateY(-2px)',
+                        transform: 'translateY(-4px)',
                         boxShadow: '0 12px 40px rgba(0, 0, 0, 0.2)'
                       }
                     }}>
                       <CardContent>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                          <Box sx={{ flex: 1 }}>
-                            <Typography variant="h6" sx={{ 
-                              color: 'white', 
-                              fontWeight: 'bold',
-                              mb: 1
-                            }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Typography variant="h3" sx={{ mr: 1, color: 'white' }}>
+                              {getSafeIcon(goal.icon)}
+                            </Typography>
+                            <Box>
+                              <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
                                 {goal.name}
                               </Typography>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-                                <CurrencyFormatter value={goal.current} /> / <CurrencyFormatter value={goal.target} />
+                              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }} component="span">
+                                {daysLeft} {t('savings.daysLeft')}
                               </Typography>
-                              {isCompleted && (
-                                <Chip 
-                                  label="Terminé" 
-                                  size="small" 
-                                  sx={{ 
-                                    background: '#4caf50',
-                                    color: 'white',
-                                    fontWeight: 'bold'
-                                  }}
-                                />
-                              )}
                             </Box>
                           </Box>
                           <Box>
+                            {progress >= 100 && <CheckCircle sx={{ color: '#4caf50' }} />}
                             <IconButton 
                               size="small" 
                               onClick={() => {
                                 setSelectedGoal(goal);
                                 setNewGoal({ 
                                   name: goal.name, 
-                                  target: goal.target.toString(),
-                                  current: goal.current.toString(),
+                                  target: goal.target, 
+                                  current: goal.current || 0, 
+                                  icon: getSafeIcon(goal.icon), 
                                   deadline: goal.deadline 
                                 });
                                 setEditDialog(true);
@@ -509,248 +581,364 @@ const Savings = () => {
                             </IconButton>
                             <IconButton 
                               size="small" 
+                              color="error"
                               onClick={() => {
                                 setSelectedGoal(goal);
                                 setDeleteDialog(true);
                               }}
-                              sx={{ color: 'rgba(255, 255, 255, 0.7)' }}
+                              sx={{ color: '#f44336' }}
                             >
                               <Delete />
                             </IconButton>
                           </Box>
                         </Box>
                         
+                        <Box sx={{ mb: 2 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }} component="span">
+                              {(goal.current || 0).toLocaleString()}€ / {goal.target.toLocaleString()}€
+                            </Typography>
+                            <Chip 
+                              label={`${progress}%`} 
+                              size="small" 
+                              color={getProgressColor(progress)}
+                              sx={{ 
+                                background: 'rgba(255, 255, 255, 0.2)',
+                                backdropFilter: 'blur(10px)',
+                                color: 'white'
+                              }}
+                            />
+                          </Box>
                           <LinearProgress 
                             variant="determinate" 
-                          value={Math.min(progress, 100)}
+                            value={Math.min(parseFloat(progress), 100)} 
+                            color={getProgressColor(progress)}
                             sx={{ 
                               height: 8, 
                               borderRadius: 4,
-                            background: 'rgba(255, 255, 255, 0.2)',
+                              bgcolor: 'rgba(255, 255, 255, 0.2)',
                               '& .MuiLinearProgress-bar': {
-                              background: getProgressColor(progress),
                                 borderRadius: 4
                               }
                             }}
                           />
+                        </Box>
 
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
-                          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-                            {progress.toFixed(1)}% complété
-                          </Typography>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <CalendarToday sx={{ fontSize: 16, color: 'rgba(255, 255, 255, 0.6)' }} />
-                            <Typography variant="body2" sx={{ 
-                              color: isOverdue ? '#f44336' : 'rgba(255, 255, 255, 0.6)',
-                              fontWeight: isOverdue ? 'bold' : 'normal'
-                            }}>
-                              {isOverdue 
-                                ? `${Math.abs(daysUntilDeadline)} jours de retard`
-                                : `${daysUntilDeadline} jours restants`
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => handleUpdateProgress(goal.id, 100)}
+                            disabled={(goal.current || 0) >= goal.target}
+                            sx={{
+                              borderColor: 'rgba(255, 255, 255, 0.3)',
+                              color: 'white',
+                              '&:hover': {
+                                borderColor: 'rgba(255, 255, 255, 0.5)',
+                                background: 'rgba(255, 255, 255, 0.1)'
                               }
-                            </Typography>
-                          </Box>
+                            }}
+                          >
+                            +100€
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => handleUpdateProgress(goal.id, 500)}
+                            disabled={(goal.current || 0) >= goal.target}
+                            sx={{
+                              borderColor: 'rgba(255, 255, 255, 0.3)',
+                              color: 'white',
+                              '&:hover': {
+                                borderColor: 'rgba(255, 255, 255, 0.5)',
+                                background: 'rgba(255, 255, 255, 0.1)'
+                              }
+                            }}
+                          >
+                            +500€
+                          </Button>
                         </Box>
                       </CardContent>
                     </Card>
                   </Grid>
                 );
-              })}
+              })
+            )}
           </Grid>
-          )}
-                </Box>
-      </Container>
+        </Paper>
 
-      {/* Bouton flottant */}
-      {canAddMoreGoals && (
-        <Fab
-          color="primary"
-          aria-label="add"
-          onClick={() => setAddDialog(true)}
-          sx={{
-            position: 'fixed',
-            bottom: 16,
-            right: 16,
-            background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
-            '&:hover': {
-              background: 'linear-gradient(135deg, #45a049 0%, #7cb342 100%)'
+        {/* Graphiques glassmorphism */}
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ 
+              p: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold', mb: 2 }}>
+                {t('savings.monthlySavingsEvolution')}
+              </Typography>
+              {sideByMonth.length === 0 ? (
+                <Box sx={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    {t('savings.noSavingsData')}
+                  </Typography>
+                </Box>
+              ) : (
+                <Box sx={{ height: 300 }}>
+                  <Bar data={barData} options={barOptions} />
+                </Box>
+              )}
+            </Paper>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Paper sx={{ 
+              p: 2,
+              background: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold', mb: 2 }}>
+                {t('savings.savingsDistribution')}
+              </Typography>
+              {goals.length === 0 ? (
+                <Box sx={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography variant="h6" gutterBottom sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    {t('savings.noSavingsGoals')}
+                  </Typography>
+                </Box>
+              ) : (
+                <Box sx={{ height: 300 }}>
+                  <Doughnut data={doughnutData} options={chartOptions} />
+                </Box>
+              )}
+            </Paper>
+          </Grid>
+        </Grid>
+
+        {/* Dialogs glassmorphism */}
+        <Dialog 
+          open={addDialog} 
+          onClose={() => setAddDialog(false)} 
+          maxWidth="sm" 
+          fullWidth
+          PaperProps={{
+            sx: {
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
             }
           }}
         >
-          <Add />
-        </Fab>
-      )}
-
-      {/* Dialog d'ajout */}
-      <Dialog open={addDialog} onClose={() => setAddDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ 
-          background: 'linear-gradient(135deg, #10131a 0%, #232946 100%)',
-          color: 'white'
-        }}>
-          Ajouter un objectif d'épargne
+          <DialogTitle sx={{ color: '#333', fontWeight: 'bold' }}>
+            {t('savings.addGoalTitle')}
           </DialogTitle>
-        <DialogContent sx={{ pt: 3 }}>
+          <DialogContent>
             <TextField
+              autoFocus
+              margin="dense"
+              label={t('savings.goalName')}
               fullWidth
-            label="Nom de l'objectif"
+              variant="outlined"
               value={newGoal.name}
               onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })}
-            sx={{ mb: 3 }}
+              sx={{ mb: 2 }}
             />
             <TextField
+              margin="dense"
+              label={t('savings.targetAmount')}
+              type="number"
               fullWidth
-            label="Montant cible"
-            type="number"
+              variant="outlined"
               value={newGoal.target}
               onChange={(e) => setNewGoal({ ...newGoal, target: e.target.value })}
-            sx={{ mb: 3 }}
+              sx={{ mb: 2 }}
             />
             <TextField
+              margin="dense"
+              label={t('savings.currentAmount')}
+              type="number"
               fullWidth
-            label="Montant actuel"
-            type="number"
+              variant="outlined"
               value={newGoal.current}
               onChange={(e) => setNewGoal({ ...newGoal, current: e.target.value })}
-            sx={{ mb: 3 }}
+              sx={{ mb: 2 }}
             />
             <TextField
+              margin="dense"
+              label={t('savings.deadline')}
+              type="date"
               fullWidth
-            label="Date limite"
-            type="date"
+              variant="outlined"
               value={newGoal.deadline}
               onChange={(e) => setNewGoal({ ...newGoal, deadline: e.target.value })}
               InputLabelProps={{ shrink: true }}
             />
           </DialogContent>
-        <DialogActions sx={{ 
-          background: 'linear-gradient(135deg, #10131a 0%, #232946 100%)',
-          p: 2
-        }}>
-          <Button onClick={() => setAddDialog(false)} sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-            Annuler
+          <DialogActions>
+            <Button 
+              onClick={() => setAddDialog(false)}
+              sx={{ color: '#666' }}
+            >
+              {t('savings.cancel')}
             </Button>
             <Button 
               onClick={handleAddGoal} 
               variant="contained"
+              disabled={!newGoal.name || !newGoal.target}
               sx={{
-              background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
+                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
                 '&:hover': {
-                background: 'linear-gradient(135deg, #45a049 0%, #7cb342 100%)'
+                  background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)'
                 }
               }}
             >
-            Ajouter
+              {t('savings.add')}
             </Button>
           </DialogActions>
         </Dialog>
 
-      {/* Dialog de modification */}
-      <Dialog open={editDialog} onClose={() => setEditDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ 
-          background: 'linear-gradient(135deg, #10131a 0%, #232946 100%)',
-          color: 'white'
-        }}>
-          Modifier l'objectif
+        <Dialog 
+          open={editDialog} 
+          onClose={() => setEditDialog(false)} 
+          maxWidth="sm" 
+          fullWidth
+          PaperProps={{
+            sx: {
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }
+          }}
+        >
+          <DialogTitle sx={{ color: '#333', fontWeight: 'bold' }}>
+            {t('savings.modifyGoalTitle')}
           </DialogTitle>
-        <DialogContent sx={{ pt: 3 }}>
+          <DialogContent>
             <TextField
+              autoFocus
+              margin="dense"
+              label={t('savings.goalName')}
               fullWidth
-            label="Nom de l'objectif"
+              variant="outlined"
               value={newGoal.name}
               onChange={(e) => setNewGoal({ ...newGoal, name: e.target.value })}
-            sx={{ mb: 3 }}
+              sx={{ mb: 2 }}
             />
             <TextField
+              margin="dense"
+              label={t('savings.targetAmount')}
+              type="number"
               fullWidth
-            label="Montant cible"
-            type="number"
+              variant="outlined"
               value={newGoal.target}
               onChange={(e) => setNewGoal({ ...newGoal, target: e.target.value })}
-            sx={{ mb: 3 }}
+              sx={{ mb: 2 }}
             />
             <TextField
+              margin="dense"
+              label={t('savings.currentAmount')}
+              type="number"
               fullWidth
-            label="Montant actuel"
-            type="number"
+              variant="outlined"
               value={newGoal.current}
               onChange={(e) => setNewGoal({ ...newGoal, current: e.target.value })}
-            sx={{ mb: 3 }}
+              sx={{ mb: 2 }}
             />
             <TextField
+              margin="dense"
+              label={t('savings.deadline')}
+              type="date"
               fullWidth
-            label="Date limite"
-            type="date"
+              variant="outlined"
               value={newGoal.deadline}
               onChange={(e) => setNewGoal({ ...newGoal, deadline: e.target.value })}
               InputLabelProps={{ shrink: true }}
             />
           </DialogContent>
-        <DialogActions sx={{ 
-          background: 'linear-gradient(135deg, #10131a 0%, #232946 100%)',
-          p: 2
-        }}>
-          <Button onClick={() => setEditDialog(false)} sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-            Annuler
+          <DialogActions>
+            <Button 
+              onClick={() => setEditDialog(false)}
+              sx={{ color: '#666' }}
+            >
+              {t('savings.cancel')}
             </Button>
             <Button 
               onClick={handleEditGoal} 
               variant="contained"
+              disabled={!newGoal.name || !newGoal.target}
               sx={{
-              background: 'linear-gradient(135deg, #4caf50 0%, #8bc34a 100%)',
+                background: 'linear-gradient(135deg, #2196f3 0%, #1976d2 100%)',
                 '&:hover': {
-                background: 'linear-gradient(135deg, #45a049 0%, #7cb342 100%)'
+                  background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)'
                 }
               }}
             >
-            Modifier
+              {t('savings.modify')}
             </Button>
           </DialogActions>
         </Dialog>
 
-      {/* Dialog de suppression */}
-      <Dialog open={deleteDialog} onClose={() => setDeleteDialog(false)}>
-        <DialogTitle sx={{ 
-          background: 'linear-gradient(135deg, #10131a 0%, #232946 100%)',
-          color: 'white'
-        }}>
-          Confirmer la suppression
+        <Dialog 
+          open={deleteDialog} 
+          onClose={() => setDeleteDialog(false)}
+          PaperProps={{
+            sx: {
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }
+          }}
+        >
+          <DialogTitle sx={{ color: '#333', fontWeight: 'bold' }}>
+            {t('savings.deleteGoalTitle')}
           </DialogTitle>
-        <DialogContent sx={{ pt: 3 }}>
-          <Typography>
-            Êtes-vous sûr de vouloir supprimer l'objectif "{selectedGoal?.name}" ?
+          <DialogContent>
+            <Typography sx={{ color: '#333' }}>
+              {t('savings.areYouSureDelete', { goalName: selectedGoal?.name })}
             </Typography>
           </DialogContent>
-        <DialogActions sx={{ 
-          background: 'linear-gradient(135deg, #10131a 0%, #232946 100%)',
-          p: 2
-        }}>
-          <Button onClick={() => setDeleteDialog(false)} sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-            Annuler
+          <DialogActions>
+            <Button 
+              onClick={() => setDeleteDialog(false)}
+              sx={{ color: '#666' }}
+            >
+              {t('savings.cancel')}
             </Button>
             <Button 
               onClick={handleDeleteGoal} 
+              color="error" 
               variant="contained"
-            color="error"
+              sx={{
+                background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)'
+                }
+              }}
             >
-            Supprimer
+              {t('savings.delete')}
             </Button>
           </DialogActions>
         </Dialog>
 
-      {/* Snackbar */}
         <Snackbar 
           open={snack.open} 
-        autoHideDuration={6000}
-        onClose={() => setSnack({ ...snack, open: false })}
+          autoHideDuration={3000} 
+          onClose={() => setSnack(s => ({ ...s, open: false }))}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         >
-        <Alert 
-          onClose={() => setSnack({ ...snack, open: false })} 
-          severity={snack.severity}
-          sx={{ width: '100%' }}
-        >
+          <Alert onClose={() => setSnack(s => ({ ...s, open: false }))} severity={snack.severity}>
             {snack.message}
           </Alert>
         </Snackbar>
+      </Box>
     </Box>
   );
 };
