@@ -1375,8 +1375,8 @@ const useStore = create(
           // Restaurer l'état d'authentification
           set({ isAuthenticated: true });
           
-          // Charger les données utilisateur si nécessaire
-          if (!state.isLoading && !state.months.length) {
+          // Charger les données utilisateur si nécessaire et si on a un token
+          if (!state.isLoading && !state.months.length && state.token) {
             try {
               console.log('Chargement des données utilisateur pour la reconnexion automatique');
               const data = await budgetService.getBudget(state.user.id);
@@ -1413,6 +1413,8 @@ const useStore = create(
             } catch (error) {
               console.error('Erreur lors du chargement des données pour la reconnexion automatique:', error);
             }
+          } else if (!state.token) {
+            console.log('Pas de token - utilisation des données locales pour la reconnexion automatique');
           }
           
           return true;
@@ -1436,6 +1438,44 @@ const useStore = create(
         // Éviter les appels API inutiles lors de la connexion initiale
         if (!state.token) {
           console.log('Pas de token - sauvegarde locale uniquement');
+          // Sauvegarder en local seulement
+          try {
+            const localData = {
+              months: state.months,
+              categories: state.categories,
+              data: state.data,
+              revenus: state.revenus,
+              incomeTypes: state.incomeTypes,
+              incomes: state.incomes,
+              persons: state.persons,
+              saved: state.saved,
+              sideByMonth: state.sideByMonth,
+              totalPotentialSavings: state.totalPotentialSavings,
+              budgetLimits: state.budgetLimits,
+              expenses: state.expenses,
+              incomeTransactions: state.incomeTransactions,
+              savings: state.savings,
+              debts: state.debts,
+              bankAccounts: state.bankAccounts,
+              transactions: state.transactions,
+              userProfile: state.userProfile,
+              appSettings: state.appSettings,
+              accounts: state.accounts,
+              activeAccount: state.activeAccount,
+              tutorialCompleted: state.tutorialCompleted,
+              onboardingCompleted: state.onboardingCompleted,
+              lastUpdateShown: state.lastUpdateShown,
+              appVersion: state.appVersion
+            };
+            
+            if (state.user && state.user.id) {
+              const key = `budget_${state.user.id}`;
+              localStorage.setItem(key, JSON.stringify(localData));
+              console.log('Sauvegarde locale réussie (forceSave):', key);
+            }
+          } catch (error) {
+            console.error('Erreur sauvegarde locale (forceSave):', error);
+          }
           return;
         }
         
