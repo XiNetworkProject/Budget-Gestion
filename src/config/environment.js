@@ -44,7 +44,7 @@ export const ENV_CONFIG = {
   IS_PRODUCTION: import.meta.env.PROD,
 
   // Configuration API
-  API_URL: import.meta.env.VITE_API_URL || 'https://budget-gestion-6t5vtcbir-maximes-projects-d242441a.vercel.app',
+  API_URL: import.meta.env.VITE_API_URL || 'https://budget-gestion-6t5vtcbir-maximes-projects-d242441a.vercel.app/home',
   GOOGLE_CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
 
   // Configuration des fonctionnalités
