@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL || 'https://your-app.vercel.app';
+const API_URL = import.meta.env.VITE_API_URL || 'https://budget-gestion-6t5vtcbir-maximes-projects-d242441a.vercel.app';
 import { useStore } from '../store';
 
 // Fonction utilitaire pour sauvegarder en local
