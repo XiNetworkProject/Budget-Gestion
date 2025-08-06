@@ -27,14 +27,6 @@
   "env": {
     "NODE_ENV": "production"
   },
-  "functions": {
-    "api/budget.js": {
-      "maxDuration": 30
-    },
-    "api/stripe.js": {
-      "maxDuration": 30
-    }
-  },
   "headers": [
     {
       "source": "/api/(.*)",
