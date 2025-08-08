@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useStore } from '../store';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { 
   Box, 
   Typography, 
@@ -27,7 +28,8 @@ import {
   Alert,
   Tooltip,
   AppBar,
-  Fab
+  Fab,
+  Stack
 } from '@mui/material';
 import {
   Add,
@@ -40,7 +42,12 @@ import {
   Warning,
   Info,
   AttachMoney,
-  MoreVert
+  MoreVert,
+  FileDownload,
+  Calculate,
+  Lightbulb,
+  Lock,
+  WorkspacePremium
 } from '@mui/icons-material';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { 
@@ -72,6 +79,7 @@ const Savings = () => {
   } = useStore();
 
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const [addDialog, setAddDialog] = useState(false);
   const [editDialog, setEditDialog] = useState(false);
@@ -129,6 +137,12 @@ const Savings = () => {
 
   const savingsEvolution = getSavingsEvolution();
   const isEvolutionPositive = parseFloat(savingsEvolution) >= 0;
+
+  // Plan & fonctionnalités avancées
+  const currentPlan = getCurrentPlan?.() || {};
+  const aiLevel = currentPlan?.features?.aiAnalysis || false; // false | 'partial' | 'full'
+  const allowPremiumOrPro = aiLevel === 'partial' || aiLevel === 'full';
+  const allowPro = aiLevel === 'full';
 
   const barData = {
     labels: monthlyData.labels,
@@ -279,6 +293,63 @@ const Savings = () => {
     return <AttachMoney sx={{ fontSize: 24 }} />;
   };
 
+  // Export CSV (Pro)
+  const exportCSV = () => {
+    try {
+      const headers = ['id','nom','objectif','actuel','deadline','progression_%','jours_restant'];
+      const rows = goals.map(g => {
+        const progress = g.target > 0 ? (((g.current || 0) / g.target) * 100).toFixed(1) : '0';
+        const days = getDaysUntilDeadline(g.deadline) ?? '';
+        return [g.id || '', g.name || '', g.target || 0, g.current || 0, g.deadline || '', progress, days];
+      });
+      const csv = [headers, ...rows]
+        .map(r => r.map(v => (typeof v === 'string' && v.includes(',') ? `"${v.replace(/"/g, '""')}"` : v)).join(','))
+        .join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'epargne_objectifs.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Erreur export CSV:', e);
+    }
+  };
+
+  // Simulateur d'intérêts composés (Pro)
+  const [simOpen, setSimOpen] = useState(false);
+  const [sim, setSim] = useState({ principal: 1000, monthly: 100, rate: 4, years: 3 });
+  const simResult = useMemo(() => {
+    const P = Number(sim.principal) || 0;
+    const PMT = Number(sim.monthly) || 0;
+    const r = (Number(sim.rate) || 0) / 100 / 12;
+    const n = (Number(sim.years) || 0) * 12;
+    if (n <= 0) return { final: P, interest: 0 };
+    const futurePrincipal = P * Math.pow(1 + r, n);
+    const futureMonthly = r > 0 ? PMT * (Math.pow(1 + r, n) - 1) / r : PMT * n;
+    const final = futurePrincipal + futureMonthly;
+    const invested = P + PMT * n;
+    return { final, interest: Math.max(0, final - invested) };
+  }, [sim]);
+
+  // Projections simples d'atteinte des objectifs (selon moyenne mensuelle)
+  const projections = useMemo(() => {
+    if (!averageMonthlySavings || averageMonthlySavings <= 0) return [];
+    return goals.map(g => {
+      const remaining = Math.max(0, (g.target || 0) - (g.current || 0));
+      const monthsNeeded = remaining > 0 ? Math.ceil(remaining / averageMonthlySavings) : 0;
+      const targetDate = new Date();
+      targetDate.setMonth(targetDate.getMonth() + monthsNeeded);
+      return {
+        id: g.id,
+        name: g.name,
+        monthsNeeded,
+        eta: monthsNeeded > 0 ? targetDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : 'Atteint'
+      };
+    });
+  }, [goals, averageMonthlySavings]);
+
   return (
     <Box sx={{ 
       minHeight: '100vh',
@@ -353,6 +424,45 @@ const Savings = () => {
       </AppBar>
 
       <Box sx={{ p: 0, pb: 10, position: 'relative', zIndex: 1 }}>
+        {/* Actions avancées */}
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mb: 2 }}>
+          <Tooltip title={allowPro ? 'Exporter vos objectifs en CSV' : 'Réservé au plan Pro'}>
+            <span>
+              <Button
+                startIcon={<FileDownload />}
+                variant="outlined"
+                disabled={!allowPro || goals.length === 0}
+                onClick={exportCSV}
+                sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}
+              >
+                Export CSV
+              </Button>
+            </span>
+          </Tooltip>
+          <Tooltip title={allowPro ? 'Simuler les intérêts composés' : 'Réservé au plan Pro'}>
+            <span>
+              <Button
+                startIcon={<Calculate />}
+                variant="outlined"
+                disabled={!allowPro}
+                onClick={() => setSimOpen(true)}
+                sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}
+              >
+                Simulateur intérêts
+              </Button>
+            </span>
+          </Tooltip>
+          {!allowPro && (
+            <Button 
+              startIcon={<WorkspacePremium />} 
+              onClick={() => navigate('/subscription')} 
+              sx={{ color: '#ffd54f' }}
+            >
+              Passer Pro
+            </Button>
+          )}
+        </Stack>
+
         {/* KPIs glassmorphism */}
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={12} sm={6} md={3}>
@@ -471,6 +581,36 @@ const Savings = () => {
             </Card>
           </Grid>
         </Grid>
+
+        {/* Projections d'épargne */}
+        <Paper sx={{ 
+          p: 2, mb: 3,
+          background: 'rgba(255, 255, 255, 0.08)',
+          backdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <TrendingUp sx={{ color: 'white', mr: 1 }} />
+            <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>Projections d'atteinte</Typography>
+          </Box>
+          {averageMonthlySavings <= 0 || goals.length === 0 ? (
+            <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+              Ajoutez des objectifs et enregistrez au moins un mois d'épargne pour voir des projections.
+            </Typography>
+          ) : (
+            <List>
+              {projections.map(p => (
+                <ListItem key={p.id} divider sx={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                  <ListItemText
+                    primary={<Typography sx={{ color: 'white' }}>{p.name}</Typography>}
+                    secondary={<Typography sx={{ color: 'rgba(255,255,255,0.7)' }}>{p.monthsNeeded} mois • ETA: {p.eta}</Typography>}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          )}
+        </Paper>
 
         {/* Objectifs d'épargne glassmorphism */}
         <Paper sx={{ 
@@ -720,6 +860,55 @@ const Savings = () => {
           </Grid>
         </Grid>
 
+        {/* Suggestions intelligentes (Premium/Pro) */}
+        <Paper sx={{ 
+          p: 2, mt: 3,
+          background: 'rgba(255, 255, 255, 0.08)',
+          backdropFilter: 'blur(16px)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <Lightbulb sx={{ color: 'white', mr: 1 }} />
+            <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>Suggestions intelligentes</Typography>
+          </Box>
+          {allowPremiumOrPro ? (
+            <List>
+              {goals.slice(0, 3).map(g => {
+                const progress = g.target > 0 ? ((g.current || 0) / g.target) : 0;
+                const days = getDaysUntilDeadline(g.deadline) ?? null;
+                let tip = '';
+                if (progress < 0.25) tip = `Augmentez l'épargne dédiée à "${g.name}" de 10% ce mois-ci.`;
+                else if (days !== null && days <= 60 && progress < 0.8) tip = `Rapprochez-vous de l'objectif "${g.name}" en y allouant une part fixe de votre épargne mensuelle.`;
+                else tip = `Maintenez le cap sur "${g.name}". Vous pouvez viser +5% sur le prochain mois.`;
+                return (
+                  <ListItem key={g.id} divider sx={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                    <ListItemText
+                      primary={<Typography sx={{ color: 'white' }}>{g.name}</Typography>}
+                      secondary={<Typography sx={{ color: 'rgba(255,255,255,0.7)' }}>{tip}</Typography>}
+                    />
+                  </ListItem>
+                );
+              })}
+              {goals.length === 0 && (
+                <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                  Ajoutez un objectif pour recevoir des suggestions adaptées.
+                </Typography>
+              )}
+            </List>
+          ) : (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Lock sx={{ color: 'rgba(255,255,255,0.7)' }} />
+              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+                Suggestions disponibles avec Premium/Pro
+              </Typography>
+              <Button size="small" startIcon={<WorkspacePremium />} onClick={() => navigate('/subscription')} sx={{ color: '#ffd54f' }}>
+                Découvrir les offres
+              </Button>
+            </Box>
+          )}
+        </Paper>
+
         {/* Dialogs glassmorphism */}
         <Dialog 
           open={addDialog} 
@@ -925,6 +1114,77 @@ const Savings = () => {
             >
               {t('savings.delete')}
             </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Simulateur d'intérêts composés (Pro) */}
+        <Dialog 
+          open={simOpen} 
+          onClose={() => setSimOpen(false)}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }
+          }}
+        >
+          <DialogTitle sx={{ color: '#333', fontWeight: 'bold' }}>
+            Simulateur d'intérêts composés
+          </DialogTitle>
+          <DialogContent>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Capital initial (€)"
+                  type="number"
+                  fullWidth
+                  value={sim.principal}
+                  onChange={(e) => setSim(s => ({ ...s, principal: e.target.value }))}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Versement mensuel (€)"
+                  type="number"
+                  fullWidth
+                  value={sim.monthly}
+                  onChange={(e) => setSim(s => ({ ...s, monthly: e.target.value }))}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Taux annuel (%)"
+                  type="number"
+                  fullWidth
+                  value={sim.rate}
+                  onChange={(e) => setSim(s => ({ ...s, rate: e.target.value }))}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Durée (années)"
+                  type="number"
+                  fullWidth
+                  value={sim.years}
+                  onChange={(e) => setSim(s => ({ ...s, years: e.target.value }))}
+                />
+              </Grid>
+            </Grid>
+            <Box sx={{ mt: 2 }}>
+              <Typography sx={{ color: '#333' }}>
+                Montant final estimé: <strong>{Math.round(simResult.final).toLocaleString()}€</strong>
+              </Typography>
+              <Typography sx={{ color: '#333' }}>
+                Intérêts estimés: <strong>{Math.round(simResult.interest).toLocaleString()}€</strong>
+              </Typography>
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setSimOpen(false)} sx={{ color: '#666' }}>Fermer</Button>
           </DialogActions>
         </Dialog>
 
