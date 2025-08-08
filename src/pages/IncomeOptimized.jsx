@@ -186,7 +186,7 @@ const IncomeOptimized = () => {
   if (isLoading) {
     return (
       <Box sx={{ p: 2 }}>
-        <LoadingSpinner message={t('income.loading')} variant="elegant" fullScreen />
+        <LoadingSpinner message={t('income.loading')} variant="contrast" fullScreen />
       </Box>
     );
   }

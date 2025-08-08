@@ -732,7 +732,9 @@ const AnalyticsEnhanced = () => {
                       </Typography>
             <Box sx={{ height: 300 }}>
               {analyticsData.categories.length === 0 ? (
-                <Skeleton variant="rounded" height={300} />
+                <Box sx={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Pas encore de données pour ce graphique</Typography>
+                </Box>
               ) : (
                 <Pie data={chartData.pieData} options={chartOptions} />
               )}
@@ -753,7 +755,9 @@ const AnalyticsEnhanced = () => {
                       </Typography>
             <Box sx={{ height: 300 }}>
               {analyticsData.monthly.length === 0 ? (
-                <Skeleton variant="rounded" height={300} />
+                <Box sx={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>Pas encore de données pour ce graphique</Typography>
+                </Box>
               ) : (
                 <Bar data={chartData.barData} options={chartOptions} />
               )}

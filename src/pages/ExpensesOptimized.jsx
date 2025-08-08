@@ -186,7 +186,7 @@ const ExpensesOptimized = () => {
   if (isLoading) {
     return (
       <Box sx={{ p: 2 }}>
-        <LoadingSpinner message={t('expenses.loading')} variant="elegant" fullScreen />
+        <LoadingSpinner message={t('expenses.loading')} variant="contrast" fullScreen />
       </Box>
     );
   }
