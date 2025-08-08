@@ -36,12 +36,14 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Menu,
   InputAdornment,
   Tabs,
   Tab,
   ToggleButton,
   ToggleButtonGroup,
-  Slider
+  Slider,
+  CircularProgress
 } from '@mui/material';
 import {
   Add,
@@ -469,21 +471,33 @@ const Savings = () => {
       <AppBar 
         position="static" 
         sx={{ 
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+          background: 'transparent',
           boxShadow: 'none',
           mb: 2
         }}
       >
-        <Box sx={{ p: 2 }}>
-          <Typography variant="h4" sx={{ 
-            fontWeight: 'bold',
-            color: 'white',
-            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+        <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{
+            width: 36, height: 36,
+            borderRadius: '10px',
+            background: 'linear-gradient(135deg, #00e1d6 0%, #1976d2 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 6px 20px rgba(0, 225, 214, 0.35)'
           }}>
-            {t('savings.title')}
-          </Typography>
+            <SavingsIcon sx={{ color: 'white' }} />
+          </Box>
+          <Box>
+            <Typography variant={isMobile ? 'h6' : 'h4'} sx={{ 
+              fontWeight: '800',
+              color: 'white',
+              letterSpacing: 0.3
+            }}>
+              {t('savings.title')}
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
+              Gérez vos objectifs d'épargne simplement
+            </Typography>
+          </Box>
         </Box>
       </AppBar>
 
@@ -538,18 +552,19 @@ const Savings = () => {
         <Grid container spacing={2} sx={{ mb: 3 }}>
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={{ 
-              background: 'rgba(25, 118, 210, 0.2)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(25, 118, 210, 0.3)',
+              background: 'linear-gradient(180deg, rgba(25,118,210,0.35) 0%, rgba(25,118,210,0.15) 100%)',
+              backdropFilter: 'blur(18px)',
+              border: '1px solid rgba(25, 118, 210, 0.35)',
               color: 'white',
-              boxShadow: '0 8px 32px rgba(25, 118, 210, 0.3)'
+              boxShadow: '0 12px 40px rgba(25, 118, 210, 0.35)',
+              borderRadius: 3
             }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <SavingsIcon sx={{ mr: 1 }} />
                   <Typography variant="h6">{t('savings.totalSaved')}</Typography>
                 </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ fontWeight: '800' }}>
                   {totalSaved.toLocaleString()}€
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
@@ -561,18 +576,19 @@ const Savings = () => {
 
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={{ 
-              background: 'rgba(76, 175, 80, 0.2)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(76, 175, 80, 0.3)',
+              background: 'linear-gradient(180deg, rgba(76,175,80,0.35) 0%, rgba(76,175,80,0.15) 100%)',
+              backdropFilter: 'blur(18px)',
+              border: '1px solid rgba(76, 175, 80, 0.35)',
               color: 'white',
-              boxShadow: '0 8px 32px rgba(76, 175, 80, 0.3)'
+              boxShadow: '0 12px 40px rgba(76, 175, 80, 0.35)',
+              borderRadius: 3
             }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <TrendingUp sx={{ mr: 1 }} />
                   <Typography variant="h6">{t('savings.progression')}</Typography>
                 </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ fontWeight: '800' }}>
                   {overallProgress}%
                 </Typography>
                 <LinearProgress 
@@ -595,18 +611,19 @@ const Savings = () => {
 
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={{ 
-              background: 'rgba(3, 169, 244, 0.2)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(3, 169, 244, 0.3)',
+              background: 'linear-gradient(180deg, rgba(3,169,244,0.35) 0%, rgba(3,169,244,0.15) 100%)',
+              backdropFilter: 'blur(18px)',
+              border: '1px solid rgba(3, 169, 244, 0.35)',
               color: 'white',
-              boxShadow: '0 8px 32px rgba(3, 169, 244, 0.3)'
+              boxShadow: '0 12px 40px rgba(3, 169, 244, 0.35)',
+              borderRadius: 3
             }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <Flag sx={{ mr: 1 }} />
                   <Typography variant="h6">{t('savings.goals')}</Typography>
                 </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ fontWeight: '800' }}>
                   {goals.length}
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
@@ -618,18 +635,19 @@ const Savings = () => {
 
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={{ 
-              background: 'rgba(255, 152, 0, 0.2)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255, 152, 0, 0.3)',
+              background: 'linear-gradient(180deg, rgba(255,152,0,0.35) 0%, rgba(255,152,0,0.15) 100%)',
+              backdropFilter: 'blur(18px)',
+              border: '1px solid rgba(255, 152, 0, 0.35)',
               color: 'white',
-              boxShadow: '0 8px 32px rgba(255, 152, 0, 0.3)'
+              boxShadow: '0 12px 40px rgba(255, 152, 0, 0.35)',
+              borderRadius: 3
             }}>
               <CardContent>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <Info sx={{ mr: 1 }} />
                   <Typography variant="h6">{t('savings.averageMonthly')}</Typography>
                 </Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                <Typography variant={isMobile ? 'h5' : 'h4'} sx={{ fontWeight: '800' }}>
                   {Math.round(averageMonthlySavings)}€
                 </Typography>
                 <Typography variant="body2" sx={{ opacity: 0.8 }} component="span">
@@ -656,10 +674,11 @@ const Savings = () => {
         {/* Projections d'épargne (visible en Aperçu et Planification) */}
         <Paper sx={{ 
           p: 2, mb: 3,
-          background: 'rgba(255, 255, 255, 0.08)',
-          backdropFilter: 'blur(16px)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 100%)',
+          backdropFilter: 'blur(18px)',
+          border: '1px solid rgba(255, 255, 255, 0.22)',
+          boxShadow: '0 12px 40px rgba(0, 0, 0, 0.2)',
+          borderRadius: 3
         }}>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
             <TrendingUp sx={{ color: 'white', mr: 1 }} />
@@ -674,8 +693,8 @@ const Savings = () => {
               {projections.map(p => (
                 <ListItem key={p.id} divider sx={{ borderColor: 'rgba(255,255,255,0.1)' }}>
                   <ListItemText
-                    primary={<Typography sx={{ color: 'white' }}>{p.name}</Typography>}
-                    secondary={<Typography sx={{ color: 'rgba(255,255,255,0.7)' }}>{p.monthsNeeded} mois • ETA: {p.eta}</Typography>}
+                    primary={<Typography sx={{ color: 'white', fontWeight: 600 }}>{p.name}</Typography>}
+                    secondary={<Typography sx={{ color: 'rgba(255,255,255,0.75)' }}>{p.monthsNeeded} mois • ETA: {p.eta}</Typography>}
                   />
                 </ListItem>
               ))}
