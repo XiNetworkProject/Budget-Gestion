@@ -42,6 +42,7 @@ import ErrorBoundary from '../components/optimized/ErrorBoundary';
 import LoadingSpinner from '../components/optimized/LoadingSpinner';
 import CategoryManager from '../components/optimized/CategoryManager';
 import TransactionManager from '../components/optimized/TransactionManager';
+import { showUndoToast } from '../components/optimized/UndoToast';
 
 ChartJS.register(
   CategoryScale, 
@@ -175,7 +176,11 @@ const ExpensesOptimized = () => {
   };
 
   const handleDeleteExpense = (expenseId) => {
+    const backup = expenses.find(e => e.id === expenseId);
     deleteExpense(expenseId);
+    if (backup) {
+      showUndoToast(t('transactionManager.deleted'), () => addExpense(backup));
+    }
   };
 
   if (isLoading) {
