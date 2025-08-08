@@ -40,7 +40,7 @@ const SplashScreen = () => {
       <Typography variant="h4" sx={{ color: 'white', mb: 2, fontWeight: 700 }}>
         Budget Gestion
       </Typography>
-      <LoadingSpinner message="Chargement..." variant="elegant" fullScreen={false} size={64} />
+            <LoadingSpinner message="Chargement..." variant="contrast" fullScreen={false} size={64} />
       <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mt: 2 }}>
         Initialisation de votre session
       </Typography>

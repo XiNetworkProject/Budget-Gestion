@@ -119,6 +119,47 @@ export const appTheme = createTheme({
         },
       },
     },
+    MuiDialogTitle: {
+      styleOverrides: {
+        root: {
+          color: '#fff',
+          fontWeight: 800,
+          padding: '16px 24px',
+          borderBottom: '1px solid rgba(255,255,255,0.08)'
+        },
+      },
+    },
+    MuiDialogActions: {
+      styleOverrides: {
+        root: {
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          padding: '12px 20px',
+          '& .MuiButton-root': { fontWeight: 700 },
+          '& .MuiButton-outlined': { borderColor: 'rgba(255,255,255,0.28)' },
+        },
+      },
+    },
+    MuiDialogContent: {
+      styleOverrides: {
+        root: {
+          color: 'rgba(255,255,255,0.92)'
+        },
+      },
+    },
+    MuiBackdrop: {
+      styleOverrides: {
+        root: {
+          backgroundColor: 'rgba(10,12,20,0.6)',
+          backdropFilter: 'blur(4px)'
+        },
+      },
+    },
+    MuiCircularProgress: {
+      defaultProps: { thickness: 4, color: 'secondary' },
+      styleOverrides: {
+        root: { filter: 'drop-shadow(0 6px 14px rgba(0,225,214,0.35))' },
+      },
+    },
     MuiTextField: {
       styleOverrides: {
         root: {

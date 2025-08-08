@@ -38,11 +38,7 @@ const PageLoader = ({ message = "Chargement de la page..." }) => (
     alignItems: 'center',
     justifyContent: 'center'
   }}>
-    <LoadingSpinner 
-      message={message} 
-      variant="elegant" 
-      fullScreen 
-    />
+    <LoadingSpinner message={message} variant="contrast" fullScreen />
   </Box>
 );
 
