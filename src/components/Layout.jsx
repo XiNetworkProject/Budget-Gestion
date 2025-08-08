@@ -12,6 +12,7 @@ import Tutorial from './Tutorial';
 import UpdateDialog from './UpdateDialog';
 import BottomTabs from './BottomTabs';
 import OfflineBanner from './OfflineBanner';
+import SideRail, { NAV_WIDTH } from './SideRail';
 import toast from 'react-hot-toast';
 
 const Layout = () => {
@@ -200,18 +201,26 @@ const Layout = () => {
         onClose={closeUpdateDialog}
       />
 
-      <Box sx={{ 
-        p: 0, // Supprime complètement le padding
-        pb: 0, // Supprime le padding bottom pour éviter l'espacement
-        minHeight: 'calc(100vh - 80px)', // Hauteur complète moins la barre de navigation
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
-        <Outlet />
+      <Box sx={{ display: 'flex' }}>
+        {!isMobile && (
+          <Box sx={{ width: NAV_WIDTH, flexShrink: 0 }}>
+            <SideRail />
+          </Box>
+        )}
+        <Box sx={{ 
+          p: 0,
+          pb: 0,
+          minHeight: 'calc(100vh - 80px)',
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1
+        }}>
+          <Outlet />
+        </Box>
       </Box>
 
-      {/* Nouvelle barre de navigation BottomTabs */}
-      <BottomTabs />
+      {/* BottomTabs seulement sur mobile */}
+      {isMobile && <BottomTabs />}
 
       {/* Indicateur d'abonnement discret */}
       {getSubscriptionIcon() && (

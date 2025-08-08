@@ -26,7 +26,8 @@ import {
   Alert,
   Accordion,
   AccordionSummary,
-  AccordionDetails
+  AccordionDetails,
+  Skeleton
 } from '@mui/material';
 import { 
   TrendingUp, 
@@ -729,9 +730,13 @@ const AnalyticsEnhanced = () => {
                       <Typography variant="h6" sx={{ color: 'white', mb: 2 }}>
                         Répartition des Dépenses
                       </Typography>
-                      <Box sx={{ height: 300 }}>
-                        <Pie data={chartData.pieData} options={chartOptions} />
-                      </Box>
+            <Box sx={{ height: 300 }}>
+              {analyticsData.categories.length === 0 ? (
+                <Skeleton variant="rounded" height={300} />
+              ) : (
+                <Pie data={chartData.pieData} options={chartOptions} />
+              )}
+            </Box>
                     </Paper>
                   </Grid>
 
@@ -746,9 +751,13 @@ const AnalyticsEnhanced = () => {
                       <Typography variant="h6" sx={{ color: 'white', mb: 2 }}>
                         Évolution sur 12 Mois
                       </Typography>
-                      <Box sx={{ height: 300 }}>
-                        <Bar data={chartData.barData} options={chartOptions} />
-                      </Box>
+            <Box sx={{ height: 300 }}>
+              {analyticsData.monthly.length === 0 ? (
+                <Skeleton variant="rounded" height={300} />
+              ) : (
+                <Bar data={chartData.barData} options={chartOptions} />
+              )}
+            </Box>
                     </Paper>
                   </Grid>
                 </Grid>
