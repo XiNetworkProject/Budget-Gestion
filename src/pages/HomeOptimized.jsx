@@ -63,6 +63,7 @@ import BalanceCard from '../components/optimized/BalanceCard';
 
 import { RecommendationsSection } from '../components/optimized/RecommendationCard';
 import UpcomingPayments from '../components/optimized/UpcomingPayments';
+import BankAccountsManager from '../components/optimized/BankAccountsManager';
 
 // Hooks optimisés
 import useOptimizedData from '../hooks/useOptimizedData';
@@ -923,9 +924,14 @@ const HomeOptimized = () => {
 
 
 
-          {/* Prochains paiements */}
-          <Grid item xs={12} md={6}>
-            <UpcomingPayments maxItems={3} />
+          {/* Comptes bancaires et prochains paiements */}
+          <Grid container spacing={2} sx={{ mb: 4 }}>
+            <Grid item xs={12} md={6}>
+              <BankAccountsManager />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <UpcomingPayments maxItems={3} />
+            </Grid>
           </Grid>
 
           {/* Graphiques optimisés */}
