@@ -29,7 +29,16 @@ import {
   Tooltip,
   AppBar,
   Fab,
-  Stack
+  Stack,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  InputAdornment,
+  Tabs,
+  Tab,
+  ToggleButton,
+  ToggleButtonGroup
 } from '@mui/material';
 import {
   Add,
@@ -47,7 +56,12 @@ import {
   Calculate,
   Lightbulb,
   Lock,
-  WorkspacePremium
+  WorkspacePremium,
+  Search,
+  RestartAlt,
+  ContentCopy,
+  AddCircleOutline,
+  RemoveCircleOutline
 } from '@mui/icons-material';
 import { Bar, Doughnut } from 'react-chartjs-2';
 import { 
@@ -90,12 +104,45 @@ const Savings = () => {
     target: '', 
     current: '', 
     icon: <AttachMoney sx={{ fontSize: 24 }} />,
-    deadline: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    deadline: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    category: 'Général',
+    priority: 'moyenne',
+    monthlyContribution: '',
+    color: '#1976d2'
   });
   const [snack, setSnack] = useState({ open: false, message: '', severity: 'success' });
+  const [tab, setTab] = useState(0);
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('deadline-asc');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [quickUpdateDialog, setQuickUpdateDialog] = useState({ open: false, goalId: null, amount: '' });
 
   // Filtrer les objectifs par compte actif
   const goals = savings.filter(goal => !activeAccount || goal.accountId === activeAccount.id);
+  const filteredGoals = useMemo(() => {
+    let res = goals;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      res = res.filter(g => (g.name || '').toLowerCase().includes(q) || (g.category || '').toLowerCase().includes(q));
+    }
+    if (statusFilter !== 'all') {
+      res = res.filter(g => {
+        const progress = g.target > 0 ? ((g.current || 0) / g.target) : 0;
+        const completed = progress >= 1;
+        return statusFilter === 'completed' ? completed : !completed;
+      });
+    }
+    if (sortBy === 'progress-desc') {
+      res = [...res].sort((a, b) => {
+        const pa = a.target > 0 ? ((a.current || 0) / a.target) : 0;
+        const pb = b.target > 0 ? ((b.current || 0) / b.target) : 0;
+        return pb - pa;
+      });
+    } else if (sortBy === 'deadline-asc') {
+      res = [...res].sort((a, b) => new Date(a.deadline || 0) - new Date(b.deadline || 0));
+    }
+    return res;
+  }, [goals, search, statusFilter, sortBy]);
 
   // Vérifier les limites d'objectifs d'épargne
   const savingsGoalsLimit = checkUsageLimit('maxSavingsGoals', goals.length);
@@ -215,7 +262,11 @@ const Savings = () => {
       current: parseFloat(newGoal.current) || 0,
       icon: newGoal.icon,
       deadline: newGoal.deadline,
-      accountId: activeAccount?.id
+      accountId: activeAccount?.id,
+      category: newGoal.category,
+      priority: newGoal.priority,
+      monthlyContribution: newGoal.monthlyContribution ? Number(newGoal.monthlyContribution) : undefined,
+      color: newGoal.color
     };
 
     if (addSavingsGoal(goal)) {
@@ -226,7 +277,11 @@ const Savings = () => {
         target: '', 
         current: '', 
         icon: <AttachMoney sx={{ fontSize: 24 }} />,
-        deadline: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+        deadline: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        category: 'Général',
+        priority: 'moyenne',
+        monthlyContribution: '',
+        color: '#1976d2'
       });
     } else {
       setSnack({ open: true, message: t('savings.errorAddingGoal'), severity: 'error' });
@@ -240,7 +295,11 @@ const Savings = () => {
       target: parseFloat(newGoal.target),
       current: parseFloat(newGoal.current) || 0,
       icon: newGoal.icon,
-      deadline: newGoal.deadline
+      deadline: newGoal.deadline,
+      category: newGoal.category,
+      priority: newGoal.priority,
+      monthlyContribution: newGoal.monthlyContribution ? Number(newGoal.monthlyContribution) : undefined,
+      color: newGoal.color
     };
 
     if (updateSavingsGoal(selectedGoal.id, updatedGoal)) {
@@ -336,7 +395,7 @@ const Savings = () => {
   // Projections simples d'atteinte des objectifs (selon moyenne mensuelle)
   const projections = useMemo(() => {
     if (!averageMonthlySavings || averageMonthlySavings <= 0) return [];
-    return goals.map(g => {
+    return filteredGoals.map(g => {
       const remaining = Math.max(0, (g.target || 0) - (g.current || 0));
       const monthsNeeded = remaining > 0 ? Math.ceil(remaining / averageMonthlySavings) : 0;
       const targetDate = new Date();
@@ -348,7 +407,7 @@ const Savings = () => {
         eta: monthsNeeded > 0 ? targetDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) : 'Atteint'
       };
     });
-  }, [goals, averageMonthlySavings]);
+  }, [filteredGoals, averageMonthlySavings]);
 
   return (
     <Box sx={{ 
@@ -424,6 +483,13 @@ const Savings = () => {
       </AppBar>
 
       <Box sx={{ p: 0, pb: 10, position: 'relative', zIndex: 1 }}>
+        {/* Onglets Vue */}
+        <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }} textColor="inherit" TabIndicatorProps={{ style: { background: 'white' }}}>
+          <Tab label="Aperçu" />
+          <Tab label="Objectifs" />
+          <Tab label="Planification" />
+        </Tabs>
+
         {/* Actions avancées */}
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mb: 2 }}>
           <Tooltip title={allowPro ? 'Exporter vos objectifs en CSV' : 'Réservé au plan Pro'}>
@@ -582,7 +648,7 @@ const Savings = () => {
           </Grid>
         </Grid>
 
-        {/* Projections d'épargne */}
+        {/* Projections d'épargne (visible en Aperçu et Planification) */}
         <Paper sx={{ 
           p: 2, mb: 3,
           background: 'rgba(255, 255, 255, 0.08)',
@@ -612,6 +678,48 @@ const Savings = () => {
           )}
         </Paper>
 
+        {/* Barre outils Objectifs (onglet Objectifs/Planification) */}
+        {tab !== 0 && (
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} sx={{ mb: 2 }}>
+            <TextField
+              placeholder="Rechercher un objectif..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              InputProps={{ startAdornment: <InputAdornment position="start"><Search sx={{ color: 'rgba(255,255,255,0.7)' }}/></InputAdornment> }}
+              sx={{
+                input: { color: 'white' },
+                '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: 'white' }},
+                maxWidth: 380
+              }}
+            />
+            <FormControl sx={{ minWidth: 180 }}>
+              <InputLabel id="sort-label" sx={{ color: 'white' }}>Tri</InputLabel>
+              <Select
+                labelId="sort-label"
+                value={sortBy}
+                label="Tri"
+                onChange={(e) => setSortBy(e.target.value)}
+                sx={{ color: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' } }}
+              >
+                <MenuItem value="deadline-asc">Échéance (ascendant)</MenuItem>
+                <MenuItem value="progress-desc">Progression (descendant)</MenuItem>
+              </Select>
+            </FormControl>
+            <ToggleButtonGroup
+              value={statusFilter}
+              exclusive
+              onChange={(_, v) => v && setStatusFilter(v)}
+              size="small"
+              sx={{ '& .MuiToggleButton-root': { color: 'white', borderColor: 'rgba(255,255,255,0.2)' } }}
+            >
+              <ToggleButton value="all">Tous</ToggleButton>
+              <ToggleButton value="active">Actifs</ToggleButton>
+              <ToggleButton value="completed">Terminés</ToggleButton>
+            </ToggleButtonGroup>
+            <Button startIcon={<RestartAlt />} onClick={() => { setSearch(''); setSortBy('deadline-asc'); setStatusFilter('all'); }} sx={{ color: 'white' }}>Réinitialiser</Button>
+          </Stack>
+        )}
+
         {/* Objectifs d'épargne glassmorphism */}
         <Paper sx={{ 
           p: 2, 
@@ -624,6 +732,7 @@ const Savings = () => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
             <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
               {t('savings.savingsGoals')}
+              {tab !== 0 && ` • ${filteredGoals.length}/${goals.length}`}
             </Typography>
             <Button
               variant="contained"
@@ -650,7 +759,7 @@ const Savings = () => {
           </Box>
           
           <Grid container spacing={2}>
-            {goals.length === 0 ? (
+            {filteredGoals.length === 0 ? (
               <Grid item xs={12}>
                 <Paper sx={{ 
                   p: 4, 
@@ -668,7 +777,7 @@ const Savings = () => {
                 </Paper>
               </Grid>
             ) : (
-              goals.map((goal) => {
+              filteredGoals.map((goal) => {
                 const progress = goal.target > 0 ? ((goal.current || 0) / goal.target * 100).toFixed(1) : 0;
                 const daysLeft = getDaysUntilDeadline(goal.deadline);
                 
@@ -711,7 +820,11 @@ const Savings = () => {
                                   target: goal.target, 
                                   current: goal.current || 0, 
                                   icon: getSafeIcon(goal.icon), 
-                                  deadline: goal.deadline 
+                                  deadline: goal.deadline,
+                                  category: goal.category || 'Général',
+                                  priority: goal.priority || 'moyenne',
+                                  monthlyContribution: goal.monthlyContribution || '',
+                                  color: goal.color || '#1976d2'
                                 });
                                 setEditDialog(true);
                               }}
@@ -764,40 +877,19 @@ const Savings = () => {
                           />
                         </Box>
 
-                        <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Stack direction="row" spacing={1}>
+                          <Button size="small" variant="outlined" startIcon={<AddCircleOutline />} onClick={() => setQuickUpdateDialog({ open: true, goalId: goal.id, amount: '' })} sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}>Déposer</Button>
+                          <Button size="small" variant="outlined" startIcon={<RemoveCircleOutline />} onClick={() => setQuickUpdateDialog({ open: true, goalId: goal.id, amount: '-' })} sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}>Retirer</Button>
                           <Button
                             size="small"
                             variant="outlined"
                             onClick={() => handleUpdateProgress(goal.id, 100)}
                             disabled={(goal.current || 0) >= goal.target}
-                            sx={{
-                              borderColor: 'rgba(255, 255, 255, 0.3)',
-                              color: 'white',
-                              '&:hover': {
-                                borderColor: 'rgba(255, 255, 255, 0.5)',
-                                background: 'rgba(255, 255, 255, 0.1)'
-                              }
-                            }}
+                            sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}
                           >
                             +100€
                           </Button>
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            onClick={() => handleUpdateProgress(goal.id, 500)}
-                            disabled={(goal.current || 0) >= goal.target}
-                            sx={{
-                              borderColor: 'rgba(255, 255, 255, 0.3)',
-                              color: 'white',
-                              '&:hover': {
-                                borderColor: 'rgba(255, 255, 255, 0.5)',
-                                background: 'rgba(255, 255, 255, 0.1)'
-                              }
-                            }}
-                          >
-                            +500€
-                          </Button>
-                        </Box>
+                        </Stack>
                       </CardContent>
                     </Card>
                   </Grid>
