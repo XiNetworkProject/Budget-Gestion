@@ -44,7 +44,8 @@ const defaultAppSettings = {
     budgetAlerts: true,
     billReminders: true,
     savingsGoals: true,
-    weeklyReports: true
+    weeklyReports: true,
+    mode: 'minimal' // off | minimal | full
   },
   privacy: {
     biometricAuth: false,
@@ -69,6 +70,11 @@ const createNotificationsSlice = (set, get) => ({
   },
   markAllRead: () => set({ unreadCount: 0 }),
   removeNotification: (id) => set((state) => ({ notifications: state.notifications.filter(n => n.id !== id) })),
+  setNotificationMode: (mode) => {
+    const state = get();
+    const appSettings = { ...(state.appSettings || {}), notifications: { ...(state.appSettings?.notifications || {}), mode } };
+    set({ appSettings });
+  }
 });
 
 // Plans d'abonnement avec les vrais Price IDs Stripe

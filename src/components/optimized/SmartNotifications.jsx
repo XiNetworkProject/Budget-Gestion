@@ -95,10 +95,42 @@ const NOTIFICATION_CONFIG = {
 const SmartNotification = memo(({ 
   notification, 
   onClose, 
-  onAction 
+  onAction,
+  mode = 'full'
 }) => {
   const { t } = useTranslation();
   const config = NOTIFICATION_CONFIG[notification.type] || NOTIFICATION_CONFIG[NOTIFICATION_TYPES.INFO];
+
+  if (mode === 'minimal') {
+    return (
+      <Slide direction="left" in={true} mountOnEnter unmountOnExit>
+        <Paper sx={{
+          mb: 1,
+          px: 1.25,
+          py: 0.75,
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 1,
+          background: 'rgba(20,20,30,0.8)',
+          border: `1px solid ${config.borderColor}`,
+          color: 'rgba(255,255,255,0.9)'
+        }}>
+          <Box sx={{ color: config.color, display: 'flex', alignItems: 'center' }}>
+            {config.icon}
+          </Box>
+          <Typography variant="caption" sx={{ fontWeight: 600, mr: 1 }}>
+            {notification.title}
+          </Typography>
+          {notification.action && (
+            <Chip size="small" label={notification.action.label} onClick={() => onAction(notification.action)} sx={{ ml: 'auto', bgcolor: config.color, color: 'white' }} />
+          )}
+          <IconButton size="small" onClick={() => onClose(notification.id)} sx={{ ml: 0.5, color: 'rgba(255,255,255,0.6)' }}>
+            <Close fontSize="inherit" />
+          </IconButton>
+        </Paper>
+      </Slide>
+    );
+  }
 
   return (
     <Slide direction="left" in={true} mountOnEnter unmountOnExit>
@@ -311,6 +343,8 @@ export const useSmartNotifications = () => {
 // Composant principal des notifications
 const SmartNotifications = memo(() => {
   const { notifications, removeNotification } = useSmartNotifications();
+  const { appSettings } = useStore();
+  const mode = appSettings?.notifications?.mode || 'full';
 
   const handleAction = useCallback((action) => {
     console.log('Action clicked:', action);
@@ -336,6 +370,7 @@ const SmartNotifications = memo(() => {
           notification={notification}
           onClose={removeNotification}
           onAction={handleAction}
+          mode={mode}
         />
       ))}
     </Box>

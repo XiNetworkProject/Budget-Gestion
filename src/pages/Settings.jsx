@@ -1035,6 +1035,41 @@ const Settings = () => {
                     }}
                   />
                 </ListItem>
+                <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.1)' }} />
+                <ListItem>
+                  <ListItemText 
+                    primary="Mode de notifications" 
+                    secondary="Choisissez la présentation des notifications"
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'white',
+                        fontWeight: 'bold'
+                      },
+                      '& .MuiListItemText-secondary': {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                      }
+                    }}
+                  />
+                  <FormControl size="small" sx={{ minWidth: 160 }}>
+                    <Select
+                      value={appSettings.notifications?.mode || 'full'}
+                      onChange={(e) => updateAppSettings({ notifications: { ...(appSettings.notifications||{}), mode: e.target.value } })}
+                      sx={{
+                        background: 'rgba(255, 255, 255, 0.1)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(255, 255, 255, 0.2)',
+                        color: 'white',
+                        '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.3)' },
+                        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.5)' },
+                        '& .MuiSvgIcon-root': { color: 'white' }
+                      }}
+                    >
+                      <MenuItem value="off">Désactivé</MenuItem>
+                      <MenuItem value="minimal">Minimal</MenuItem>
+                      <MenuItem value="full">Complet</MenuItem>
+                    </Select>
+                  </FormControl>
+                </ListItem>
               </List>
             </Paper>
 
