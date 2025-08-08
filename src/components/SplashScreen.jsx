@@ -6,13 +6,18 @@ import { useStore } from '../store';
 
 const SplashScreen = () => {
   const navigate = useNavigate();
-  const { checkAutoLogin, user } = useStore();
+  const { checkAutoLogin, user, initialDataLoaded } = useStore();
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       await new Promise(r => setTimeout(r, 700));
       const hasSession = await checkAutoLogin();
+      // attendre que les données serveur soient chargées pour éviter l'état par défaut
+      for (let i = 0; i < 20; i++) {
+        if (initialDataLoaded) break;
+        await new Promise(r => setTimeout(r, 100));
+      }
       if (!mounted) return;
       if (hasSession && user) {
         navigate('/home', { replace: true });
@@ -21,7 +26,7 @@ const SplashScreen = () => {
       }
     })();
     return () => { mounted = false; };
-  }, [checkAutoLogin, user, navigate]);
+  }, [checkAutoLogin, user, navigate, initialDataLoaded]);
 
   return (
     <Box sx={{

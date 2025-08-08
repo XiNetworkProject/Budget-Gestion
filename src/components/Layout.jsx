@@ -40,7 +40,11 @@ const Layout = () => {
     setShowOnboarding,
     subscription,
     getCurrentPlan,
-    fetchSubscriptionFromStripe
+    fetchSubscriptionFromStripe,
+    // Auto-login sur rafraîchissement direct d'une page interne (ex: /home)
+    autoLogin,
+    isAuthenticated,
+    checkAutoLogin
   } = useStore();
   
   const [showTutorial, setShowTutorial] = useState(false);
@@ -60,6 +64,14 @@ const Layout = () => {
     validateAndCleanDates();
     syncExpensesWithCategories();
   }, [validateAndCleanDates, syncExpensesWithCategories]);
+
+  // Restauration de session si on recharge directement une page protégée (sans passer par /splash)
+  useEffect(() => {
+    if (autoLogin && !isAuthenticated) {
+      console.log('Layout: tentative de restauration auto-login (reload interne)');
+      checkAutoLogin();
+    }
+  }, [autoLogin, isAuthenticated, checkAutoLogin]);
 
   // Vérifier et corriger l'état onboarding au chargement
   useEffect(() => {
