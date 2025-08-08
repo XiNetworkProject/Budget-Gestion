@@ -111,10 +111,11 @@ export const appTheme = createTheme({
     MuiDialog: {
       styleOverrides: {
         paper: {
-          background: 'rgba(20,20,30,0.96)',
+          background: 'linear-gradient(180deg, rgba(16,19,26,0.96) 0%, rgba(35,41,70,0.92) 100%)',
           border: '1px solid rgba(255,255,255,0.12)',
-          backdropFilter: 'blur(20px)',
+          backdropFilter: 'blur(20px) saturate(120%)',
           maxHeight: '85vh',
+          color: '#fff'
         },
       },
     },

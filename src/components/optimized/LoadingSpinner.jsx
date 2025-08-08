@@ -43,6 +43,29 @@ const LoadingSpinner = ({
             textShadow: fullScreen ? '0 2px 4px rgba(0,0,0,0.3)' : 'none'
           }
         };
+      case "contrast":
+        return {
+          container: {
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: fullScreen ? '100vh' : '200px',
+            background: fullScreen ? 'linear-gradient(135deg, #0b0e16 0%, #1a2038 100%)' : 'transparent',
+            p: 4
+          },
+          spinner: {
+            color: '#00e1d6',
+            filter: 'drop-shadow(0 6px 14px rgba(0, 225, 214, 0.45))'
+          },
+          message: {
+            color: fullScreen ? 'rgba(255,255,255,0.95)' : 'text.primary',
+            mt: 2,
+            fontWeight: 600,
+            letterSpacing: 0.3,
+            textShadow: fullScreen ? '0 2px 6px rgba(0,0,0,0.5)' : 'none'
+          }
+        };
       default:
         return {
           container: {
