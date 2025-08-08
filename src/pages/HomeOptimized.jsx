@@ -935,7 +935,7 @@ const HomeOptimized = () => {
           </Grid>
 
           {/* Graphiques optimisés */}
-          <Suspense fallback={<LoadingSpinner message="Chargement des graphiques..." />}>
+          <Suspense fallback={<LoadingSpinner message="Chargement des graphiques..." variant="contrast" />}>
             <Box sx={{ mb: 4 }}>
               <Typography 
                 variant="h5" 
