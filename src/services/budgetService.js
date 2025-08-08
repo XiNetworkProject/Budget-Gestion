@@ -62,7 +62,7 @@ export const budgetService = {
     try {
       console.log('=== TENTATIVE SAUVEGARDE SERVEUR ===');
       console.log('userId:', userId);
-      console.log('API_URL:', API_URL);
+      console.log('API_BASE:', API_BASE || '(relative /api)');
       
       const token = useStore.getState().token;
       console.log('Token présent:', !!token);
@@ -72,7 +72,9 @@ export const budgetService = {
       
       console.log('Headers:', headers);
       
-      const response = await fetch(buildApiUrl('/api/budget'), {
+      const url = buildApiUrl('/api/budget');
+      console.log('POST URL:', url);
+      const response = await fetch(url, {
         method: 'POST',
         headers,
         body: JSON.stringify({ userId, ...data }),
@@ -105,7 +107,7 @@ export const budgetService = {
       
       return result;
     } catch (error) {
-      console.error('=== ERREUR CONNEXION SERVEUR ===');
+      console.error('=== ERREUR CONNEXION SERVEUR (saveBudget) ===');
       console.error('Type d\'erreur:', error.name);
       console.error('Message:', error.message);
       console.error('Stack:', error.stack);
@@ -125,7 +127,7 @@ export const budgetService = {
     try {
       console.log('=== TENTATIVE RÉCUPÉRATION DONNÉES ===');
       console.log('userId:', userId);
-      console.log('API_URL:', API_URL);
+      console.log('API_BASE:', API_BASE || '(relative /api)');
       
       const token = useStore.getState().token;
       console.log('Token présent:', !!token);
@@ -135,7 +137,9 @@ export const budgetService = {
       
       console.log('Headers:', headers);
       
-      const response = await fetch(buildApiUrl('/api/budget', { userId }), { headers });
+      const url = buildApiUrl('/api/budget', { userId, _t: Date.now() });
+      console.log('GET URL:', url);
+      const response = await fetch(url, { headers });
       
       console.log('Réponse serveur:', {
         status: response.status,
@@ -164,7 +168,7 @@ export const budgetService = {
       
       return data;
     } catch (error) {
-      console.error('=== ERREUR CONNEXION SERVEUR ===');
+      console.error('=== ERREUR CONNEXION SERVEUR (getBudget) ===');
       console.error('Type d\'erreur:', error.name);
       console.error('Message:', error.message);
       console.error('Stack:', error.stack);
