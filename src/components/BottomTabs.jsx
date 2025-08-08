@@ -5,11 +5,12 @@ import {
   Fab, 
   Tooltip, 
   Zoom,
-  Fade,
-  Dialog,
-  DialogContent,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  Paper,
+  Avatar,
+  IconButton,
+  Typography
 } from '@mui/material';
 import {
   Home,
@@ -27,24 +28,14 @@ const tabs = [
     icon: Home,
     color: '#4caf50'
   },
-  { 
-    to: '/analytics', 
-    label: 'Analytics', 
-    icon: Analytics,
-    color: '#2196f3'
-  },
+  { to: '/analytics', label: 'Analytics', icon: Analytics, color: '#2196f3' },
   { 
     to: '/savings', 
     label: 'Épargne', 
     icon: AccountBalance,
     color: '#9c27b0'
   },
-  { 
-    to: '/settings', 
-    label: 'Paramètres', 
-    icon: Settings,
-    color: '#607d8b'
-  },
+  { to: '/settings', label: 'Paramètres', icon: Settings, color: '#607d8b' },
 ];
 
 const BottomTabs = () => {
@@ -67,33 +58,14 @@ const BottomTabs = () => {
   return (
     <>
       {/* Barre de navigation principale */}
-      <Box sx={{ 
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1000,
-        height: isMobile ? 70 : 80,
-        display: 'flex',
-        alignItems: 'flex-end',
-        px: isMobile ? 1 : 2,
-        pb: 0 // Supprime le padding bottom
-      }}>
-        {/* Fond de la barre */}
-        <Box sx={{
+      <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1000, px: isMobile ? 1 : 2, pb: 0 }}>
+        <Paper elevation={0} sx={{
           width: '100%',
-          height: isMobile ? 60 : 70,
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(20px)',
-          borderTop: '1px solid rgba(255, 255, 255, 0.3)',
+          height: isMobile ? 62 : 74,
           borderRadius: isMobile ? '16px 16px 0 0' : '20px 20px 0 0',
-          boxShadow: '0 -8px 32px rgba(0, 0, 0, 0.1)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          px: isMobile ? 2 : 4,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          px: isMobile ? 1.5 : 2.5,
           position: 'relative',
-          mb: 0 // Supprime la marge bottom
         }}>
           {/* Onglets de gauche */}
           <Box sx={{ 
@@ -117,27 +89,27 @@ const BottomTabs = () => {
                       flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      minWidth: isMobile ? 40 : 50,
-                      height: isMobile ? 45 : 50,
+                      minWidth: isMobile ? 44 : 56,
+                      height: isMobile ? 44 : 56,
                       borderRadius: isMobile ? '8px' : '12px',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      color: active ? tab.color : 'rgba(0, 0, 0, 0.5)',
-                      background: active ? `rgba(${tab.color === '#4caf50' ? '76, 175, 80' : '33, 150, 243'}, 0.1)` : 'transparent',
+                      color: active ? tab.color : 'rgba(255,255,255,0.7)',
+                      background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
                       '&:hover': {
-                        background: active ? `rgba(${tab.color === '#4caf50' ? '76, 175, 80' : '33, 150, 243'}, 0.15)` : 'rgba(0, 0, 0, 0.05)',
+                        background: 'rgba(255,255,255,0.12)',
                         transform: 'translateY(-2px)',
-                        boxShadow: active ? `0 4px 12px rgba(${tab.color === '#4caf50' ? '76, 175, 80' : '33, 150, 243'}, 0.3)` : '0 4px 12px rgba(0, 0, 0, 0.1)',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                       }
                     }}>
                       <Icon sx={{ 
-                        fontSize: isMobile ? 20 : 24,
-                        mb: isMobile ? 0.3 : 0.5,
+                        fontSize: isMobile ? 22 : 24,
+                        mb: 0.2,
                         filter: active ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' : 'none'
                       }} />
                       <Box sx={{
-                        fontSize: isMobile ? '0.6rem' : '0.65rem',
+                        fontSize: isMobile ? '0.68rem' : '0.7rem',
                         fontWeight: active ? 600 : 400,
-                        opacity: active ? 1 : 0.7,
+                        opacity: active ? 1 : 0.85,
                         textAlign: 'center',
                         lineHeight: 1
                       }}>
@@ -175,27 +147,27 @@ const BottomTabs = () => {
                       flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      minWidth: isMobile ? 40 : 50,
-                      height: isMobile ? 45 : 50,
+                      minWidth: isMobile ? 44 : 56,
+                      height: isMobile ? 44 : 56,
                       borderRadius: isMobile ? '8px' : '12px',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      color: active ? tab.color : 'rgba(0, 0, 0, 0.5)',
-                      background: active ? `rgba(${tab.color === '#9c27b0' ? '156, 39, 176' : '96, 125, 139'}, 0.1)` : 'transparent',
+                      color: active ? tab.color : 'rgba(255,255,255,0.7)',
+                      background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
                       '&:hover': {
-                        background: active ? `rgba(${tab.color === '#9c27b0' ? '156, 39, 176' : '96, 125, 139'}, 0.15)` : 'rgba(0, 0, 0, 0.05)',
+                        background: 'rgba(255,255,255,0.12)',
                         transform: 'translateY(-2px)',
-                        boxShadow: active ? `0 4px 12px rgba(${tab.color === '#9c27b0' ? '156, 39, 176' : '96, 125, 139'}, 0.3)` : '0 4px 12px rgba(0, 0, 0, 0.1)',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                       }
                     }}>
                       <Icon sx={{ 
-                        fontSize: isMobile ? 20 : 24,
-                        mb: isMobile ? 0.3 : 0.5,
+                        fontSize: isMobile ? 22 : 24,
+                        mb: 0.2,
                         filter: active ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' : 'none'
                       }} />
                       <Box sx={{
-                        fontSize: isMobile ? '0.6rem' : '0.65rem',
+                        fontSize: isMobile ? '0.68rem' : '0.7rem',
                         fontWeight: active ? 600 : 400,
-                        opacity: active ? 1 : 0.7,
+                        opacity: active ? 1 : 0.85,
                         textAlign: 'center',
                         lineHeight: 1
                       }}>
@@ -207,16 +179,10 @@ const BottomTabs = () => {
               );
             })}
           </Box>
-        </Box>
+        </Paper>
 
         {/* Bouton d'ajout rapide flottant */}
-        <Box sx={{
-          position: 'absolute',
-          left: '50%',
-          top: isMobile ? -12 : -15,
-          transform: 'translateX(-50%)',
-          zIndex: 1001
-        }}>
+        <Box sx={{ position: 'absolute', left: '50%', top: isMobile ? -14 : -16, transform: 'translateX(-50%)', zIndex: 1001 }}>
           <Zoom in timeout={800}>
             <Tooltip title="Ajouter une transaction" arrow placement="top">
               <Fab
@@ -224,15 +190,15 @@ const BottomTabs = () => {
                 aria-label="add"
                 onClick={handleQuickAdd}
                 sx={{
-                  width: isMobile ? 56 : 70,
-                  height: isMobile ? 56 : 70,
-                  background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
-                  boxShadow: '0 8px 25px rgba(76, 175, 80, 0.4), 0 4px 10px rgba(0, 0, 0, 0.1)',
-                  border: isMobile ? '3px solid white' : '4px solid white',
+                  width: isMobile ? 56 : 68,
+                  height: isMobile ? 56 : 68,
+                  background: 'linear-gradient(135deg, #00e1d6 0%, #1976d2 100%)',
+                  boxShadow: '0 10px 24px rgba(0, 225, 214, 0.45) , 0 6px 14px rgba(0,0,0,0.14)',
+                  border: isMobile ? '3px solid rgba(255,255,255,0.96)' : '3px solid rgba(255,255,255,0.96)',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)',
+                    background: 'linear-gradient(135deg, #00cfc4 0%, #166dc1 100%)',
                     transform: 'scale(1.1)',
-                    boxShadow: '0 12px 35px rgba(76, 175, 80, 0.6), 0 6px 15px rgba(0, 0, 0, 0.15)',
+                    boxShadow: '0 14px 32px rgba(0, 225, 214, 0.6) , 0 8px 18px rgba(0,0,0,0.18)',
                   },
                   '&:active': {
                     transform: 'scale(0.95)',
