@@ -26,6 +26,7 @@ const Login = lazy(() => import('./components/Login'));
 const GoogleAuth = lazy(() => import('./pages/GoogleAuth'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
 const DebugConnection = lazy(() => import('./components/DebugConnection'));
+const SplashScreen = lazy(() => import('./components/SplashScreen'));
 
 
 // Composant de fallback optimisé
@@ -59,8 +60,8 @@ const AppRoutesOptimized = () => {
   return (
     <ErrorBoundary>
       <Routes>
-        {/* Route racine - redirection vers Home */}
-        <Route path="/" element={<Navigate to="/home" replace />} />
+        {/* Route racine - redirection vers Splash */}
+        <Route path="/" element={<Navigate to="/splash" replace />} />
         
         {/* Pages principales avec Layout */}
         <Route path="/" element={<Layout />}>
@@ -159,6 +160,15 @@ const AppRoutesOptimized = () => {
         </Route>
         
         {/* Pages sans Layout */}
+        <Route 
+          path="splash" 
+          element={
+            <LazyPage 
+              component={SplashScreen} 
+              fallbackMessage="Préparation de l'application..." 
+            />
+          } 
+        />
         <Route 
           path="login" 
           element={
