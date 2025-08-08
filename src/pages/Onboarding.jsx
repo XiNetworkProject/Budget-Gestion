@@ -7,25 +7,14 @@ import {
   Box, 
   Typography, 
   Button, 
-  Paper, 
   Container,
-  Stepper,
-  Step,
-  StepLabel,
   IconButton,
   Fade,
   Zoom,
-  Slide,
   Chip,
   Avatar,
-  Grid,
-  Card,
-  CardContent,
   LinearProgress,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText
+  Stack
 } from '@mui/material';
 import {
   TrendingUp,
@@ -235,8 +224,8 @@ const steps = [
   };
 
   const currentStep = visibleSteps[clampedStep];
-  const featureItems = (currentStep.features || []).slice(0, isMobile ? 2 : 3);
-  const shortDescription = isMobile ? (currentStep.description?.split('.')?.[0] || currentStep.description) + '.' : currentStep.description;
+  const featureItems = (currentStep.features || []).slice(0, 3);
+  const shortDescription = (currentStep.description?.split('.')?.[0] || currentStep.description) + '.';
 
   return (
     <Box sx={{ 
@@ -246,86 +235,7 @@ const steps = [
       position: 'relative',
       overflow: 'hidden'
     }}>
-      {/* Particules animées améliorées */}
-      <Box sx={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        overflow: 'hidden',
-        zIndex: 0
-      }}>
-        {[...Array(isMobile ? 8 : 24)].map((_, i) => (
-          <Box
-            key={i}
-            sx={{
-              position: 'absolute',
-              width: Math.random() * 6 + 3,
-              height: Math.random() * 6 + 3,
-              background: `rgba(${Math.random() * 255}, ${Math.random() * 255}, 255, ${Math.random() * 0.4 + 0.1})`,
-              borderRadius: '50%',
-              animation: `floatParticle ${Math.random() * 15 + 15}s linear infinite`,
-              animationDelay: `${Math.random() * 10}s`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              filter: 'blur(0.5px)',
-              boxShadow: '0 0 10px rgba(255,255,255,0.3)',
-              '@keyframes floatParticle': {
-                '0%': {
-                  transform: 'translateY(100vh) translateX(0px) rotate(0deg)',
-                  opacity: 0
-                },
-                '10%': {
-                  opacity: 1
-                },
-                '90%': {
-                  opacity: 1
-                },
-                '100%': {
-                  transform: 'translateY(-100px) translateX(100px) rotate(360deg)',
-                  opacity: 0
-                }
-              }
-            }}
-          />
-        ))}
-        
-        {[...Array(isMobile ? 2 : 8)].map((_, i) => (
-          <Box
-            key={`large-${i}`}
-            sx={{
-              position: 'absolute',
-              width: Math.random() * 12 + 6,
-              height: Math.random() * 12 + 6,
-              background: `rgba(255, ${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 0.3 + 0.05})`,
-              borderRadius: '50%',
-              animation: `floatParticleLarge ${Math.random() * 20 + 25}s linear infinite`,
-              animationDelay: `${Math.random() * 15}s`,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              filter: 'blur(1px)',
-              boxShadow: '0 0 20px rgba(255,255,255,0.2)',
-              '@keyframes floatParticleLarge': {
-                '0%': {
-                  transform: 'translateY(100vh) translateX(0px) rotate(0deg)',
-                  opacity: 0
-                },
-                '10%': {
-                  opacity: 1
-                },
-                '90%': {
-                  opacity: 1
-                },
-                '100%': {
-                  transform: 'translateY(-100px) translateX(200px) rotate(720deg)',
-                  opacity: 0
-                }
-              }
-            }}
-          />
-        ))}
-      </Box>
+      {/* Arrière-plan minimal pour rester lisible et sans surcharge */}
 
       {/* Header avec Skip glassmorphism */}
       <Box sx={{ 
@@ -384,23 +294,24 @@ const steps = [
       />
 
       {/* Main Content */}
-      <Container maxWidth={isMobile ? 'sm' : 'md'} sx={{ 
+      <Container maxWidth={isMobile ? 'xs' : 'sm'} sx={{ 
         flex: 1, 
         display: 'flex', 
         flexDirection: 'column', 
-        py: isMobile ? 2 : 4,
+        justifyContent: 'center',
+        py: isMobile ? 1.5 : 2,
         position: 'relative',
         zIndex: 1
       }}>
-        {/* Icon and Title glassmorphism */}
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
+        {/* En-tête compact */}
+        <Box sx={{ textAlign: 'center', mb: isMobile ? 2 : 3 }}>
           <Zoom in timeout={600}>
             <Avatar 
               sx={{ 
                 width: isMobile ? 80 : 140, 
                 height: isMobile ? 80 : 140, 
                 mx: 'auto', 
-                mb: isMobile ? 2 : 3,
+                mb: isMobile ? 1.5 : 2.5,
                 background: 'rgba(255, 255, 255, 0.1)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -414,7 +325,7 @@ const steps = [
           
           <Fade in timeout={800}>
             <Box>
-              <Typography variant={isMobile ? 'h5' : 'h3'} sx={{ 
+              <Typography variant={isMobile ? 'h6' : 'h4'} sx={{ 
                 fontWeight: 'bold', 
                 mb: isMobile ? 0.5 : 1, 
                 color: 'white',
@@ -426,9 +337,9 @@ const steps = [
               }}>
                 {currentStep.title}
               </Typography>
-              <Typography variant={isMobile ? 'subtitle1' : 'h5'} sx={{ 
+              <Typography variant={isMobile ? 'caption' : 'subtitle1'} sx={{ 
                 color: 'rgba(255, 255, 255, 0.9)', 
-                mb: isMobile ? 1.2 : 2, 
+                mb: isMobile ? 1 : 1.5, 
                 fontWeight: 500,
                 textShadow: '0 1px 2px rgba(0,0,0,0.3)'
               }}>
@@ -437,149 +348,34 @@ const steps = [
             </Box>
           </Fade>
         </Box>
-
-        {/* Description glassmorphism */}
-        <Slide direction="up" in timeout={1000}>
-          <Box sx={{ mb: 4 }}>
+        {/* Description + puces ultra compactes */}
+        <Fade in timeout={900}>
+          <Box sx={{ textAlign: 'center', mb: isMobile ? 1.5 : 2 }}>
             <Typography variant={isMobile ? 'body2' : 'body1'} sx={{ 
-              textAlign: 'center', 
-              color: 'rgba(255, 255, 255, 0.8)', 
-              lineHeight: isMobile ? 1.6 : 1.8,
-              textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-              fontSize: isMobile ? '0.95rem' : '1.1rem'
+              color: 'rgba(255,255,255,0.85)'
             }}>
               {shortDescription}
             </Typography>
-          </Box>
-        </Slide>
-
-        {/* Features glassmorphism */}
-        <Fade in timeout={1200}>
-          <Box sx={{ mb: 4 }}>
-            <Grid container spacing={1.5}>
-              {Array.isArray(featureItems) && featureItems.map((feature, index) => (
-                <Grid item xs={12} sm={6} key={index}>
-                  <Card sx={{ 
-                    background: 'rgba(255, 255, 255, 0.08)',
-                    backdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 12px 40px rgba(0, 0, 0, 0.2)',
-                      border: '1px solid rgba(255, 255, 255, 0.3)'
-                    }
-                  }}>
-                    <CardContent sx={{ py: isMobile ? 1.2 : 2, px: isMobile ? 2 : 3 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <CheckCircle sx={{ 
-                          color: '#4caf50', 
-                          mr: 2, 
-                          fontSize: isMobile ? 20 : 24,
-                          filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
-                        }} />
-                        <Typography variant={isMobile ? 'caption' : 'body2'} sx={{ 
-                          fontWeight: 500,
-                          color: 'white',
-                          textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                          fontSize: isMobile ? '0.85rem' : '0.95rem'
-                        }}>
-                          {feature}
-                        </Typography>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
+            <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 1, flexWrap: 'wrap' }}>
+              {featureItems.map((f, idx) => (
+                <Chip key={idx} label={f} size={isMobile ? 'small' : 'medium'} sx={{ bgcolor: 'rgba(255,255,255,0.12)', color: 'white', borderColor: 'rgba(255,255,255,0.2)' }} variant="outlined" />
               ))}
-            </Grid>
+            </Stack>
           </Box>
         </Fade>
 
-        {/* Navigation glassmorphism */}
-        <Box sx={{ 
-          mt: 'auto', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          borderRadius: 3,
-          p: 3,
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-        }}>
-          <Button
-            variant="outlined"
-            onClick={prev}
-            disabled={step === 0}
-            startIcon={<ArrowBack />}
-            sx={{ 
-              borderColor: 'rgba(255, 255, 255, 0.3)',
-              color: 'white',
-              '&:hover': { 
-                borderColor: 'rgba(255, 255, 255, 0.5)',
-                background: 'rgba(255, 255, 255, 0.1)'
-              },
-              '&.Mui-disabled': {
-                borderColor: 'rgba(255, 255, 255, 0.1)',
-                color: 'rgba(255, 255, 255, 0.3)'
-              }
-            }}
-          >
-            Précédent
-          </Button>
-
-          {/* Step Indicators glassmorphism */}
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            {steps.map((_, idx) => (
-              <Box
-                key={idx}
-                sx={{
-                  width: 10,
-                  height: 10,
-                  borderRadius: '50%',
-                  background: idx === step ? '#667eea' : 'rgba(255, 255, 255, 0.3)',
-                  transition: 'all 0.3s ease',
-                  boxShadow: idx === step ? '0 2px 8px rgba(102, 126, 234, 0.4)' : 'none'
-                }}
-              />
+        {/* Barre d’action fixe, aucune scroll nécessaire */}
+        <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="space-between" sx={{ mt: isMobile ? 1.5 : 2 }}>
+          <Button variant="outlined" onClick={prev} disabled={clampedStep === 0} startIcon={<ArrowBack />} sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}>Précédent</Button>
+          <Stack direction="row" spacing={0.8} alignItems="center">
+            {Array.from({ length: totalSteps }).map((_, idx) => (
+              <Box key={idx} sx={{ width: 8, height: 8, borderRadius: '50%', background: idx === clampedStep ? '#667eea' : 'rgba(255,255,255,0.4)' }} />
             ))}
-          </Box>
-
-          <Button
-            variant="contained"
-            onClick={next}
-            disabled={loading}
-            endIcon={isLast ? <PlayArrow /> : <ArrowForward />}
-            sx={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              px: 4,
-              py: 1.5,
-              borderRadius: 3,
-              boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
-              '&:hover': { 
-                background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
-                boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)'
-              },
-              '&.Mui-disabled': {
-                background: 'rgba(255, 255, 255, 0.2)',
-                color: 'rgba(255, 255, 255, 0.5)'
-              }
-            }}
-          >
-            {loading ? (
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Typography variant="body2" sx={{ mr: 1 }}>
-                  Configuration...
-                </Typography>
-                <LinearProgress sx={{ width: 20, height: 2 }} />
-              </Box>
-            ) : (
-              isLast ? 'Commencer' : 'Suivant'
-            )}
+          </Stack>
+          <Button variant="contained" onClick={next} disabled={loading} endIcon={isLast ? <PlayArrow /> : <ArrowForward />} sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+            {isLast ? 'Commencer' : 'Suivant'}
           </Button>
-        </Box>
+        </Stack>
       </Container>
 
       {/* Bottom Info glassmorphism */}

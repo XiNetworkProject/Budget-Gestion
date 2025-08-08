@@ -6,7 +6,6 @@ import {
   Box, 
   Typography, 
   Button, 
-  Paper, 
   Dialog, 
   DialogTitle, 
   DialogContent, 
@@ -19,12 +18,8 @@ import {
   CardContent,
   Grid,
   Chip,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Divider,
-  Slide
+  Slide,
+  Stack
 } from '@mui/material';
 import {
   Home,
@@ -411,43 +406,13 @@ const Tutorial = ({ open, onClose, onComplete }) => {
 
           {/* Features Grid */}
           <Fade in timeout={1200}>
-            <Grid container spacing={isMobile ? 1.2 : 2} sx={{ mb: isMobile ? 2 : 4 }}>
-              {currentStep.features.slice(0, isMobile ? 2 : 3).map((feature, index) => (
-                <Grid item xs={12} sm={6} key={index}>
-                  <Card sx={{ 
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(20px)',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 12px 40px rgba(0, 0, 0, 0.2)',
-                      border: '1px solid rgba(255, 255, 255, 0.3)'
-                    }
-                  }}>
-                    <CardContent sx={{ py: isMobile ? 1 : 2, px: isMobile ? 2 : 3 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <CheckCircle sx={{ 
-                          color: '#4caf50', 
-                          mr: 2, 
-                          fontSize: isMobile ? 20 : 24,
-                          filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
-                        }} />
-                        <Typography variant={isMobile ? 'caption' : 'body2'} sx={{ 
-                          fontWeight: 500,
-                          color: 'white',
-                          textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                          fontSize: isMobile ? '0.85rem' : '0.95rem'
-                        }}>
-                          {feature}
-                        </Typography>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
+            <Box>
+              <Stack direction="row" spacing={1} justifyContent="center" sx={{ flexWrap: 'wrap', mb: isMobile ? 2 : 3 }}>
+                {currentStep.features.slice(0, isMobile ? 2 : 3).map((feature, index) => (
+                  <Chip key={index} label={feature} size={isMobile ? 'small' : 'medium'} sx={{ bgcolor: 'rgba(255,255,255,0.1)', color: 'white', borderColor: 'rgba(255,255,255,0.25)' }} variant="outlined" />
+                ))}
+              </Stack>
+            </Box>
           </Fade>
 
           {/* Tip */}
@@ -476,66 +441,19 @@ const Tutorial = ({ open, onClose, onComplete }) => {
       </DialogContent>
 
       {/* Actions */}
-      <DialogActions sx={{ 
-        p: 3, 
-        background: 'rgba(255, 255, 255, 0.05)',
-        borderTop: '1px solid rgba(255, 255, 255, 0.1)'
-      }}>
-        <Button
-          variant="outlined"
-          onClick={handleBack}
-          disabled={activeStep === 0}
-          startIcon={<NavigateBefore />}
-          sx={{ 
-            borderColor: 'rgba(255, 255, 255, 0.3)',
-            color: 'white',
-            '&:hover': { 
-              borderColor: 'rgba(255, 255, 255, 0.5)',
-              background: 'rgba(255, 255, 255, 0.1)'
-            },
-            '&.Mui-disabled': {
-              borderColor: 'rgba(255, 255, 255, 0.1)',
-              color: 'rgba(255, 255, 255, 0.3)'
-            }
-          }}
-        >
-          Précédent
-        </Button>
-
-        <Box sx={{ flex: 1 }} />
-
-        <Button
-          variant="text"
-          onClick={handleSkip}
-          sx={{ 
-            color: 'rgba(255, 255, 255, 0.7)',
-            '&:hover': { 
-              background: 'rgba(255, 255, 255, 0.1)',
-              color: 'white'
-            }
-          }}
-        >
-          Passer
-        </Button>
-
-        <Button
-          variant="contained"
-          onClick={handleNext}
-          endIcon={isLast ? <CheckCircle /> : <NavigateNext />}
-          sx={{ 
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            px: 4,
-            py: 1.5,
-            borderRadius: 3,
-            boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
-            '&:hover': { 
-              background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
-              boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)'
-            }
-          }}
-        >
-          {isLast ? 'Terminer' : 'Suivant'}
-        </Button>
+      <DialogActions sx={{ p: isMobile ? 2 : 3 }}>
+        <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="space-between" sx={{ width: '100%' }}>
+          <Button variant="outlined" onClick={handleBack} disabled={activeStep === 0} startIcon={<NavigateBefore />} sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}>Précédent</Button>
+          <Stack direction="row" spacing={0.8} alignItems="center">
+            {Array.from({ length: tutorialSteps.length }).map((_, idx) => (
+              <Box key={idx} sx={{ width: 8, height: 8, borderRadius: '50%', background: idx === activeStep ? '#667eea' : 'rgba(255,255,255,0.4)' }} />
+            ))}
+          </Stack>
+          <Stack direction="row" spacing={1}>
+            <Button variant="text" onClick={handleSkip} sx={{ color: 'rgba(255,255,255,0.8)' }}>Passer</Button>
+            <Button variant="contained" onClick={handleNext} endIcon={isLast ? <CheckCircle /> : <NavigateNext />} sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>{isLast ? 'Terminer' : 'Suivant'}</Button>
+          </Stack>
+        </Stack>
       </DialogActions>
     </Dialog>
   );
