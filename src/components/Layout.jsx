@@ -73,6 +73,14 @@ const Layout = () => {
     }
   }, [autoLogin, isAuthenticated, checkAutoLogin]);
 
+  // Forcer le passage par /splash si non authentifié (protège les pages internes au refresh)
+  useEffect(() => {
+    if (!isAuthenticated) {
+      console.log('Layout: non authentifié -> redirection vers /splash');
+      navigate('/splash', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
   // Vérifier et corriger l'état onboarding au chargement
   useEffect(() => {
     console.log('Layout: Vérification de l\'état onboarding');
