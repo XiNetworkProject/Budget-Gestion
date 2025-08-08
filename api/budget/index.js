@@ -82,5 +82,5 @@ async function handleDelete(req, res) {
   }
 }
 
-export const config = { runtime: 'nodejs18.x' };
+export const config = { runtime: 'nodejs' };
 

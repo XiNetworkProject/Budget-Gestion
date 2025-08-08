@@ -112,5 +112,5 @@ async function getSubscriptionInfo(req, res) {
   return res.status(200).json({ success: true, subscription: subscriptionInfo });
 }
 
-export const config = { runtime: 'nodejs18.x' };
+export const config = { runtime: 'nodejs' };
 
