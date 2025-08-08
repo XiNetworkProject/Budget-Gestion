@@ -294,8 +294,8 @@ export const useSmartNotifications = () => {
     
     const totalExpenses = currentMonthExpenses.reduce((sum, e) => sum + e.amount, 0);
     const totalIncome = currentMonthIncome.reduce((sum, i) => sum + i.amount, 0);
-    const savings = totalIncome - totalExpenses;
-    const savingsRate = totalIncome > 0 ? (savings / totalIncome) * 100 : 0;
+    const netSavings = totalIncome - totalExpenses;
+    const savingsRate = totalIncome > 0 ? (netSavings / totalIncome) * 100 : 0;
 
     // Notifications intelligentes basées sur les données
     if (savingsRate >= 20) {
