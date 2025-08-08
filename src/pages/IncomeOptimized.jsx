@@ -180,18 +180,8 @@ const IncomeOptimized = () => {
 
   if (isLoading) {
     return (
-      <Box sx={{ 
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #10131a 0%, #232946 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <LoadingSpinner 
-          message={t('income.loading')} 
-          variant="elegant" 
-          fullScreen 
-        />
+      <Box sx={{ p: 2 }}>
+        <LoadingSpinner message={t('income.loading')} variant="elegant" fullScreen />
       </Box>
     );
   }
