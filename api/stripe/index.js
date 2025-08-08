@@ -111,10 +111,29 @@ async function getSubscriptionInfo(req, res) {
   const subscriptions = await stripe.subscriptions.list({ customer: resolvedCustomerId, status: 'all', expand: ['data.default_payment_method','data.items.data.price'] });
   if (subscriptions.data.length === 0) return res.status(200).json({ success: true, subscription: null });
   const sub = subscriptions.data.find(s => s.status === 'active' || s.status === 'trialing') || subscriptions.data[0];
-  const planId = sub.items.data[0].price.id;
+  const price = sub.items.data[0].price;
+  const priceId = price.id;
+  const unitAmount = price.unit_amount || null; // en cents
+  const nickname = price.nickname || '';
+  const currency = price.currency || 'eur';
+
+  // Mapping connu (IDs actuels)
   const planMapping = { 'price_1RcAEjGb8GKvvz2G9mn9OlJs': 'PREMIUM', 'price_1RcAERGb8GKvvz2GAyajrGFo': 'PRO' };
+  let detectedPlan = planMapping[priceId] || 'FREE';
+
+  // Heuristiques de sécurité pour corriger un mapping incohérent
+  if (nickname) {
+    if (/pro/i.test(nickname)) detectedPlan = 'PRO';
+    if (/premium/i.test(nickname)) detectedPlan = 'PREMIUM';
+  }
+  if (unitAmount) {
+    // 1.99€ → 199 cents, 5.99€ → 599 cents (arrondis)
+    if (unitAmount >= 550 && unitAmount <= 650) detectedPlan = 'PRO';
+    if (unitAmount >= 150 && unitAmount <= 250) detectedPlan = 'PREMIUM';
+  }
+
   const subscriptionInfo = {
-    planId: planMapping[planId] || 'FREE',
+    planId: detectedPlan,
     status: sub.status,
     createdAt: new Date(sub.created * 1000).toISOString(),
     currentPeriodEnd: new Date(sub.current_period_end * 1000).toISOString(),
@@ -122,7 +141,13 @@ async function getSubscriptionInfo(req, res) {
     subscriptionId: sub.id,
     isTrialing: sub.status === 'trialing',
     trialEnd: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
-    cancelAtPeriodEnd: sub.cancel_at_period_end
+    cancelAtPeriodEnd: sub.cancel_at_period_end,
+    price: {
+      id: priceId,
+      unitAmount,
+      currency,
+      nickname
+    }
   };
   return res.status(200).json({ success: true, subscription: subscriptionInfo });
 }
