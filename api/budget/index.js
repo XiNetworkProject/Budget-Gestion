@@ -39,7 +39,8 @@ async function handleGet(req, res) {
   if (!userId) return res.status(400).json({ message: 'userId requis' });
   try {
     const budgetData = await dbUtils.getBudget(userId);
-    if (!budgetData) return res.status(404).json({ message: 'Budget non trouvé' });
+    // Retourner un objet vide si aucune donnée n'est trouvée (évite 404 côté client)
+    if (!budgetData) return res.status(200).json({});
     return res.status(200).json(budgetData);
   } catch (error) {
     console.error('Erreur récupération budget:', error);

@@ -82,7 +82,8 @@ async function createCheckoutSession(req, res) {
 
 async function createPortalSession(req, res) {
   const { customerId } = req.body || {};
-  if (!customerId) return res.status(400).json({ message: 'customerId requis' });
+  // Si pas de customerId, retourner un état par défaut sans erreur bloquante
+  if (!customerId) return res.status(200).json({ success: true, subscription: null });
   const session = await stripe.billingPortal.sessions.create({
     customer: customerId,
     return_url: `${process.env.FRONTEND_URL}/subscription`
