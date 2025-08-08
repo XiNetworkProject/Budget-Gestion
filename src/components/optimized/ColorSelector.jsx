@@ -91,14 +91,6 @@ const ColorSelector = ({ open, onClose, onSelect, currentColor = '#2196f3' }) =>
       onClose={onClose}
       maxWidth="md"
       fullWidth
-      PaperProps={{
-        sx: {
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: 3,
-          boxShadow: '0 16px 64px rgba(0, 0, 0, 0.2)'
-        }
-      }}
     >
       <DialogTitle sx={{ 
         fontWeight: 700,
