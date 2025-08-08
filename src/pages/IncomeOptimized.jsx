@@ -223,7 +223,7 @@ const IncomeOptimized = () => {
             severity="warning" 
             sx={{ 
               m: 2,
-              background: 'rgba(255, 255, 255, 0.95)',
+              background: 'rgba(255, 255, 255, 0.12)',
               backdropFilter: 'blur(10px)',
               borderRadius: 3,
               boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
@@ -239,7 +239,7 @@ const IncomeOptimized = () => {
             severity="info" 
             sx={{ 
               m: 2,
-              background: 'rgba(255, 255, 255, 0.95)',
+              background: 'rgba(255, 255, 255, 0.12)',
               backdropFilter: 'blur(10px)',
               borderRadius: 3,
               boxShadow: '0 8px 32px rgba(0,0,0,0.1)',

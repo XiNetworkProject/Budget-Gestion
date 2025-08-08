@@ -519,14 +519,7 @@ const TransactionManager = memo(({
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
-        PaperProps={{
-          sx: {
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: 2,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-          }
-        }}
+        
       >
         <MenuItem onClick={() => {
           handleOpenDialog(selectedTransactionForMenu);
@@ -547,14 +540,7 @@ const TransactionManager = memo(({
         onClose={handleCloseDialog}
         maxWidth="sm"
         fullWidth
-        PaperProps={{
-          sx: {
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: 3,
-            boxShadow: '0 16px 64px rgba(0, 0, 0, 0.2)'
-          }
-        }}
+        
       >
         <DialogTitle sx={{ 
           fontWeight: 700,

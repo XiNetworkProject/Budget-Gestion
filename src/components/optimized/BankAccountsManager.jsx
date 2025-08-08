@@ -96,8 +96,7 @@ const BankAccountsManager = () => {
         )}
       </List>
 
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth
-        PaperProps={{ sx: { background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(12px)' } }}>
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle sx={{ color: '#333', fontWeight: 'bold' }}>{editing ? 'Modifier le compte' : 'Nouveau compte'}</DialogTitle>
         <DialogContent>
           <TextField

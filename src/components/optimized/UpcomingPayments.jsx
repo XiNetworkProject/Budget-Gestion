@@ -766,14 +766,7 @@ const UpcomingPayments = React.memo(({ maxItems = 5, showAll = false }) => {
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
-        PaperProps={{
-          sx: {
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: 2,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
-          }
-        }}
+        
       >
         <MenuItem onClick={() => handleViewDetails(selectedPaymentForMenu)}>
           <Visibility sx={{ mr: 1 }} />
@@ -795,14 +788,7 @@ const UpcomingPayments = React.memo(({ maxItems = 5, showAll = false }) => {
         onClose={() => setShowDetailsDialog(false)}
         maxWidth="md"
         fullWidth
-        PaperProps={{
-          sx: {
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: 3,
-            boxShadow: '0 16px 64px rgba(0, 0, 0, 0.2)'
-          }
-        }}
+        
       >
         {selectedPayment && (
           <>
@@ -906,14 +892,7 @@ const UpcomingPayments = React.memo(({ maxItems = 5, showAll = false }) => {
         onClose={() => setShowManagementDialog(false)}
         maxWidth="lg"
         fullWidth
-        PaperProps={{
-          sx: {
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(20px)',
-            borderRadius: 3,
-            boxShadow: '0 16px 64px rgba(0, 0, 0, 0.2)'
-          }
-        }}
+        
       >
         <DialogTitle sx={{ fontWeight: 700 }}>
           Gestion des paiements récurrents
