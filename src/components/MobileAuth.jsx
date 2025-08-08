@@ -45,24 +45,8 @@ const MobileAuth = ({ onSuccess }) => {
   }, []);
 
   const handleGoogleAuth = async () => {
-    setLoading(true);
-    setError('');
-    
-    try {
-      // Sur mobile, rediriger vers une page web dédiée
-      if (isMobile) {
-        // Ouvrir dans le navigateur externe
-        const authUrl = `${window.location.origin}/auth/google`;
-        window.open(authUrl, '_system');
-      } else {
-        // Sur web, utiliser l'auth normale
-        // Votre logique Google Auth existante
-      }
-    } catch (err) {
-      setError(t('auth.googleError'));
-    } finally {
-      setLoading(false);
-    }
+    // Mode mobile Google désactivé (temporaire)
+    setError(t('auth.googleError'));
   };
 
   const handleEmailAuth = async (e) => {

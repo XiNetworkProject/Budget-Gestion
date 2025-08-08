@@ -3,7 +3,6 @@ import { GoogleLogin } from '@react-oauth/google';
 import { useStore } from '../store';
 import { jwtDecode } from 'jwt-decode';
 import { useNavigate } from 'react-router-dom';
-import { useMobileAuth } from '../hooks/useMobileAuth';
 import {
   Box,
   Paper,
@@ -274,7 +273,9 @@ const Login = () => {
     }
   };
 
-  const { isMobile, isCapacitor, handleGoogleAuth } = useMobileAuth();
+  const isMobile = false;
+  const isCapacitor = false;
+  const handleGoogleAuth = () => {};
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {

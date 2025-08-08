@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { budgetService } from './services/budgetService';
 import toast from 'react-hot-toast';
 
@@ -134,7 +135,7 @@ const defaultUserProfile = {
   lastLogin: new Date().toISOString()
 };
 
-const useStore = create(
+const useStore = create(persist(
     (set, get) => {
       let saveTimeout = null;
       const SAVE_DEBOUNCE_MS = 500;
@@ -1425,14 +1426,29 @@ const useStore = create(
           hasUser: !!state.user,
           isAuthenticated: state.isAuthenticated 
         });
-        
-        if (state.autoLogin && state.token && state.user) {
+
+        // Si pas de session en mémoire, tenter de recharger depuis la persistance
+        if (state.autoLogin && (!state.token || !state.user)) {
+          try {
+            const raw = localStorage.getItem('budget-storage');
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              const persisted = parsed?.state || parsed;
+              if (persisted?.token && persisted?.user) {
+                set({ token: persisted.token, user: persisted.user, isAuthenticated: true });
+              }
+            }
+          } catch (e) {
+            console.warn('checkAutoLogin: impossible de recharger la session persistée:', e?.message);
+          }
+        }
+
+        const after = get();
+        if (after.autoLogin && after.token && after.user) {
           console.log('Connexion automatique détectée - restauration de la session');
-          // Restaurer l'état d'authentification
           set({ isAuthenticated: true });
           return true;
         }
-        
         console.log('Aucune session valide trouvée pour la connexion automatique');
         return false;
       },
@@ -1909,8 +1925,21 @@ const useStore = create(
         }
       },
     };
+  },
+  {
+    name: 'budget-storage',
+    storage: createJSONStorage(() => localStorage),
+    partialize: (state) => ({
+      user: state.user,
+      token: state.token,
+      isAuthenticated: state.isAuthenticated,
+      autoLogin: state.autoLogin,
+      appSettings: state.appSettings,
+      subscription: state.subscription,
+      lastUpdateShown: state.lastUpdateShown
+    })
   }
-);
+));
 
 // Suppression de la recharge automatique pour éviter les conflits avec la persistance locale
 // const store = useStore.getState();
