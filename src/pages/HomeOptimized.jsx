@@ -737,20 +737,11 @@ const HomeOptimized = () => {
   }, [selectedMonthData]);
 
   // Si les données ne sont pas encore chargées
+  // Affichage skeleton pendant chargement
   if (isLoading) {
     return (
-      <Box sx={{ 
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #10131a 0%, #232946 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}>
-        <LoadingSpinner 
-          message="Chargement des données optimisées..." 
-          variant="elegant" 
-          fullScreen 
-        />
+      <Box sx={{ p: 2 }}>
+        <LoadingSpinner message="Chargement des données optimisées..." variant="elegant" fullScreen />
       </Box>
     );
   }
