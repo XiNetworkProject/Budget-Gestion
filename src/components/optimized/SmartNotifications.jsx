@@ -237,6 +237,7 @@ export const useSmartNotifications = () => {
   const [notifications, setNotifications] = useState([]);
   const { t } = useTranslation();
   const store = useStore();
+  const recentKeysRef = React.useRef(new Map());
 
   // Ajouter une notification
   const addNotification = useCallback((notification) => {
@@ -246,7 +247,13 @@ export const useSmartNotifications = () => {
       timestamp: Date.now(),
       ...notification
     };
-    
+    // Déduplication simple sur 2 minutes
+    const key = `${notification.type}|${notification.title}|${notification.message}`;
+    const now = Date.now();
+    const last = recentKeysRef.current.get(key) || 0;
+    if (now - last < 120000) return;
+    recentKeysRef.current.set(key, now);
+
     setNotifications(prev => [newNotification, ...prev.slice(0, 4)]);
     
     // Auto-remove après 8 secondes
@@ -262,7 +269,17 @@ export const useSmartNotifications = () => {
 
   // Analyser les données et générer des notifications intelligentes
   const analyzeAndNotify = useCallback(() => {
-    const { expenses, incomeTransactions, selectedMonth, selectedYear } = store;
+    const {
+      expenses,
+      incomeTransactions,
+      selectedMonth,
+      selectedYear,
+      budgetLimits,
+      savings,
+      subscription,
+      appSettings
+    } = store;
+    if (appSettings?.notifications?.mode === 'off') return;
     
     // Calculer les métriques
     const currentMonthExpenses = expenses.filter(e => {
@@ -315,14 +332,77 @@ export const useSmartNotifications = () => {
       });
     }
 
-    // Notification pour les objectifs atteints
-    if (savings > 0 && savings >= totalIncome * 0.3) {
-      addNotification({
-        type: NOTIFICATION_TYPES.GOAL,
-        title: t('notifications.goals.savingsGoalReached'),
-        message: t('notifications.goals.savingsGoalReachedMessage', { amount: savings.toFixed(0) }),
-        priority: 'high'
+    // Objectifs d'épargne (milestones)
+    if (Array.isArray(savings) && savings.length > 0) {
+      savings.forEach((goal) => {
+        const target = Number(goal.target) || 0;
+        const current = Number(goal.current) || 0;
+        if (target > 0) {
+          const progress = (current / target) * 100;
+          if (progress >= 100) {
+            addNotification({ type: NOTIFICATION_TYPES.SAVINGS, title: 'Objectif atteint', message: `"${goal.name}" atteint (${target.toLocaleString()}€).`, priority: 'high' });
+          } else if (progress >= 80) {
+            addNotification({ type: NOTIFICATION_TYPES.SAVINGS, title: 'Objectif bientôt atteint', message: `"${goal.name}" à ${progress.toFixed(0)}%.`, priority: 'medium' });
+          }
+        }
       });
+    }
+
+    // Dépassement / seuils budgétaires par catégorie
+    if (budgetLimits && typeof budgetLimits === 'object') {
+      const byCategory = currentMonthExpenses.reduce((acc, e) => {
+        acc[e.category] = (acc[e.category] || 0) + (e.amount || 0);
+        return acc;
+      }, {});
+      Object.entries(budgetLimits).forEach(([cat, limit]) => {
+        const l = Number(limit) || 0;
+        if (l <= 0) return;
+        const spent = byCategory[cat] || 0;
+        if (spent >= l) {
+          addNotification({ type: NOTIFICATION_TYPES.BUDGET, title: `Budget dépassé: ${cat}`, message: `${spent.toLocaleString()}€ / ${l.toLocaleString()}€`, priority: 'high', action: { label: 'Analyser', action: 'reviewExpenses' } });
+        } else if (spent >= l * 0.8) {
+          addNotification({ type: NOTIFICATION_TYPES.BUDGET, title: `Budget proche: ${cat}`, message: `${spent.toLocaleString()}€ (≥80% de ${l.toLocaleString()}€)`, priority: 'medium', action: { label: 'Analyser', action: 'reviewExpenses' } });
+        }
+      });
+    }
+
+    // Paiements récurrents imminents / en retard (3 jours)
+    const today = new Date();
+    const inDays = (d) => {
+      const diff = Math.ceil((d.setHours(0,0,0,0) - new Date(today).setHours(0,0,0,0)) / (1000*60*60*24));
+      return diff;
+    };
+    const nextDate = (start, type) => {
+      let next = new Date(start);
+      while (next < today) {
+        if (type === 'daily') next.setDate(next.getDate() + 1);
+        else if (type === 'weekly') next.setDate(next.getDate() + 7);
+        else if (type === 'monthly') next = new Date(next.getFullYear(), next.getMonth() + 1, next.getDate());
+        else if (type === 'yearly') next = new Date(next.getFullYear() + 1, next.getMonth(), next.getDate());
+        else break;
+      }
+      return next;
+    };
+    (expenses || []).forEach((e) => {
+      if (!e.recurring) return;
+      const n = nextDate(new Date(e.date), e.recurringType);
+      const d = inDays(new Date(n));
+      if (d < 0) addNotification({ type: NOTIFICATION_TYPES.WARNING, title: 'Paiement en retard', message: `${e.description || e.category} en retard de ${Math.abs(d)} j.`, priority: 'high' });
+      else if (d <= 3) addNotification({ type: NOTIFICATION_TYPES.INFO, title: 'Paiement imminent', message: `${e.description || e.category} dans ${d} j.`, priority: 'medium' });
+    });
+    (incomeTransactions || []).forEach((i) => {
+      if (!i.recurring) return;
+      const n = nextDate(new Date(i.date), i.recurringType);
+      const d = inDays(new Date(n));
+      if (d < 0) addNotification({ type: NOTIFICATION_TYPES.INFO, title: 'Revenu en retard', message: `${i.description || i.type} en retard de ${Math.abs(d)} j.`, priority: 'low' });
+      else if (d <= 3) addNotification({ type: NOTIFICATION_TYPES.INFO, title: 'Revenu imminent', message: `${i.description || i.type} dans ${d} j.`, priority: 'low' });
+    });
+
+    // Abonnement: fin d’essai proche (3 jours)
+    if (subscription?.isTrialing && subscription?.trialEnd) {
+      const trialEnd = new Date(subscription.trialEnd);
+      const d = Math.ceil((trialEnd.setHours(0,0,0,0) - new Date(today).setHours(0,0,0,0)) / (1000*60*60*24));
+      if (d <= 3) addNotification({ type: NOTIFICATION_TYPES.INFO, title: 'Fin d’essai', message: `Votre essai se termine dans ${Math.max(d, 0)} j.`, priority: 'medium', action: { label: 'Gérer', action: 'manageSubscription' } });
     }
   }, [store, addNotification, t]);
 
