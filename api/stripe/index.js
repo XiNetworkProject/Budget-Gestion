@@ -92,11 +92,25 @@ async function createPortalSession(req, res) {
 }
 
 async function getSubscriptionInfo(req, res) {
-  const { customerId } = req.body || {};
-  if (!customerId) return res.status(400).json({ message: 'customerId requis' });
-  const subscriptions = await stripe.subscriptions.list({ customer: customerId, status: 'active', expand: ['data.default_payment_method'] });
+  const { customerId, userEmail } = req.body || {};
+
+  let resolvedCustomerId = customerId || null;
+  if (!resolvedCustomerId && userEmail) {
+    try {
+      const customers = await stripe.customers.list({ email: userEmail, limit: 10 });
+      if (customers.data.length > 0) {
+        resolvedCustomerId = customers.data[0].id;
+      }
+    } catch (e) {
+      console.warn('Recherche client Stripe par email échouée:', e?.message);
+    }
+  }
+
+  if (!resolvedCustomerId) return res.status(200).json({ success: true, subscription: null });
+
+  const subscriptions = await stripe.subscriptions.list({ customer: resolvedCustomerId, status: 'all', expand: ['data.default_payment_method','data.items.data.price'] });
   if (subscriptions.data.length === 0) return res.status(200).json({ success: true, subscription: null });
-  const sub = subscriptions.data[0];
+  const sub = subscriptions.data.find(s => s.status === 'active' || s.status === 'trialing') || subscriptions.data[0];
   const planId = sub.items.data[0].price.id;
   const planMapping = { 'price_1RcAEjGb8GKvvz2G9mn9OlJs': 'PREMIUM', 'price_1RcAERGb8GKvvz2GAyajrGFo': 'PRO' };
   const subscriptionInfo = {
@@ -104,7 +118,7 @@ async function getSubscriptionInfo(req, res) {
     status: sub.status,
     createdAt: new Date(sub.created * 1000).toISOString(),
     currentPeriodEnd: new Date(sub.current_period_end * 1000).toISOString(),
-    customerId: sub.customer,
+    customerId: resolvedCustomerId,
     subscriptionId: sub.id,
     isTrialing: sub.status === 'trialing',
     trialEnd: sub.trial_end ? new Date(sub.trial_end * 1000).toISOString() : null,
