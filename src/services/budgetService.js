@@ -2,7 +2,20 @@
 // - Si VITE_API_URL est défini, on l'utilise (sans trailing slash)
 // - Sinon, on utilise un chemin relatif vers les fonctions `/api` (Vercel)
 const API_ORIGIN = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
-const API_BASE = API_ORIGIN; // chaîne vide => utilisera un chemin relatif
+let API_BASE = API_ORIGIN; // chaîne vide => utilisera un chemin relatif
+
+// Si VITE_API_URL pointe vers une autre origine que la page, ignorer et utiliser des routes relatives
+try {
+  if (typeof window !== 'undefined' && API_BASE) {
+    const configured = new URL(API_BASE, window.location.origin);
+    if (configured.origin !== window.location.origin) {
+      console.warn('[API] VITE_API_URL pointe vers une autre origine, utilisation des routes relatives /api');
+      API_BASE = '';
+    }
+  }
+} catch (_) {
+  API_BASE = '';
+}
 
 const buildApiUrl = (path, query) => {
   const base = API_BASE ? `${API_BASE}${path}` : `${path}`;

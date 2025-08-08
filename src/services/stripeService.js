@@ -1,5 +1,16 @@
 const API_ORIGIN = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
-const API_BASE = API_ORIGIN;
+let API_BASE = API_ORIGIN;
+try {
+  if (typeof window !== 'undefined' && API_BASE) {
+    const configured = new URL(API_BASE, window.location.origin);
+    if (configured.origin !== window.location.origin) {
+      console.warn('[API] VITE_API_URL pointe vers une autre origine, utilisation des routes relatives /api');
+      API_BASE = '';
+    }
+  }
+} catch (_) {
+  API_BASE = '';
+}
 const buildApiUrl = (path) => (API_BASE ? `${API_BASE}${path}` : `${path}`);
 import { useStore } from '../store';
 import { toast } from 'react-hot-toast';

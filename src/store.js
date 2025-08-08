@@ -1838,7 +1838,19 @@ const useStore = create(
           console.log('Récupération des informations d\'abonnement depuis Stripe...');
           
           const API_ORIGIN = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
-          const apiUrl = API_ORIGIN ? `${API_ORIGIN}/api/stripe` : '/api/stripe';
+          let apiUrl = '/api/stripe';
+          try {
+            if (typeof window !== 'undefined' && API_ORIGIN) {
+              const configured = new URL(API_ORIGIN, window.location.origin);
+              if (configured.origin === window.location.origin) {
+                apiUrl = `${API_ORIGIN}/api/stripe`;
+              } else {
+                console.warn('[API] VITE_API_URL pointe vers une autre origine, utilisation des routes relatives /api');
+              }
+            }
+          } catch (_) {
+            apiUrl = '/api/stripe';
+          }
           const response = await fetch(apiUrl, {
             method: 'POST',
             headers: {
