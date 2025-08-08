@@ -1461,6 +1461,12 @@ const useStore = create(persist(
         if (after.autoLogin && after.token && after.user) {
           console.log('Connexion automatique détectée - restauration de la session');
           set({ isAuthenticated: true });
+          // S'assurer que les données sont chargées une fois la session restaurée
+          try {
+            await get().setUser(after.user);
+          } catch (e) {
+            console.warn('checkAutoLogin: setUser a échoué après restauration:', e?.message);
+          }
           return true;
         }
         console.log('Aucune session valide trouvée pour la connexion automatique');

@@ -139,7 +139,7 @@ export const budgetService = {
       
       const url = buildApiUrl('/api/budget', { userId, _t: Date.now() });
       console.log('GET URL:', url);
-      const response = await fetch(url, { headers });
+      const response = await fetch(url, { headers, method: 'GET' });
       
       console.log('Réponse serveur:', {
         status: response.status,

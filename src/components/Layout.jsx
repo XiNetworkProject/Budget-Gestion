@@ -44,7 +44,10 @@ const Layout = () => {
     // Auto-login sur rafraîchissement direct d'une page interne (ex: /home)
     autoLogin,
     isAuthenticated,
-    checkAutoLogin
+    checkAutoLogin,
+    initialDataLoaded,
+    user,
+    setUser
   } = useStore();
   
   const [showTutorial, setShowTutorial] = useState(false);
@@ -80,6 +83,14 @@ const Layout = () => {
       navigate('/splash', { replace: true });
     }
   }, [isAuthenticated, navigate]);
+
+  // Si on est authentifié mais les données initiales ne sont pas chargées, déclencher un chargement serveur
+  useEffect(() => {
+    if (isAuthenticated && user && !initialDataLoaded) {
+      console.log('Layout: session présente mais données non chargées -> setUser() pour charger serveur');
+      setUser(user);
+    }
+  }, [isAuthenticated, user, initialDataLoaded, setUser]);
 
   // Vérifier et corriger l'état onboarding au chargement
   useEffect(() => {
