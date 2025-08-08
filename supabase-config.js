@@ -1,11 +1,20 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Côté serveur (Vercel Functions), privilégier la clé service role si disponible
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+// Côté serveur (Vercel), privilégier SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY
+const supabaseUrl =
+  process.env.SUPABASE_URL ||
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  process.env.VITE_SUPABASE_URL;
+
+const supabaseKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_ANON_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  process.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Variables d\'environnement Supabase manquantes (SUPABASE_URL et clé)');
+  console.error('Supabase env manquantes', { hasUrl: !!supabaseUrl, hasKey: !!supabaseKey });
+  throw new Error('Variables d\'environnement Supabase manquantes (URL ou KEY)');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
