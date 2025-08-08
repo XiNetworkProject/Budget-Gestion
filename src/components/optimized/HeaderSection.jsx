@@ -18,6 +18,7 @@ import {
   TrendingDown
 } from '@mui/icons-material';
 import Badge from '@mui/material/Badge';
+import { useStore } from '../../store';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -51,7 +52,7 @@ const HeaderSection = memo(({
     return '#ff9800';
   };
 
-  const unreadCount = 0; // TODO: relier au centre de notifications/global store
+  const { unreadCount = 0 } = useStore();
 
   return (
     <Fade in timeout={1000}>

@@ -58,6 +58,19 @@ const defaultAppSettings = {
   }
 };
 
+// Slice notifications simple
+const createNotificationsSlice = (set, get) => ({
+  notifications: [],
+  unreadCount: 0,
+  addNotification: (n) => {
+    const id = Date.now() + Math.random();
+    const notif = { id, timestamp: Date.now(), ...n };
+    set((state) => ({ notifications: [notif, ...state.notifications], unreadCount: state.unreadCount + 1 }));
+  },
+  markAllRead: () => set({ unreadCount: 0 }),
+  removeNotification: (id) => set((state) => ({ notifications: state.notifications.filter(n => n.id !== id) })),
+});
+
 // Plans d'abonnement avec les vrais Price IDs Stripe
 const subscriptionPlans = {
   FREE: {
@@ -137,6 +150,8 @@ const defaultUserProfile = {
 
 const useStore = create(persist(
     (set, get) => {
+      // intégrer slice notifications
+      const notificationsApi = createNotificationsSlice(set, get);
       let saveTimeout = null;
       const SAVE_DEBOUNCE_MS = 500;
 
