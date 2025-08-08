@@ -1,4 +1,4 @@
-import { dbUtils } from '../../supabase-config.js';
+import { dbUtils } from '../supabase-config.js';
 
 export default async function handler(req, res) {
   // Configuration CORS pour Vercel
