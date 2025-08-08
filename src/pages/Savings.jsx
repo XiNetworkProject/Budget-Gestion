@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useStore } from '../store';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { 
   Box, 
   Typography, 
@@ -38,7 +40,8 @@ import {
   Tabs,
   Tab,
   ToggleButton,
-  ToggleButtonGroup
+  ToggleButtonGroup,
+  Slider
 } from '@mui/material';
 import {
   Add,
@@ -77,6 +80,8 @@ import CurrencyFormatter from '../components/CurrencyFormatter';
 ChartJS.register(BarElement, CategoryScale, LinearScale, Legend, ArcElement);
 
 const Savings = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const { 
     savings, 
     addSavingsGoal, 
@@ -484,10 +489,10 @@ const Savings = () => {
 
       <Box sx={{ p: 0, pb: 10, position: 'relative', zIndex: 1 }}>
         {/* Onglets Vue */}
-        <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }} textColor="inherit" TabIndicatorProps={{ style: { background: 'white' }}}>
-          <Tab label="Aperçu" />
-          <Tab label="Objectifs" />
-          <Tab label="Planification" />
+        <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }} textColor="inherit" variant={isMobile ? 'scrollable' : 'standard'} TabIndicatorProps={{ style: { background: 'white' }}}>
+          <Tab label={isMobile ? 'Vue' : 'Aperçu'} />
+          <Tab label={isMobile ? 'Obj.' : 'Objectifs'} />
+          <Tab label={isMobile ? 'Plan' : 'Planification'} />
         </Tabs>
 
         {/* Actions avancées */}
@@ -687,9 +692,9 @@ const Savings = () => {
               onChange={(e) => setSearch(e.target.value)}
               InputProps={{ startAdornment: <InputAdornment position="start"><Search sx={{ color: 'rgba(255,255,255,0.7)' }}/></InputAdornment> }}
               sx={{
-                input: { color: 'white' },
+                input: { color: 'white', fontSize: isMobile ? 14 : 16 },
                 '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: 'white' }},
-                maxWidth: 380
+                maxWidth: isMobile ? '100%' : 380
               }}
             />
             <FormControl sx={{ minWidth: 180 }}>
@@ -699,7 +704,7 @@ const Savings = () => {
                 value={sortBy}
                 label="Tri"
                 onChange={(e) => setSortBy(e.target.value)}
-                sx={{ color: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' } }}
+                sx={{ color: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.3)' }, minWidth: isMobile ? '100%' : 180 }}
               >
                 <MenuItem value="deadline-asc">Échéance (ascendant)</MenuItem>
                 <MenuItem value="progress-desc">Progression (descendant)</MenuItem>
@@ -710,13 +715,13 @@ const Savings = () => {
               exclusive
               onChange={(_, v) => v && setStatusFilter(v)}
               size="small"
-              sx={{ '& .MuiToggleButton-root': { color: 'white', borderColor: 'rgba(255,255,255,0.2)' } }}
+              sx={{ '& .MuiToggleButton-root': { color: 'white', borderColor: 'rgba(255,255,255,0.2)', padding: isMobile ? '4px 8px' : undefined, fontSize: isMobile ? 12 : 14 } }}
             >
               <ToggleButton value="all">Tous</ToggleButton>
               <ToggleButton value="active">Actifs</ToggleButton>
               <ToggleButton value="completed">Terminés</ToggleButton>
             </ToggleButtonGroup>
-            <Button startIcon={<RestartAlt />} onClick={() => { setSearch(''); setSortBy('deadline-asc'); setStatusFilter('all'); }} sx={{ color: 'white' }}>Réinitialiser</Button>
+            <Button startIcon={<RestartAlt />} onClick={() => { setSearch(''); setSortBy('deadline-asc'); setStatusFilter('all'); }} sx={{ color: 'white', fontSize: isMobile ? 12 : 14 }}>Réinitialiser</Button>
           </Stack>
         )}
 
@@ -846,9 +851,9 @@ const Savings = () => {
                           </Box>
                         </Box>
                         
-                        <Box sx={{ mb: 2 }}>
+                        <Box sx={{ mb: 1.5 }}>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }} component="span">
+                            <Typography variant={isMobile ? 'caption' : 'body2'} sx={{ color: 'rgba(255, 255, 255, 0.85)' }} component="span">
                               {(goal.current || 0).toLocaleString()}€ / {goal.target.toLocaleString()}€
                             </Typography>
                             <Chip 
@@ -867,7 +872,7 @@ const Savings = () => {
                             value={Math.min(parseFloat(progress), 100)} 
                             color={getProgressColor(progress)}
                             sx={{ 
-                              height: 8, 
+                              height: isMobile ? 6 : 8, 
                               borderRadius: 4,
                               bgcolor: 'rgba(255, 255, 255, 0.2)',
                               '& .MuiLinearProgress-bar': {
@@ -876,20 +881,33 @@ const Savings = () => {
                             }}
                           />
                         </Box>
-
-                        <Stack direction="row" spacing={1}>
-                          <Button size="small" variant="outlined" startIcon={<AddCircleOutline />} onClick={() => setQuickUpdateDialog({ open: true, goalId: goal.id, amount: '' })} sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}>Déposer</Button>
-                          <Button size="small" variant="outlined" startIcon={<RemoveCircleOutline />} onClick={() => setQuickUpdateDialog({ open: true, goalId: goal.id, amount: '-' })} sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}>Retirer</Button>
+                        {/* Slider de mise à jour rapide (mobile-first) */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Slider
+                            size={isMobile ? 'small' : 'medium'}
+                            min={0}
+                            max={goal.target || 0}
+                            step={1}
+                            value={Math.min(goal.current || 0, goal.target || 0)}
+                            onChangeCommitted={(_, val) => {
+                              const newCurrent = Math.max(0, Math.min(Number(val) || 0, goal.target || 0));
+                              updateSavingsGoal(goal.id, { current: newCurrent });
+                            }}
+                            sx={{ color: 'white', flex: 1 }}
+                          />
                           <Button
                             size="small"
                             variant="outlined"
-                            onClick={() => handleUpdateProgress(goal.id, 100)}
-                            disabled={(goal.current || 0) >= goal.target}
+                            onClick={() => {
+                              const inc = Math.round((goal.target || 1000) * 0.05);
+                              const next = Math.min((goal.current || 0) + inc, goal.target || 0);
+                              updateSavingsGoal(goal.id, { current: next });
+                            }}
                             sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}
                           >
-                            +100€
+                            +5%
                           </Button>
-                        </Stack>
+                        </Box>
                       </CardContent>
                     </Card>
                   </Grid>
