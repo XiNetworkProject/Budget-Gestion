@@ -123,6 +123,8 @@ const Savings = () => {
   const [sortBy, setSortBy] = useState('deadline-asc');
   const [statusFilter, setStatusFilter] = useState('all');
   const [quickUpdateDialog, setQuickUpdateDialog] = useState({ open: false, goalId: null, amount: '' });
+  const [amountDraftByGoal, setAmountDraftByGoal] = useState({});
+  const [quickMenu, setQuickMenu] = useState({ anchorEl: null, goalId: null });
 
   // Filtrer les objectifs par compte actif
   const goals = savings.filter(goal => !activeAccount || goal.accountId === activeAccount.id);
@@ -900,32 +902,69 @@ const Savings = () => {
                             }}
                           />
                         </Box>
-                        {/* Slider de mise à jour rapide (mobile-first) */}
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        {/* Slider + entrée directe + menu rapide */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
                           <Slider
                             size={isMobile ? 'small' : 'medium'}
                             min={0}
                             max={goal.target || 0}
                             step={1}
-                            value={Math.min(goal.current || 0, goal.target || 0)}
+                            value={Math.min(amountDraftByGoal[goal.id] ?? goal.current ?? 0, goal.target || 0)}
+                            onChange={(_, val) => {
+                              setAmountDraftByGoal(s => ({ ...s, [goal.id]: Math.max(0, Math.min(Number(val) || 0, goal.target || 0)) }));
+                            }}
                             onChangeCommitted={(_, val) => {
                               const newCurrent = Math.max(0, Math.min(Number(val) || 0, goal.target || 0));
                               updateSavingsGoal(goal.id, { current: newCurrent });
                             }}
-                            sx={{ color: 'white', flex: 1 }}
+                            sx={{ color: 'white', flex: 1, minWidth: 160 }}
+                          />
+                          <TextField
+                            size="small"
+                            value={amountDraftByGoal[goal.id] ?? goal.current ?? 0}
+                            onChange={(e) => {
+                              const raw = Number(String(e.target.value).replace(',', '.')) || 0;
+                              setAmountDraftByGoal(s => ({ ...s, [goal.id]: raw }));
+                            }}
+                            onBlur={() => {
+                              const val = amountDraftByGoal[goal.id];
+                              const safe = Math.max(0, Math.min(Number(val) || 0, goal.target || 0));
+                              updateSavingsGoal(goal.id, { current: safe });
+                            }}
+                            inputProps={{ inputMode: 'decimal', style: { color: 'white', width: isMobile ? 88 : 110 } }}
+                            sx={{
+                              '& .MuiOutlinedInput-root': { '& fieldset': { borderColor: 'rgba(255,255,255,0.3)' }, '&:hover fieldset': { borderColor: 'white' } },
+                            }}
                           />
                           <Button
                             size="small"
                             variant="outlined"
-                            onClick={() => {
+                            onClick={(e) => setQuickMenu({ anchorEl: e.currentTarget, goalId: goal.id })}
+                            sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}
+                          >
+                            Options
+                          </Button>
+                          <Menu
+                            anchorEl={quickMenu.anchorEl}
+                            open={Boolean(quickMenu.anchorEl) && quickMenu.goalId === goal.id}
+                            onClose={() => setQuickMenu({ anchorEl: null, goalId: null })}
+                            PaperProps={{ sx: { bgcolor: 'rgba(30,30,30,0.95)', color: 'white', border: '1px solid rgba(255,255,255,0.12)' } }}
+                          >
+                            <MenuItem onClick={() => { updateSavingsGoal(goal.id, { current: 0 }); setQuickMenu({ anchorEl: null, goalId: null }); }}>Remettre à 0</MenuItem>
+                            <MenuItem onClick={() => { updateSavingsGoal(goal.id, { current: goal.target || 0 }); setQuickMenu({ anchorEl: null, goalId: null }); }}>Atteint</MenuItem>
+                            <MenuItem onClick={() => {
                               const inc = Math.round((goal.target || 1000) * 0.05);
                               const next = Math.min((goal.current || 0) + inc, goal.target || 0);
                               updateSavingsGoal(goal.id, { current: next });
-                            }}
-                            sx={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white' }}
-                          >
-                            +5%
-                          </Button>
+                              setQuickMenu({ anchorEl: null, goalId: null });
+                            }}>+5%</MenuItem>
+                            <MenuItem onClick={() => {
+                              const dec = Math.round((goal.target || 1000) * 0.05);
+                              const next = Math.max((goal.current || 0) - dec, 0);
+                              updateSavingsGoal(goal.id, { current: next });
+                              setQuickMenu({ anchorEl: null, goalId: null });
+                            }}>-5%</MenuItem>
+                          </Menu>
                         </Box>
                       </CardContent>
                     </Card>
