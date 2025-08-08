@@ -28,6 +28,37 @@ const buildApiUrl = (path, query) => {
 
 import { useStore } from '../store';
 
+// ======= Offline queue pour mutations (sauvegardes) =======
+const QUEUE_KEY = 'bg_mutation_queue_v1';
+
+const readQueue = () => {
+  try {
+    const raw = localStorage.getItem(QUEUE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (_) { return []; }
+};
+
+const writeQueue = (queue) => {
+  try { localStorage.setItem(QUEUE_KEY, JSON.stringify(queue)); } catch (_) {}
+};
+
+const enqueueSave = (userId, data) => {
+  const entry = { id: Date.now(), type: 'saveBudget', userId, data };
+  const q = readQueue();
+  q.push(entry);
+  writeQueue(q);
+  return entry.id;
+};
+
+let onlineListenerAttached = false;
+const attachOnlineListener = () => {
+  if (onlineListenerAttached || typeof window === 'undefined') return;
+  window.addEventListener('online', () => {
+    budgetService.flushQueue().catch(() => {});
+  });
+  onlineListenerAttached = true;
+};
+
 // Fonction utilitaire pour sauvegarder en local
 const saveToLocalStorage = (userId, data) => {
   try {
@@ -112,14 +143,15 @@ export const budgetService = {
       console.error('Message:', error.message);
       console.error('Stack:', error.stack);
       
-      // En cas d'erreur de connexion, sauvegarder en local
+      // En cas d'erreur de connexion, sauvegarder en local et mettre en file d'attente
       const localSuccess = saveToLocalStorage(userId, data);
+      enqueueSave(userId, data);
+      attachOnlineListener();
       if (localSuccess) {
-        console.log('Sauvegarde locale réussie en fallback');
-        return { success: true, local: true, message: 'Sauvegardé en local (pas de connexion serveur)' };
-      } else {
-        throw new Error('Impossible de sauvegarder (ni serveur ni local)');
+        console.log('Sauvegarde locale + mise en queue pour resynchronisation');
+        return { success: true, local: true, queued: true, message: 'Sauvegardé en local, resync automatique quand en ligne' };
       }
+      throw new Error('Impossible de sauvegarder (ni serveur ni local)');
     }
   },
 
@@ -230,5 +262,33 @@ export const budgetService = {
         throw new Error('Impossible de supprimer (ni serveur ni local)');
       }
     }
+  }
+  ,
+
+  // Tenter d'exécuter la file d'attente locale (sauvegardes en attente)
+  async flushQueue() {
+    const token = useStore.getState().token;
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    let q = readQueue();
+    if (q.length === 0) return { flushed: 0 };
+
+    let flushed = 0;
+    const remaining = [];
+    for (const entry of q) {
+      if (entry.type === 'saveBudget') {
+        try {
+          const url = buildApiUrl('/api/budget');
+          const res = await fetch(url, { method: 'POST', headers, body: JSON.stringify({ userId: entry.userId, ...entry.data }) });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          flushed++;
+        } catch (e) {
+          remaining.push(entry);
+        }
+      }
+    }
+    writeQueue(remaining);
+    return { flushed, remaining: remaining.length };
   }
 }; 

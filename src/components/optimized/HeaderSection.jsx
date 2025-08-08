@@ -17,6 +17,7 @@ import {
   TrendingUp,
   TrendingDown
 } from '@mui/icons-material';
+import Badge from '@mui/material/Badge';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
@@ -49,6 +50,8 @@ const HeaderSection = memo(({
     if (balanceTrend < 0) return '#f44336';
     return '#ff9800';
   };
+
+  const unreadCount = 0; // TODO: relier au centre de notifications/global store
 
   return (
     <Fade in timeout={1000}>
@@ -128,7 +131,7 @@ const HeaderSection = memo(({
               />
             </Tooltip>
 
-            {/* Bouton notifications */}
+            {/* Bouton notifications avec badge */}
             <Tooltip title="Notifications" arrow>
               <IconButton
                 sx={{
@@ -143,7 +146,9 @@ const HeaderSection = memo(({
                   }
                 }}
               >
-                <Notifications />
+                <Badge color="secondary" variant={unreadCount > 0 ? 'standard' : 'dot'} badgeContent={unreadCount} overlap="circular">
+                  <Notifications />
+                </Badge>
               </IconButton>
             </Tooltip>
 
