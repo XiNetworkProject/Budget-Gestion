@@ -1,4 +1,18 @@
-const API_URL = import.meta.env.VITE_API_URL || 'https://budget-gestion-6t5vtcbir-maximes-projects-d242441a.vercel.app/home';
+// Base API:
+// - Si VITE_API_URL est défini, on l'utilise (sans trailing slash)
+// - Sinon, on utilise un chemin relatif vers les fonctions `/api` (Vercel)
+const API_ORIGIN = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+const API_BASE = API_ORIGIN; // chaîne vide => utilisera un chemin relatif
+
+const buildApiUrl = (path, query) => {
+  const base = API_BASE ? `${API_BASE}${path}` : `${path}`;
+  if (query && Object.keys(query).length > 0) {
+    const qs = new URLSearchParams(query).toString();
+    return `${base}?${qs}`;
+  }
+  return base;
+};
+
 import { useStore } from '../store';
 
 // Fonction utilitaire pour sauvegarder en local
@@ -45,7 +59,7 @@ export const budgetService = {
       
       console.log('Headers:', headers);
       
-      const response = await fetch(`${API_URL}/api/budget`, {
+      const response = await fetch(buildApiUrl('/api/budget'), {
         method: 'POST',
         headers,
         body: JSON.stringify({ userId, ...data }),
@@ -108,7 +122,7 @@ export const budgetService = {
       
       console.log('Headers:', headers);
       
-      const response = await fetch(`${API_URL}/api/budget/${userId}`, { headers });
+      const response = await fetch(buildApiUrl('/api/budget', { userId }), { headers });
       
       console.log('Réponse serveur:', {
         status: response.status,
@@ -158,7 +172,7 @@ export const budgetService = {
     try {
       const token = useStore.getState().token;
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const response = await fetch(`${API_URL}/api/budget/${userId}`, {
+      const response = await fetch(buildApiUrl('/api/budget', { userId }), {
         method: 'DELETE',
         headers
       });

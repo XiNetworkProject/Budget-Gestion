@@ -1,13 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
+// Côté serveur (Vercel Functions), privilégier la clé service role si disponible
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Variables d\'environnement Supabase manquantes');
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Variables d\'environnement Supabase manquantes (SUPABASE_URL et clé)');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Configuration des tables Supabase
 export const TABLES = {

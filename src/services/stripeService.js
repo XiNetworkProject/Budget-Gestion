@@ -1,4 +1,6 @@
-const API_URL = import.meta.env.VITE_API_URL || 'https://budget-gestion-6t5vtcbir-maximes-projects-d242441a.vercel.app/home';
+const API_ORIGIN = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+const API_BASE = API_ORIGIN;
+const buildApiUrl = (path) => (API_BASE ? `${API_BASE}${path}` : `${path}`);
 import { useStore } from '../store';
 import { toast } from 'react-hot-toast';
 
@@ -33,10 +35,11 @@ export const stripeService = {
         'Authorization': `Bearer ${token}`
       };
 
-      const response = await fetch(`${API_URL}/api/stripe/create-checkout-session`, {
+      const response = await fetch(buildApiUrl('/api/stripe'), {
         method: 'POST',
         headers,
         body: JSON.stringify({
+          action: 'create-checkout-session',
           planId,
           userId: user.id,
           userEmail: user.email
@@ -48,12 +51,9 @@ export const stripeService = {
         throw new Error(error.message || 'Erreur lors de la création de la session de paiement');
       }
 
-      const { sessionId, sessionUrl } = await response.json();
-      
-      // Rediriger vers Stripe Checkout
-      window.location.href = sessionUrl;
-      
-      return { sessionId, sessionUrl };
+      const { url, sessionId } = await response.json();
+      window.location.href = url;
+      return { sessionId, sessionUrl: url };
     } catch (error) {
       console.error('Erreur création session Stripe:', error);
       throw error;

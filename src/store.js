@@ -1837,12 +1837,15 @@ const useStore = create(
         try {
           console.log('Récupération des informations d\'abonnement depuis Stripe...');
           
-          const response = await fetch(`${import.meta.env.VITE_API_URL}/api/stripe/subscription-info`, {
-            method: 'GET',
+          const API_ORIGIN = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+          const apiUrl = API_ORIGIN ? `${API_ORIGIN}/api/stripe` : '/api/stripe';
+          const response = await fetch(apiUrl, {
+            method: 'POST',
             headers: {
               'Authorization': `Bearer ${state.token}`,
               'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({ action: 'subscription-info', customerId: state.subscription?.stripeCustomerId })
           });
 
           if (!response.ok) {

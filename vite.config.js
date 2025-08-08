@@ -9,6 +9,7 @@ export default defineConfig(({ command, mode }) => {
   const isProduction = mode === 'production' || mode === 'optimized'
   const isAnalyze = mode === 'analyze'
   const isAndroid = mode === 'android'
+  const devProxyTarget = process.env.VITE_DEV_API_PROXY_TARGET || process.env.VITE_API_URL || ''
   
   return {
     plugins: [
@@ -91,7 +92,18 @@ export default defineConfig(({ command, mode }) => {
       host: true,
       hmr: {
         overlay: false
-      }
+      },
+      // Proxy de développement optionnel pour les routes API
+      // Définir VITE_DEV_API_PROXY_TARGET (ex: http://localhost:10000 ou une URL déployée)
+      ...(devProxyTarget && {
+        proxy: {
+          '/api': {
+            target: devProxyTarget,
+            changeOrigin: true,
+            secure: false
+          }
+        }
+      })
     },
     
     // Optimisations de preview
