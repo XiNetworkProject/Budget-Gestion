@@ -22,6 +22,7 @@ console.error = (...args) => {
 import AppRoutesOptimized from './RoutesOptimized.jsx'
 import { ThemeProvider, CssBaseline } from '@mui/material'
 import appTheme from './ui/theme'
+import CommandPalette from './components/optimized/CommandPalette'
 import { Toaster } from 'react-hot-toast'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
@@ -40,6 +41,7 @@ createRoot(document.getElementById('root')).render(
           <ThemeProvider theme={appTheme}>
             <CssBaseline />
             <AppRoutesOptimized />
+            <CommandPalette />
           </ThemeProvider>
           <SmartNotifications />
           <Toaster 

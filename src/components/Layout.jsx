@@ -11,6 +11,7 @@ import {
 import Tutorial from './Tutorial';
 import UpdateDialog from './UpdateDialog';
 import BottomTabs from './BottomTabs';
+import OfflineBanner from './OfflineBanner';
 import toast from 'react-hot-toast';
 
 const Layout = () => {
@@ -183,6 +184,7 @@ const Layout = () => {
 
   return (
     <Box sx={{ pb: isMobile ? 6 : 8, minHeight: '100vh' }}>
+      <OfflineBanner />
       <Tutorial 
         open={showTutorial}
         onClose={() => setShowTutorial(false)}
