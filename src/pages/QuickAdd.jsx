@@ -18,7 +18,8 @@ import {
   Tabs,
   Tab,
   InputAdornment,
-  Chip
+  Chip,
+  Stack
 } from '@mui/material';
 import { Close, Add, Remove, CalendarToday } from '@mui/icons-material';
 
@@ -214,29 +215,24 @@ const QuickAdd = ({ open: externalOpen, onClose: externalOnClose }) => {
           </Box>
 
           {/* Tabs pour Dépense/Revenu */}
-          <Tabs 
-            value={activeTab} 
-            onChange={(e, newValue) => setActiveTab(newValue)}
-            sx={{ mb: 2 }}
-            variant="fullWidth"
-          >
-            <Tab 
-              label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Remove color="error" />
-                  {t('quickAdd.expense')}
-                </Box>
-              } 
-            />
-            <Tab 
-              label={
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Add color="success" />
-                  {t('quickAdd.income')}
-                </Box>
-              } 
-            />
-          </Tabs>
+          <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+            <Button
+              variant={activeTab === 0 ? 'contained' : 'outlined'}
+              color="error"
+              onClick={() => setActiveTab(0)}
+              fullWidth
+            >
+              <Remove sx={{ mr: 1 }} /> {t('quickAdd.expense')}
+            </Button>
+            <Button
+              variant={activeTab === 1 ? 'contained' : 'outlined'}
+              color="success"
+              onClick={() => setActiveTab(1)}
+              fullWidth
+            >
+              <Add sx={{ mr: 1 }} /> {t('quickAdd.income')}
+            </Button>
+          </Stack>
 
           {/* Formulaire */}
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -316,6 +312,30 @@ const QuickAdd = ({ open: externalOpen, onClose: externalOnClose }) => {
             />
 
             {/* Bouton d'ajout */}
+            <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+              <Button
+                variant="outlined"
+                onClick={() => setAmount(prev => String((parseFloat(prev) || 0) + 10))}
+                fullWidth
+              >
+                +10€
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => setAmount(prev => String((parseFloat(prev) || 0) + 50))}
+                fullWidth
+              >
+                +50€
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => setAmount(prev => String((parseFloat(prev) || 0) + 100))}
+                fullWidth
+              >
+                +100€
+              </Button>
+            </Stack>
+
             <Button
               variant="contained"
               color={activeTab === 0 ? "error" : "success"}
