@@ -10,8 +10,10 @@ import {
   Paper,
   Avatar,
   IconButton,
-  Typography
+  Typography,
+  Badge
 } from '@mui/material';
+import { useStore } from '../store';
 import {
   Home,
   Analytics,
@@ -43,6 +45,7 @@ const BottomTabs = () => {
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { showUpdateDialog } = useStore();
 
   const handleQuickAdd = () => {
     setShowQuickAdd(true);
@@ -100,12 +103,14 @@ const BottomTabs = () => {
                         transform: 'translateY(-2px)',
                         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                       }
-                    }}>
-                      <Icon sx={{ 
+                      }}>
+                      <Badge variant="dot" color="secondary" invisible={tab.to !== '/settings' ? true : !showUpdateDialog} overlap="circular">
+                        <Icon sx={{ 
                         fontSize: isMobile ? 22 : 24,
                         mb: 0.2,
                         filter: active ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' : 'none'
-                      }} />
+                        }} />
+                      </Badge>
                       <Box sx={{
                         fontSize: isMobile ? '0.68rem' : '0.7rem',
                         fontWeight: active ? 600 : 400,
@@ -158,12 +163,14 @@ const BottomTabs = () => {
                         transform: 'translateY(-2px)',
                         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                       }
-                    }}>
-                      <Icon sx={{ 
+                      }}>
+                      <Badge variant="dot" color="secondary" invisible={tab.to !== '/settings' ? true : !showUpdateDialog} overlap="circular">
+                        <Icon sx={{ 
                         fontSize: isMobile ? 22 : 24,
                         mb: 0.2,
                         filter: active ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' : 'none'
-                      }} />
+                        }} />
+                      </Badge>
                       <Box sx={{
                         fontSize: isMobile ? '0.68rem' : '0.7rem',
                         fontWeight: active ? 600 : 400,
