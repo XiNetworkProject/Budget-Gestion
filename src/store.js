@@ -1857,7 +1857,11 @@ const useStore = create(
               'Authorization': `Bearer ${state.token}`,
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ action: 'subscription-info', customerId: state.subscription?.stripeCustomerId })
+            body: JSON.stringify({ 
+              action: 'subscription-info', 
+              customerId: state.subscription?.stripeCustomerId || null,
+              userEmail: state.user?.email || null
+            })
           });
 
           if (!response.ok) {
