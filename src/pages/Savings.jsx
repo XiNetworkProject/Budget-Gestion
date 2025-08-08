@@ -78,6 +78,8 @@ import {
   ArcElement
 } from 'chart.js';
 import CurrencyFormatter from '../components/CurrencyFormatter';
+import EmptyState from '../components/optimized/EmptyState';
+import { showUndoToast } from '../components/optimized/UndoToast';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Legend, ArcElement);
 
@@ -320,8 +322,9 @@ const Savings = () => {
   };
 
   const handleDeleteGoal = () => {
+    const backup = { ...selectedGoal };
     if (deleteSavingsGoal(selectedGoal.id)) {
-      setSnack({ open: true, message: t('savings.goalDeleted'), severity: 'success' });
+      showUndoToast(t('savings.goalDeleted'), () => addSavingsGoal(backup));
       setDeleteDialog(false);
     } else {
       setSnack({ open: true, message: t('savings.errorDeletingGoal'), severity: 'error' });
@@ -787,20 +790,7 @@ const Savings = () => {
           <Grid container spacing={2}>
             {filteredGoals.length === 0 ? (
               <Grid item xs={12}>
-                <Paper sx={{ 
-                  p: 4, 
-                  textAlign: 'center',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)'
-                }}>
-                  <Typography variant="h6" gutterBottom sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                    {t('savings.noSavingsGoals')}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }} component="span">
-                    {t('savings.addFirstGoal')}
-                  </Typography>
-                </Paper>
+                <EmptyState title={t('savings.noSavingsGoals')} description={t('savings.addFirstGoal')} actionLabel={t('savings.addGoal')} onAction={() => setAddDialog(true)} />
               </Grid>
             ) : (
               filteredGoals.map((goal) => {
