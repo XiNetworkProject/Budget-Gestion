@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTranslation } from 'react-i18next';
 import { 
   Box, 
@@ -59,6 +61,8 @@ import {
 import { useStore } from '../store';
 
 const Tutorial = ({ open, onClose, onComplete }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [activeStep, setActiveStep] = useState(0);
   const { setTutorialCompleted } = useStore();
   const { t } = useTranslation();
@@ -274,7 +278,7 @@ const Tutorial = ({ open, onClose, onComplete }) => {
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="md"
+      maxWidth={isMobile ? 'sm' : 'md'}
       fullWidth
       PaperProps={{
         sx: {
@@ -283,7 +287,7 @@ const Tutorial = ({ open, onClose, onComplete }) => {
           border: '1px solid rgba(255, 255, 255, 0.1)',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
           backdropFilter: 'blur(20px)',
-          minHeight: '80vh'
+          minHeight: isMobile ? '70vh' : '80vh'
         }
       }}
     >
@@ -345,16 +349,16 @@ const Tutorial = ({ open, onClose, onComplete }) => {
         }} 
       />
 
-      <DialogContent sx={{ p: 4 }}>
+      <DialogContent sx={{ p: isMobile ? 2 : 4 }}>
         <Box sx={{ textAlign: 'center', mb: 4 }}>
           {/* Icon */}
           <Fade in timeout={600}>
             <Avatar 
               sx={{ 
-                width: 120, 
-                height: 120, 
+                width: isMobile ? 80 : 120, 
+                height: isMobile ? 80 : 120, 
                 mx: 'auto', 
-                mb: 3,
+                mb: isMobile ? 2 : 3,
                 background: 'rgba(255, 255, 255, 0.1)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -369,7 +373,7 @@ const Tutorial = ({ open, onClose, onComplete }) => {
           {/* Title and Subtitle */}
           <Fade in timeout={800}>
             <Box>
-              <Typography variant="h4" sx={{ 
+              <Typography variant={isMobile ? 'h6' : 'h4'} sx={{ 
                 fontWeight: 'bold', 
                 mb: 1, 
                 color: 'white',
@@ -381,9 +385,9 @@ const Tutorial = ({ open, onClose, onComplete }) => {
               }}>
                 {currentStep.title}
               </Typography>
-              <Typography variant="h6" sx={{ 
+              <Typography variant={isMobile ? 'body2' : 'h6'} sx={{ 
                 color: 'rgba(255, 255, 255, 0.9)', 
-                mb: 2, 
+                mb: isMobile ? 1 : 2, 
                 fontWeight: 500,
                 textShadow: '0 1px 2px rgba(0,0,0,0.3)'
               }}>
@@ -394,12 +398,12 @@ const Tutorial = ({ open, onClose, onComplete }) => {
 
           {/* Description */}
           <Slide direction="up" in timeout={1000}>
-            <Typography variant="body1" sx={{ 
+            <Typography variant={isMobile ? 'body2' : 'body1'} sx={{ 
               color: 'rgba(255, 255, 255, 0.8)', 
-              lineHeight: 1.8,
+              lineHeight: isMobile ? 1.6 : 1.8,
               textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-              fontSize: '1.1rem',
-              mb: 3
+              fontSize: isMobile ? '0.95rem' : '1.1rem',
+              mb: isMobile ? 2 : 3
             }}>
               {currentStep.description}
             </Typography>
@@ -407,8 +411,8 @@ const Tutorial = ({ open, onClose, onComplete }) => {
 
           {/* Features Grid */}
           <Fade in timeout={1200}>
-            <Grid container spacing={2} sx={{ mb: 4 }}>
-              {currentStep.features.map((feature, index) => (
+            <Grid container spacing={isMobile ? 1.2 : 2} sx={{ mb: isMobile ? 2 : 4 }}>
+              {currentStep.features.slice(0, isMobile ? 2 : 3).map((feature, index) => (
                 <Grid item xs={12} sm={6} key={index}>
                   <Card sx={{ 
                     background: 'rgba(255, 255, 255, 0.1)',
@@ -422,19 +426,19 @@ const Tutorial = ({ open, onClose, onComplete }) => {
                       border: '1px solid rgba(255, 255, 255, 0.3)'
                     }
                   }}>
-                    <CardContent sx={{ py: 2, px: 3 }}>
+                    <CardContent sx={{ py: isMobile ? 1 : 2, px: isMobile ? 2 : 3 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <CheckCircle sx={{ 
                           color: '#4caf50', 
                           mr: 2, 
-                          fontSize: 24,
+                          fontSize: isMobile ? 20 : 24,
                           filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
                         }} />
-                        <Typography variant="body2" sx={{ 
+                        <Typography variant={isMobile ? 'caption' : 'body2'} sx={{ 
                           fontWeight: 500,
                           color: 'white',
                           textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                          fontSize: '0.95rem'
+                          fontSize: isMobile ? '0.85rem' : '0.95rem'
                         }}>
                           {feature}
                         </Typography>

@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '@mui/material/styles';
+import useMediaQuery from '@mui/material/useMediaQuery';
 import { 
   Box, 
   Typography, 
@@ -61,6 +63,8 @@ import {
 import { useStore } from '../store';
 
 const Onboarding = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -200,7 +204,11 @@ const steps = [
   }
 ];
 
-  const isLast = step === steps.length - 1;
+  // Version compacte (mobile): moins d'étapes, infos condensées
+  const visibleSteps = useMemo(() => (isMobile ? steps.slice(0, 5) : steps.slice(0, 7)), [isMobile]);
+  const totalSteps = visibleSteps.length;
+  const clampedStep = Math.min(step, totalSteps - 1);
+  const isLast = clampedStep === totalSteps - 1;
 
   const next = async () => {
     if (isLast) {
@@ -212,7 +220,7 @@ const steps = [
         navigate('/home', { replace: true });
       }, 1000);
     } else {
-      setStep(s => s + 1);
+      setStep(s => Math.min(s + 1, totalSteps - 1));
     }
   };
 
@@ -226,13 +234,15 @@ const steps = [
     navigate('/home', { replace: true });
   };
 
-  const currentStep = steps[step];
+  const currentStep = visibleSteps[clampedStep];
+  const featureItems = (currentStep.features || []).slice(0, isMobile ? 2 : 3);
+  const shortDescription = isMobile ? (currentStep.description?.split('.')?.[0] || currentStep.description) + '.' : currentStep.description;
 
   return (
     <Box sx={{ 
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #10131a 0%, #232946 100%)',
-      padding: 2,
+      p: isMobile ? 1.5 : 2,
       position: 'relative',
       overflow: 'hidden'
     }}>
@@ -246,7 +256,7 @@ const steps = [
         overflow: 'hidden',
         zIndex: 0
       }}>
-        {[...Array(30)].map((_, i) => (
+        {[...Array(isMobile ? 8 : 24)].map((_, i) => (
           <Box
             key={i}
             sx={{
@@ -281,7 +291,7 @@ const steps = [
           />
         ))}
         
-        {[...Array(10)].map((_, i) => (
+        {[...Array(isMobile ? 2 : 8)].map((_, i) => (
           <Box
             key={`large-${i}`}
             sx={{
@@ -360,9 +370,9 @@ const steps = [
       {/* Progress Bar glassmorphism */}
       <LinearProgress 
         variant="determinate" 
-        value={((step + 1) / steps.length) * 100} 
+        value={((clampedStep + 1) / totalSteps) * 100} 
         sx={{ 
-          height: 6, 
+          height: isMobile ? 4 : 6, 
           background: 'rgba(255, 255, 255, 0.2)',
           backdropFilter: 'blur(10px)',
           borderRadius: 3,
@@ -374,11 +384,11 @@ const steps = [
       />
 
       {/* Main Content */}
-      <Container maxWidth="md" sx={{ 
+      <Container maxWidth={isMobile ? 'sm' : 'md'} sx={{ 
         flex: 1, 
         display: 'flex', 
         flexDirection: 'column', 
-        py: 4,
+        py: isMobile ? 2 : 4,
         position: 'relative',
         zIndex: 1
       }}>
@@ -387,10 +397,10 @@ const steps = [
           <Zoom in timeout={600}>
             <Avatar 
               sx={{ 
-                width: 140, 
-                height: 140, 
+                width: isMobile ? 80 : 140, 
+                height: isMobile ? 80 : 140, 
                 mx: 'auto', 
-                mb: 3,
+                mb: isMobile ? 2 : 3,
                 background: 'rgba(255, 255, 255, 0.1)',
                 backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -404,9 +414,9 @@ const steps = [
           
           <Fade in timeout={800}>
             <Box>
-              <Typography variant="h3" sx={{ 
+              <Typography variant={isMobile ? 'h5' : 'h3'} sx={{ 
                 fontWeight: 'bold', 
-                mb: 1, 
+                mb: isMobile ? 0.5 : 1, 
                 color: 'white',
                 textShadow: '0 2px 4px rgba(0,0,0,0.3)',
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -416,9 +426,9 @@ const steps = [
               }}>
                 {currentStep.title}
               </Typography>
-              <Typography variant="h5" sx={{ 
+              <Typography variant={isMobile ? 'subtitle1' : 'h5'} sx={{ 
                 color: 'rgba(255, 255, 255, 0.9)', 
-                mb: 2, 
+                mb: isMobile ? 1.2 : 2, 
                 fontWeight: 500,
                 textShadow: '0 1px 2px rgba(0,0,0,0.3)'
               }}>
@@ -431,14 +441,14 @@ const steps = [
         {/* Description glassmorphism */}
         <Slide direction="up" in timeout={1000}>
           <Box sx={{ mb: 4 }}>
-            <Typography variant="body1" sx={{ 
+            <Typography variant={isMobile ? 'body2' : 'body1'} sx={{ 
               textAlign: 'center', 
               color: 'rgba(255, 255, 255, 0.8)', 
-              lineHeight: 1.8,
+              lineHeight: isMobile ? 1.6 : 1.8,
               textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-              fontSize: '1.1rem'
+              fontSize: isMobile ? '0.95rem' : '1.1rem'
             }}>
-              {currentStep.description}
+              {shortDescription}
             </Typography>
           </Box>
         </Slide>
@@ -446,11 +456,11 @@ const steps = [
         {/* Features glassmorphism */}
         <Fade in timeout={1200}>
           <Box sx={{ mb: 4 }}>
-            <Grid container spacing={2}>
-              {Array.isArray(currentStep.features) && currentStep.features.map((feature, index) => (
+            <Grid container spacing={1.5}>
+              {Array.isArray(featureItems) && featureItems.map((feature, index) => (
                 <Grid item xs={12} sm={6} key={index}>
                   <Card sx={{ 
-                    background: 'rgba(255, 255, 255, 0.1)',
+                    background: 'rgba(255, 255, 255, 0.08)',
                     backdropFilter: 'blur(20px)',
                     border: '1px solid rgba(255, 255, 255, 0.2)',
                     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
@@ -461,19 +471,19 @@ const steps = [
                       border: '1px solid rgba(255, 255, 255, 0.3)'
                     }
                   }}>
-                    <CardContent sx={{ py: 2, px: 3 }}>
+                    <CardContent sx={{ py: isMobile ? 1.2 : 2, px: isMobile ? 2 : 3 }}>
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <CheckCircle sx={{ 
                           color: '#4caf50', 
                           mr: 2, 
-                          fontSize: 24,
+                          fontSize: isMobile ? 20 : 24,
                           filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))'
                         }} />
-                        <Typography variant="body2" sx={{ 
+                        <Typography variant={isMobile ? 'caption' : 'body2'} sx={{ 
                           fontWeight: 500,
                           color: 'white',
                           textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                          fontSize: '0.95rem'
+                          fontSize: isMobile ? '0.85rem' : '0.95rem'
                         }}>
                           {feature}
                         </Typography>
