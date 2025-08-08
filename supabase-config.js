@@ -38,6 +38,31 @@ export const dbUtils = {
 
   // Sauvegarder le budget d'un utilisateur
   async saveBudget(userId, budgetData) {
+    // 1) S'assurer que l'utilisateur existe pour respecter la contrainte FK
+    try {
+      const userProfile = budgetData?.userProfile || {};
+      const email = userProfile.email || `${userId}@app.local`;
+      const name = userProfile.name || userProfile.firstName || null;
+      const avatarUrl = userProfile.avatar || userProfile.avatar_url || null;
+
+      const { error: userError } = await supabase
+        .from(TABLES.USERS)
+        .upsert({
+          id: userId,
+          email,
+          name,
+          avatar_url: avatarUrl,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'id' });
+
+      if (userError) {
+        console.warn('Avertissement upsert user (non bloquant):', userError);
+      }
+    } catch (e) {
+      console.warn('Impossible de garantir la présence de l\'utilisateur (non bloquant):', e?.message);
+    }
+
+    // 2) Upsert du budget
     const { data, error } = await supabase
       .from(TABLES.BUDGETS)
       .upsert({
