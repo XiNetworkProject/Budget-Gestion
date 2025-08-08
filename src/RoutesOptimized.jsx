@@ -14,7 +14,7 @@ const IncomeOptimized = lazy(() => import('./pages/IncomeOptimized'));
 const AnalyticsEnhanced = lazy(() => import('./pages/AnalyticsEnhanced'));
 const Expenses = lazy(() => import('./pages/Expenses'));
 const Income = lazy(() => import('./pages/Income'));
-const Savings = lazy(() => import('./pages/Savings'));
+const Savings = lazy(() => import('./pages/SavingsAdvanced'));
 const Debts = lazy(() => import('./pages/Debts'));
 
 const Analytics = lazy(() => import('./pages/Analytics'));
