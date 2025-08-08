@@ -184,9 +184,12 @@ const TransactionManager = memo(({
       });
     } else {
       setEditingTransaction(null);
+      const firstCatName = Array.isArray(categories) && categories.length > 0
+        ? (typeof categories[0] === 'object' ? categories[0].name : categories[0])
+        : '';
       setNewTransaction({
         amount: '',
-        category: selectedCategory?.name || '',
+        category: selectedCategory?.name || firstCatName,
         description: '',
         date: new Date(),
         recurring: false,
@@ -263,8 +266,8 @@ const TransactionManager = memo(({
   };
 
   const getCategoryColor = (categoryName) => {
-    const category = categories.find(c => c.name === categoryName);
-    return category?.color || '#90A4AE';
+    const category = categories.find((c) => (typeof c === 'object' ? c.name : c) === categoryName);
+    return (typeof category === 'object' && category?.color) ? category.color : '#90A4AE';
   };
 
   const formatAmount = (amount) => {
@@ -583,20 +586,25 @@ const TransactionManager = memo(({
                     label={t('transactionManager.category')}
                     required
                   >
-                    {categories.map((category) => (
-                      <MenuItem key={category.id} value={category.name}>
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Box sx={{
-                            width: 16,
-                            height: 16,
-                            borderRadius: '50%',
-                            bgcolor: category.color,
-                            mr: 1
-                          }} />
-                          {category.name}
-                        </Box>
-                      </MenuItem>
-                    ))}
+                    {categories.map((category, idx) => {
+                      const catName = typeof category === 'object' ? category.name : category;
+                      const catKey = typeof category === 'object' ? (category.id || category.name || idx) : category;
+                      const color = getCategoryColor(catName);
+                      return (
+                        <MenuItem key={catKey} value={catName}>
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Box sx={{
+                              width: 16,
+                              height: 16,
+                              borderRadius: '50%',
+                              bgcolor: color,
+                              mr: 1
+                            }} />
+                            {catName}
+                          </Box>
+                        </MenuItem>
+                      );
+                    })}
                   </Select>
                 </FormControl>
               </Grid>
