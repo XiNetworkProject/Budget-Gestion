@@ -65,6 +65,8 @@ import {
   PointElement
 } from 'chart.js';
 import CurrencyFormatter from '../components/CurrencyFormatter';
+import EmptyState from '../components/optimized/EmptyState';
+import { showUndoToast } from '../components/optimized/UndoToast';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Legend, LineElement, PointElement);
 
@@ -245,8 +247,9 @@ const Debts = () => {
   };
 
   const handleDeleteDebt = () => {
+    const backup = selectedDebt ? { ...selectedDebt } : null;
     setDebts(debts.filter(debt => debt.id !== selectedDebt.id));
-    setSnack({ open: true, message: t('debts.debtDeleted'), severity: 'info' });
+    showUndoToast(t('debts.debtDeleted'), () => backup && setDebts(prev => [...prev, backup]));
     setDeleteDialog(false);
   };
 
@@ -497,6 +500,11 @@ const Debts = () => {
           </Box>
           
           <Grid container spacing={2}>
+            {debts.length === 0 && (
+              <Grid item xs={12}>
+                <EmptyState title={t('debts.noDebts')} description={t('debts.addFirstDebt')} actionLabel={t('debts.addDebt')} onAction={() => setAddDialog(true)} />
+              </Grid>
+            )}
             {debts.map((debt) => {
               const progress = ((debt.paid / debt.amount) * 100).toFixed(1);
               const daysLeft = getDaysUntilDue(debt.dueDate);
