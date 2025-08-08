@@ -144,6 +144,11 @@ const useStore = create(persist(
         if (saveTimeout) clearTimeout(saveTimeout);
         saveTimeout = setTimeout(async () => {
           const state = get();
+          // Eviter toute sauvegarde serveur pendant le bootstrap initial
+          if (!state.initialDataLoaded) {
+            console.log('Sauvegarde ignorée (bootstrap en cours): initialDataLoaded=false');
+            return;
+          }
         
         // Diagnostic : vérifier l'état de l'authentification
         console.log('=== DIAGNOSTIC SAUVEGARDE ===');
@@ -219,6 +224,7 @@ const useStore = create(persist(
 
       return {
         isSaving: false,
+        initialDataLoaded: false,
         user: null,
         token: null,
         isAuthenticated: false,
@@ -1263,7 +1269,7 @@ const useStore = create(persist(
             const data = await budgetService.getBudget(user.id);
             console.log('setUser: Données reçues du serveur:', data);
             
-            if (data) {
+            if (data && Object.keys(data || {}).length > 0) {
               // Si l'utilisateur a des données, l'onboarding est forcément terminé
               const shouldCompleteOnboarding = data.onboardingCompleted !== undefined ? data.onboardingCompleted : true;
               
@@ -1291,7 +1297,8 @@ const useStore = create(persist(
                 onboardingCompleted: shouldCompleteOnboarding,
                 lastUpdateShown: data.lastUpdateShown || null,
                 appVersion: data.appVersion || "2.2.0",
-                isLoading: false
+                isLoading: false,
+                initialDataLoaded: true
               });
               
               console.log('setUser: Données chargées depuis le serveur, onboardingCompleted:', shouldCompleteOnboarding);
@@ -1322,13 +1329,13 @@ const useStore = create(persist(
                 lastUpdateShown: null,
                 appVersion: "2.2.0"
               };
-              set({ ...defaultBudget, isLoading: false });
+              set({ ...defaultBudget, isLoading: false, initialDataLoaded: true });
               await budgetService.saveBudget(user.id, defaultBudget);
               console.log('setUser: Nouvel utilisateur créé, onboardingCompleted: false');
             }
           } catch (error) {
             console.error('Error loading budget:', error);
-            set({ error: error.message, isLoading: false });
+            set({ error: error.message, isLoading: false, initialDataLoaded: true });
           }
         }
       },
@@ -1347,7 +1354,7 @@ const useStore = create(persist(
             set({ isLoading: true });
             const data = await budgetService.getBudget(user.id);
             
-            if (data) {
+            if (data && Object.keys(data || {}).length > 0) {
               const shouldCompleteOnboarding = data.onboardingCompleted !== undefined ? data.onboardingCompleted : true;
               set({
                 months: data.months || defaultMonths,
@@ -1373,7 +1380,8 @@ const useStore = create(persist(
                 onboardingCompleted: shouldCompleteOnboarding,
                 lastUpdateShown: data.lastUpdateShown || null,
                 appVersion: data.appVersion || "2.2.0",
-                isLoading: false
+                isLoading: false,
+                initialDataLoaded: true
               });
             } else {
               const defaultBudget = {
@@ -1401,12 +1409,12 @@ const useStore = create(persist(
                 lastUpdateShown: null,
                 appVersion: "2.2.0"
               };
-              set({ ...defaultBudget, isLoading: false });
+              set({ ...defaultBudget, isLoading: false, initialDataLoaded: true });
               await budgetService.saveBudget(user.id, defaultBudget);
             }
           } catch (error) {
             console.error('Error loading budget for Google user:', error);
-            set({ error: error.message, isLoading: false });
+            set({ error: error.message, isLoading: false, initialDataLoaded: true });
           }
         }
       },
@@ -1436,6 +1444,12 @@ const useStore = create(persist(
               const persisted = parsed?.state || parsed;
               if (persisted?.token && persisted?.user) {
                 set({ token: persisted.token, user: persisted.user, isAuthenticated: true });
+                // Charger immédiatement les données depuis le serveur pour éviter d'écraser avec les valeurs par défaut
+                try {
+                  await get().setUser(persisted.user);
+                } catch (e) {
+                  console.warn('checkAutoLogin: setUser a échoué pendant la restauration:', e?.message);
+                }
               }
             }
           } catch (e) {
