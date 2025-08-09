@@ -120,6 +120,11 @@ const GameCenter = memo(() => {
                       try {
                         const res = await gamificationService.buy(user.id, item.id);
                         if (res?.gamification) setGamification(res.gamification);
+                        // Appliquer immédiatement un thème acheté
+                        if (item.kind === 'cosmetic') {
+                          await gamificationService.applyCosmetic(user.id, { type: 'theme', id: item.payload?.id });
+                          window.location.reload();
+                        }
                       } catch (_) {}
                     }}
                   >

@@ -21,7 +21,7 @@ console.error = (...args) => {
 // Routes optimisées avec lazy loading
 import AppRoutesOptimized from './RoutesOptimized.jsx'
 import { ThemeProvider, CssBaseline } from '@mui/material'
-import appTheme from './ui/theme'
+import appTheme, { createAppTheme } from './ui/theme'
 import CommandPalette from './components/optimized/CommandPalette'
 import { Toaster } from 'react-hot-toast'
 
@@ -38,7 +38,7 @@ createRoot(document.getElementById('root')).render(
     <ErrorBoundary>
       <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
         <BrowserRouter>
-          <ThemeProvider theme={appTheme}>
+          <ThemeProvider theme={createAppTheme()}>
             <CssBaseline />
             <AppRoutesOptimized />
             <CommandPalette />

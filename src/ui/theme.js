@@ -214,6 +214,48 @@ export const appTheme = createTheme({
   },
 });
 
+export const resolveThemeFromCosmetics = () => {
+  try {
+    const persisted = JSON.parse(localStorage.getItem('budget-storage') || '{}');
+    const active = persisted?.state?.gamification?.activeCosmetics;
+    if (active?.theme === 'premium-aurora' || active?.theme === 'aurora') return 'aurora';
+    if (active?.theme === 'pro-neon' || active?.theme === 'neon') return 'neon';
+  } catch (_) {}
+  return null;
+};
+
+export const getThemedPaletteOverrides = () => {
+  const mode = resolveThemeFromCosmetics();
+  if (mode === 'aurora') {
+    return {
+      background: { default: '#0b1020', paper: '#11162a' },
+      primary: { main: '#8be9fd' },
+      secondary: { main: '#ff79c6' },
+    };
+  }
+  if (mode === 'neon') {
+    return {
+      background: { default: '#0a0f14', paper: '#0f1621' },
+      primary: { main: '#00e1d6' },
+      secondary: { main: '#39ff14' },
+    };
+  }
+  return {};
+};
+
+export const createAppTheme = () => {
+  const overrides = getThemedPaletteOverrides();
+  return createTheme({
+    ...appTheme,
+    palette: {
+      ...appTheme.palette,
+      primary: overrides.primary || appTheme.palette.primary,
+      secondary: overrides.secondary || appTheme.palette.secondary,
+      background: overrides.background || appTheme.palette.background,
+    }
+  });
+};
+
 export default appTheme;
 
 
