@@ -219,6 +219,7 @@ const useStore = create(persist(
               debts: state.debts,
               bankAccounts: state.bankAccounts,
               transactions: state.transactions,
+              gamification: state.gamification,
               userProfile: state.userProfile,
               appSettings: state.appSettings,
               accounts: state.accounts,
@@ -288,6 +289,9 @@ const useStore = create(persist(
         debts: [],
         bankAccounts: [],
         transactions: [],
+        
+        // Gamification (persisté côté serveur via budget_data.gamification)
+        gamification: defaultGamification,
         
         // Profil et paramètres utilisateur
         userProfile: defaultUserProfile,
@@ -561,6 +565,18 @@ const useStore = create(persist(
         
         set({ incomes: newIncomes });
             scheduleSave();
+        },
+
+        // Gestion de la gamification
+        setGamification: (g) => {
+          const state = get();
+          const next = { ...(state.gamification || defaultGamification), ...(g || {}) };
+          set({ gamification: next });
+          scheduleSave();
+        },
+        availableSpins: () => {
+          const state = get();
+          return Number(state.gamification?.spins || 0);
         },
 
         // Gestion des transactions
@@ -1207,6 +1223,7 @@ const useStore = create(persist(
             debts: [],
             bankAccounts: [],
             transactions: [],
+            gamification: defaultGamification,
             userProfile: state.userProfile,
             appSettings: state.appSettings,
             tutorialCompleted: false,
@@ -1357,6 +1374,7 @@ const useStore = create(persist(
                 debts: [],
                 bankAccounts: [],
                 transactions: [],
+                gamification: defaultGamification,
                 userProfile: { ...defaultUserProfile, email: user.email },
                 appSettings: defaultAppSettings,
                 tutorialCompleted: false,
@@ -1437,6 +1455,7 @@ const useStore = create(persist(
                 debts: [],
                 bankAccounts: [],
                 transactions: [],
+                gamification: defaultGamification,
                 userProfile: { ...defaultUserProfile, email: user.email },
                 appSettings: defaultAppSettings,
                 tutorialCompleted: false,
@@ -1540,6 +1559,7 @@ const useStore = create(persist(
           debts: state.debts,
           bankAccounts: state.bankAccounts,
           transactions: state.transactions,
+          gamification: state.gamification,
           userProfile: state.userProfile,
           appSettings: state.appSettings,
           accounts: state.accounts,
@@ -1796,6 +1816,7 @@ const useStore = create(persist(
               debts: [],
               bankAccounts: [],
               transactions: [],
+              gamification: defaultGamification,
               userProfile: { ...defaultUserProfile, email: state.user.email },
               appSettings: defaultAppSettings,
               tutorialCompleted: false,
