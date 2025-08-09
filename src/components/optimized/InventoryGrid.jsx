@@ -50,6 +50,7 @@ const InventoryGrid = memo(() => {
                   try {
                     const res = await gamificationService.activateBooster(user.id, it);
                     if (res?.gamification) setGamification(res.gamification);
+                    // Décrémenter qty côté UI si besoin
                   } catch (_) {}
                 }}>Activer</Button>
               )}

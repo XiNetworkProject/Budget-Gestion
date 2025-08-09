@@ -128,7 +128,7 @@ const GameCenter = memo(() => {
                         // Appliquer immédiatement un thème acheté
                         if (item.kind === 'cosmetic') {
                           await gamificationService.applyCosmetic(user.id, { type: 'theme', id: item.payload?.id });
-                          window.location.reload();
+                          setTimeout(() => window.location.reload(), 50);
                         }
                       } catch (_) {}
                     }}

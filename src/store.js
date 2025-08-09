@@ -2012,7 +2012,9 @@ const useStore = create(persist(
       autoLogin: state.autoLogin,
       appSettings: state.appSettings,
       subscription: state.subscription,
-      lastUpdateShown: state.lastUpdateShown
+      lastUpdateShown: state.lastUpdateShown,
+      // Persister la gamification pour les thèmes dynamiques et compteurs
+      gamification: state.gamification
     })
   }
 ));
