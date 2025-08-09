@@ -5,14 +5,14 @@ import { gamificationService } from '../../services/gamificationService';
 
 const images = {
   theme: {
-    gradient: '/images/theme-gradient.png',
-    aurora: '/images/theme-aurora.png',
-    'premium-aurora': '/images/theme-aurora.png',
-    neon: '/images/theme-neon.png',
-    'pro-neon': '/images/theme-neon.png'
+    gradient: '/images/theme-gradient.svg',
+    aurora: '/images/theme-aurora.svg',
+    'premium-aurora': '/images/theme-aurora.svg',
+    neon: '/images/theme-neon.svg',
+    'pro-neon': '/images/theme-neon.svg'
   },
   booster: {
-    default: '/images/booster.png'
+    default: '/images/booster.svg'
   }
 };
 
