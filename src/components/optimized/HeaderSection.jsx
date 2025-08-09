@@ -18,6 +18,7 @@ import {
   TrendingDown
 } from '@mui/icons-material';
 import Badge from '@mui/material/Badge';
+import { Star as StarIcon, Casino as CasinoIcon } from '@mui/icons-material';
 import SpinLauncher from './SpinLauncher';
 import { useStore } from '../../store';
 import { useNavigate } from 'react-router-dom';
@@ -53,7 +54,9 @@ const HeaderSection = memo(({
     return '#ff9800';
   };
 
-  const { unreadCount = 0 } = useStore();
+  const { unreadCount = 0, gamification } = useStore();
+  const points = Number(gamification?.points || 0);
+  const spins = Number(gamification?.spins || 0);
 
   return (
     <Fade in timeout={1000}>
@@ -131,6 +134,14 @@ const HeaderSection = memo(({
                   backdropFilter: 'blur(10px)'
                 }}
               />
+            </Tooltip>
+
+            {/* Points & Spins counters */}
+            <Tooltip title={`Points: ${points.toLocaleString()}`} arrow>
+              <Chip size="small" icon={<StarIcon sx={{ color: '#ffd54f' }} />} label={points.toLocaleString()} sx={{ bgcolor: 'rgba(255,255,255,0.12)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }} />
+            </Tooltip>
+            <Tooltip title={`Spins: ${spins}`} arrow>
+              <Chip size="small" icon={<CasinoIcon sx={{ color: '#90caf9' }} />} label={spins} sx={{ bgcolor: 'rgba(255,255,255,0.12)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }} />
             </Tooltip>
 
             {/* Bouton notifications avec badge */}

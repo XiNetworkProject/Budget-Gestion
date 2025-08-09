@@ -245,22 +245,50 @@ export const getThemedPaletteOverrides = () => {
 
 export const createAppTheme = () => {
   const overrides = getThemedPaletteOverrides();
+  const palette = {
+    mode: 'dark',
+    primary: overrides.primary || primary,
+    secondary: overrides.secondary || secondary,
+    success,
+    warning,
+    error,
+    info,
+    background: overrides.background || { default: '#10131a', paper: alpha('#ffffff', 0.06) },
+    text: { primary: '#ffffff', secondary: alpha('#ffffff', 0.75) }
+  };
+  // Body background dynamique en fonction du thème actif
+  let bodyBackground = 'linear-gradient(135deg, #10131a 0%, #232946 100%)';
+  const mode = resolveThemeFromCosmetics();
+  if (mode === 'aurora') {
+    bodyBackground = 'radial-gradient(60% 80% at 30% 30%, #1a2240 0%, #0b1020 60%, #0b1020 100%)';
+  } else if (mode === 'neon') {
+    bodyBackground = '#0a0f14';
+  }
   return createTheme({
-    palette: {
-      mode: 'dark',
-      primary: overrides.primary || primary,
-      secondary: overrides.secondary || secondary,
-      success,
-      warning,
-      error,
-      info,
-      background: overrides.background || { default: '#10131a', paper: alpha('#ffffff', 0.06) },
-      text: { primary: '#ffffff', secondary: alpha('#ffffff', 0.75) }
-    },
+    palette,
     shape: appTheme.shape,
     typography: appTheme.typography,
     shadows: appTheme.shadows,
-    components: appTheme.components,
+    components: {
+      ...appTheme.components,
+      MuiCssBaseline: {
+        styleOverrides: {
+          body: {
+            background: bodyBackground
+          },
+          '::selection': { background: alpha(palette.secondary.main, 0.35) },
+        }
+      },
+      MuiButton: {
+        ...appTheme.components?.MuiButton,
+        styleOverrides: {
+          ...(appTheme.components?.MuiButton?.styleOverrides || {}),
+          containedPrimary: {
+            background: `linear-gradient(135deg, ${palette.secondary.main} 0%, ${palette.primary.main} 100%)`
+          }
+        }
+      }
+    },
     custom: appTheme.custom
   });
 };
