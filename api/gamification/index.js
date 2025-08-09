@@ -235,14 +235,18 @@ async function safeGetPlan(userId) {
 }
 
 function baseCatalog() {
-  // Catégories de récompenses avec poids (odds)
+  // Catalogue de base avec poids (odds) et rareté indicative
   return [
-    { type: 'points', label: '+50 points', points: 50, weight: 45 },
-    { type: 'points', label: '+150 points', points: 150, weight: 25 },
-    { type: 'cosmetic', label: 'Thème gradient', cosmetic: { type: 'theme', id: 'gradient' }, weight: 10 },
-    { type: 'booster', label: 'Booster +10% missions (24h)', booster: { missionBonusPct: 10, expiresInHours: 24 }, weight: 12 },
-    { type: 'freeze', label: 'Jeton Freeze Streak', freeze: 1, weight: 6 },
-    { type: 'bonusSpin', label: 'Spin bonus', bonusSpin: true, weight: 2 }
+    { type: 'points', label: '+50 points', points: 50, weight: 40, rarity: 'common' },
+    { type: 'points', label: '+150 points', points: 150, weight: 24, rarity: 'uncommon' },
+    { type: 'points', label: '+300 points', points: 300, weight: 10, rarity: 'rare' },
+    { type: 'booster', label: 'Booster +10% missions (24h)', booster: { missionBonusPct: 10, expiresInHours: 24 }, weight: 10, rarity: 'uncommon' },
+    { type: 'booster', label: 'Booster +15% missions (24h)', booster: { missionBonusPct: 15, expiresInHours: 24 }, weight: 6, rarity: 'rare' },
+    { type: 'cosmetic', label: 'Thème Gradient', cosmetic: { type: 'theme', id: 'gradient' }, weight: 6, rarity: 'uncommon' },
+    { type: 'cosmetic', label: 'Thème Aurora', cosmetic: { type: 'theme', id: 'premium-aurora' }, weight: 3, rarity: 'epic' },
+    { type: 'cosmetic', label: 'Thème Néon', cosmetic: { type: 'theme', id: 'pro-neon' }, weight: 3, rarity: 'epic' },
+    { type: 'freeze', label: 'Jeton Freeze Streak', freeze: 1, weight: 5, rarity: 'rare' },
+    { type: 'bonusSpin', label: 'Spin bonus', bonusSpin: true, weight: 3, rarity: 'legendary' }
   ];
 }
 
@@ -347,7 +351,9 @@ function baseShop() {
   return [
     { id: 'pack-1', kind: 'spinPack', label: 'Pack 5 spins', pricePoints: 400, payload: { spins: 5 } },
     { id: 'pack-2', kind: 'spinPack', label: 'Pack 15 spins', pricePoints: 1100, payload: { spins: 15 } },
+    { id: 'pack-3', kind: 'spinPack', label: 'Pack 30 spins', pricePoints: 2000, payload: { spins: 30 } },
     { id: 'boost-10', kind: 'booster', label: 'Booster +10% (24h)', pricePoints: 600, payload: { missionBonusPct: 10, expiresInHours: 24 } },
+    { id: 'boost-15', kind: 'booster', label: 'Booster +15% (24h)', pricePoints: 900, payload: { missionBonusPct: 15, expiresInHours: 24 } },
     { id: 'cos-aurora', kind: 'cosmetic', label: 'Thème Aurora', pricePoints: 800, payload: { id: 'premium-aurora' } },
     { id: 'cos-neon', kind: 'cosmetic', label: 'Thème Néon', pricePoints: 800, payload: { id: 'pro-neon' } },
   ];

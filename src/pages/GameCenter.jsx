@@ -54,19 +54,19 @@ const GameCenter = memo(() => {
 
       <Paper sx={{ p: 2, mb: 3, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
         <Typography variant="h6" sx={{ mb: 2, color: 'white', fontWeight: 600 }}>Récompenses possibles</Typography>
-        <Grid container spacing={2}>
+        <Grid container spacing={1}>
           {catalog.map((r, idx) => (
-            <Grid item xs={12} sm={6} md={4} key={idx}>
-              <Paper sx={{ p: 2, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  {r.type === 'points' && <Star sx={{ color: '#ffd54f' }} />}
-                  {r.type === 'cosmetic' && <Brush sx={{ color: '#80cbc4' }} />}
-                  {r.type === 'booster' && <Bolt sx={{ color: '#90caf9' }} />}
-                  <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 600 }}>{r.label}</Typography>
+            <Grid item xs={6} sm={4} md={3} key={idx}>
+              <Paper sx={{ p: 1.25, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                  {r.type === 'points' && <Box component="img" src="/images/token-points.svg" alt="points" sx={{ width: 24, height: 24 }} />}
+                  {r.type === 'cosmetic' && <Box component="img" src={r.cosmetic?.id?.includes('neon') ? '/images/theme-neon.svg' : r.cosmetic?.id?.includes('aurora') ? '/images/theme-aurora.svg' : '/images/theme-gradient.svg'} alt="cosmetic" sx={{ width: 24, height: 24, borderRadius: 0.75 }} />}
+                  {r.type === 'booster' && <Box component="img" src="/images/booster.svg" alt="booster" sx={{ width: 24, height: 24 }} />}
+                  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                    <Typography variant="caption" sx={{ color: 'white', fontWeight: 600, lineHeight: 1.1 }}>{r.label}</Typography>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>Rareté: {r.rarity || '—'} • Poids: {r.weight}</Typography>
+                  </Box>
                 </Box>
-                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>
-                  Probabilité relative: {r.weight}
-                </Typography>
               </Paper>
             </Grid>
           ))}
