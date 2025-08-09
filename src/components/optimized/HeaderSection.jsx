@@ -138,10 +138,10 @@ const HeaderSection = memo(({
 
             {/* Points & Spins counters */}
             <Tooltip title={`Points: ${points.toLocaleString()}`} arrow>
-              <Chip size="small" icon={<Box component="img" src="/images/token-points.svg" alt="points" sx={{ width: 16, height: 16 }} />} label={points.toLocaleString()} sx={{ bgcolor: 'rgba(255,255,255,0.12)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }} />
+              <Chip size="small" icon={<StarIcon sx={{ color: '#ffd54f' }} />} label={points.toLocaleString()} sx={{ bgcolor: 'rgba(255,255,255,0.12)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }} />
             </Tooltip>
             <Tooltip title={`Spins: ${spins}`} arrow>
-              <Chip size="small" icon={<Box component="img" src="/images/token-spin.svg" alt="spins" sx={{ width: 16, height: 16 }} />} label={spins} sx={{ bgcolor: 'rgba(255,255,255,0.12)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }} />
+              <Chip size="small" icon={<CasinoIcon sx={{ color: '#90caf9' }} />} label={spins} sx={{ bgcolor: 'rgba(255,255,255,0.12)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }} />
             </Tooltip>
 
             {/* Bouton notifications avec badge */}

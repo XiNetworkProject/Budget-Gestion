@@ -48,9 +48,8 @@ const InventoryGrid = memo(() => {
               {it.type === 'booster' && (
                 <Button size="small" variant="contained" onClick={async () => {
                   try {
-                    const res = await gamificationService.activateBooster(user.id, it);
+                    const res = await gamificationService.activateBooster(user.id, { missionBonusPct: it.missionBonusPct, expiresInHours: it.expiresInHours });
                     if (res?.gamification) setGamification(res.gamification);
-                    // Décrémenter qty côté UI si besoin
                   } catch (_) {}
                 }}>Activer</Button>
               )}

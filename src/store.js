@@ -2013,7 +2013,6 @@ const useStore = create(persist(
       appSettings: state.appSettings,
       subscription: state.subscription,
       lastUpdateShown: state.lastUpdateShown,
-      // Persister la gamification pour les thèmes dynamiques et compteurs
       gamification: state.gamification
     })
   }

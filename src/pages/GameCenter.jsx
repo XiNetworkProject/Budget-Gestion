@@ -116,6 +116,9 @@ const GameCenter = memo(() => {
             <Grid item xs={12} sm={6} md={4} key={item.id}>
               <Paper sx={{ p: 2, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)' }}>
                 <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 600 }}>{item.label}</Typography>
+                {item.kind === 'booster' && (
+                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.8)' }}>+{item.payload?.missionBonusPct}% • {item.payload?.expiresInHours}h</Typography>
+                )}
                 <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>Prix: {item.pricePoints} pts</Typography>
                 <Box sx={{ mt: 1 }}>
                   <Button 
@@ -128,7 +131,7 @@ const GameCenter = memo(() => {
                         // Appliquer immédiatement un thème acheté
                         if (item.kind === 'cosmetic') {
                           await gamificationService.applyCosmetic(user.id, { type: 'theme', id: item.payload?.id });
-                          setTimeout(() => window.location.reload(), 50);
+                          setTimeout(() => window.location.reload(), 100);
                         }
                       } catch (_) {}
                     }}
