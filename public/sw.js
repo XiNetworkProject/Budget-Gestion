@@ -1,6 +1,6 @@
 /* Simple service worker: cache shell + network-first for API, stale-while-revalidate for static */
-const CACHE_STATIC = 'bg-static-v2';
-const CACHE_RUNTIME = 'bg-runtime-v2';
+const CACHE_STATIC = 'bg-static-v1';
+const CACHE_RUNTIME = 'bg-runtime-v1';
 
 const PRECACHE_URLS = [
   '/',
@@ -34,28 +34,14 @@ function isApiRequest(request) {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
-  if (typeof request.url === 'string' && request.url.startsWith('chrome-extension://')) return;
-
-  // Ne gérer que les requêtes http(s) et de même origine
-  let url;
-  try {
-    url = new URL(request.url);
-  } catch (_) {
-    return;
-  }
-  if (!/^https?:$/.test(url.protocol)) return;
-  if (url.origin !== self.location.origin) return;
 
   if (isApiRequest(request)) {
     // network-first for API
     event.respondWith((async () => {
       try {
         const network = await fetch(request);
-        // Mettre en cache uniquement si réponse valide et même origine
-        if (network && network.ok && (network.type === 'basic' || network.type === 'default')) {
-          const cache = await caches.open(CACHE_RUNTIME);
-          await cache.put(request, network.clone());
-        }
+        const cache = await caches.open(CACHE_RUNTIME);
+        cache.put(request, network.clone());
         return network;
       } catch (e) {
         const cached = await caches.match(request);
@@ -70,10 +56,8 @@ self.addEventListener('fetch', (event) => {
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_STATIC);
     const cached = await cache.match(request);
-    const networkPromise = fetch(request).then(async (response) => {
-      if (response && response.ok && (response.type === 'basic' || response.type === 'default')) {
-        await cache.put(request, response.clone());
-      }
+    const networkPromise = fetch(request).then((response) => {
+      cache.put(request, response.clone());
       return response;
     }).catch(() => undefined);
     return cached || networkPromise || fetch(request);

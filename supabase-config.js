@@ -45,6 +45,64 @@ export const dbUtils = {
     return data?.budget_data || null;
   },
 
+  // Récupérer l'état de gamification stocké dans le JSON du budget
+  async getGamification(userId) {
+    const { data, error } = await supabase
+      .from(TABLES.BUDGETS)
+      .select('budget_data')
+      .eq('user_id', userId)
+      .single();
+
+    if (error) {
+      console.error('Erreur récupération gamification:', error);
+      return null;
+    }
+
+    const gd = data?.budget_data || {};
+    return gd.gamification || null;
+  },
+
+  // Sauvegarder/mettre à jour la gamification dans le JSON du budget
+  async saveGamification(userId, partialGamification) {
+    // Récupérer l'actuel
+    const currentBudget = await this.getBudget(userId);
+    const currentGamification = (currentBudget && currentBudget.gamification) || {};
+    const nextGamification = {
+      spins: 0,
+      points: 0,
+      level: 1,
+      streakDays: 0,
+      bestStreak: 0,
+      freezeTokens: 0,
+      lastSpinAt: null,
+      inventory: [],
+      boosters: {},
+      ...currentGamification,
+      ...partialGamification
+    };
+
+    // Recomposer l'objet budget_data complet
+    const nextBudgetData = {
+      ...(currentBudget || {}),
+      gamification: nextGamification,
+    };
+
+    const { data, error } = await supabase
+      .from(TABLES.BUDGETS)
+      .upsert({
+        user_id: userId,
+        budget_data: nextBudgetData,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+
+    if (error) {
+      console.error('Erreur sauvegarde gamification:', error);
+      throw new Error('Erreur lors de la sauvegarde de la gamification');
+    }
+
+    return nextGamification;
+  },
+
   // Sauvegarder le budget d'un utilisateur
   async saveBudget(userId, budgetData) {
     // 1) S'assurer que l'utilisateur existe pour respecter la contrainte FK
@@ -163,24 +221,23 @@ export const dbUtils = {
     }
 
     return data || [];
-  }
-  ,
+  },
 
-  // Gamification: journaliser un spin (best-effort)
-  async logSpin({ userId, outcome }) {
+  // Plan d'abonnement courant
+  async getSubscriptionPlan(userId) {
     try {
       const { data, error } = await supabase
-        .from('gamification_spins')
-        .insert({
-          user_id: userId,
-          outcome,
-          created_at: new Date().toISOString()
-        });
+        .from(TABLES.SUBSCRIPTIONS)
+        .select('*')
+        .eq('user_id', userId)
+        .in('status', ['active', 'trialing'])
+        .order('updated_at', { ascending: false })
+        .limit(1);
       if (error) throw error;
-      return data;
+      const sub = Array.isArray(data) ? data[0] : data;
+      return sub?.plan_id || 'FREE';
     } catch (e) {
-      console.warn('logSpin: impossible d\'insérer (table absente ?):', e?.message);
-      return null;
+      return 'FREE';
     }
   }
 }; 

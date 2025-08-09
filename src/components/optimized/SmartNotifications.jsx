@@ -277,7 +277,8 @@ export const useSmartNotifications = () => {
       budgetLimits,
       savings,
       subscription,
-      appSettings
+      appSettings,
+      gamification
     } = store;
     if (appSettings?.notifications?.mode === 'off') return;
     
@@ -345,6 +346,17 @@ export const useSmartNotifications = () => {
             addNotification({ type: NOTIFICATION_TYPES.SAVINGS, title: 'Objectif bientôt atteint', message: `"${goal.name}" à ${progress.toFixed(0)}%.`, priority: 'medium' });
           }
         }
+      });
+    }
+
+    // Spins disponibles (rappel discret)
+    if (gamification && Number(gamification.spins || 0) > 0) {
+      addNotification({
+        type: NOTIFICATION_TYPES.INFO,
+        title: 'Spin disponible',
+        message: `${gamification.spins} spin(s) à utiliser`,
+        priority: 'low',
+        action: { label: 'Tourner', action: 'openSpin' }
       });
     }
 
@@ -427,8 +439,15 @@ const SmartNotifications = memo(() => {
   const mode = appSettings?.notifications?.mode || 'full';
 
   const handleAction = useCallback((action) => {
+    if (!action) return;
+    if (action.action === 'openSpin') {
+      try {
+        const event = new CustomEvent('open-spin');
+        window.dispatchEvent(event);
+      } catch (_) {}
+      return;
+    }
     console.log('Action clicked:', action);
-    // Implémenter les actions ici
   }, []);
 
   if (notifications.length === 0) return null;
