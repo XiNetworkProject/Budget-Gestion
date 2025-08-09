@@ -354,16 +354,29 @@ function baseShop() {
 }
 
 function mergeInventory(existing, incoming) {
-  const key = (it) => `${it.type}:${it.id || JSON.stringify(it)}`;
-  const set = new Set(existing.map(key));
-  const result = [...existing];
+  const makeKey = (it) => `${it.type}:${it.id || JSON.stringify(it)}`;
+  const result = [];
+  const map = new Map();
+  // seed from existing
+  for (const it of existing) {
+    const k = makeKey(it);
+    const base = { ...it };
+    base.qty = Math.max(1, Number(base.qty || 1));
+    map.set(k, base);
+  }
+  // merge incoming
   for (const it of incoming) {
-    const k = key(it);
-    if (!set.has(k)) {
-      set.add(k);
-      result.push(it);
+    const k = makeKey(it);
+    if (map.has(k)) {
+      const cur = map.get(k);
+      cur.qty = Math.max(1, Number(cur.qty || 1)) + 1;
+      map.set(k, cur);
+    } else {
+      map.set(k, { ...it, qty: 1 });
     }
   }
+  // to array
+  for (const v of map.values()) result.push(v);
   return result;
 }
 

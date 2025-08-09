@@ -246,13 +246,22 @@ export const getThemedPaletteOverrides = () => {
 export const createAppTheme = () => {
   const overrides = getThemedPaletteOverrides();
   return createTheme({
-    ...appTheme,
     palette: {
-      ...appTheme.palette,
-      primary: overrides.primary || appTheme.palette.primary,
-      secondary: overrides.secondary || appTheme.palette.secondary,
-      background: overrides.background || appTheme.palette.background,
-    }
+      mode: 'dark',
+      primary: overrides.primary || primary,
+      secondary: overrides.secondary || secondary,
+      success,
+      warning,
+      error,
+      info,
+      background: overrides.background || { default: '#10131a', paper: alpha('#ffffff', 0.06) },
+      text: { primary: '#ffffff', secondary: alpha('#ffffff', 0.75) }
+    },
+    shape: appTheme.shape,
+    typography: appTheme.typography,
+    shadows: appTheme.shadows,
+    components: appTheme.components,
+    custom: appTheme.custom
   });
 };
 

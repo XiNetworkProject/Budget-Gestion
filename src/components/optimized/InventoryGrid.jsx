@@ -28,7 +28,8 @@ const InventoryGrid = memo(() => {
     <Grid container spacing={2}>
       {items.map((it, idx) => {
         const img = images[it.type]?.[it.id] || images[it.type]?.default || images.theme.gradient;
-        const label = it.type === 'theme' ? `Thème: ${it.id}` : it.type === 'booster' ? `Booster ${it.missionBonusPct || ''}%` : `${it.type}`;
+        const qty = Number(it.qty || 1);
+        const label = it.type === 'theme' ? `Thème: ${it.id}${qty>1?` x${qty}`:''}` : it.type === 'booster' ? `Booster ${it.missionBonusPct || ''}%${qty>1?` x${qty}`:''}` : `${it.type}${qty>1?` x${qty}`:''}`;
         return (
           <Grid item xs={6} sm={4} md={3} key={`${it.type}-${it.id}-${idx}`}>
             <Paper sx={{ p: 1.5, display: 'flex', flexDirection: 'column', gap: 1, alignItems: 'center' }}>
@@ -39,6 +40,8 @@ const InventoryGrid = memo(() => {
                   try {
                     const res = await gamificationService.applyCosmetic(user.id, it);
                     if (res?.gamification) setGamification(res.gamification);
+                    // Appliquer immédiatement le thème dans l'UI
+                    window.location.reload();
                   } catch (_) {}
                 }}>Appliquer</Button>
               )}

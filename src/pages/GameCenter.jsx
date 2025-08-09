@@ -19,7 +19,12 @@ const GameCenter = memo(() => {
         const res = await gamificationService.getRewardsCatalog();
         if (mounted) setCatalog(res?.catalog || []);
         const s = await gamificationService.getShop();
-        if (mounted) setShop(s?.shop || []);
+        if (mounted) setShop((s && Array.isArray(s.shop) && s.shop.length>0) ? s.shop : [
+          { id: 'pack-1', kind: 'spinPack', label: 'Pack 5 spins', pricePoints: 400, payload: { spins: 5 } },
+          { id: 'boost-10', kind: 'booster', label: 'Booster +10% (24h)', pricePoints: 600, payload: { missionBonusPct: 10, expiresInHours: 24 } },
+          { id: 'cos-aurora', kind: 'cosmetic', label: 'Thème Aurora', pricePoints: 800, payload: { id: 'premium-aurora' } },
+          { id: 'cos-neon', kind: 'cosmetic', label: 'Thème Néon', pricePoints: 800, payload: { id: 'pro-neon' } },
+        ]);
       } catch (_) {}
     })();
     return () => { mounted = false; };
