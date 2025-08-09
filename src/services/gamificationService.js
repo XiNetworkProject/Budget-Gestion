@@ -136,6 +136,17 @@ export const gamificationService = {
     });
     if (!res.ok) throw new Error('Achat impossible');
     return res.json();
+  },
+
+  async useFreeze(userId) {
+    const url = buildApiUrl('/api/gamification');
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'useFreeze', userId })
+    });
+    if (!res.ok) throw new Error('Freeze indisponible');
+    return res.json();
   }
 };
 

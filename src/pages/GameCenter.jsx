@@ -77,6 +77,14 @@ const GameCenter = memo(() => {
       <Paper sx={{ p: 2, mb: 3, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
         <Typography variant="h6" sx={{ mb: 1, color: 'white', fontWeight: 600 }}>Inventaire</Typography>
         <InventoryGrid />
+        <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+          <Button size="small" variant="outlined" onClick={async () => {
+            try {
+              const res = await gamificationService.useFreeze(user.id);
+              if (res?.gamification) setGamification(res.gamification);
+            } catch (_) {}
+          }}>Utiliser un Freeze</Button>
+        </Box>
       </Paper>
 
       <Paper sx={{ p: 2, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>

@@ -279,6 +279,22 @@ export const createAppTheme = () => {
           '::selection': { background: alpha(palette.secondary.main, 0.35) },
         }
       },
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            background: mode === 'neon' ? 'rgba(57,255,20,0.05)' : mode === 'aurora' ? 'rgba(139,233,253,0.06)' : 'rgba(255,255,255,0.08)',
+            border: `1px solid ${mode === 'neon' ? 'rgba(57,255,20,0.25)' : mode === 'aurora' ? 'rgba(139,233,253,0.25)' : 'rgba(255,255,255,0.18)'}`,
+          }
+        }
+      },
+      MuiAppBar: {
+        styleOverrides: {
+          root: {
+            background: mode === 'neon' ? 'rgba(0, 225, 214, 0.08)' : mode === 'aurora' ? 'rgba(139, 233, 253, 0.08)' : 'transparent',
+            boxShadow: 'none',
+          }
+        }
+      },
       MuiButton: {
         ...appTheme.components?.MuiButton,
         styleOverrides: {

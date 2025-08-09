@@ -68,7 +68,14 @@ async function handlePost(req, res) {
     };
     const next = {
       ...nextBase,
-      inventory: mergeInventory(nextBase.inventory, outcome.cosmetic ? [outcome.cosmetic] : [])
+      inventory: mergeInventory(
+        nextBase.inventory,
+        [
+          ...(outcome.cosmetic ? [outcome.cosmetic] : []),
+          ...(outcome.freeze ? [{ type: 'freeze' }] : [])
+        ]
+      ),
+      recentLog: addLog(current.recentLog, { kind: 'spin', label: outcome.label, points: outcome.points || 0, bonusSpin: !!outcome.bonusSpin, freeze: !!outcome.freeze })
     };
 
     const saved = await dbUtils.saveGamification(userId, next);
@@ -176,7 +183,11 @@ async function handlePost(req, res) {
       points: Math.max(0, Number(current.points || 0)) + result.pointsEarned,
       inventory: Array.isArray(current.inventory) ? [...current.inventory] : []
     };
-    const next = { ...nextBase, inventory: mergeInventory(nextBase.inventory, result.inventoryDrops || []) };
+    const next = {
+      ...nextBase,
+      inventory: mergeInventory(nextBase.inventory, result.inventoryDrops || []),
+      recentLog: addLog(current.recentLog, { kind: 'run', label: 'Run terminé', points: result.pointsEarned || 0, bonusSpin: !!result.bonusSpin })
+    };
     const saved = await dbUtils.saveGamification(userId, next);
     return res.status(200).json({ success: true, run: result, gamification: saved });
   }
@@ -197,6 +208,28 @@ async function handlePost(req, res) {
     } else if (item.kind === 'cosmetic') {
       next.inventory = mergeInventory(next.inventory, [{ type: 'theme', id: item.payload?.id }]);
     }
+    next.recentLog = addLog(current.recentLog, { kind: 'buy', label: item.label, pricePoints: item.pricePoints });
+    const saved = await dbUtils.saveGamification(userId, next);
+    return res.status(200).json({ success: true, gamification: saved });
+  }
+
+  if (action === 'useFreeze') {
+    const current = (await dbUtils.getGamification(userId)) || defaultGamification();
+    const inv = Array.isArray(current.inventory) ? [...current.inventory] : [];
+    const idx = inv.findIndex(it => it && it.type === 'freeze');
+    if (idx === -1) return res.status(400).json({ message: 'Aucun jeton freeze' });
+    const item = inv[idx];
+    const qty = Math.max(1, Number(item.qty || 1));
+    if (qty > 1) inv[idx] = { ...item, qty: qty - 1 };
+    else inv.splice(idx, 1);
+    const endOfDay = new Date();
+    endOfDay.setHours(23, 59, 59, 999);
+    const next = {
+      ...current,
+      inventory: inv,
+      boosters: { ...(current.boosters || {}), freezeActive: true, freezeExpiresAt: endOfDay.toISOString() },
+      recentLog: addLog(current.recentLog, { kind: 'freeze', label: 'Freeze activé', expiresAt: endOfDay.toISOString() })
+    };
     const saved = await dbUtils.saveGamification(userId, next);
     return res.status(200).json({ success: true, gamification: saved });
   }
@@ -384,6 +417,12 @@ function mergeInventory(existing, incoming) {
   // to array
   for (const v of map.values()) result.push(v);
   return result;
+}
+
+function addLog(existing, entry) {
+  const arr = Array.isArray(existing) ? existing.slice(0, 19) : [];
+  const withTs = { ts: new Date().toISOString(), ...entry };
+  return [withTs, ...arr];
 }
 
 
