@@ -52,7 +52,8 @@ const HeaderSection = memo(({
     return '#ff9800';
   };
 
-  const { unreadCount = 0 } = useStore();
+  const { unreadCount = 0, gamification, consumeSpinAndRoll } = useStore();
+  const spins = gamification?.spins || 0;
 
   return (
     <Fade in timeout={1000}>
@@ -149,6 +150,37 @@ const HeaderSection = memo(({
               >
                 <Badge color="secondary" variant={unreadCount > 0 ? 'standard' : 'dot'} badgeContent={unreadCount} overlap="circular">
                   <Notifications />
+                </Badge>
+              </IconButton>
+            </Tooltip>
+
+            {/* Bouton Spin avec badge de spins disponibles */}
+            <Tooltip title={spins > 0 ? `Spins disponibles: ${spins}` : 'Aucun spin disponible'} arrow>
+              <IconButton
+                onClick={() => {
+                  const outcome = consumeSpinAndRoll();
+                  if (outcome) {
+                    // Feedback minimal; la modale de récompense pourra être ajoutée plus tard
+                    console.log('Spin outcome:', outcome);
+                  }
+                }}
+                disabled={spins <= 0}
+                sx={{
+                  color: 'white',
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  '&:hover': {
+                    background: 'rgba(255,255,255,0.2)',
+                    transform: 'scale(1.1)',
+                    transition: 'all 0.2s ease'
+                  },
+                  opacity: spins > 0 ? 1 : 0.5
+                }}
+              >
+                <Badge color="primary" badgeContent={spins} overlap="circular">
+                  {/* Icône réutilisée pour placeholder; remplaçable par une icône roue */}
+                  <TrendingUp />
                 </Badge>
               </IconButton>
             </Tooltip>

@@ -274,6 +274,17 @@ const useStore = create(persist(
         debts: [],
         bankAccounts: [],
         transactions: [],
+
+        // Gamification (spins/points/boosters)
+        gamification: {
+          points: 0,
+          spins: 0,
+          lastDailySpinAwardDate: null,
+          lastSpinAt: null,
+          rerollTokens: 0,
+          freezeTokens: 0,
+          activeBoosters: [], // { code, kind: 'pointsBonus', value: 0.1, expiresAt }
+        },
         
         // Profil et paramètres utilisateur
         userProfile: defaultUserProfile,
@@ -609,6 +620,11 @@ const useStore = create(persist(
           get().syncExpensesWithCategories();
         }, 100);
         
+          // Gamification: évaluer spin quotidien si épargne nette du jour positive
+          try {
+            get().evaluateGamificationDailySpin();
+          } catch (_) {}
+
           scheduleSave();
         },
 
@@ -680,6 +696,11 @@ const useStore = create(persist(
         
         // Ne pas synchroniser automatiquement pour éviter le double comptage
         
+          // Gamification: évaluer spin quotidien si épargne nette du jour positive
+          try {
+            get().evaluateGamificationDailySpin();
+          } catch (_) {}
+
           scheduleSave();
         },
 
@@ -1558,6 +1579,118 @@ const useStore = create(persist(
         scheduleSave();
       },
 
+        // === Gamification helpers ===
+        getGamificationBenefits: () => {
+          const state = get();
+          const planId = state.subscription?.currentPlan || 'FREE';
+          // Avantages par plan
+          if (planId === 'PRO') {
+            return { dailySpinCap: 3, rareBoost: 0.2, guaranteedMinTier: 'medium', rollover: 3 };
+          }
+          if (planId === 'PREMIUM') {
+            return { dailySpinCap: 2, rareBoost: 0.1, guaranteedMinTier: null, rollover: 2 };
+          }
+          return { dailySpinCap: 1, rareBoost: 0.0, guaranteedMinTier: null, rollover: 1 };
+        },
+
+        addGamificationPoints: (basePoints) => {
+          const state = get();
+          const now = Date.now();
+          // Appliquer boosters actifs (pointsBonus)
+          const effectiveMultiplier = (state.gamification?.activeBoosters || [])
+            .filter(b => b.kind === 'pointsBonus' && new Date(b.expiresAt).getTime() > now)
+            .reduce((m, b) => m * (1 + (b.value || 0)), 1);
+          const gained = Math.round((basePoints || 0) * effectiveMultiplier);
+          set({ gamification: { ...state.gamification, points: (state.gamification.points || 0) + gained } });
+          return gained;
+        },
+
+        grantSpin: (reason = 'manual') => {
+          const state = get();
+          const benefits = get().getGamificationBenefits();
+          const rollover = Math.max(1, benefits.rollover || 1);
+          const currentSpins = Math.min((state.gamification?.spins || 0) + 1, rollover);
+          set({ gamification: { ...state.gamification, spins: currentSpins } });
+          console.log(`[Gamification] Spin accordé (${reason}). Spins=${currentSpins}/${rollover}`);
+          return currentSpins;
+        },
+
+        evaluateGamificationDailySpin: () => {
+          const state = get();
+          const todayKey = new Date().toISOString().slice(0,10);
+          if (state.gamification?.lastDailySpinAwardDate === todayKey) return false;
+
+          // Calculer l'épargne nette du jour
+          const isSameDay = (d) => new Date(d).toDateString() === new Date().toDateString();
+          const expensesToday = (state.expenses || []).filter(e => e.date && isSameDay(e.date));
+          const incomeToday = (state.incomeTransactions || []).filter(i => i.date && isSameDay(i.date));
+          const totalExp = expensesToday.reduce((s, e) => s + (Number(e.amount) || 0), 0);
+          const totalInc = incomeToday.reduce((s, i) => s + (Number(i.amount) || 0), 0);
+          const net = totalInc - totalExp;
+          if (net > 0) {
+            const spins = get().grantSpin('daily_net_savings_positive');
+            set({ gamification: { ...state.gamification, lastDailySpinAwardDate: todayKey } });
+            // Petit bonus points pour renforcer la boucle
+            get().addGamificationPoints(Math.min(25, Math.max(5, Math.round(net))));
+            return spins;
+          }
+          return false;
+        },
+
+        getSpinOutcome: () => {
+          const state = get();
+          const benefits = get().getGamificationBenefits();
+          // Tiers & poids de base
+          const base = [
+            { tier: 'small', weight: 45 },
+            { tier: 'medium', weight: 35 },
+            { tier: 'rare', weight: 15 },
+            { tier: 'epic', weight: 5 }
+          ];
+          // Boost des rares selon plan
+          const boosted = base.map(x => x.tier === 'rare' ? { ...x, weight: x.weight + Math.round(base[2].weight * (benefits.rareBoost || 0)) } : x);
+          // Normaliser & tirage
+          const total = boosted.reduce((s, x) => s + x.weight, 0);
+          let roll = Math.random() * total;
+          let chosen = boosted[0];
+          for (const x of boosted) { roll -= x.weight; if (roll <= 0) { chosen = x; break; } }
+          // Garantie de plan
+          if (benefits.guaranteedMinTier === 'medium' && (chosen.tier === 'small')) {
+            chosen = { tier: 'medium', weight: 0 };
+          }
+          // Mapper tier -> récompense
+          const reward = (() => {
+            if (chosen.tier === 'small') return { code: 'POINTS_25', kind: 'points', value: 25 };
+            if (chosen.tier === 'medium') return { code: 'POINTS_100', kind: 'points', value: 100 };
+            if (chosen.tier === 'rare') return { code: 'BOOST_10', kind: 'booster', booster: { kind: 'pointsBonus', value: 0.10, durationHours: 24 } };
+            return { code: 'FREEZE_1', kind: 'token', token: 'freeze', value: 1 };
+          })();
+          return { tier: chosen.tier, reward };
+        },
+
+        consumeSpinAndRoll: () => {
+          const state = get();
+          const spins = state.gamification?.spins || 0;
+          if (spins <= 0) return null;
+          const outcome = get().getSpinOutcome();
+          // Consommer 1 spin
+          set({ gamification: { ...state.gamification, spins: spins - 1, lastSpinAt: new Date().toISOString() } });
+          // Appliquer récompense
+          if (outcome.reward.kind === 'points') {
+            get().addGamificationPoints(outcome.reward.value || 0);
+          } else if (outcome.reward.kind === 'booster') {
+            const hours = outcome.reward.booster.durationHours || 24;
+            const expiresAt = new Date(Date.now() + hours * 3600 * 1000).toISOString();
+            const booster = { code: outcome.reward.code, ...outcome.reward.booster, expiresAt };
+            const after = get();
+            set({ gamification: { ...after.gamification, activeBoosters: [...(after.gamification.activeBoosters || []), booster] } });
+          } else if (outcome.reward.kind === 'token' && outcome.reward.token === 'freeze') {
+            const after = get();
+            set({ gamification: { ...after.gamification, freezeTokens: (after.gamification.freezeTokens || 0) + (outcome.reward.value || 1) } });
+          }
+          return outcome;
+        },
+
       // Gestion du mois sélectionné
       setSelectedMonth: (month, year) => {
         set({ selectedMonth: month, selectedYear: year });
@@ -1977,7 +2110,8 @@ const useStore = create(persist(
       autoLogin: state.autoLogin,
       appSettings: state.appSettings,
       subscription: state.subscription,
-      lastUpdateShown: state.lastUpdateShown
+      lastUpdateShown: state.lastUpdateShown,
+      gamification: state.gamification
     })
   }
 ));
