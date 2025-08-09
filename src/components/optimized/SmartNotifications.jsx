@@ -359,10 +359,10 @@ export const useSmartNotifications = () => {
         action: { label: 'Tourner', action: 'openSpin' }
       });
     }
-    if (gamification && gamification.lastDailyGrant) {
-      const last = new Date(gamification.lastDailyGrant);
+    if (gamification) {
+      const last = gamification.lastDailyGrant ? new Date(gamification.lastDailyGrant) : null;
       const today = new Date();
-      const sameDay = last.getFullYear() === today.getFullYear() && last.getMonth() === today.getMonth() && last.getDate() === today.getDate();
+      const sameDay = last && last.getFullYear() === today.getFullYear() && last.getMonth() === today.getMonth() && last.getDate() === today.getDate();
       if (!sameDay) {
         addNotification({ type: NOTIFICATION_TYPES.INFO, title: 'Spin quotidien', message: 'Votre spin quotidien est dispo', priority: 'low', action: { label: 'Obtenir', action: 'openSpin' } });
       }

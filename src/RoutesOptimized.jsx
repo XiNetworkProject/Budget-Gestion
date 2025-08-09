@@ -22,6 +22,7 @@ const History = lazy(() => import('./pages/History'));
 const Settings = lazy(() => import('./pages/Settings'));
 const ActionPlans = lazy(() => import('./pages/ActionPlans'));
 const Subscription = lazy(() => import('./pages/Subscription'));
+const GameCenter = lazy(() => import('./pages/GameCenter'));
 const Login = lazy(() => import('./components/Login'));
 const GoogleAuth = lazy(() => import('./pages/GoogleAuth'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
@@ -149,6 +150,16 @@ const AppRoutesOptimized = () => {
               <LazyPage 
                 component={Subscription} 
                 fallbackMessage="Chargement de l'abonnement..." 
+              />
+            } 
+          />
+
+          <Route 
+            path="game" 
+            element={
+              <LazyPage 
+                component={GameCenter} 
+                fallbackMessage="Chargement du centre de jeu..." 
               />
             } 
           />

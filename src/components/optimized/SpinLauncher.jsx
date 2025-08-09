@@ -1,5 +1,6 @@
 import React, { useState, useEffect, memo } from 'react';
 import { Box, IconButton, Badge, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, CircularProgress, Paper } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import { Casino } from '@mui/icons-material';
 import { useStore } from '../../store';
 import { gamificationService } from '../../services/gamificationService';
@@ -10,6 +11,7 @@ const SpinLauncher = memo(() => {
   const [open, setOpen] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [outcome, setOutcome] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let mounted = true;
@@ -118,6 +120,7 @@ const SpinLauncher = memo(() => {
         <DialogActions>
           <Button onClick={() => setOpen(false)} disabled={spinning}>Fermer</Button>
           <Button onClick={doSpin} disabled={spinning || spinsCount <= 0} variant="contained">Tourner</Button>
+          <Button onClick={() => navigate('/game')} disabled={spinning} variant="text">Centre de jeu</Button>
         </DialogActions>
       </Dialog>
     </>
