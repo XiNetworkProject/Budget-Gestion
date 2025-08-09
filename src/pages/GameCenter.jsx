@@ -17,7 +17,21 @@ const GameCenter = memo(() => {
     (async () => {
       try {
         const res = await gamificationService.getRewardsCatalog();
-        if (mounted) setCatalog(res?.catalog || []);
+        if (mounted) {
+          const fallbackCatalog = [
+            { type: 'points', label: '+50 points', points: 50, weight: 40, rarity: 'common' },
+            { type: 'points', label: '+150 points', points: 150, weight: 24, rarity: 'uncommon' },
+            { type: 'points', label: '+300 points', points: 300, weight: 10, rarity: 'rare' },
+            { type: 'booster', label: 'Booster +10% missions (24h)', booster: { missionBonusPct: 10, expiresInHours: 24 }, weight: 10, rarity: 'uncommon' },
+            { type: 'booster', label: 'Booster +15% missions (24h)', booster: { missionBonusPct: 15, expiresInHours: 24 }, weight: 6, rarity: 'rare' },
+            { type: 'cosmetic', label: 'Thème Gradient', cosmetic: { type: 'theme', id: 'gradient' }, weight: 6, rarity: 'uncommon' },
+            { type: 'cosmetic', label: 'Thème Aurora', cosmetic: { type: 'theme', id: 'premium-aurora' }, weight: 3, rarity: 'epic' },
+            { type: 'cosmetic', label: 'Thème Néon', cosmetic: { type: 'theme', id: 'pro-neon' }, weight: 3, rarity: 'epic' },
+            { type: 'freeze', label: 'Jeton Freeze Streak', freeze: 1, weight: 5, rarity: 'rare' },
+            { type: 'bonusSpin', label: 'Spin bonus', bonusSpin: true, weight: 3, rarity: 'legendary' }
+          ];
+          setCatalog(Array.isArray(res?.catalog) && res.catalog.length > 0 ? res.catalog : fallbackCatalog);
+        }
         const s = await gamificationService.getShop();
         if (mounted) setShop((s && Array.isArray(s.shop) && s.shop.length>0) ? s.shop : [
           { id: 'pack-1', kind: 'spinPack', label: 'Pack 5 spins', pricePoints: 400, payload: { spins: 5 } },
