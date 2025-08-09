@@ -75,6 +75,20 @@ async function handlePost(req, res) {
     return res.status(200).json({ success: true, catalog: baseCatalog() });
   }
 
+  if (action === 'grantWelcome') {
+    const current = (await dbUtils.getGamification(userId)) || defaultGamification();
+    if (current.welcomeGranted) {
+      return res.status(200).json({ success: true, gamification: current });
+    }
+    const next = {
+      ...current,
+      spins: Math.max(0, Number(current.spins || 0)) + 50,
+      welcomeGranted: true
+    };
+    const saved = await dbUtils.saveGamification(userId, next);
+    return res.status(200).json({ success: true, gamification: saved });
+  }
+
   if (action === 'save') {
     const { data } = req.body || {};
     if (!data || typeof data !== 'object') return res.status(400).json({ message: 'Données invalides' });

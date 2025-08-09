@@ -59,6 +59,17 @@ export const gamificationService = {
     });
     if (!res.ok) throw new Error('Erreur catalogue');
     return res.json();
+  },
+
+  async grantWelcome(userId, amount = 50) {
+    const url = buildApiUrl('/api/gamification');
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'grantWelcome', userId, amount })
+    });
+    if (!res.ok) throw new Error('Erreur welcome spins');
+    return res.json();
   }
 };
 

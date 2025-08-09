@@ -20,6 +20,14 @@ const SpinLauncher = memo(() => {
       try {
         const state = await gamificationService.getState(user.id || user.userId || user.sub || user.email || '');
         if (mounted && state) setGamification(state);
+        // Bonus de bienvenue si aucun spin
+        const spins = Number((state?.spins) || 0);
+        if (mounted && spins === 0) {
+          try {
+            const res = await gamificationService.grantWelcome(user.id || user.userId || user.sub || user.email || '');
+            if (res?.gamification) setGamification(res.gamification);
+          } catch (_) {}
+        }
       } catch (_) {}
     })();
     return () => { mounted = false; };
