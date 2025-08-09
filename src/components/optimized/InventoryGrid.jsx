@@ -13,6 +13,9 @@ const images = {
   },
   booster: {
     default: '/images/booster.svg'
+  },
+  freeze: {
+    default: '/images/token-freeze.svg'
   }
 };
 

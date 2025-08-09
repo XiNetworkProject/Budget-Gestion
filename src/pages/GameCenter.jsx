@@ -62,6 +62,7 @@ const GameCenter = memo(() => {
                   {r.type === 'points' && <Box component="img" src="/images/token-points.svg" alt="points" sx={{ width: 24, height: 24 }} />}
                   {r.type === 'cosmetic' && <Box component="img" src={r.cosmetic?.id?.includes('neon') ? '/images/theme-neon.svg' : r.cosmetic?.id?.includes('aurora') ? '/images/theme-aurora.svg' : '/images/theme-gradient.svg'} alt="cosmetic" sx={{ width: 24, height: 24, borderRadius: 0.75 }} />}
                   {r.type === 'booster' && <Box component="img" src="/images/booster.svg" alt="booster" sx={{ width: 24, height: 24 }} />}
+                  {r.type === 'freeze' && <Box component="img" src="/images/token-freeze.svg" alt="freeze" sx={{ width: 24, height: 24 }} />}
                   <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                     <Typography variant="caption" sx={{ color: 'white', fontWeight: 600, lineHeight: 1.1 }}>{r.label}</Typography>
                     <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>Rareté: {r.rarity || '—'} • Poids: {r.weight}</Typography>

@@ -292,7 +292,7 @@ function normalizeOutcome(r) {
   if (r.points) out.points = r.points;
   if (r.cosmetic) out.cosmetic = r.cosmetic;
   if (r.booster) out.booster = r.booster;
-  if (r.freeze) out.boostedFreeze = r.freeze;
+  if (r.freeze) out.freeze = r.freeze;
   if (r.bonusSpin) out.bonusSpin = true;
   return out;
 }
