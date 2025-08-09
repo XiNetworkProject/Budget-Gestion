@@ -38,7 +38,12 @@ async function handlePost(req, res) {
   if (action === 'grantSpin') {
     const { amount = 1 } = req.body || {};
     const current = (await dbUtils.getGamification(userId)) || defaultGamification();
-    const next = { ...current, spins: Math.max(0, Number(current.spins || 0)) + Number(amount) };
+    const nowIso = new Date().toISOString();
+    const next = { 
+      ...current, 
+      spins: Math.max(0, Number(current.spins || 0)) + Number(amount),
+      lastDailyGrant: nowIso
+    };
     const saved = await dbUtils.saveGamification(userId, next);
     return res.status(200).json({ success: true, gamification: saved });
   }
@@ -117,6 +122,14 @@ function baseCatalog() {
 
 function rollReward(plan) {
   const catalog = baseCatalog().map((r) => ({ ...r }));
+  // Récompenses exclusives selon le plan
+  if (plan === 'PREMIUM') {
+    catalog.push({ type: 'cosmetic', label: 'Thème Aurora (Premium)', cosmetic: { type: 'theme', id: 'premium-aurora' }, weight: 4 });
+  }
+  if (plan === 'PRO') {
+    catalog.push({ type: 'cosmetic', label: 'Thème Néon (Pro)', cosmetic: { type: 'theme', id: 'pro-neon' }, weight: 6 });
+    catalog.push({ type: 'booster', label: 'Booster +20% missions (24h) (Pro)', booster: { missionBonusPct: 20, expiresInHours: 24 }, weight: 4 });
+  }
   // Avantages abonnés: meilleurs poids sur rares et chance de spin bonus
   let rareBoost = 1;
   let bonusSpinChance = 0;

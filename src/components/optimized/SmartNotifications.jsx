@@ -359,6 +359,14 @@ export const useSmartNotifications = () => {
         action: { label: 'Tourner', action: 'openSpin' }
       });
     }
+    if (gamification && gamification.lastDailyGrant) {
+      const last = new Date(gamification.lastDailyGrant);
+      const today = new Date();
+      const sameDay = last.getFullYear() === today.getFullYear() && last.getMonth() === today.getMonth() && last.getDate() === today.getDate();
+      if (!sameDay) {
+        addNotification({ type: NOTIFICATION_TYPES.INFO, title: 'Spin quotidien', message: 'Votre spin quotidien est dispo', priority: 'low', action: { label: 'Obtenir', action: 'openSpin' } });
+      }
+    }
 
     // Dépassement / seuils budgétaires par catégorie
     if (budgetLimits && typeof budgetLimits === 'object') {

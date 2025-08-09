@@ -6,6 +6,7 @@ import { gamificationService } from '../../services/gamificationService';
 
 const SpinLauncher = memo(() => {
   const { user, gamification, setGamification, availableSpins, getCurrentPlan } = useStore();
+  const [granting, setGranting] = useState(false);
   const [open, setOpen] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [outcome, setOutcome] = useState(null);
@@ -46,6 +47,20 @@ const SpinLauncher = memo(() => {
   const spinsCount = availableSpins();
   const plan = getCurrentPlan?.();
   const planHint = plan ? `Avantages ${plan.name}` : '';
+
+  const grantDailySpin = async () => {
+    if (!user || granting) return;
+    setGranting(true);
+    try {
+      // Gratuit: 1 spin par jour base, +1 Premium, +2 Pro
+      const base = 1;
+      const extra = plan?.id === 'pro' ? 2 : plan?.id === 'premium' ? 1 : 0;
+      const amount = base + extra;
+      const res = await gamificationService.grantSpin(user.id || user.userId || user.sub || user.email || '', amount);
+      if (res?.gamification) setGamification(res.gamification);
+    } catch (_) {}
+    setGranting(false);
+  };
 
   return (
     <>
@@ -88,6 +103,11 @@ const SpinLauncher = memo(() => {
                 <Typography variant="h6" sx={{ color: 'white' }}>{spinsCount} spin(s)</Typography>
               )}
             </Paper>
+            {spinsCount <= 0 && (
+              <Button onClick={grantDailySpin} disabled={granting} variant="outlined" size="small">
+                Obtenir le spin quotidien
+              </Button>
+            )}
             {outcome && (
               <Typography variant="subtitle2" sx={{ color: 'white' }}>
                 {outcome.label || 'Récompense obtenue !'} {outcome.bonusSpin ? '(+1 spin bonus)' : ''}
