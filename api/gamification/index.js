@@ -295,6 +295,7 @@ function simulateMoneyCartRun(plan) {
   let points = 0;
   const drops = [];
   let bonusSpin = false;
+  const events = [];
 
   for (let i = 0; i < steps; i++) {
     const roll = Math.random();
@@ -302,18 +303,24 @@ function simulateMoneyCartRun(plan) {
       // Épargneur: +X% du pot
       const gain = Math.round(50 * (1 + i * 0.2) * multiplier);
       points += gain;
+      events.push({ step: i + 1, symbol: 'saver', gain, multiplier });
     } else if (roll < 0.6) {
       // Optimiseur: double le prochain
       multiplier *= 2;
+      events.push({ step: i + 1, symbol: 'optimizer', multiplier });
     } else if (roll < 0.75) {
       // Collecteur: petit objet cosmétique
-      drops.push({ type: 'theme', id: i % 2 === 0 ? 'gradient' : 'aurora' });
+      const drop = { type: 'theme', id: i % 2 === 0 ? 'gradient' : 'aurora' };
+      drops.push(drop);
+      events.push({ step: i + 1, symbol: 'collector', drop, multiplier });
     } else if (roll < 0.9) {
       // Défenseur: protège (no-op mais pourrait empêcher un malus)
       // placeholder
+      events.push({ step: i + 1, symbol: 'defender', multiplier });
     } else {
       // Bonus spin rare
       bonusSpin = bonusSpin || Math.random() < (plan === 'PRO' ? 0.4 : plan === 'PREMIUM' ? 0.2 : 0.1);
+      events.push({ step: i + 1, symbol: 'bonusSpin', bonus: bonusSpin, multiplier });
     }
   }
 
@@ -326,7 +333,8 @@ function simulateMoneyCartRun(plan) {
     multiplier,
     pointsEarned: points,
     inventoryDrops: drops,
-    bonusSpin
+    bonusSpin,
+    events
   };
 }
 

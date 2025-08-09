@@ -4,6 +4,7 @@ import { Casino, Star, Brush, Bolt } from '@mui/icons-material';
 import { useStore } from '../store';
 import SpinLauncher from '../components/optimized/SpinLauncher';
 import { gamificationService } from '../services/gamificationService';
+import InventoryGrid from '../components/optimized/InventoryGrid';
 
 const GameCenter = memo(() => {
   const { user, gamification, setGamification, getCurrentPlan } = useStore();
@@ -69,33 +70,7 @@ const GameCenter = memo(() => {
 
       <Paper sx={{ p: 2, mb: 3, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
         <Typography variant="h6" sx={{ mb: 1, color: 'white', fontWeight: 600 }}>Inventaire</Typography>
-        {Array.isArray(gamification?.inventory) && gamification.inventory.length > 0 ? (
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            {gamification.inventory.map((it, i) => (
-              <Chip 
-                key={i} 
-                label={`${it.type}:${it.id || ''}`} 
-                onClick={async () => {
-                  if (it.type === 'booster') {
-                    try {
-                      const res = await gamificationService.activateBooster(user.id, it);
-                      if (res?.gamification) setGamification(res.gamification);
-                    } catch (_) {}
-                  }
-                  if (it.type === 'theme' || it.type === 'cosmetic') {
-                    try {
-                      const res = await gamificationService.applyCosmetic(user.id, it);
-                      if (res?.gamification) setGamification(res.gamification);
-                    } catch (_) {}
-                  }
-                }}
-                sx={{ bgcolor: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer' }} 
-              />
-            ))}
-          </Box>
-        ) : (
-          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>Aucun objet pour l’instant.</Typography>
-        )}
+        <InventoryGrid />
       </Paper>
 
       <Paper sx={{ p: 2, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
@@ -162,18 +137,15 @@ const GameCenter = memo(() => {
         <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mb: 1 }}>
           Lance un run rapide et accumule des multiplicateurs, objets et points.
         </Typography>
-        <Button 
-          variant="contained"
-          onClick={async () => {
-            try {
-              const res = await gamificationService.runMiniGame(user.id);
-              if (res?.gamification) setGamification(res.gamification);
-              alert(`Run terminé: +${res?.run?.pointsEarned || 0} points, bonusSpin: ${res?.run?.bonusSpin ? 'oui' : 'non'}`);
-            } catch (_) {}
-          }}
-        >
-          Lancer un run
-        </Button>
+        <Button variant="contained" onClick={async () => {
+          try {
+            const res = await gamificationService.runMiniGame(user.id);
+            if (res?.gamification) setGamification(res.gamification);
+            // Affichage compact des événements jusqu'à ce que le board visuel soit prêt
+            const ev = (res?.run?.events || []).map(e => `${e.step}:${e.symbol}${e.gain ? ` +${e.gain}`: ''}`).join(' | ');
+            alert(`Run: ${ev}\nTotal: +${res?.run?.pointsEarned || 0} pts${res?.run?.bonusSpin ? ' (+1 spin)' : ''}`);
+          } catch (_) {}
+        }}>Lancer un run</Button>
       </Paper>
     </Box>
   );
