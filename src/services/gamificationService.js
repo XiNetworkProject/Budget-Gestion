@@ -114,6 +114,28 @@ export const gamificationService = {
     });
     if (!res.ok) throw new Error('Run impossible');
     return res.json();
+  },
+
+  async getShop() {
+    const url = buildApiUrl('/api/gamification');
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'getShop' })
+    });
+    if (!res.ok) throw new Error('Erreur shop');
+    return res.json();
+  },
+
+  async buy(userId, itemId) {
+    const url = buildApiUrl('/api/gamification');
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'buy', userId, itemId })
+    });
+    if (!res.ok) throw new Error('Achat impossible');
+    return res.json();
   }
 };
 

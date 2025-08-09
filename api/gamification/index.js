@@ -75,6 +75,10 @@ async function handlePost(req, res) {
     return res.status(200).json({ success: true, catalog: baseCatalog() });
   }
 
+  if (action === 'getShop') {
+    return res.status(200).json({ success: true, shop: baseShop() });
+  }
+
   if (action === 'grantWelcome') {
     const current = (await dbUtils.getGamification(userId)) || defaultGamification();
     if (current.welcomeGranted) {
@@ -170,6 +174,26 @@ async function handlePost(req, res) {
     };
     const saved = await dbUtils.saveGamification(userId, next);
     return res.status(200).json({ success: true, run: result, gamification: saved });
+  }
+
+  if (action === 'buy') {
+    const { itemId } = req.body || {};
+    const shop = baseShop();
+    const item = shop.find(s => s.id === itemId);
+    if (!item) return res.status(400).json({ message: 'Article introuvable' });
+    const current = (await dbUtils.getGamification(userId)) || defaultGamification();
+    const points = Number(current.points || 0);
+    if (points < item.pricePoints) return res.status(400).json({ message: 'Points insuffisants' });
+    const next = { ...current, points: points - item.pricePoints };
+    if (item.kind === 'spinPack') {
+      next.spins = Number(next.spins || 0) + (item.payload?.spins || 0);
+    } else if (item.kind === 'booster') {
+      next.inventory = Array.isArray(next.inventory) ? [...next.inventory, { type: 'booster', ...item.payload }] : [{ type: 'booster', ...item.payload }];
+    } else if (item.kind === 'cosmetic') {
+      next.inventory = Array.isArray(next.inventory) ? [...next.inventory, { type: 'theme', id: item.payload?.id }] : [{ type: 'theme', id: item.payload?.id }];
+    }
+    const saved = await dbUtils.saveGamification(userId, next);
+    return res.status(200).json({ success: true, gamification: saved });
   }
 
   if (action === 'save') {
@@ -304,6 +328,16 @@ function simulateMoneyCartRun(plan) {
     inventoryDrops: drops,
     bonusSpin
   };
+}
+
+function baseShop() {
+  return [
+    { id: 'pack-1', kind: 'spinPack', label: 'Pack 5 spins', pricePoints: 400, payload: { spins: 5 } },
+    { id: 'pack-2', kind: 'spinPack', label: 'Pack 15 spins', pricePoints: 1100, payload: { spins: 15 } },
+    { id: 'boost-10', kind: 'booster', label: 'Booster +10% (24h)', pricePoints: 600, payload: { missionBonusPct: 10, expiresInHours: 24 } },
+    { id: 'cos-aurora', kind: 'cosmetic', label: 'Thème Aurora', pricePoints: 800, payload: { id: 'premium-aurora' } },
+    { id: 'cos-neon', kind: 'cosmetic', label: 'Thème Néon', pricePoints: 800, payload: { id: 'pro-neon' } },
+  ];
 }
 
 

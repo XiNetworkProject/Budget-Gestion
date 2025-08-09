@@ -8,6 +8,7 @@ import { gamificationService } from '../services/gamificationService';
 const GameCenter = memo(() => {
   const { user, gamification, setGamification, getCurrentPlan } = useStore();
   const [catalog, setCatalog] = useState([]);
+  const [shop, setShop] = useState([]);
   const [redeemCount, setRedeemCount] = useState(1);
 
   useEffect(() => {
@@ -16,6 +17,8 @@ const GameCenter = memo(() => {
       try {
         const res = await gamificationService.getRewardsCatalog();
         if (mounted) setCatalog(res?.catalog || []);
+        const s = await gamificationService.getShop();
+        if (mounted) setShop(s?.shop || []);
       } catch (_) {}
     })();
     return () => { mounted = false; };
@@ -124,6 +127,34 @@ const GameCenter = memo(() => {
             Points: {Number(gamification?.points || 0).toLocaleString()}
           </Typography>
         </Box>
+      </Paper>
+
+      <Paper sx={{ p: 2, mt: 3, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
+        <Typography variant="h6" sx={{ mb: 2, color: 'white', fontWeight: 600 }}>Boutique (points)</Typography>
+        <Grid container spacing={2}>
+          {shop.map((item) => (
+            <Grid item xs={12} sm={6} md={4} key={item.id}>
+              <Paper sx={{ p: 2, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)' }}>
+                <Typography variant="subtitle2" sx={{ color: 'white', fontWeight: 600 }}>{item.label}</Typography>
+                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)' }}>Prix: {item.pricePoints} pts</Typography>
+                <Box sx={{ mt: 1 }}>
+                  <Button 
+                    size="small"
+                    variant="outlined"
+                    onClick={async () => {
+                      try {
+                        const res = await gamificationService.buy(user.id, item.id);
+                        if (res?.gamification) setGamification(res.gamification);
+                      } catch (_) {}
+                    }}
+                  >
+                    Acheter
+                  </Button>
+                </Box>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
       </Paper>
 
       <Paper sx={{ p: 2, mt: 3, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
