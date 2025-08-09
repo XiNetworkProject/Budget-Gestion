@@ -1,0 +1,6 @@
+Placez ici les images d'inventaire si vous voulez des visuels custom:
+- theme-gradient.png
+- theme-aurora.png
+- theme-neon.png
+- booster.png
+

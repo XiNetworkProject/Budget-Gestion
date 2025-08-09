@@ -58,13 +58,17 @@ async function handlePost(req, res) {
 
     // Appliquer la récompense
     const nowIso = new Date().toISOString();
-    const next = {
+    const nextBase = {
       ...current,
       spins: spins - 1 + (outcome.bonusSpin ? 1 : 0),
       points: Math.max(0, Number(current.points || 0)) + (outcome.points || 0),
       lastSpinAt: nowIso,
-      inventory: Array.isArray(current.inventory) ? [...current.inventory, ...(outcome.cosmetic ? [outcome.cosmetic] : [])] : (outcome.cosmetic ? [outcome.cosmetic] : []),
+      inventory: Array.isArray(current.inventory) ? [...current.inventory] : [],
       boosters: { ...(current.boosters || {}), ...(outcome.booster || {}) }
+    };
+    const next = {
+      ...nextBase,
+      inventory: mergeInventory(nextBase.inventory, outcome.cosmetic ? [outcome.cosmetic] : [])
     };
 
     const saved = await dbUtils.saveGamification(userId, next);
@@ -166,12 +170,13 @@ async function handlePost(req, res) {
     const result = simulateMoneyCartRun(plan);
 
     // Appliquer récompenses
-    const next = {
+    const nextBase = {
       ...current,
       spins: spins - 1 + (result.bonusSpin ? 1 : 0),
       points: Math.max(0, Number(current.points || 0)) + result.pointsEarned,
-      inventory: Array.isArray(current.inventory) ? [...current.inventory, ...result.inventoryDrops] : [...result.inventoryDrops]
+      inventory: Array.isArray(current.inventory) ? [...current.inventory] : []
     };
+    const next = { ...nextBase, inventory: mergeInventory(nextBase.inventory, result.inventoryDrops || []) };
     const saved = await dbUtils.saveGamification(userId, next);
     return res.status(200).json({ success: true, run: result, gamification: saved });
   }
@@ -184,13 +189,13 @@ async function handlePost(req, res) {
     const current = (await dbUtils.getGamification(userId)) || defaultGamification();
     const points = Number(current.points || 0);
     if (points < item.pricePoints) return res.status(400).json({ message: 'Points insuffisants' });
-    const next = { ...current, points: points - item.pricePoints };
+    const next = { ...current, points: points - item.pricePoints, inventory: Array.isArray(current.inventory) ? [...current.inventory] : [] };
     if (item.kind === 'spinPack') {
       next.spins = Number(next.spins || 0) + (item.payload?.spins || 0);
     } else if (item.kind === 'booster') {
-      next.inventory = Array.isArray(next.inventory) ? [...next.inventory, { type: 'booster', ...item.payload }] : [{ type: 'booster', ...item.payload }];
+      next.inventory = mergeInventory(next.inventory, [{ type: 'booster', ...item.payload }]);
     } else if (item.kind === 'cosmetic') {
-      next.inventory = Array.isArray(next.inventory) ? [...next.inventory, { type: 'theme', id: item.payload?.id }] : [{ type: 'theme', id: item.payload?.id }];
+      next.inventory = mergeInventory(next.inventory, [{ type: 'theme', id: item.payload?.id }]);
     }
     const saved = await dbUtils.saveGamification(userId, next);
     return res.status(200).json({ success: true, gamification: saved });
@@ -346,6 +351,20 @@ function baseShop() {
     { id: 'cos-aurora', kind: 'cosmetic', label: 'Thème Aurora', pricePoints: 800, payload: { id: 'premium-aurora' } },
     { id: 'cos-neon', kind: 'cosmetic', label: 'Thème Néon', pricePoints: 800, payload: { id: 'pro-neon' } },
   ];
+}
+
+function mergeInventory(existing, incoming) {
+  const key = (it) => `${it.type}:${it.id || JSON.stringify(it)}`;
+  const set = new Set(existing.map(key));
+  const result = [...existing];
+  for (const it of incoming) {
+    const k = key(it);
+    if (!set.has(k)) {
+      set.add(k);
+      result.push(it);
+    }
+  }
+  return result;
 }
 
 
