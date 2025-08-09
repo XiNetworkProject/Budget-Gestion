@@ -34,6 +34,7 @@ function isApiRequest(request) {
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
+  if (typeof request.url === 'string' && request.url.startsWith('chrome-extension://')) return;
 
   // Ne gérer que les requêtes http(s) et de même origine
   let url;
