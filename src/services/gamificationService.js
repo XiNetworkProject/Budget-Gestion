@@ -70,6 +70,39 @@ export const gamificationService = {
     });
     if (!res.ok) throw new Error('Erreur welcome spins');
     return res.json();
+  },
+
+  async redeemPointsToSpins(userId, spins = 1) {
+    const url = buildApiUrl('/api/gamification');
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'redeem', userId, kind: 'pointsToSpins', amount: spins })
+    });
+    if (!res.ok) throw new Error('Conversion impossible');
+    return res.json();
+  },
+
+  async activateBooster(userId, booster) {
+    const url = buildApiUrl('/api/gamification');
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'activateBooster', userId, booster })
+    });
+    if (!res.ok) throw new Error('Activation impossible');
+    return res.json();
+  },
+
+  async applyCosmetic(userId, cosmetic) {
+    const url = buildApiUrl('/api/gamification');
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'applyCosmetic', userId, cosmetic })
+    });
+    if (!res.ok) throw new Error('Application impossible');
+    return res.json();
   }
 };
 

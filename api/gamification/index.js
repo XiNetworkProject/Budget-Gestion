@@ -89,6 +89,70 @@ async function handlePost(req, res) {
     return res.status(200).json({ success: true, gamification: saved });
   }
 
+  if (action === 'redeem') {
+    const { kind = 'pointsToSpins', amount = 1 } = req.body || {};
+    const current = (await dbUtils.getGamification(userId)) || defaultGamification();
+    if (kind === 'pointsToSpins') {
+      const costPerSpin = 100;
+      const needed = costPerSpin * Number(amount);
+      if ((current.points || 0) < needed) {
+        return res.status(400).json({ message: 'Points insuffisants' });
+      }
+      const next = {
+        ...current,
+        points: Number(current.points || 0) - needed,
+        spins: Number(current.spins || 0) + Number(amount)
+      };
+      const saved = await dbUtils.saveGamification(userId, next);
+      return res.status(200).json({ success: true, gamification: saved });
+    }
+    return res.status(400).json({ message: 'Type de conversion invalide' });
+  }
+
+  if (action === 'activateBooster') {
+    const { booster } = req.body || {};
+    const current = (await dbUtils.getGamification(userId)) || defaultGamification();
+    if (!booster || typeof booster !== 'object') {
+      return res.status(400).json({ message: 'Booster invalide' });
+    }
+    // Retirer un booster identique de l'inventaire
+    const inv = Array.isArray(current.inventory) ? [...current.inventory] : [];
+    const idx = inv.findIndex((it) => it && it.type === 'booster' && JSON.stringify(it) === JSON.stringify(booster));
+    if (idx === -1) {
+      return res.status(400).json({ message: 'Booster non trouvé dans l\'inventaire' });
+    }
+    inv.splice(idx, 1);
+    const expiresAt = booster.expiresInHours ? new Date(Date.now() + booster.expiresInHours * 3600 * 1000).toISOString() : null;
+    const next = {
+      ...current,
+      inventory: inv,
+      boosters: {
+        ...(current.boosters || {}),
+        missionBonusPct: Math.max(Number(current.boosters?.missionBonusPct || 0), Number(booster.missionBonusPct || 0)),
+        missionBonusExpiresAt: expiresAt
+      }
+    };
+    const saved = await dbUtils.saveGamification(userId, next);
+    return res.status(200).json({ success: true, gamification: saved });
+  }
+
+  if (action === 'applyCosmetic') {
+    const { cosmetic } = req.body || {};
+    const current = (await dbUtils.getGamification(userId)) || defaultGamification();
+    if (!cosmetic || typeof cosmetic !== 'object') {
+      return res.status(400).json({ message: 'Cosmétique invalide' });
+    }
+    const next = {
+      ...current,
+      activeCosmetics: {
+        ...(current.activeCosmetics || {}),
+        [cosmetic.type]: cosmetic.id || true
+      }
+    };
+    const saved = await dbUtils.saveGamification(userId, next);
+    return res.status(200).json({ success: true, gamification: saved });
+  }
+
   if (action === 'save') {
     const { data } = req.body || {};
     if (!data || typeof data !== 'object') return res.status(400).json({ message: 'Données invalides' });
