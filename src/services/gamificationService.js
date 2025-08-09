@@ -103,6 +103,17 @@ export const gamificationService = {
     });
     if (!res.ok) throw new Error('Application impossible');
     return res.json();
+  },
+
+  async runMiniGame(userId) {
+    const url = buildApiUrl('/api/gamification');
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'run', userId })
+    });
+    if (!res.ok) throw new Error('Run impossible');
+    return res.json();
   }
 };
 

@@ -19,18 +19,38 @@ const warning = { main: '#ff9800' };
 const error = { main: '#f44336' };
 const info = { main: '#03a9f4' };
 
+// Palette dynamique selon cosmétique actif
+let dynamicPalette = {};
+try {
+  const persisted = JSON.parse(localStorage.getItem('budget-storage') || '{}');
+  const active = persisted?.state?.gamification?.activeCosmetics;
+  if (active && (active.theme === 'premium-aurora' || active.theme === 'aurora')) {
+    dynamicPalette = {
+      background: { default: '#0b1020', paper: '#11162a' },
+      primary: { main: '#8be9fd' },
+      secondary: { main: '#ff79c6' },
+    };
+  } else if (active && (active.theme === 'pro-neon' || active.theme === 'neon')) {
+    dynamicPalette = {
+      background: { default: '#0a0f14', paper: '#0f1621' },
+      primary: { main: '#00e1d6' },
+      secondary: { main: '#39ff14' },
+    };
+  }
+} catch (_) {}
+
 export const appTheme = createTheme({
   palette: {
     mode: 'dark',
-    primary,
-    secondary,
+    primary: dynamicPalette.primary || primary,
+    secondary: dynamicPalette.secondary || secondary,
     success,
     warning,
     error,
     info,
     background: {
-      default: '#10131a',
-      paper: alpha('#ffffff', 0.06),
+      default: (dynamicPalette.background && dynamicPalette.background.default) || '#10131a',
+      paper: (dynamicPalette.background && dynamicPalette.background.paper) || alpha('#ffffff', 0.06),
     },
     text: {
       primary: '#ffffff',

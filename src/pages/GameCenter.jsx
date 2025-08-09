@@ -125,6 +125,25 @@ const GameCenter = memo(() => {
           </Typography>
         </Box>
       </Paper>
+
+      <Paper sx={{ p: 2, mt: 3, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
+        <Typography variant="h6" sx={{ mb: 1, color: 'white', fontWeight: 600 }}>Mini‑jeu “Run” (style Money Cart)</Typography>
+        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mb: 1 }}>
+          Lance un run rapide et accumule des multiplicateurs, objets et points.
+        </Typography>
+        <Button 
+          variant="contained"
+          onClick={async () => {
+            try {
+              const res = await gamificationService.runMiniGame(user.id);
+              if (res?.gamification) setGamification(res.gamification);
+              alert(`Run terminé: +${res?.run?.pointsEarned || 0} points, bonusSpin: ${res?.run?.bonusSpin ? 'oui' : 'non'}`);
+            } catch (_) {}
+          }}
+        >
+          Lancer un run
+        </Button>
+      </Paper>
     </Box>
   );
 });

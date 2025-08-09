@@ -153,6 +153,25 @@ async function handlePost(req, res) {
     return res.status(200).json({ success: true, gamification: saved });
   }
 
+  if (action === 'run') {
+    const current = (await dbUtils.getGamification(userId)) || defaultGamification();
+    const spins = Number(current.spins || 0);
+    if (spins <= 0) return res.status(400).json({ message: 'Aucun spin disponible' });
+
+    const plan = await safeGetPlan(userId);
+    const result = simulateMoneyCartRun(plan);
+
+    // Appliquer récompenses
+    const next = {
+      ...current,
+      spins: spins - 1 + (result.bonusSpin ? 1 : 0),
+      points: Math.max(0, Number(current.points || 0)) + result.pointsEarned,
+      inventory: Array.isArray(current.inventory) ? [...current.inventory, ...result.inventoryDrops] : [...result.inventoryDrops]
+    };
+    const saved = await dbUtils.saveGamification(userId, next);
+    return res.status(200).json({ success: true, run: result, gamification: saved });
+  }
+
   if (action === 'save') {
     const { data } = req.body || {};
     if (!data || typeof data !== 'object') return res.status(400).json({ message: 'Données invalides' });
@@ -243,6 +262,48 @@ function normalizeOutcome(r) {
   if (r.freeze) out.boostedFreeze = r.freeze;
   if (r.bonusSpin) out.bonusSpin = true;
   return out;
+}
+
+function simulateMoneyCartRun(plan) {
+  // Simulation simple inspirée: 3 tours minimum, multiplicateurs, symboles persistants
+  const steps = 5;
+  let multiplier = 1;
+  let points = 0;
+  const drops = [];
+  let bonusSpin = false;
+
+  for (let i = 0; i < steps; i++) {
+    const roll = Math.random();
+    if (roll < 0.4) {
+      // Épargneur: +X% du pot
+      const gain = Math.round(50 * (1 + i * 0.2) * multiplier);
+      points += gain;
+    } else if (roll < 0.6) {
+      // Optimiseur: double le prochain
+      multiplier *= 2;
+    } else if (roll < 0.75) {
+      // Collecteur: petit objet cosmétique
+      drops.push({ type: 'theme', id: i % 2 === 0 ? 'gradient' : 'aurora' });
+    } else if (roll < 0.9) {
+      // Défenseur: protège (no-op mais pourrait empêcher un malus)
+      // placeholder
+    } else {
+      // Bonus spin rare
+      bonusSpin = bonusSpin || Math.random() < (plan === 'PRO' ? 0.4 : plan === 'PREMIUM' ? 0.2 : 0.1);
+    }
+  }
+
+  // Plan influence finale
+  const planBonus = plan === 'PRO' ? 1.5 : plan === 'PREMIUM' ? 1.2 : 1.0;
+  points = Math.round(points * planBonus);
+
+  return {
+    steps,
+    multiplier,
+    pointsEarned: points,
+    inventoryDrops: drops,
+    bonusSpin
+  };
 }
 
 
