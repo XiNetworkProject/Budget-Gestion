@@ -53,7 +53,7 @@ const HeaderSection = memo(({
     return '#ff9800';
   };
 
-  const { unreadCount = 0, gamification, consumeSpinAndRoll, user } = useStore();
+  const { unreadCount = 0, gamification, consumeSpinAndRoll } = useStore();
   const spins = gamification?.spins || 0;
   const [openSpin, setOpenSpin] = React.useState(false);
 
