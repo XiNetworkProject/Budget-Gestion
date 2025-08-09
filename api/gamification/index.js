@@ -22,13 +22,20 @@ export default async function handler(req, res) {
 }
 
 async function handleGet(req, res) {
-  const { userId } = req.query;
-  if (!userId) return res.status(400).json({ message: 'userId requis' });
+  const { userId, action } = req.query || {};
+  // Support GET catalogue/shop pour éviter 400 si POST indisponible
+  if (action === 'catalog') {
+    return res.status(200).json({ success: true, catalog: baseCatalog() });
+  }
+  if (action === 'shop') {
+    return res.status(200).json({ success: true, shop: baseShop() });
+  }
+  if (!userId) {
+    // Retourner un état par défaut + infos catalogue/shop
+    return res.status(200).json({ success: true, catalog: baseCatalog(), shop: baseShop(), gamification: defaultGamification() });
+  }
   const state = await dbUtils.getGamification(userId);
-  return res.status(200).json({
-    success: true,
-    gamification: state || defaultGamification()
-  });
+  return res.status(200).json({ success: true, gamification: state || defaultGamification() });
 }
 
 async function handlePost(req, res) {

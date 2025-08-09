@@ -21,7 +21,7 @@ const buildApiUrl = (path, query) => {
 
 export const gamificationService = {
   async getState(userId) {
-    const url = buildApiUrl('/api/gamification', { userId });
+    const url = buildApiUrl('/api/gamification', userId ? { userId } : {});
     const res = await fetch(url, { method: 'GET' });
     if (!res.ok) throw new Error('Erreur récupération gamification');
     const json = await res.json();
@@ -51,12 +51,13 @@ export const gamificationService = {
   },
 
   async getRewardsCatalog() {
-    const url = buildApiUrl('/api/gamification');
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'getRewards' })
-    });
+    // Essayer GET (fallback) puis POST
+    let url = buildApiUrl('/api/gamification', { action: 'catalog' });
+    let res = await fetch(url, { method: 'GET' });
+    if (!res.ok) {
+      url = buildApiUrl('/api/gamification');
+      res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'getRewards' }) });
+    }
     if (!res.ok) throw new Error('Erreur catalogue');
     return res.json();
   },
@@ -117,12 +118,13 @@ export const gamificationService = {
   },
 
   async getShop() {
-    const url = buildApiUrl('/api/gamification');
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'getShop' })
-    });
+    // Essayer GET (fallback) puis POST
+    let url = buildApiUrl('/api/gamification', { action: 'shop' });
+    let res = await fetch(url, { method: 'GET' });
+    if (!res.ok) {
+      url = buildApiUrl('/api/gamification');
+      res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'getShop' }) });
+    }
     if (!res.ok) throw new Error('Erreur shop');
     return res.json();
   },
