@@ -18,6 +18,7 @@ import {
   TrendingDown
 } from '@mui/icons-material';
 import Badge from '@mui/material/Badge';
+import SpinWheel from './SpinWheel';
 import { useStore } from '../../store';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -52,8 +53,9 @@ const HeaderSection = memo(({
     return '#ff9800';
   };
 
-  const { unreadCount = 0, gamification, consumeSpinAndRoll } = useStore();
+  const { unreadCount = 0, gamification, consumeSpinAndRoll, user } = useStore();
   const spins = gamification?.spins || 0;
+  const [openSpin, setOpenSpin] = React.useState(false);
 
   return (
     <Fade in timeout={1000}>
@@ -157,13 +159,7 @@ const HeaderSection = memo(({
             {/* Bouton Spin avec badge de spins disponibles */}
             <Tooltip title={spins > 0 ? `Spins disponibles: ${spins}` : 'Aucun spin disponible'} arrow>
               <IconButton
-                onClick={() => {
-                  const outcome = consumeSpinAndRoll();
-                  if (outcome) {
-                    // Feedback minimal; la modale de récompense pourra être ajoutée plus tard
-                    console.log('Spin outcome:', outcome);
-                  }
-                }}
+                onClick={() => setOpenSpin(true)}
                 disabled={spins <= 0}
                 sx={{
                   color: 'white',
@@ -334,6 +330,21 @@ const HeaderSection = memo(({
           </Box>
         )}
       </Box>
+
+      {/* Modale SpinWheel */}
+      <SpinWheel
+        open={openSpin}
+        onClose={() => setOpenSpin(false)}
+        onResult={async (outcome) => {
+          setOpenSpin(false);
+          console.log('Spin outcome:', outcome);
+          // Optionnel: log côté serveur (best-effort)
+          try {
+            const api = '/api/gamification';
+            await fetch(api, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'spin-log', userId: user?.id, outcome }) });
+          } catch (_) {}
+        }}
+      />
     </Fade>
   );
 });

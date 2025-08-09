@@ -164,4 +164,23 @@ export const dbUtils = {
 
     return data || [];
   }
+  ,
+
+  // Gamification: journaliser un spin (best-effort)
+  async logSpin({ userId, outcome }) {
+    try {
+      const { data, error } = await supabase
+        .from('gamification_spins')
+        .insert({
+          user_id: userId,
+          outcome,
+          created_at: new Date().toISOString()
+        });
+      if (error) throw error;
+      return data;
+    } catch (e) {
+      console.warn('logSpin: impossible d\'insérer (table absente ?):', e?.message);
+      return null;
+    }
+  }
 }; 
