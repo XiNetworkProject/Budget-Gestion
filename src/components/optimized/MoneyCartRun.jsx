@@ -46,6 +46,34 @@ const Tile = memo(({ active, symbol, value }) => {
 
 Tile.displayName = 'Tile';
 
+const Particles = memo(({ show = false }) => {
+  if (!show) return null;
+  const items = Array.from({ length: 18 }, (_, i) => i);
+  return (
+    <Box sx={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+      {items.map((i) => (
+        <Box key={i} sx={{
+          position: 'absolute',
+          left: `${Math.random() * 100}%`,
+          top: `${40 + Math.random() * 20}%`,
+          width: 6,
+          height: 6,
+          borderRadius: '50%',
+          background: 'linear-gradient(180deg, #ffd54f, #ffb300)',
+          boxShadow: '0 0 8px rgba(255,193,7,0.6)',
+          animation: 'fall 900ms ease-out forwards',
+          '@keyframes fall': {
+            '0%': { transform: 'translate3d(0,0,0) scale(1)', opacity: 1 },
+            '100%': { transform: `translate3d(${(Math.random() - 0.5) * 120}px, ${60 + Math.random() * 80}px, 0) scale(0.6)`, opacity: 0 }
+          }
+        }} />
+      ))}
+    </Box>
+  );
+});
+
+Particles.displayName = 'Particles';
+
 const MoneyCartRun = memo(({ open, onClose, run }) => {
   const [stepIndex, setStepIndex] = useState(0);
   const [currentMultiplier, setCurrentMultiplier] = useState(1);
@@ -208,6 +236,7 @@ const MoneyCartRun = memo(({ open, onClose, run }) => {
           {flash && (
             <Box sx={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.22), transparent 60%)', pointerEvents: 'none' }} />
           )}
+          <Particles show={flash} />
           <Grid container spacing={1.25} columns={4} sx={{ p: 1.25, position: 'relative' }}>
           {tiles.map((t) => (
             <Grid item xs={1} key={t.idx}>
