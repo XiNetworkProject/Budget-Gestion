@@ -68,6 +68,7 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
     lockedRows: GAME_CONFIG.lockedRows
   });
   const [ready, setReady] = useState(false);
+  const [loadStatus, setLoadStatus] = useState('');
 
   // Initialisation du board
   const initializeBoard = useCallback(() => {
@@ -720,6 +721,7 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
 
     const initGame = async () => {
       try {
+        setLoadStatus('Création de l\'application Pixi...');
         const app = new PIXI.Application({ 
           width, 
           height, 
@@ -732,6 +734,7 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
         
         // Attendre l'initialisation de PixiJS v8
         await app.init();
+        setLoadStatus('Initialisation Pixi OK');
         
         // Utiliser app.view pour PixiJS v8
         if (app.view && app.view instanceof HTMLCanvasElement) {
@@ -740,22 +743,29 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
             containerRef.current.removeChild(containerRef.current.firstChild);
           }
           containerRef.current.appendChild(app.view);
+          setLoadStatus('Canvas attaché');
+          // Rendre le canvas visible rapidement
+          setReady(true);
         } else {
           console.error('❌ app.view est undefined ou invalide');
           return;
         }
 
         // Initialiser le système de particules
+        setLoadStatus('Initialisation des particules...');
         particleSystemRef.current = new ParticleSystem(app, 200);
 
         // Initialiser le gestionnaire de performance
+        setLoadStatus('Initialisation du gestionnaire de performance...');
         const performanceManager = new PerformanceManager();
         const pixiConfig = performanceManager.getPixiConfig(width, height);
         
         // Initialiser le SpriteAtlas pour les symboles
+        setLoadStatus('Chargement du SpriteAtlas...');
         spriteAtlasRef.current = new SpriteAtlas(app, SPRITE_CONFIG.texturePath, SPRITE_CONFIG.frameData);
         
         // Initialiser le système d'éclairage
+        setLoadStatus('Initialisation de l\'éclairage...');
         const lightingSystem = new LightingSystem(app, {
           ambientLight: 0x404040,
           ambientIntensity: 0.3
@@ -782,6 +792,7 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
         lightingSystem.createGlow(width / 2, height / 2, 0x00FFFF, 0.3, 100);
 
         // Fond animé
+        setLoadStatus('Création du fond...');
         const bg = PIXI.Sprite.from('/images/game/bg-aurora.svg');
         bg.width = width;
         bg.height = height;
@@ -789,6 +800,7 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
         app.stage.addChild(bg);
 
         // Particules de fond (utiliser Container au lieu de ParticleContainer)
+        setLoadStatus('Création des particules de fond...');
         const particles = new PIXI.Container();
         app.stage.addChild(particles);
 
@@ -825,6 +837,7 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
         });
 
         // Grille de jeu
+        setLoadStatus('Création de la grille...');
         const grid = new PIXI.Container();
         grid.name = 'grid';
         app.stage.addChild(grid);
@@ -873,6 +886,7 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
         }
 
         // UI de jeu
+        setLoadStatus('Création de l\'UI...');
         const uiContainer = new PIXI.Container();
         uiContainer.name = 'ui';
         app.stage.addChild(uiContainer);
@@ -945,9 +959,9 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
         app.ticker.add(updateStats);
 
         // Initialiser le board
+        setLoadStatus('Initialisation du board...');
         initializeBoard();
-
-        setReady(true);
+        setLoadStatus('Prêt');
 
         // Retourner la fonction de nettoyage
         return () => {
@@ -996,7 +1010,7 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
           backgroundColor: 'rgba(0,0,0,0.8)',
           color: 'white'
         }}>
-          Chargement du jeu...
+          Chargement du jeu... {loadStatus}
         </Box>
       )}
       
