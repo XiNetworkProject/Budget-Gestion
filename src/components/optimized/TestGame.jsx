@@ -70,6 +70,8 @@ const TestGame = () => {
         bg.beginFill(0x2a2a4e);
         bg.drawRect(0, 0, 800, 600);
         bg.endFill();
+        // Le fond ne doit pas intercepter les événements pointer
+        bg.eventMode = 'none';
         app.stage.addChild(bg);
 
         // Créer un texte de test
