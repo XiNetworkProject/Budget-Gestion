@@ -17,6 +17,7 @@ const GameCenter = memo(() => {
   const [redeemCount, setRedeemCount] = useState(1);
   const [showRun, setShowRun] = useState(false);
   const [runPreview, setRunPreview] = useState(null);
+  const [showNewPixiGame, setShowNewPixiGame] = useState(false);
   const [showTestGame, setShowTestGame] = useState(false);
 
   useEffect(() => {
@@ -210,8 +211,9 @@ const GameCenter = memo(() => {
             if (res?.gamification) setGamification(res.gamification);
             // Affichage compact des événements jusqu'à ce que le board visuel soit prêt
             if (res?.run) {
-              setShowRun(true);
               setRunPreview(res.run);
+              setShowRun(false); // ne pas ouvrir l'ancien jeu
+              setShowNewPixiGame(true); // ouvrir le nouveau jeu PixiJS
             }
           } catch (_) {}
         }}>Lancer un run</Button>
@@ -220,7 +222,7 @@ const GameCenter = memo(() => {
           <MoneyCartRun open={showRun} onClose={() => setShowRun(false)} run={runPreview} />
         )}
         {/* Aperçu rendu WebGL (expérimental) */}
-        {showRun && runPreview && runPreview.events && runPreview.events.length > 0 && (
+        {showNewPixiGame && runPreview && runPreview.events && runPreview.events.length > 0 && (
           <Box sx={{ mt: 2 }}>
             <MoneyCartPixi events={runPreview.events} />
           </Box>

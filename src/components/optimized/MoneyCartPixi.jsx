@@ -1013,7 +1013,7 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
         <Button 
           variant="contained" 
           color="primary"
-          onClick={() => gameStateRef.current.isPlaying && startGame(appRef.current)}
+          onClick={() => startGame(appRef.current)}
           disabled={!ready || gameStateRef.current.isPlaying}
         >
           Nouvelle Partie
