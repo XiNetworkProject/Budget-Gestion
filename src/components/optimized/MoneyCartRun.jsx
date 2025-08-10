@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, memo } from 'react';
-import { Box, Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Grid, Chip, LinearProgress, ToggleButtonGroup, ToggleButton, Divider } from '@mui/material';
+import { Box, Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Grid, Chip, LinearProgress, ToggleButtonGroup, ToggleButton, Divider, Stack, Avatar } from '@mui/material';
 import { Savings, Bolt, Brush, Shield, Casino, PlayArrow, Pause, Replay } from '@mui/icons-material';
+import { resolveThemeFromCosmetics } from '../../ui/theme';
 
 const symbolMap = {
   saver: { icon: <Box component="img" src="/images/game/symbol-saver.svg" alt="saver" sx={{ width: 36, height: 36 }} />, color: '#4caf50', label: 'Épargneur' },
@@ -10,7 +11,7 @@ const symbolMap = {
   bonusSpin: { icon: <Box component="img" src="/images/game/symbol-bonus.svg" alt="bonus" sx={{ width: 36, height: 36 }} />, color: '#e91e63', label: 'Bonus spin' },
 };
 
-const Tile = memo(({ active, symbol }) => {
+const Tile = memo(({ active, symbol, value }) => {
   const meta = symbolMap[symbol] || {};
   return (
     <Box
@@ -34,7 +35,11 @@ const Tile = memo(({ active, symbol }) => {
         } : {}
       }}
     >
+      <Box sx={{ position: 'absolute', inset: 0 }} component="img" src="/images/game/cell-frame.svg" alt="frame" />
       {meta.icon || null}
+      {typeof value === 'number' && (
+        <Typography variant="caption" sx={{ position: 'absolute', bottom: 6, right: 8, color: 'rgba(255,255,255,0.9)', fontWeight: 700 }}>{value}</Typography>
+      )}
     </Box>
   );
 });
@@ -50,6 +55,7 @@ const MoneyCartRun = memo(({ open, onClose, run }) => {
   const [speed, setSpeed] = useState('normal'); // 'slow' | 'normal' | 'fast'
   const [flickerSymbol, setFlickerSymbol] = useState(null);
   const [finished, setFinished] = useState(false);
+  const [flash, setFlash] = useState(false);
   const timerRef = useRef(null);
   const flickerRef = useRef(null);
 
@@ -100,6 +106,8 @@ const MoneyCartRun = memo(({ open, onClose, run }) => {
       if (ev.symbol === 'saver' && ev.gain) setTotalPoints((p) => p + ev.gain);
       if (ev.symbol === 'optimizer' && ev.multiplier) setCurrentMultiplier(ev.multiplier);
       if (ev.symbol === 'bonusSpin' && ev.bonus) setBonusSpin(true);
+      setFlash(true);
+      setTimeout(() => setFlash(false), 180);
       setStepIndex((i) => i + 1);
     }, stepDuration);
     return () => {
@@ -109,18 +117,34 @@ const MoneyCartRun = memo(({ open, onClose, run }) => {
   }, [open, isPlaying, finished, stepIndex, totalSteps, speed]);
 
   const tiles = useMemo(() => {
-    const cells = grid.cells.map((c) => ({ ...c, active: false, symbol: null }));
+    // Maquette: 5x4 board visible, révélation dans la rangée du milieu
+    const cells = grid.cells.map((c) => ({ ...c, active: false, symbol: null, value: null }));
     const centerIdx = Math.floor(cells.length / 2);
+    const rowStart = centerIdx - 2;
+    for (let i = 0; i < 4; i++) {
+      const idx = rowStart + i;
+      cells[idx] = { ...cells[idx], symbol: 'defender' };
+    }
     const ev = events[stepIndex] || null;
     const sym = flickerSymbol || ev?.symbol || null;
     if (sym) {
-      cells[centerIdx] = { ...cells[centerIdx], active: true, symbol: sym };
+      const base = (stepIndex % 4);
+      // Révéler 3 cases (base, base-1, base+1) pour un effet plus "jeu"
+      const reveal = [base, (base + 3) % 4, (base + 1) % 4];
+      reveal.forEach((offset, k) => {
+        const revealIdx = rowStart + offset;
+        cells[revealIdx] = { ...cells[revealIdx], active: k === 0, symbol: sym, value: k === 0 ? (ev?.gain || null) : null };
+      });
     }
     return cells;
   }, [grid.cells, events, stepIndex, flickerSymbol]);
 
+  const themeMode = resolveThemeFromCosmetics();
+  const bgImage = themeMode === 'neon' ? '/images/game/bg-neon.svg' : '/images/game/bg-aurora.svg';
+  const spinsLeft = Math.max(0, totalSteps - stepIndex);
+
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Typography variant="h6" sx={{ fontWeight: 800 }}>Run Money Cart</Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -130,7 +154,8 @@ const MoneyCartRun = memo(({ open, onClose, run }) => {
         </Box>
       </DialogTitle>
       <DialogContent>
-        <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Chip size="small" label={`Spins restants: ${spinsLeft}`} />
           <LinearProgress variant="determinate" value={totalSteps ? (stepIndex / totalSteps) * 100 : 0} sx={{ flex: 1 }} />
           <ToggleButtonGroup size="small" value={speed} exclusive onChange={(e, val) => val && setSpeed(val)}>
             <ToggleButton value="slow">Lent</ToggleButton>
@@ -140,21 +165,25 @@ const MoneyCartRun = memo(({ open, onClose, run }) => {
           <Button onClick={() => setIsPlaying((p) => !p)} size="small" startIcon={isPlaying ? <Pause /> : <PlayArrow />}>{isPlaying ? 'Pause' : 'Play'}</Button>
           <Button onClick={reset} size="small" startIcon={<Replay />}>Relancer</Button>
         </Box>
-
-        <Grid container spacing={1.25} columns={4}
-          sx={{
-            p: 1.25,
-            borderRadius: 2,
-            background: 'linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04))',
-            border: '1px solid rgba(255,255,255,0.12)'
-          }}
-        >
+        <Box sx={{
+          position: 'relative',
+          borderRadius: 2,
+          overflow: 'hidden',
+          border: '1px solid rgba(255,255,255,0.12)',
+          background: 'rgba(0,0,0,0.25)'
+        }}>
+          <Box component="img" src={bgImage} alt="bg" sx={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.35 }} />
+          {flash && (
+            <Box sx={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.22), transparent 60%)', pointerEvents: 'none' }} />
+          )}
+          <Grid container spacing={1.25} columns={4} sx={{ p: 1.25, position: 'relative' }}>
           {tiles.map((t) => (
             <Grid item xs={1} key={t.idx}>
-              <Tile active={t.active} symbol={t.symbol} />
+              <Tile active={t.active} symbol={t.symbol} value={t.value} />
             </Grid>
           ))}
-        </Grid>
+          </Grid>
+        </Box>
 
         <Divider sx={{ my: 2, opacity: 0.2 }} />
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
@@ -162,6 +191,19 @@ const MoneyCartRun = memo(({ open, onClose, run }) => {
             <Chip key={key} icon={meta.icon} label={meta.label} size="small" sx={{ bgcolor: 'rgba(255,255,255,0.08)', color: 'white' }} />
           ))}
         </Box>
+
+        {finished && (
+          <Box sx={{ mt: 2, p: 2, borderRadius: 2, border: '1px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.06)' }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>Récap</Typography>
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Chip label={`+${run?.pointsEarned || 0} pts`} />
+              {run?.bonusSpin && <Chip label={'+1 spin'} color="secondary" />}
+              {(run?.inventoryDrops || []).slice(0, 4).map((d, i) => (
+                <Avatar key={i} variant="rounded" src={d?.id?.includes('neon') ? '/images/theme-neon.svg' : d?.id?.includes('aurora') ? '/images/theme-aurora.svg' : '/images/theme-gradient.svg'} sx={{ width: 32, height: 32 }} />
+              ))}
+            </Stack>
+          </Box>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} variant="contained">Fermer</Button>
