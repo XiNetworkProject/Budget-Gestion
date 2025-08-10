@@ -260,9 +260,9 @@ export const createAppTheme = () => {
   let bodyBackground = 'linear-gradient(135deg, #10131a 0%, #232946 100%)';
   const mode = resolveThemeFromCosmetics();
   if (mode === 'aurora') {
-    bodyBackground = 'radial-gradient(60% 80% at 30% 30%, #1a2240 0%, #0b1020 60%, #0b1020 100%)';
+    bodyBackground = 'radial-gradient(60% 80% at 30% 30%, #121a2e 0%, #0b1020 55%, #0b1020 100%)';
   } else if (mode === 'neon') {
-    bodyBackground = '#0a0f14';
+    bodyBackground = 'linear-gradient(135deg, #0a0f14 0%, #0b1118 100%)';
   }
   return createTheme({
     palette,
@@ -282,16 +282,19 @@ export const createAppTheme = () => {
       MuiPaper: {
         styleOverrides: {
           root: {
-            background: mode === 'neon' ? 'rgba(57,255,20,0.05)' : mode === 'aurora' ? 'rgba(139,233,253,0.06)' : 'rgba(255,255,255,0.08)',
-            border: `1px solid ${mode === 'neon' ? 'rgba(57,255,20,0.25)' : mode === 'aurora' ? 'rgba(139,233,253,0.25)' : 'rgba(255,255,255,0.18)'}`,
+            background: 'rgba(15,18,28,0.88)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            backdropFilter: 'blur(18px)'
           }
         }
       },
       MuiAppBar: {
         styleOverrides: {
           root: {
-            background: mode === 'neon' ? 'rgba(0, 225, 214, 0.08)' : mode === 'aurora' ? 'rgba(139, 233, 253, 0.08)' : 'transparent',
+            background: 'rgba(15,18,28,0.9)',
             boxShadow: 'none',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            backdropFilter: 'blur(12px)'
           }
         }
       },
