@@ -120,8 +120,8 @@ const TestGame = () => {
         app.stage.addChild(buttonText);
 
         // Interaction
-        testButton.interactive = true;
-        testButton.buttonMode = true;
+        testButton.eventMode = 'static';
+        testButton.cursor = 'pointer';
         testButton.on('pointerdown', testParticles);
 
         // Animation loop

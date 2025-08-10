@@ -216,7 +216,9 @@ const GameCenter = memo(() => {
           } catch (_) {}
         }}>Lancer un run</Button>
 
-        <MoneyCartRun open={showRun} onClose={() => setShowRun(false)} run={runPreview} />
+        {showRun && runPreview && (
+          <MoneyCartRun open={showRun} onClose={() => setShowRun(false)} run={runPreview} />
+        )}
         {/* Aperçu rendu WebGL (expérimental) */}
         {runPreview && runPreview.events && runPreview.events.length > 0 && (
           <Box sx={{ mt: 2 }}>
