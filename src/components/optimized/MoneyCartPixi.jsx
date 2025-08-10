@@ -176,7 +176,8 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
         }
         
         // Mettre à jour la référence pour l'animation
-        icon = animatedIcon;
+        // Note: icon est const, on ne peut pas le réassigner
+        // L'animation est déjà ajoutée au stage
       } else {
         // Fallback vers l'ancien système
         icon.texture = PIXI.Texture.from(SYMBOL_TEXTURES[symbol] || SYMBOL_TEXTURES.saver);

@@ -1,4 +1,3 @@
-import React, { useEffect, useRef, useCallback } from 'react';
 import * as PIXI from 'pixi.js';
 
 class SpriteAtlas {
@@ -16,14 +15,14 @@ class SpriteAtlas {
   async loadTextures() {
     try {
       // Charger la texture principale
-      const baseTexture = await PIXI.BaseTexture.from(this.texturePath);
+      const baseTexture = await PIXI.Texture.from(this.texturePath);
       
       // Créer les textures pour chaque frame de chaque symbole
       for (const [symbolName, symbolData] of Object.entries(this.frameData)) {
         const symbolTextures = [];
         
         for (const frame of symbolData.frames) {
-          const texture = new PIXI.Texture(baseTexture, new PIXI.Rectangle(
+          const texture = new PIXI.Texture(baseTexture.baseTexture, new PIXI.Rectangle(
             frame.x, frame.y, frame.width, frame.height
           ));
           symbolTextures.push(texture);
@@ -136,9 +135,9 @@ class SpriteAtlas {
     const winTextures = this.frameData.specialAnimations?.win?.frames;
     if (!winTextures) return null;
 
-    const baseTexture = PIXI.BaseTexture.from(this.texturePath);
+    const baseTexture = PIXI.Texture.from(this.texturePath);
     const textures = winTextures.map(frame => 
-      new PIXI.Texture(baseTexture, new PIXI.Rectangle(
+      new PIXI.Texture(baseTexture.baseTexture, new PIXI.Rectangle(
         frame.x, frame.y, frame.width, frame.height
       ))
     );
@@ -151,10 +150,8 @@ class SpriteAtlas {
     animatedSprite.y = y;
     animatedSprite.scale.set(scale);
 
-    // Démarrer l'animation
     animatedSprite.play();
     
-    // Supprimer après l'animation
     animatedSprite.onComplete = () => {
       if (animatedSprite.parent) {
         animatedSprite.parent.removeChild(animatedSprite);
@@ -171,9 +168,9 @@ class SpriteAtlas {
     const comboTextures = this.frameData.specialAnimations?.combo?.frames;
     if (!comboTextures) return null;
 
-    const baseTexture = PIXI.BaseTexture.from(this.texturePath);
+    const baseTexture = PIXI.Texture.from(this.texturePath);
     const textures = comboTextures.map(frame => 
-      new PIXI.Texture(baseTexture, new PIXI.Rectangle(
+      new PIXI.Texture(baseTexture.baseTexture, new PIXI.Rectangle(
         frame.x, frame.y, frame.width, frame.height
       ))
     );
@@ -217,9 +214,9 @@ class SpriteAtlas {
     const levelUpTextures = this.frameData.specialAnimations?.levelUp?.frames;
     if (!levelUpTextures) return null;
 
-    const baseTexture = PIXI.BaseTexture.from(this.texturePath);
+    const baseTexture = PIXI.Texture.from(this.texturePath);
     const textures = levelUpTextures.map(frame => 
-      new PIXI.Texture(baseTexture, new PIXI.Rectangle(
+      new PIXI.Texture(baseTexture.baseTexture, new PIXI.Rectangle(
         frame.x, frame.y, frame.width, frame.height
       ))
     );

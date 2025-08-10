@@ -1,4 +1,3 @@
-import React, { useEffect, useRef } from 'react';
 import * as PIXI from 'pixi.js';
 
 class ParticleSystem {
@@ -225,7 +224,7 @@ class ParticleSystem {
       this.app.stage.addChild(wave);
       
       let life = duration;
-      const delay = i * 5; // Délai entre les anneaux
+      let delay = i * 5; // Délai entre les anneaux
       
       const animate = () => {
         if (delay > 0) {

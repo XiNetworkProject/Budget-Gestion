@@ -7,6 +7,8 @@ import { gamificationService } from '../services/gamificationService';
 import InventoryGrid from '../components/optimized/InventoryGrid';
 import MoneyCartRun from '../components/optimized/MoneyCartRun';
 import MoneyCartPixi from '../components/optimized/MoneyCartPixi';
+import TestGame from '../components/optimized/TestGame';
+import SimpleTest from '../components/optimized/SimpleTest';
 
 const GameCenter = memo(() => {
   const { user, gamification, setGamification, getCurrentPlan } = useStore();
@@ -15,6 +17,7 @@ const GameCenter = memo(() => {
   const [redeemCount, setRedeemCount] = useState(1);
   const [showRun, setShowRun] = useState(false);
   const [runPreview, setRunPreview] = useState(null);
+  const [showTestGame, setShowTestGame] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -172,8 +175,32 @@ const GameCenter = memo(() => {
         </Grid>
       </Paper>
 
+                        <Paper sx={{ p: 2, mt: 3, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
+                    <Typography variant="h6" sx={{ mb: 1, color: 'white', fontWeight: 600 }}>Test Simple PixiJS</Typography>
+                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mb: 1 }}>
+                      Test de base pour vérifier que PixiJS fonctionne sans erreur.
+                    </Typography>
+                    <SimpleTest />
+                  </Paper>
+
+                  <Paper sx={{ p: 2, mt: 3, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
+                    <Typography variant="h6" sx={{ mb: 1, color: 'white', fontWeight: 600 }}>Test des systèmes PixiJS</Typography>
+                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mb: 1 }}>
+                      Testez les systèmes de particules, d'éclairage et de spritesheet sans erreur.
+                    </Typography>
+                    <Button variant="contained" onClick={() => setShowTestGame(!showTestGame)}>
+                      {showTestGame ? 'Masquer le test' : 'Tester les systèmes'}
+                    </Button>
+
+                    {showTestGame && (
+                      <Box sx={{ mt: 2 }}>
+                        <TestGame />
+                      </Box>
+                    )}
+                  </Paper>
+
       <Paper sx={{ p: 2, mt: 3, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
-        <Typography variant="h6" sx={{ mb: 1, color: 'white', fontWeight: 600 }}>Mini‑jeu “Run” (style Money Cart)</Typography>
+        <Typography variant="h6" sx={{ mb: 1, color: 'white', fontWeight: 600 }}>Mini‑jeu "Run" (style Money Cart)</Typography>
         <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mb: 1 }}>
           Lance un run rapide et accumule des multiplicateurs, objets et points.
         </Typography>

@@ -1,4 +1,3 @@
-import React, { useEffect, useRef, useCallback } from 'react';
 import * as PIXI from 'pixi.js';
 
 class LightingSystem {

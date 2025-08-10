@@ -23,7 +23,8 @@ class PerformanceManager {
     }
 
     const maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-    const maxAnisotropy = gl.getParameter(gl.EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) || 0;
+    const maxAnisotropy = gl.getExtension('EXT_texture_filter_anisotropic') ? 
+      gl.getParameter(gl.EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
     
     // Détecter la mémoire GPU (approximative)
     const memoryInfo = gl.getExtension('WEBGL_debug_renderer_info');
@@ -99,35 +100,34 @@ class PerformanceManager {
 
   // Mettre à jour les métriques de performance
   updatePerformance() {
-    const currentTime = performance.now();
-    const deltaTime = currentTime - this.lastTime;
+    const now = performance.now();
+    const delta = now - this.lastTime;
     
-    if (deltaTime > 0) {
-      this.fps = Math.round((this.frameCount * 1000) / deltaTime);
+    if (delta >= 1000) {
+      this.fps = Math.round((this.frameCount * 1000) / delta);
       this.frameCount = 0;
-      this.lastTime = currentTime;
+      this.lastTime = now;
       
-      // Ajuster automatiquement les paramètres selon les performances
       this.adaptToPerformance();
     }
+    
+    this.frameCount++;
   }
 
   // Adapter les paramètres selon les performances
   adaptToPerformance() {
-    if (this.fps < 30 && this.performanceLevel !== 'low') {
+    if (this.fps < 30) {
       this.performanceLevel = 'low';
-      this.adaptiveSettings = {
-        maxParticles: Math.floor(this.adaptiveSettings.maxParticles * 0.5),
-        particleSize: Math.max(2, this.adaptiveSettings.particleSize - 1),
-        animationSpeed: this.adaptiveSettings.animationSpeed * 0.8,
-        useAntialiasing: false,
-        useShadows: false,
-        textureQuality: 'low',
-        maxLights: Math.max(1, Math.floor(this.adaptiveSettings.maxLights * 0.5))
-      };
-    } else if (this.fps > 55 && this.performanceLevel !== 'high') {
+      this.adaptiveSettings.maxParticles = Math.max(50, this.adaptiveSettings.maxParticles * 0.8);
+      this.adaptiveSettings.animationSpeed = Math.max(0.5, this.adaptiveSettings.animationSpeed * 0.9);
+    } else if (this.fps < 50) {
+      this.performanceLevel = 'medium';
+      this.adaptiveSettings.maxParticles = Math.min(300, this.adaptiveSettings.maxParticles * 1.1);
+      this.adaptiveSettings.animationSpeed = Math.min(1.5, this.adaptiveSettings.animationSpeed * 1.05);
+    } else {
       this.performanceLevel = 'high';
-      this.adaptiveSettings = this.getAdaptiveSettings();
+      this.adaptiveSettings.maxParticles = Math.min(500, this.adaptiveSettings.maxParticles * 1.2);
+      this.adaptiveSettings.animationSpeed = Math.min(2.0, this.adaptiveSettings.animationSpeed * 1.1);
     }
   }
 
@@ -135,30 +135,28 @@ class PerformanceManager {
   getCurrentSettings() {
     return {
       ...this.adaptiveSettings,
-      performanceLevel: this.performanceLevel,
-      currentFps: this.fps
+      fps: this.fps,
+      performanceLevel: this.performanceLevel
     };
   }
 
-  // Créer une configuration PixiJS optimisée
+  // Configuration PIXI adaptative
   getPixiConfig(width, height) {
     const settings = this.getCurrentSettings();
     
     return {
       width,
       height,
+      backgroundColor: 0x1a1a2e,
       backgroundAlpha: 0,
       antialias: settings.useAntialiasing,
-      resolution: Math.min(2, this.deviceCapabilities.devicePixelRatio),
-      powerPreference: 'high-performance',
-      failIfMajorPerformanceCaveat: false,
-      preserveDrawingBuffer: false,
-      stencil: false,
-      depth: false
+      resolution: Math.min(2, window.devicePixelRatio || 1),
+      autoDensity: true,
+      powerPreference: 'high-performance'
     };
   }
 
-  // Obtenir les paramètres du système de particules
+  // Paramètres des particules adaptatifs
   getParticleSettings() {
     const settings = this.getCurrentSettings();
     
@@ -169,50 +167,40 @@ class PerformanceManager {
     };
   }
 
-  // Obtenir les paramètres de qualité des textures
+  // Paramètres des textures adaptatifs
   getTextureSettings() {
     const settings = this.getCurrentSettings();
     
-    switch (settings.textureQuality) {
-      case 'low':
-        return { scale: 0.5, compression: true };
-      case 'medium':
-        return { scale: 0.75, compression: false };
-      case 'high':
-        return { scale: 1.0, compression: false };
-      case 'ultra':
-        return { scale: 1.0, compression: false, mipmap: true };
-      default:
-        return { scale: 1.0, compression: false };
-    }
+    return {
+      quality: settings.textureQuality,
+      useCompression: settings.textureQuality === 'ultra',
+      maxSize: this.deviceCapabilities.maxTextureSize
+    };
   }
 
-  // Vérifier si on peut ajouter plus d'effets
+  // Vérifier si on peut ajouter un effet
   canAddEffect(effectType) {
     const settings = this.getCurrentSettings();
     
     switch (effectType) {
-      case 'particles':
+      case 'particle':
         return this.frameCount < settings.maxParticles;
-      case 'lights':
+      case 'light':
         return this.frameCount < settings.maxLights;
-      case 'shadows':
+      case 'shadow':
         return settings.useShadows;
-      case 'antialiasing':
-        return settings.useAntialiasing;
       default:
         return true;
     }
   }
 
-  // Obtenir des statistiques de performance
+  // Obtenir les statistiques de performance
   getPerformanceStats() {
     return {
       fps: this.fps,
       performanceLevel: this.performanceLevel,
       deviceCapabilities: this.deviceCapabilities,
-      adaptiveSettings: this.adaptiveSettings,
-      frameCount: this.frameCount
+      currentSettings: this.getCurrentSettings()
     };
   }
 
@@ -224,35 +212,34 @@ class PerformanceManager {
   }
 }
 
-// Hook React pour utiliser le gestionnaire de performance
+// Hook React pour utiliser le PerformanceManager
 export const usePerformanceManager = () => {
-  const [performanceManager] = useState(() => new PerformanceManager());
-  const [stats, setStats] = useState(performanceManager.getPerformanceStats());
+  const [performanceStats, setPerformanceStats] = useState(null);
+  const performanceManagerRef = useRef(null);
 
   useEffect(() => {
+    performanceManagerRef.current = new PerformanceManager();
+    
     const updateStats = () => {
-      setStats(performanceManager.getPerformanceStats());
+      if (performanceManagerRef.current) {
+        setPerformanceStats(performanceManagerRef.current.getPerformanceStats());
+      }
     };
 
-    const interval = setInterval(updateStats, 2000);
+    const interval = setInterval(updateStats, 1000);
+    updateStats(); // Première mise à jour
 
     return () => {
       clearInterval(interval);
-      performanceManager.destroy();
+      if (performanceManagerRef.current) {
+        performanceManagerRef.current.destroy();
+      }
     };
-  }, [performanceManager]);
+  }, []);
 
   return {
-    performanceManager,
-    stats,
-    getPixiConfig: useCallback((width, height) => 
-      performanceManager.getPixiConfig(width, height), [performanceManager]),
-    getParticleSettings: useCallback(() => 
-      performanceManager.getParticleSettings(), [performanceManager]),
-    getTextureSettings: useCallback(() => 
-      performanceManager.getTextureSettings(), [performanceManager]),
-    canAddEffect: useCallback((effectType) => 
-      performanceManager.canAddEffect(effectType), [performanceManager])
+    performanceStats,
+    performanceManager: performanceManagerRef.current
   };
 };
 
