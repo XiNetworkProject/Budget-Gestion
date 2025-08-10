@@ -745,225 +745,226 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
           return;
         }
 
-    // Initialiser le système de particules
-    particleSystemRef.current = new ParticleSystem(app, 200);
+        // Initialiser le système de particules
+        particleSystemRef.current = new ParticleSystem(app, 200);
 
-    // Initialiser le gestionnaire de performance
-    const performanceManager = new PerformanceManager();
-    const pixiConfig = performanceManager.getPixiConfig(width, height);
-    
-    // Initialiser le SpriteAtlas pour les symboles
-    spriteAtlasRef.current = new SpriteAtlas(app, SPRITE_CONFIG.texturePath, SPRITE_CONFIG.frameData);
-    
-    // Initialiser le système d'éclairage
-    const lightingSystem = new LightingSystem(app, {
-      ambientLight: 0x404040,
-      ambientIntensity: 0.3
-    });
-    
-    // Créer des lumières dynamiques
-    const mainLight = lightingSystem.createPointLight(width / 2, height / 2, 0xFFFFCC, 0.6, 150, {
-      pulse: true,
-      pulseSpeed: 0.03
-    });
-    
-    // Lumières d'accentuation pour les coins
-    lightingSystem.createPointLight(50, 50, 0x00FFFF, 0.4, 80, {
-      flicker: true,
-      flickerSpeed: 0.15
-    });
-    
-    lightingSystem.createPointLight(width - 50, height - 50, 0xFF69B4, 0.4, 80, {
-      flicker: true,
-      flickerSpeed: 0.12
-    });
-    
-    // Effet de lueur ambiante
-    lightingSystem.createGlow(width / 2, height / 2, 0x00FFFF, 0.3, 100);
-
-    // Fond animé
-    const bg = PIXI.Sprite.from('/images/game/bg-aurora.svg');
-    bg.width = width;
-    bg.height = height;
-    bg.alpha = 0.7;
-    app.stage.addChild(bg);
-
-    // Particules de fond (utiliser Container au lieu de ParticleContainer)
-    const particles = new PIXI.Container();
-    app.stage.addChild(particles);
-
-    for (let i = 0; i < 50; i++) {
-      const particle = PIXI.Sprite.from('/images/game/symbol-bonus.svg');
-      particle.width = 8;
-      particle.height = 8;
-      particle.x = Math.random() * width;
-      particle.y = Math.random() * height;
-      particle.alpha = 0.3;
-      particles.addChild(particle);
-    }
-
-    // Animation des particules
-    app.ticker.add((delta) => {
-      particles.children.forEach((particle, i) => {
-        particle.y -= 0.5;
-        particle.alpha = 0.3 + Math.sin(Date.now() * 0.001 + i) * 0.2;
+        // Initialiser le gestionnaire de performance
+        const performanceManager = new PerformanceManager();
+        const pixiConfig = performanceManager.getPixiConfig(width, height);
         
-        if (particle.y < -10) {
-          particle.y = height + 10;
-        }
-      });
-      
-      // Mettre à jour le système de particules
-      if (particleSystemRef.current) {
-        particleSystemRef.current.update();
-      }
-      
-      // Mettre à jour le système d'éclairage
-      if (lightingSystem) {
-        lightingSystem.update(delta);
-      }
-    });
+        // Initialiser le SpriteAtlas pour les symboles
+        spriteAtlasRef.current = new SpriteAtlas(app, SPRITE_CONFIG.texturePath, SPRITE_CONFIG.frameData);
+        
+        // Initialiser le système d'éclairage
+        const lightingSystem = new LightingSystem(app, {
+          ambientLight: 0x404040,
+          ambientIntensity: 0.3
+        });
+        
+        // Créer des lumières dynamiques
+        const mainLight = lightingSystem.createPointLight(width / 2, height / 2, 0xFFFFCC, 0.6, 150, {
+          pulse: true,
+          pulseSpeed: 0.03
+        });
+        
+        // Lumières d'accentuation pour les coins
+        lightingSystem.createPointLight(50, 50, 0x00FFFF, 0.4, 80, {
+          flicker: true,
+          flickerSpeed: 0.15
+        });
+        
+        lightingSystem.createPointLight(width - 50, height - 50, 0xFF69B4, 0.4, 80, {
+          flicker: true,
+          flickerSpeed: 0.12
+        });
+        
+        // Effet de lueur ambiante
+        lightingSystem.createGlow(width / 2, height / 2, 0x00FFFF, 0.3, 100);
 
-    // Grille de jeu
-    const grid = new PIXI.Container();
-    grid.name = 'grid';
-    app.stage.addChild(grid);
+        // Fond animé
+        const bg = PIXI.Sprite.from('/images/game/bg-aurora.svg');
+        bg.width = width;
+        bg.height = height;
+        bg.alpha = 0.7;
+        app.stage.addChild(bg);
 
-    const cellSize = GAME_CONFIG.cellSize;
-    const padding = GAME_CONFIG.padding;
-    const startX = (width - (GAME_CONFIG.cols * cellSize + (GAME_CONFIG.cols - 1) * padding)) / 2;
-    const startY = (height - (GAME_CONFIG.rows * cellSize + (GAME_CONFIG.rows - 1) * padding)) / 2;
+        // Particules de fond (utiliser Container au lieu de ParticleContainer)
+        const particles = new PIXI.Container();
+        app.stage.addChild(particles);
 
-    for (let r = 0; r < GAME_CONFIG.rows; r++) {
-      for (let c = 0; c < GAME_CONFIG.cols; c++) {
-        const cellContainer = new PIXI.Container();
-        cellContainer.name = `cell-${r}-${c}`;
-        cellContainer.x = startX + c * (cellSize + padding);
-        cellContainer.y = startY + r * (cellSize + padding);
-
-        // Frame de la cellule
-        const frame = PIXI.Sprite.from('/images/game/cell-frame.svg');
-        frame.name = 'frame';
-        frame.width = cellSize;
-        frame.height = cellSize;
-        frame.alpha = 0.8;
-        cellContainer.addChild(frame);
-
-        // Icône du symbole
-        const icon = new PIXI.Sprite();
-        icon.name = 'icon';
-        icon.anchor.set(0.5);
-        icon.x = cellSize / 2;
-        icon.y = cellSize / 2;
-        icon.visible = false;
-        cellContainer.addChild(icon);
-
-        // Indicateur de verrouillage
-        if (r < GAME_CONFIG.lockedRows) {
-          const lockIcon = new PIXI.Graphics();
-          lockIcon.beginFill(0xFF0000, 0.8);
-          lockIcon.drawCircle(cellSize - 20, 20, 12);
-          lockIcon.endFill();
-          lockIcon.name = 'lock';
-          cellContainer.addChild(lockIcon);
+        for (let i = 0; i < 50; i++) {
+          const particle = PIXI.Sprite.from('/images/game/symbol-bonus.svg');
+          particle.width = 8;
+          particle.height = 8;
+          particle.x = Math.random() * width;
+          particle.y = Math.random() * height;
+          particle.alpha = 0.3;
+          particles.addChild(particle);
         }
 
-        grid.addChild(cellContainer);
-      }
-    }
+        // Animation des particules
+        app.ticker.add((delta) => {
+          particles.children.forEach((particle, i) => {
+            particle.y -= 0.5;
+            particle.alpha = 0.3 + Math.sin(Date.now() * 0.001 + i) * 0.2;
+            
+            if (particle.y < -10) {
+              particle.y = height + 10;
+            }
+          });
+          
+          // Mettre à jour le système de particules
+          if (particleSystemRef.current) {
+            particleSystemRef.current.update();
+          }
+          
+          // Mettre à jour le système d'éclairage
+          if (lightingSystem) {
+            lightingSystem.update(delta);
+          }
+        });
 
-    // UI de jeu
-    const uiContainer = new PIXI.Container();
-    uiContainer.name = 'ui';
-    app.stage.addChild(uiContainer);
+        // Grille de jeu
+        const grid = new PIXI.Container();
+        grid.name = 'grid';
+        app.stage.addChild(grid);
 
-    // Boutons de contrôle
-    const startBtn = new PIXI.Graphics();
-    startBtn.beginFill(0x00FF00, 0.8);
-    startBtn.drawRoundedRect(10, 10, 100, 40, 8);
-    startBtn.endFill();
-    startBtn.interactive = true;
-    startBtn.buttonMode = true;
-    startBtn.on('pointerdown', () => startGame(app));
-    uiContainer.addChild(startBtn);
+        const cellSize = GAME_CONFIG.cellSize;
+        const padding = GAME_CONFIG.padding;
+        const startX = (width - (GAME_CONFIG.cols * cellSize + (GAME_CONFIG.cols - 1) * padding)) / 2;
+        const startY = (height - (GAME_CONFIG.rows * cellSize + (GAME_CONFIG.rows - 1) * padding)) / 2;
 
-    const startText = new PIXI.Text('START', {
-      fontFamily: 'Arial',
-      fontSize: 16,
-      fill: 0xFFFFFF
-    });
-    startText.anchor.set(0.5);
-    startText.x = 60;
-    startText.y = 30;
-    startBtn.addChild(startText);
+        for (let r = 0; r < GAME_CONFIG.rows; r++) {
+          for (let c = 0; c < GAME_CONFIG.cols; c++) {
+            const cellContainer = new PIXI.Container();
+            cellContainer.name = `cell-${r}-${c}`;
+            cellContainer.x = startX + c * (cellSize + padding);
+            cellContainer.y = startY + r * (cellSize + padding);
 
-    const pauseBtn = new PIXI.Graphics();
-    pauseBtn.beginFill(0xFFFF00, 0.8);
-    pauseBtn.drawRoundedRect(120, 10, 100, 40, 8);
-    pauseBtn.endFill();
-    pauseBtn.interactive = true;
-    pauseBtn.buttonMode = true;
-    pauseBtn.on('pointerdown', () => togglePause(app));
-    uiContainer.addChild(pauseBtn);
+            // Frame de la cellule
+            const frame = PIXI.Sprite.from('/images/game/cell-frame.svg');
+            frame.name = 'frame';
+            frame.width = cellSize;
+            frame.height = cellSize;
+            frame.alpha = 0.8;
+            cellContainer.addChild(frame);
 
-    const pauseText = new PIXI.Text('PAUSE', {
-      fontFamily: 'Arial',
-      fontSize: 16,
-      fill: 0x000000
-    });
-    pauseText.anchor.set(0.5);
-    pauseText.x = 170;
-    pauseText.y = 30;
-    pauseBtn.addChild(pauseText);
+            // Icône du symbole
+            const icon = new PIXI.Sprite();
+            icon.name = 'icon';
+            icon.anchor.set(0.5);
+            icon.x = cellSize / 2;
+            icon.y = cellSize / 2;
+            icon.visible = false;
+            cellContainer.addChild(icon);
 
-    // Stats du jeu
-    const statsContainer = new PIXI.Container();
-    statsContainer.x = width - 200;
-    statsContainer.y = 10;
-    uiContainer.addChild(statsContainer);
+            // Indicateur de verrouillage
+            if (r < GAME_CONFIG.lockedRows) {
+              const lockIcon = new PIXI.Graphics();
+              lockIcon.beginFill(0xFF0000, 0.8);
+              lockIcon.drawCircle(cellSize - 20, 20, 12);
+              lockIcon.endFill();
+              lockIcon.name = 'lock';
+              cellContainer.addChild(lockIcon);
+            }
 
-    const statsBg = new PIXI.Graphics();
-    statsBg.beginFill(0x000000, 0.6);
-    statsBg.drawRoundedRect(0, 0, 190, 120, 8);
-    statsBg.endFill();
-    statsContainer.addChild(statsBg);
+            grid.addChild(cellContainer);
+          }
+        }
 
-    const statsText = new PIXI.Text('', {
-      fontFamily: 'Arial',
-      fontSize: 14,
-      fill: 0xFFFFFF
-    });
-    statsText.name = 'statsText';
-    statsContainer.addChild(statsText);
+        // UI de jeu
+        const uiContainer = new PIXI.Container();
+        uiContainer.name = 'ui';
+        app.stage.addChild(uiContainer);
 
-    // Mise à jour des stats
-    const updateStats = () => {
-      const gameState = gameStateRef.current;
-      statsText.text = `SPIN: ${gameState.currentSpin}/${gameState.totalSpins}\nPOINTS: ${gameState.points}\nMULTI: ${gameState.multiplier.toFixed(1)}x\nLOCKED: ${gameState.lockedRows}`;
-    };
+        // Boutons de contrôle
+        const startBtn = new PIXI.Graphics();
+        startBtn.beginFill(0x00FF00, 0.8);
+        startBtn.drawRoundedRect(10, 10, 100, 40, 8);
+        startBtn.endFill();
+        startBtn.interactive = true;
+        startBtn.buttonMode = true;
+        startBtn.on('pointerdown', () => startGame(app));
+        uiContainer.addChild(startBtn);
 
-    app.ticker.add(updateStats);
+        const startText = new PIXI.Text('START', {
+          fontFamily: 'Arial',
+          fontSize: 16,
+          fill: 0xFFFFFF
+        });
+        startText.anchor.set(0.5);
+        startText.x = 60;
+        startText.y = 30;
+        startBtn.addChild(startText);
 
-    // Initialiser le board
-    initializeBoard();
+        const pauseBtn = new PIXI.Graphics();
+        pauseBtn.beginFill(0xFFFF00, 0.8);
+        pauseBtn.drawRoundedRect(120, 10, 100, 40, 8);
+        pauseBtn.endFill();
+        pauseBtn.interactive = true;
+        pauseBtn.buttonMode = true;
+        pauseBtn.on('pointerdown', () => togglePause(app));
+        uiContainer.addChild(pauseBtn);
 
-    setReady(true);
+        const pauseText = new PIXI.Text('PAUSE', {
+          fontFamily: 'Arial',
+          fontSize: 16,
+          fill: 0x000000
+        });
+        pauseText.anchor.set(0.5);
+        pauseText.x = 170;
+        pauseText.y = 30;
+        pauseBtn.addChild(pauseText);
 
-    return () => {
-      if (particleSystemRef.current) {
-        particleSystemRef.current.destroy();
-      }
-      if (spriteAtlasRef.current) {
-        spriteAtlasRef.current.destroy();
-      }
-      if (lightingSystem) {
-        lightingSystem.destroy();
-      }
-      if (performanceManager) {
-        performanceManager.destroy();
-      }
-      app.destroy(true, { children: true });
-    };
+        // Stats du jeu
+        const statsContainer = new PIXI.Container();
+        statsContainer.x = width - 200;
+        statsContainer.y = 10;
+        uiContainer.addChild(statsContainer);
+
+        const statsBg = new PIXI.Graphics();
+        statsBg.beginFill(0x000000, 0.6);
+        statsBg.drawRoundedRect(0, 0, 190, 120, 8);
+        statsBg.endFill();
+        statsContainer.addChild(statsBg);
+
+        const statsText = new PIXI.Text('', {
+          fontFamily: 'Arial',
+          fontSize: 14,
+          fill: 0xFFFFFF
+        });
+        statsText.name = 'statsText';
+        statsContainer.addChild(statsText);
+
+        // Mise à jour des stats
+        const updateStats = () => {
+          const gameState = gameStateRef.current;
+          statsText.text = `SPIN: ${gameState.currentSpin}/${gameState.totalSpins}\nPOINTS: ${gameState.points}\nMULTI: ${gameState.multiplier.toFixed(1)}x\nLOCKED: ${gameState.lockedRows}`;
+        };
+
+        app.ticker.add(updateStats);
+
+        // Initialiser le board
+        initializeBoard();
+
+        setReady(true);
+
+        // Retourner la fonction de nettoyage
+        return () => {
+          if (particleSystemRef.current) {
+            particleSystemRef.current.destroy();
+          }
+          if (spriteAtlasRef.current) {
+            spriteAtlasRef.current.destroy();
+          }
+          if (lightingSystem) {
+            lightingSystem.destroy();
+          }
+          if (performanceManager) {
+            performanceManager.destroy();
+          }
+          app.destroy(true, { children: true });
+        };
       } catch (error) {
         console.error('❌ Erreur lors de l\'initialisation du jeu:', error);
         setReady(false);
@@ -971,7 +972,14 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
     };
 
     // Lancer l'initialisation
-    initGame();
+    const cleanup = initGame();
+    
+    // Nettoyage lors du démontage du composant
+    return () => {
+      if (cleanup && typeof cleanup === 'function') {
+        cleanup();
+      }
+    };
   }, [width, height, initializeBoard]);
 
   return (
