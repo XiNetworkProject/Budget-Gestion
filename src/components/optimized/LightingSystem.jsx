@@ -39,18 +39,12 @@ class LightingSystem {
       castShadows = true
     } = options;
 
-    const light = new PIXI.Graphics();
-    const gradient = this.createRadialGradient(radius, color, intensity);
-    
-    light.beginFill(color, intensity);
-    light.drawCircle(0, 0, radius);
-    light.endFill();
+    const gradientTexture = this.createRadialGradient(radius, color, intensity);
+    const light = new PIXI.Sprite(gradientTexture);
+    light.anchor.set(0.5);
     light.x = x;
     light.y = y;
-    
-    // Effet de dégradé radial
-    light.mask = gradient;
-    
+    light.alpha = Math.max(0, Math.min(1, intensity));
     this.lightContainer.addChild(light);
     
     const lightData = {
