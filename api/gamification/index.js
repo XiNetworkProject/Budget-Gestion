@@ -348,24 +348,36 @@ function simulateMoneyCartRun(plan) {
 
   for (let i = 0; i < steps; i++) {
     const roll = Math.random();
-    if (roll < 0.4) {
+    if (roll < 0.28) {
       // Épargneur: +X% du pot
       const gain = Math.round(50 * (1 + i * 0.2) * multiplier);
       points += gain;
       events.push({ step: i + 1, symbol: 'saver', gain, multiplier });
-    } else if (roll < 0.6) {
+    } else if (roll < 0.46) {
       // Optimiseur: double le prochain
       multiplier *= 2;
       events.push({ step: i + 1, symbol: 'optimizer', multiplier });
-    } else if (roll < 0.75) {
+    } else if (roll < 0.62) {
       // Collecteur: petit objet cosmétique
       const drop = { type: 'theme', id: i % 2 === 0 ? 'gradient' : 'aurora' };
       drops.push(drop);
       events.push({ step: i + 1, symbol: 'collector', drop, multiplier });
-    } else if (roll < 0.9) {
+    } else if (roll < 0.74) {
       // Défenseur: protège (no-op mais pourrait empêcher un malus)
       // placeholder
       events.push({ step: i + 1, symbol: 'defender', multiplier });
+    } else if (roll < 0.82) {
+      // Unlocker: déverrouille une ligne
+      events.push({ step: i + 1, symbol: 'unlocker' });
+    } else if (roll < 0.9) {
+      // Payer: ajoute de la valeur à la case révélée
+      const gain = Math.round(10 + Math.random() * 30);
+      points += Math.round(gain * 0.2);
+      events.push({ step: i + 1, symbol: 'payer', gain });
+    } else if (roll < 0.96) {
+      // Sniper: multiplie une case aléatoire
+      const mult = Math.random() < 0.5 ? 2 : 3;
+      events.push({ step: i + 1, symbol: 'sniper', mult });
     } else {
       // Bonus spin rare
       bonusSpin = bonusSpin || Math.random() < (plan === 'PRO' ? 0.4 : plan === 'PREMIUM' ? 0.2 : 0.1);

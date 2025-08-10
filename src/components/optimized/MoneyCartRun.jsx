@@ -183,7 +183,9 @@ const MoneyCartRun = memo(({ open, onClose, run }) => {
     const rowStart = centerIdx - 2;
     for (let i = 0; i < 4; i++) {
       const idx = rowStart + i;
-      cells[idx] = { ...cells[idx], symbol: 'defender' };
+      // Utiliser l'état persistant si présent
+      const cellState = board[idx] || {};
+      cells[idx] = { ...cells[idx], symbol: cellState.symbol || 'defender', value: cellState.value ?? null };
     }
     const ev = events[stepIndex] || null;
     const sym = flickerSymbol || ev?.symbol || null;
@@ -197,7 +199,7 @@ const MoneyCartRun = memo(({ open, onClose, run }) => {
       });
     }
     return cells;
-  }, [grid.cells, events, stepIndex, flickerSymbol]);
+  }, [grid.cells, events, stepIndex, flickerSymbol, board]);
 
   const themeMode = resolveThemeFromCosmetics();
   const bgImage = themeMode === 'neon' ? '/images/game/bg-neon.svg' : '/images/game/bg-aurora.svg';
