@@ -23,7 +23,13 @@ const SpriteAtlasDemo = ({ width = 800, height = 600 }) => {
       resolution: window.devicePixelRatio || 1
     });
     appRef.current = app;
-    containerRef.current.appendChild(app.view);
+          // Utiliser app.canvas au lieu de app.view pour PixiJS v8
+      if (app.canvas) {
+        containerRef.current.appendChild(app.canvas);
+      } else {
+        console.error('❌ app.canvas est undefined');
+        return;
+      }
 
     // Fond
     const bg = new PIXI.Graphics();

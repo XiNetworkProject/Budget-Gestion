@@ -726,7 +726,13 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
       resolution: window.devicePixelRatio || 1
     });
     appRef.current = app;
-    containerRef.current.appendChild(app.view);
+          // Utiliser app.canvas au lieu de app.view pour PixiJS v8
+      if (app.canvas) {
+        containerRef.current.appendChild(app.canvas);
+      } else {
+        console.error('❌ app.canvas est undefined');
+        return;
+      }
 
     // Initialiser le système de particules
     particleSystemRef.current = new ParticleSystem(app, 200);

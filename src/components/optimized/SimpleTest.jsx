@@ -1,46 +1,75 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Button } from '@mui/material';
 
 const SimpleTest = () => {
   const containerRef = useRef(null);
-  const appRef = useRef(null);
+  const [status, setStatus] = useState('En attente...');
+  const [error, setError] = useState(null);
+  const [pixiLoaded, setPixiLoaded] = useState(false);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    // Vérifier que PIXI est chargé
+    try {
+      console.log('🔍 Vérification de PIXI...');
+      console.log('PIXI:', PIXI);
+      console.log('PIXI.VERSION:', PIXI.VERSION);
+      console.log('PIXI.Application:', PIXI.Application);
+      
+      if (PIXI && PIXI.Application) {
+        setPixiLoaded(true);
+        setStatus('PIXI chargé avec succès');
+        console.log('✅ PIXI est disponible');
+      } else {
+        setError('PIXI.Application n\'est pas disponible');
+        console.error('❌ PIXI.Application manquant');
+      }
+    } catch (err) {
+      setError(`Erreur lors du chargement de PIXI: ${err.message}`);
+      console.error('❌ Erreur PIXI:', err);
+    }
+  }, []);
+
+  const testPixiApp = () => {
+    if (!containerRef.current) {
+      setError('Container non disponible');
+      return;
+    }
 
     try {
-      console.log('🚀 SimpleTest: Initialisation...');
-      
-      // Créer l'application PIXI avec des paramètres simples
+      setStatus('Création de l\'application PIXI...');
+      console.log('🚀 Création de l\'application PIXI...');
+
+      // Créer une application très simple
       const app = new PIXI.Application({
         width: 400,
         height: 300,
-        backgroundColor: 0x2a2a4e,
-        antialias: true
+        backgroundColor: 0x2a2a4e
       });
 
-      appRef.current = app;
-      containerRef.current.appendChild(app.view);
+      console.log('✅ Application créée:', app);
+      console.log('Propriétés de app:', Object.keys(app));
 
-      // Créer un fond simple
-      const bg = new PIXI.Graphics();
-      bg.beginFill(0x1a1a2e);
-      bg.drawRect(0, 0, 400, 300);
-      bg.endFill();
-      app.stage.addChild(bg);
+      // Essayer d'ajouter au DOM
+      let canvasElement = null;
+      
+      if (app.canvas) {
+        console.log('✅ Utilisation de app.canvas');
+        canvasElement = app.canvas;
+      } else if (app.view) {
+        console.log('✅ Utilisation de app.view');
+        canvasElement = app.view;
+      } else {
+        console.log('❌ Ni canvas ni view trouvés');
+        console.log('Toutes les propriétés:', app);
+        setError('Impossible de trouver l\'élément canvas/view');
+        return;
+      }
 
-      // Créer un texte de test
-      const text = new PIXI.Text('Test PixiJS OK', {
-        fontFamily: 'Arial',
-        fontSize: 20,
-        fill: 0xFFFFFF
-      });
-      text.x = 200 - text.width / 2;
-      text.y = 150 - text.height / 2;
-      app.stage.addChild(text);
-
-      // Créer un cercle coloré
+      // Ajouter au DOM
+      containerRef.current.appendChild(canvasElement);
+      
+      // Créer un cercle simple
       const circle = new PIXI.Graphics();
       circle.beginFill(0x00FF88);
       circle.drawCircle(0, 0, 30);
@@ -49,27 +78,56 @@ const SimpleTest = () => {
       circle.y = 150;
       app.stage.addChild(circle);
 
-      console.log('✅ SimpleTest: Initialisation réussie');
+      setStatus('✅ Test réussi ! Cercle vert affiché');
+      console.log('✅ Test PIXI réussi');
 
     } catch (err) {
-      console.error('❌ SimpleTest: Erreur lors de l\'initialisation:', err);
+      const errorMsg = `Erreur lors du test PIXI: ${err.message}`;
+      setError(errorMsg);
+      console.error('❌ Erreur test PIXI:', err);
     }
-
-    return () => {
-      if (appRef.current) {
-        appRef.current.destroy(true, { children: true });
-      }
-    };
-  }, []);
+  };
 
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h6" gutterBottom>
         Test Simple PixiJS
       </Typography>
-      <Box ref={containerRef} sx={{ border: '1px solid #ccc', borderRadius: 1 }} />
+      
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
+          Statut: {status}
+        </Typography>
+        
+        {error && (
+          <Typography variant="body2" sx={{ color: 'error.main', mb: 1 }}>
+            Erreur: {error}
+          </Typography>
+        )}
+        
+        {pixiLoaded && (
+          <Button 
+            variant="contained" 
+            onClick={testPixiApp}
+            sx={{ mb: 2 }}
+          >
+            Tester PIXI
+          </Button>
+        )}
+      </Box>
+
+      <Box 
+        ref={containerRef} 
+        sx={{ 
+          border: '1px solid #ccc', 
+          borderRadius: 1, 
+          minHeight: '300px',
+          backgroundColor: '#f5f5f5'
+        }} 
+      />
+      
       <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
-        Si vous voyez un cercle vert et du texte, PixiJS fonctionne correctement.
+        Vérifiez la console pour les logs détaillés.
       </Typography>
     </Box>
   );

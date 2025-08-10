@@ -21,7 +21,13 @@ const EffectsDemo = ({ width = 800, height = 600 }) => {
     const pixiConfig = performanceManager.getPixiConfig(width, height);
     const app = new PIXI.Application(pixiConfig);
     appRef.current = app;
-    containerRef.current.appendChild(app.view);
+          // Utiliser app.canvas au lieu de app.view pour PixiJS v8
+      if (app.canvas) {
+        containerRef.current.appendChild(app.canvas);
+      } else {
+        console.error('❌ app.canvas est undefined');
+        return;
+      }
 
     // Initialiser les systèmes
     const particleSettings = performanceManager.getParticleSettings();
