@@ -4,7 +4,7 @@ import { Box, Button, Stack, Typography, Chip } from '@mui/material';
 import ParticleSystem from './ParticleSystem';
 import SpriteAtlas from './SpriteAtlas';
 import LightingSystem from './LightingSystem';
-import { usePerformanceManager } from './PerformanceManager';
+import PerformanceManager, { usePerformanceManager } from './PerformanceManager';
 import { SPRITE_CONFIG, SYMBOL_EFFECTS } from './spriteConfig';
 
 // Configuration du jeu

@@ -117,12 +117,23 @@ const TestGame = () => {
         });
         buttonText.x = 60;
         buttonText.y = 510;
+        // S'assurer que le texte n'intercepte pas les clics
+        buttonText.eventMode = 'none';
         app.stage.addChild(buttonText);
 
         // Interaction
         testButton.eventMode = 'static';
         testButton.cursor = 'pointer';
-        testButton.on('pointerdown', testParticles);
+        testButton.on('pointerdown', () => {
+          console.log('👉 Clic sur Test Particules');
+          try {
+            testParticles();
+            console.log('✅ Explosion de particules déclenchée');
+          } catch (e) {
+            console.error('❌ Erreur lors du déclenchement des particules:', e);
+            setError(e.message || String(e));
+          }
+        });
 
         // Animation loop
         const animate = () => {
