@@ -5,12 +5,15 @@ import { useStore } from '../store';
 import SpinLauncher from '../components/optimized/SpinLauncher';
 import { gamificationService } from '../services/gamificationService';
 import InventoryGrid from '../components/optimized/InventoryGrid';
+import MoneyCartRun from '../components/optimized/MoneyCartRun';
 
 const GameCenter = memo(() => {
   const { user, gamification, setGamification, getCurrentPlan } = useStore();
   const [catalog, setCatalog] = useState([]);
   const [shop, setShop] = useState([]);
   const [redeemCount, setRedeemCount] = useState(1);
+  const [showRun, setShowRun] = useState(false);
+  const [runPreview, setRunPreview] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -178,10 +181,14 @@ const GameCenter = memo(() => {
             const res = await gamificationService.runMiniGame(user.id);
             if (res?.gamification) setGamification(res.gamification);
             // Affichage compact des événements jusqu'à ce que le board visuel soit prêt
-            const ev = (res?.run?.events || []).map(e => `${e.step}:${e.symbol}${e.gain ? ` +${e.gain}`: ''}`).join(' | ');
-            alert(`Run: ${ev}\nTotal: +${res?.run?.pointsEarned || 0} pts${res?.run?.bonusSpin ? ' (+1 spin)' : ''}`);
+            if (res?.run) {
+              setShowRun(true);
+              setRunPreview(res.run);
+            }
           } catch (_) {}
         }}>Lancer un run</Button>
+
+        <MoneyCartRun open={showRun} onClose={() => setShowRun(false)} run={runPreview} />
       </Paper>
     </Box>
   );
