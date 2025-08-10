@@ -44,11 +44,14 @@ const SYMBOL_COLORS = {
   sniper: 0xDC143C
 };
 
-const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
+const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete, events: inputEvents = [] }) => {
   const containerRef = useRef(null);
   const appRef = useRef(null);
   const particleSystemRef = useRef(null);
   const spriteAtlasRef = useRef(null);
+  const lightingSystemRef = useRef(null);
+  const performanceManagerRef = useRef(null);
+  const eventsRef = useRef({ events: [], idx: 0 });
   const gameStateRef = useRef({
     currentSpin: 0,
     totalSpins: GAME_CONFIG.spinsPerRun,
@@ -69,6 +72,10 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
   });
   const [ready, setReady] = useState(false);
   const [loadStatus, setLoadStatus] = useState('');
+
+  // Flags FX (peuvent être activés après stabilisation)
+  const ENABLE_BG_PARTICLES = false;
+  const ENABLE_LIGHTING = false;
 
   // Initialisation du board
   const initializeBoard = useCallback(() => {
@@ -760,7 +767,8 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
         try {
           const performanceManager = new PerformanceManager();
           setLoadStatus('Gestionnaire de performance OK');
-        const pixiConfig = performanceManager.getPixiConfig(width, height);
+          performanceManagerRef.current = performanceManager;
+          const pixiConfig = performanceManager.getPixiConfig(width, height);
         } catch (e) {
           console.warn('PerformanceManager indisponible:', e);
           setLoadStatus('PerformanceManager indisponible (fallback)');
@@ -771,31 +779,25 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
         spriteAtlasRef.current = new SpriteAtlas(app, SPRITE_CONFIG.texturePath, SPRITE_CONFIG.frameData);
         
         // Initialiser le système d'éclairage
-        setLoadStatus('Initialisation de l\'éclairage...');
-        const lightingSystem = new LightingSystem(app, {
-          ambientLight: 0x404040,
-          ambientIntensity: 0.3
-        });
+        if (ENABLE_LIGHTING) {
+          setLoadStatus('Initialisation de l\'éclairage...');
+          const lightingSystem = new LightingSystem(app, {
+            ambientLight: 0x404040,
+            ambientIntensity: 0.3
+          });
+          lightingSystemRef.current = lightingSystem;
+        }
         
         // Créer des lumières dynamiques
-        const mainLight = lightingSystem.createPointLight(width / 2, height / 2, 0xFFFFCC, 0.6, 150, {
-          pulse: true,
-          pulseSpeed: 0.03
-        });
-        
-        // Lumières d'accentuation pour les coins
-        lightingSystem.createPointLight(50, 50, 0x00FFFF, 0.4, 80, {
-          flicker: true,
-          flickerSpeed: 0.15
-        });
-        
-        lightingSystem.createPointLight(width - 50, height - 50, 0xFF69B4, 0.4, 80, {
-          flicker: true,
-          flickerSpeed: 0.12
-        });
-        
-        // Effet de lueur ambiante
-        lightingSystem.createGlow(width / 2, height / 2, 0x00FFFF, 0.3, 100);
+        if (ENABLE_LIGHTING && lightingSystemRef.current) {
+          lightingSystemRef.current.createPointLight(width / 2, height / 2, 0xFFFFCC, 0.6, 150, {
+            pulse: true,
+            pulseSpeed: 0.03
+          });
+          lightingSystemRef.current.createPointLight(50, 50, 0x00FFFF, 0.4, 80, { flicker: true, flickerSpeed: 0.15 });
+          lightingSystemRef.current.createPointLight(width - 50, height - 50, 0xFF69B4, 0.4, 80, { flicker: true, flickerSpeed: 0.12 });
+          lightingSystemRef.current.createGlow(width / 2, height / 2, 0x00FFFF, 0.3, 100);
+        }
 
         // Fond animé
         setLoadStatus('Création du fond...');
@@ -805,31 +807,32 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
         bg.alpha = 0.7;
         app.stage.addChild(bg);
 
-        // Particules de fond (utiliser Container au lieu de ParticleContainer)
-        setLoadStatus('Création des particules de fond...');
-        const particles = new PIXI.Container();
-        app.stage.addChild(particles);
-
-        for (let i = 0; i < 50; i++) {
-          const particle = PIXI.Sprite.from('/images/game/symbol-bonus.svg');
-          particle.width = 8;
-          particle.height = 8;
-          particle.x = Math.random() * width;
-          particle.y = Math.random() * height;
-          particle.alpha = 0.3;
-          particles.addChild(particle);
+        // Particules de fond désactivées en mode sûr
+        let particles = null;
+        if (ENABLE_BG_PARTICLES) {
+          setLoadStatus('Création des particules de fond...');
+          particles = new PIXI.Container();
+          app.stage.addChild(particles);
+          for (let i = 0; i < 50; i++) {
+            const particle = PIXI.Sprite.from('/images/game/symbol-bonus.svg');
+            particle.width = 8;
+            particle.height = 8;
+            particle.x = Math.random() * width;
+            particle.y = Math.random() * height;
+            particle.alpha = 0.3;
+            particles.addChild(particle);
+          }
         }
 
         // Animation des particules
         app.ticker.add((delta) => {
-          particles.children.forEach((particle, i) => {
-            particle.y -= 0.5;
-            particle.alpha = 0.3 + Math.sin(Date.now() * 0.001 + i) * 0.2;
-            
-            if (particle.y < -10) {
-              particle.y = height + 10;
-            }
-          });
+          if (particles) {
+            particles.children.forEach((particle, i) => {
+              particle.y -= 0.5;
+              particle.alpha = 0.3 + Math.sin(Date.now() * 0.001 + i) * 0.2;
+              if (particle.y < -10) particle.y = height + 10;
+            });
+          }
           
           // Mettre à jour le système de particules
           if (particleSystemRef.current) {
@@ -837,8 +840,8 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
           }
           
           // Mettre à jour le système d'éclairage
-          if (lightingSystem) {
-            lightingSystem.update(delta);
+          if (ENABLE_LIGHTING && lightingSystemRef.current) {
+            lightingSystemRef.current.update(delta);
           }
         });
 
@@ -902,8 +905,8 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
         startBtn.beginFill(0x00FF00, 0.8);
         startBtn.drawRoundedRect(10, 10, 100, 40, 8);
         startBtn.endFill();
-        startBtn.interactive = true;
-        startBtn.buttonMode = true;
+        startBtn.eventMode = 'static';
+        startBtn.cursor = 'pointer';
         startBtn.on('pointerdown', () => startGame(app));
         uiContainer.addChild(startBtn);
 
@@ -921,8 +924,8 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
         pauseBtn.beginFill(0xFFFF00, 0.8);
         pauseBtn.drawRoundedRect(120, 10, 100, 40, 8);
         pauseBtn.endFill();
-        pauseBtn.interactive = true;
-        pauseBtn.buttonMode = true;
+        pauseBtn.eventMode = 'static';
+        pauseBtn.cursor = 'pointer';
         pauseBtn.on('pointerdown', () => togglePause(app));
         uiContainer.addChild(pauseBtn);
 
@@ -977,11 +980,13 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
           if (spriteAtlasRef.current) {
             spriteAtlasRef.current.destroy();
           }
-          if (lightingSystem) {
-            lightingSystem.destroy();
+          if (lightingSystemRef.current) {
+            lightingSystemRef.current.destroy();
+            lightingSystemRef.current = null;
           }
-          if (performanceManager) {
-            performanceManager.destroy();
+          if (performanceManagerRef.current) {
+            performanceManagerRef.current.destroy();
+            performanceManagerRef.current = null;
           }
           app.destroy(true, { children: true });
         };
