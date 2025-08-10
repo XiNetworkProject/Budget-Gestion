@@ -7,13 +7,9 @@ class ParticleSystem {
     this.particles = [];
     this.emitters = [];
     
-    this.particleContainer = new PIXI.ParticleContainer(maxParticles, {
-      scale: true,
-      position: true,
-      alpha: true,
-      tint: true,
-      rotation: true
-    });
+    // Dans PixiJS v8, on utilise un Container simple au lieu de ParticleContainer
+    // car ParticleContainer a des limitations et une API différente
+    this.particleContainer = new PIXI.Container();
     
     app.stage.addChild(this.particleContainer);
   }
@@ -70,6 +66,7 @@ class ParticleSystem {
         trail: trail
       });
       
+      // Utiliser addChild pour un Container simple
       this.particleContainer.addChild(particle);
       
       // Créer une traînée si demandé
@@ -100,47 +97,31 @@ class ParticleSystem {
       maxLife: 20,
       scale: 0.8,
       scaleSpeed: -0.05,
-      gravity: 0.05
+      gravity: 0.05,
+      originalColor: color,
+      sparkle: false,
+      trail: false
     });
     
     this.particleContainer.addChild(trail);
   }
 
-  // Obtenir une couleur aléatoire pour le scintillement
+  // Générer une couleur aléatoire
   getRandomColor() {
-    const colors = [0xFFD700, 0xFF69B4, 0x00FFFF, 0xFF4500, 0x32CD32, 0xFF8C00];
+    const colors = [0xFF0000, 0x00FF00, 0x0000FF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFF8800, 0x8800FF];
     return colors[Math.floor(Math.random() * colors.length)];
   }
 
   // Créer une traînée de particules
   createTrail(x, y, color = 0x00FFFF, count = 5) {
     for (let i = 0; i < count; i++) {
-      const particle = new PIXI.Sprite(PIXI.Texture.WHITE);
-      particle.width = 3;
-      particle.height = 3;
-      particle.tint = color;
-      particle.x = x + (Math.random() - 0.5) * 20;
-      particle.y = y + (Math.random() - 0.5) * 20;
-      particle.alpha = 0.8;
-      particle.scale.set(0.5);
-      
-      this.particles.push({
-        sprite: particle,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        rotation: 0,
-        rotationSpeed: 0,
-        life: 30,
-        maxLife: 30,
-        scale: 0.5,
-        scaleSpeed: -0.03
-      });
-      
-      this.particleContainer.addChild(particle);
+      setTimeout(() => {
+        this.createTrailParticle(x, y, color, 3);
+      }, i * 50);
     }
   }
 
-  // Créer un effet de collecte
+  // Créer un effet de collecte avec animation
   createCollectEffect(x, y, targetX, targetY, color = 0xFFD700) {
     const particle = new PIXI.Sprite(PIXI.Texture.WHITE);
     particle.width = 6;
@@ -149,54 +130,112 @@ class ParticleSystem {
     particle.x = x;
     particle.y = y;
     particle.alpha = 1;
-    particle.scale.set(1);
-    
-    // Animation vers la cible
-    const dx = targetX - x;
-    const dy = targetY - y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    const speed = 3;
-    const vx = (dx / distance) * speed;
-    const vy = (dy / distance) * speed;
     
     this.particles.push({
       sprite: particle,
-      vx,
-      vy,
+      vx: (targetX - x) * 0.02,
+      vy: (targetY - y) * 0.02,
       rotation: 0,
       rotationSpeed: 0.1,
-      life: Math.ceil(distance / speed),
-      maxLife: Math.ceil(distance / speed),
+      life: 120,
+      maxLife: 120,
       scale: 1,
       scaleSpeed: 0,
+      gravity: 0,
+      originalColor: color,
+      sparkle: false,
+      trail: false,
+      isCollecting: true,
       targetX,
-      targetY,
-      isCollecting: true
+      targetY
     });
     
     this.particleContainer.addChild(particle);
   }
 
-  // Créer un effet de flash
+  // Créer un flash lumineux
   createFlash(x, y, width, height, color = 0xFFFFFF) {
     const flash = new PIXI.Graphics();
-    flash.beginFill(color, 0.8);
-    flash.drawRect(0, 0, width, height);
+    flash.beginFill(color);
+    flash.drawRect(-width/2, -height/2, width, height);
     flash.endFill();
     flash.x = x;
     flash.y = y;
-    flash.alpha = 1;
+    flash.alpha = 0.8;
     
-    this.app.stage.addChild(flash);
+    this.particleContainer.addChild(flash);
     
-    // Animation de fade
+    let alpha = 0.8;
+    const animate = () => {
+      alpha -= 0.1;
+      flash.alpha = alpha;
+      
+      if (alpha <= 0) {
+        this.particleContainer.removeChild(flash);
+        this.app.ticker.remove(animate);
+      }
+    };
+    
+    this.app.ticker.add(animate);
+  }
+
+  // Créer une onde de choc
+  createWave(x, y, radius, color = 0x00FFFF, options = {}) {
+    const {
+      duration = 60,
+      thickness = 3,
+      expandSpeed = 2
+    } = options;
+    
+    const wave = new PIXI.Graphics();
+    wave.lineStyle(thickness, color, 1);
+    wave.drawCircle(0, 0, 0);
+    wave.x = x;
+    wave.y = y;
+    
+    this.particleContainer.addChild(wave);
+    
+    let currentRadius = 0;
+    let life = duration;
+    
+    const animate = () => {
+      life--;
+      currentRadius += expandSpeed;
+      
+      wave.clear();
+      wave.lineStyle(thickness, color, life / duration);
+      wave.drawCircle(0, 0, currentRadius);
+      
+      if (life <= 0) {
+        this.particleContainer.removeChild(wave);
+        this.app.ticker.remove(animate);
+      }
+    };
+    
+    this.app.ticker.add(animate);
+  }
+
+  // Créer un éclair
+  createLightning(x, y, targetX, targetY, color = 0xFFFF00) {
+    const lightning = new PIXI.Graphics();
+    lightning.lineStyle(2, color, 1);
+    
+    const path = this.generateLightningPath(x, y, targetX, targetY);
+    lightning.moveTo(path[0].x, path[0].y);
+    
+    for (let i = 1; i < path.length; i++) {
+      lightning.lineTo(path[i].x, path[i].y);
+    }
+    
+    this.particleContainer.addChild(lightning);
+    
     let life = 10;
     const animate = () => {
       life--;
-      flash.alpha = life / 10;
+      lightning.alpha = life / 10;
       
       if (life <= 0) {
-        this.app.stage.removeChild(flash);
+        this.particleContainer.removeChild(lightning);
         this.app.ticker.remove(animate);
       }
     };
@@ -204,133 +243,50 @@ class ParticleSystem {
     this.app.ticker.add(animate);
   }
 
-  // Créer un effet de vague avancée avec plusieurs anneaux
-  createWave(x, y, radius, color = 0x00FFFF, options = {}) {
-    const {
-      rings = 3,
-      thickness = 2,
-      duration = 30,
-      expandSpeed = 2
-    } = options;
-
-    for (let i = 0; i < rings; i++) {
-      const wave = new PIXI.Graphics();
-      wave.lineStyle(thickness, color, 0.8 - (i * 0.2));
-      wave.drawCircle(0, 0, radius);
-      wave.x = x;
-      wave.y = y;
-      wave.alpha = 1;
-      
-      this.app.stage.addChild(wave);
-      
-      let life = duration;
-      let delay = i * 5; // Délai entre les anneaux
-      
-      const animate = () => {
-        if (delay > 0) {
-          delay--;
-          return;
-        }
-        
-        life--;
-        const progress = 1 - (life / duration);
-        wave.scale.set(1 + progress * expandSpeed);
-        wave.alpha = 1 - progress;
-        
-        if (life <= 0) {
-          this.app.stage.removeChild(wave);
-          this.app.ticker.remove(animate);
-        }
-      };
-      
-      this.app.ticker.add(animate);
-    }
-  }
-
-  // Créer un effet de foudre
-  createLightning(x, y, targetX, targetY, color = 0xFFFF00) {
-    const lightning = new PIXI.Graphics();
-    lightning.lineStyle(4, color, 1);
-    
-    // Créer un chemin de foudre zigzag
-    const points = this.generateLightningPath(x, y, targetX, targetY);
-    lightning.moveTo(points[0].x, points[0].y);
-    
-    for (let i = 1; i < points.length; i++) {
-      lightning.lineTo(points[i].x, points[i].y);
-    }
-    
-    this.app.stage.addChild(lightning);
-    
-    // Animation de clignotement
-    let life = 15;
-    let visible = true;
-    
-    const animate = () => {
-      life--;
-      
-      if (life % 3 === 0) {
-        visible = !visible;
-        lightning.alpha = visible ? 1 : 0.3;
-      }
-      
-      if (life <= 0) {
-        this.app.stage.removeChild(lightning);
-        this.app.ticker.remove(animate);
-      }
-    };
-    
-    this.app.ticker.add(animate);
-  }
-
-  // Générer un chemin de foudre zigzag
+  // Générer un chemin d'éclair avec des zigzags
   generateLightningPath(startX, startY, endX, endY) {
-    const points = [{ x: startX, y: startY }];
+    const path = [{ x: startX, y: startY }];
     const segments = 8;
     
     for (let i = 1; i < segments; i++) {
-      const progress = i / segments;
-      const x = startX + (endX - startX) * progress;
-      const y = startY + (endY - startY) * progress;
+      const t = i / segments;
+      const x = startX + (endX - startX) * t;
+      const y = startY + (endY - startY) * t;
       
-      // Ajouter de l'aléatoire pour l'effet zigzag
+      // Ajouter de l'aléatoire pour l'effet d'éclair
       const offset = 20;
       const randomX = x + (Math.random() - 0.5) * offset;
       const randomY = y + (Math.random() - 0.5) * offset;
       
-      points.push({ x: randomX, y: randomY });
+      path.push({ x: randomX, y: randomY });
     }
     
-    points.push({ x: endX, y: endY });
-    return points;
+    path.push({ x: endX, y: endY });
+    return path;
   }
 
-  // Créer un effet de vortex
+  // Créer un vortex
   createVortex(x, y, radius, color = 0xFF69B4, duration = 60) {
-    const vortex = new PIXI.Container();
+    const vortex = new PIXI.Graphics();
+    vortex.lineStyle(2, color, 1);
+    
+    // Créer un motif de vortex
+    for (let i = 0; i < 8; i++) {
+      const angle = (i / 8) * Math.PI * 2;
+      const startX = Math.cos(angle) * (radius * 0.3);
+      const startY = Math.sin(angle) * (radius * 0.3);
+      const endX = Math.cos(angle) * radius;
+      const endY = Math.sin(angle) * radius;
+      
+      vortex.moveTo(startX, startY);
+      vortex.lineTo(endX, endY);
+    }
+    
     vortex.x = x;
     vortex.y = y;
     
-    // Créer plusieurs particules en spirale
-    for (let i = 0; i < 30; i++) {
-      const particle = new PIXI.Sprite(PIXI.Texture.WHITE);
-      particle.width = 3;
-      particle.height = 3;
-      particle.tint = color;
-      particle.alpha = 0.8;
-      
-      // Position initiale en spirale
-      const angle = (Math.PI * 2 * i) / 30;
-      const distance = radius * (i / 30);
-      particle.x = Math.cos(angle) * distance;
-      particle.y = Math.sin(angle) * distance;
-      
-      vortex.addChild(particle);
-    }
+    this.particleContainer.addChild(vortex);
     
-    this.app.stage.addChild(vortex);
-    
-    // Animation de rotation
     let life = duration;
     let rotation = 0;
     
@@ -343,7 +299,7 @@ class ParticleSystem {
       vortex.alpha = life / duration;
       
       if (life <= 0) {
-        this.app.stage.removeChild(vortex);
+        this.particleContainer.removeChild(vortex);
         this.app.ticker.remove(animate);
       }
     };
