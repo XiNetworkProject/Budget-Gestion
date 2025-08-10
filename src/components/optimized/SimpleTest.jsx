@@ -30,7 +30,7 @@ const SimpleTest = () => {
     }
   }, []);
 
-  const testPixiApp = () => {
+  const testPixiApp = async () => {
     if (!containerRef.current) {
       setError('Container non disponible');
       return;
@@ -40,46 +40,55 @@ const SimpleTest = () => {
       setStatus('Création de l\'application PIXI...');
       console.log('🚀 Création de l\'application PIXI...');
 
-      // Créer une application très simple
+      // Créer une application avec la configuration correcte pour PixiJS v8
       const app = new PIXI.Application({
         width: 400,
         height: 300,
-        backgroundColor: 0x2a2a4e
+        backgroundColor: 0x2a2a4e,
+        antialias: true,
+        resolution: window.devicePixelRatio || 1,
+        autoDensity: true
       });
 
       console.log('✅ Application créée:', app);
       console.log('Propriétés de app:', Object.keys(app));
+      console.log('app.view:', app.view);
+      console.log('app.canvas:', app.canvas);
+      console.log('app.screen:', app.screen);
 
-      // Essayer d'ajouter au DOM
-      let canvasElement = null;
-      
-      if (app.canvas) {
-        console.log('✅ Utilisation de app.canvas');
-        canvasElement = app.canvas;
-      } else if (app.view) {
-        console.log('✅ Utilisation de app.view');
-        canvasElement = app.view;
+      // Attendre que l'application soit prête
+      await app.init();
+
+      // Dans PixiJS v8, on utilise app.view qui est un HTMLCanvasElement
+      if (app.view && app.view instanceof HTMLCanvasElement) {
+        console.log('✅ Utilisation de app.view (HTMLCanvasElement)');
+        
+        // Nettoyer le container avant d'ajouter
+        while (containerRef.current.firstChild) {
+          containerRef.current.removeChild(containerRef.current.firstChild);
+        }
+        
+        // Ajouter le canvas au DOM
+        containerRef.current.appendChild(app.view);
+        
+        // Créer un cercle simple
+        const circle = new PIXI.Graphics();
+        circle.beginFill(0x00FF88);
+        circle.drawCircle(0, 0, 30);
+        circle.endFill();
+        circle.x = 200;
+        circle.y = 150;
+        app.stage.addChild(circle);
+
+        setStatus('✅ Test réussi ! Cercle vert affiché');
+        console.log('✅ Test PIXI réussi');
       } else {
-        console.log('❌ Ni canvas ni view trouvés');
-        console.log('Toutes les propriétés:', app);
-        setError('Impossible de trouver l\'élément canvas/view');
+        console.log('❌ app.view n\'est pas un HTMLCanvasElement valide');
+        console.log('Type de app.view:', typeof app.view);
+        console.log('app.view:', app.view);
+        setError('app.view n\'est pas un canvas valide');
         return;
       }
-
-      // Ajouter au DOM
-      containerRef.current.appendChild(canvasElement);
-      
-      // Créer un cercle simple
-      const circle = new PIXI.Graphics();
-      circle.beginFill(0x00FF88);
-      circle.drawCircle(0, 0, 30);
-      circle.endFill();
-      circle.x = 200;
-      circle.y = 150;
-      app.stage.addChild(circle);
-
-      setStatus('✅ Test réussi ! Cercle vert affiché');
-      console.log('✅ Test PIXI réussi');
 
     } catch (err) {
       const errorMsg = `Erreur lors du test PIXI: ${err.message}`;
