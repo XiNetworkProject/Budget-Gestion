@@ -3,11 +3,11 @@ import { Box, Dialog, DialogTitle, DialogContent, DialogActions, Button, Typogra
 import { Savings, Bolt, Brush, Shield, Casino, PlayArrow, Pause, Replay } from '@mui/icons-material';
 
 const symbolMap = {
-  saver: { icon: <Savings sx={{ color: '#4caf50' }} />, color: '#4caf50', label: 'Épargneur' },
-  optimizer: { icon: <Bolt sx={{ color: '#ffb300' }} />, color: '#ffb300', label: 'Optimiseur' },
-  collector: { icon: <Brush sx={{ color: '#80cbc4' }} />, color: '#80cbc4', label: 'Collecteur' },
-  defender: { icon: <Shield sx={{ color: '#90caf9' }} />, color: '#90caf9', label: 'Défenseur' },
-  bonusSpin: { icon: <Casino sx={{ color: '#e91e63' }} />, color: '#e91e63', label: 'Bonus spin' },
+  saver: { icon: <Box component="img" src="/images/game/symbol-saver.svg" alt="saver" sx={{ width: 36, height: 36 }} />, color: '#4caf50', label: 'Épargneur' },
+  optimizer: { icon: <Box component="img" src="/images/game/symbol-optimizer.svg" alt="optimizer" sx={{ width: 36, height: 36 }} />, color: '#ffb300', label: 'Optimiseur' },
+  collector: { icon: <Box component="img" src="/images/game/symbol-collector.svg" alt="collector" sx={{ width: 36, height: 36 }} />, color: '#80cbc4', label: 'Collecteur' },
+  defender: { icon: <Box component="img" src="/images/game/symbol-defender.svg" alt="defender" sx={{ width: 36, height: 36 }} />, color: '#90caf9', label: 'Défenseur' },
+  bonusSpin: { icon: <Box component="img" src="/images/game/symbol-bonus.svg" alt="bonus" sx={{ width: 36, height: 36 }} />, color: '#e91e63', label: 'Bonus spin' },
 };
 
 const Tile = memo(({ active, symbol }) => {
