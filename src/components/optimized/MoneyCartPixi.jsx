@@ -972,7 +972,7 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
 
     // Lancer l'initialisation
     initGame();
-  }, [width, height, initializeBoard, startGame, togglePause]);
+  }, [width, height, initializeBoard]);
 
   return (
     <Box sx={{ width, height, position: 'relative' }}>
