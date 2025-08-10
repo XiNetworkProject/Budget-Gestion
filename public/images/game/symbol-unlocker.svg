@@ -1,0 +1,32 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="unlockerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Cercle de fond -->
+  <circle cx="32" cy="32" r="28" fill="url(#unlockerGrad)" stroke="#FF8C00" stroke-width="2" filter="url(#glow)"/>
+  
+  <!-- Clé -->
+  <path d="M20 32 L20 24 Q20 18 26 18 L38 18 Q44 18 44 24 L44 28 L48 28 L48 32 L44 32 L44 36 Q44 42 38 42 L26 42 Q20 42 20 36 Z" 
+        fill="#FFD700" stroke="#FF8C00" stroke-width="1.5"/>
+  
+  <!-- Anneau de la clé -->
+  <circle cx="32" cy="30" r="4" fill="none" stroke="#FF8C00" stroke-width="2"/>
+  
+  <!-- Détails de la clé -->
+  <rect x="26" y="22" width="12" height="2" fill="#FF8C00" rx="1"/>
+  <rect x="28" y="26" width="8" height="2" fill="#FF8C00" rx="1"/>
+  
+  <!-- Éclat -->
+  <circle cx="24" cy="24" r="3" fill="#FFFFFF" opacity="0.6"/>
+</svg>

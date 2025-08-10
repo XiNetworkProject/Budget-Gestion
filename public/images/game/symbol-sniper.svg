@@ -1,0 +1,43 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sniperGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF4500;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#DC143C;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Cercle de fond -->
+  <circle cx="32" cy="32" r="28" fill="url(#sniperGrad)" stroke="#DC143C" stroke-width="2" filter="url(#glow)"/>
+  
+  <!-- Viseur externe -->
+  <circle cx="32" cy="32" r="20" fill="none" stroke="#FF4500" stroke-width="2"/>
+  <circle cx="32" cy="32" r="16" fill="none" stroke="#FF4500" stroke-width="1.5"/>
+  <circle cx="32" cy="32" r="12" fill="none" stroke="#FF4500" stroke-width="1"/>
+  
+  <!-- Croix du viseur -->
+  <line x1="32" y1="12" x2="32" y2="20" stroke="#FF4500" stroke-width="2"/>
+  <line x1="32" y1="44" x2="32" y2="52" stroke="#FF4500" stroke-width="2"/>
+  <line x1="12" y1="32" x2="20" y2="32" stroke="#FF4500" stroke-width="2"/>
+  <line x1="44" y1="32" x2="52" y2="32" stroke="#FF4500" stroke-width="2"/>
+  
+  <!-- Cible centrale -->
+  <circle cx="32" cy="32" r="4" fill="#FF4500"/>
+  <circle cx="32" cy="32" r="2" fill="#FFFFFF"/>
+  <circle cx="32" cy="32" r="1" fill="#FF4500"/>
+  
+  <!-- Indicateurs de direction -->
+  <polygon points="32,8 28,16 36,16" fill="#FF4500"/>
+  <polygon points="32,56 28,48 36,48" fill="#FF4500"/>
+  <polygon points="8,32 16,28 16,36" fill="#FF4500"/>
+  <polygon points="56,32 48,28 48,36" fill="#FF4500"/>
+  
+  <!-- Éclat -->
+  <circle cx="24" cy="24" r="3" fill="#FFFFFF" opacity="0.6"/>
+</svg>
