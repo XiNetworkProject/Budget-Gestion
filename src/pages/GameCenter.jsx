@@ -6,6 +6,7 @@ import SpinLauncher from '../components/optimized/SpinLauncher';
 import { gamificationService } from '../services/gamificationService';
 import InventoryGrid from '../components/optimized/InventoryGrid';
 import MoneyCartRun from '../components/optimized/MoneyCartRun';
+import MoneyCartPixi from '../components/optimized/MoneyCartPixi';
 
 const GameCenter = memo(() => {
   const { user, gamification, setGamification, getCurrentPlan } = useStore();
@@ -189,6 +190,12 @@ const GameCenter = memo(() => {
         }}>Lancer un run</Button>
 
         <MoneyCartRun open={showRun} onClose={() => setShowRun(false)} run={runPreview} />
+        {/* Aperçu rendu WebGL (expérimental) */}
+        {runPreview && (
+          <Box sx={{ mt: 2 }}>
+            <MoneyCartPixi events={runPreview.events || []} />
+          </Box>
+        )}
       </Paper>
     </Box>
   );
