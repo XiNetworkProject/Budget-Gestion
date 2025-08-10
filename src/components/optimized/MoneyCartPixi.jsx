@@ -718,21 +718,32 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const app = new PIXI.Application({ 
-      width, 
-      height, 
-      backgroundAlpha: 0, 
-      antialias: true,
-      resolution: window.devicePixelRatio || 1
-    });
-    appRef.current = app;
-          // Utiliser app.canvas au lieu de app.view pour PixiJS v8
-      if (app.canvas) {
-        containerRef.current.appendChild(app.canvas);
-      } else {
-        console.error('❌ app.canvas est undefined');
-        return;
-      }
+    const initGame = async () => {
+      try {
+        const app = new PIXI.Application({ 
+          width, 
+          height, 
+          backgroundAlpha: 0, 
+          antialias: true,
+          resolution: window.devicePixelRatio || 1,
+          autoDensity: true
+        });
+        appRef.current = app;
+        
+        // Attendre l'initialisation de PixiJS v8
+        await app.init();
+        
+        // Utiliser app.view pour PixiJS v8
+        if (app.view && app.view instanceof HTMLCanvasElement) {
+          // Nettoyer le conteneur avant d'ajouter le nouveau canvas
+          while (containerRef.current.firstChild) {
+            containerRef.current.removeChild(containerRef.current.firstChild);
+          }
+          containerRef.current.appendChild(app.view);
+        } else {
+          console.error('❌ app.view est undefined ou invalide');
+          return;
+        }
 
     // Initialiser le système de particules
     particleSystemRef.current = new ParticleSystem(app, 200);
@@ -777,12 +788,8 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
     bg.alpha = 0.7;
     app.stage.addChild(bg);
 
-    // Particules de fond
-    const particles = new PIXI.ParticleContainer(100, {
-      scale: true,
-      position: true,
-      alpha: true
-    });
+    // Particules de fond (utiliser Container au lieu de ParticleContainer)
+    const particles = new PIXI.Container();
     app.stage.addChild(particles);
 
     for (let i = 0; i < 50; i++) {
@@ -796,7 +803,7 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
     }
 
     // Animation des particules
-    app.ticker.add(() => {
+    app.ticker.add((delta) => {
       particles.children.forEach((particle, i) => {
         particle.y -= 0.5;
         particle.alpha = 0.3 + Math.sin(Date.now() * 0.001 + i) * 0.2;
@@ -957,6 +964,14 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
       }
       app.destroy(true, { children: true });
     };
+      } catch (error) {
+        console.error('❌ Erreur lors de l\'initialisation du jeu:', error);
+        setReady(false);
+      }
+    };
+
+    // Lancer l'initialisation
+    initGame();
   }, [width, height, initializeBoard, startGame, togglePause]);
 
   return (
