@@ -56,6 +56,7 @@ const MoneyCartRun = memo(({ open, onClose, run }) => {
   const [flickerSymbol, setFlickerSymbol] = useState(null);
   const [finished, setFinished] = useState(false);
   const [flash, setFlash] = useState(false);
+  const [board, setBoard] = useState(Array.from({ length: 12 }, () => ({ symbol: null, value: null })));
   const timerRef = useRef(null);
   const flickerRef = useRef(null);
 
@@ -63,8 +64,8 @@ const MoneyCartRun = memo(({ open, onClose, run }) => {
   const totalSteps = events.length || 0;
 
   const grid = useMemo(() => {
-    const rows = 3, cols = 4;
-    const cells = Array.from({ length: rows * cols }, (_, i) => ({ idx: i, symbol: null, active: false }));
+    const rows = 3, cols = 4; // 3 lignes x 4 colonnes como mock
+    const cells = Array.from({ length: rows * cols }, (_, i) => ({ idx: i, symbol: null, active: false, value: null }));
     return { rows, cols, cells };
   }, []);
 
@@ -103,6 +104,37 @@ const MoneyCartRun = memo(({ open, onClose, run }) => {
       if (flickerRef.current) clearInterval(flickerRef.current);
       setFlickerSymbol(null);
       // Appliquer effet
+      // Mettre à jour le board persistant basique
+      setBoard((prev) => {
+        const next = [...prev];
+        const centerIdx = Math.floor(next.length / 2);
+        const base = (stepIndex % 4);
+        const rowStart = centerIdx - 2; // rangée centrale
+        const revealIdxs = [rowStart + base, rowStart + ((base + 3) % 4), rowStart + ((base + 1) % 4)];
+        revealIdxs.forEach((ri, k) => {
+          const val = k === 0 ? (ev?.gain || Math.floor(1 + Math.random() * 20)) : null;
+          next[ri] = { symbol: ev.symbol, value: val ?? next[ri].value };
+        });
+        // Effets simples
+        if (ev.symbol === 'saver') {
+          const sum = next.reduce((s, c) => s + (Number(c.value) || 0), 0);
+          setTotalPoints((p) => p + Math.round(sum * currentMultiplier));
+        }
+        if (ev.symbol === 'optimizer') {
+          const ri = revealIdxs[0];
+          const v = Number(next[ri].value || 0);
+          next[ri].value = v * 2 || 2;
+          setCurrentMultiplier((m) => m * 2);
+        }
+        if (ev.symbol === 'collector') {
+          const ri = revealIdxs[0];
+          const neighbors = [ri - 1, ri + 1].filter((i) => i >= 0 && i < next.length);
+          const gain = neighbors.reduce((s, i) => s + (Number(next[i]?.value || 0)), 0);
+          setTotalPoints((p) => p + Math.round(gain * currentMultiplier));
+        }
+        if (ev.symbol === 'bonusSpin' && ev.bonus) setBonusSpin(true);
+        return next;
+      });
       if (ev.symbol === 'saver' && ev.gain) setTotalPoints((p) => p + ev.gain);
       if (ev.symbol === 'optimizer' && ev.multiplier) setCurrentMultiplier(ev.multiplier);
       if (ev.symbol === 'bonusSpin' && ev.bonus) setBonusSpin(true);
