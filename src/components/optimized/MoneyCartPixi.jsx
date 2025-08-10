@@ -757,8 +757,14 @@ const MoneyCartPixi = memo(({ width = 800, height = 600, onGameComplete }) => {
 
         // Initialiser le gestionnaire de performance
         setLoadStatus('Initialisation du gestionnaire de performance...');
-        const performanceManager = new PerformanceManager();
+        try {
+          const performanceManager = new PerformanceManager();
+          setLoadStatus('Gestionnaire de performance OK');
         const pixiConfig = performanceManager.getPixiConfig(width, height);
+        } catch (e) {
+          console.warn('PerformanceManager indisponible:', e);
+          setLoadStatus('PerformanceManager indisponible (fallback)');
+        }
         
         // Initialiser le SpriteAtlas pour les symboles
         setLoadStatus('Chargement du SpriteAtlas...');

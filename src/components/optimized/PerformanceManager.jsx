@@ -15,43 +15,51 @@ class PerformanceManager {
 
   // Détecter les capacités de l'appareil
   detectDeviceCapabilities() {
-    const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    
-    if (!gl) {
-      return { webgl: false, maxTextureSize: 0, maxAnisotropy: 0 };
-    }
-
-    const maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-    const maxAnisotropy = gl.getExtension('EXT_texture_filter_anisotropic') ? 
-      gl.getParameter(gl.EXT_texture_filter_anisotropic.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
-    
-    // Détecter la mémoire GPU (approximative)
-    const memoryInfo = gl.getExtension('WEBGL_debug_renderer_info');
-    let memorySize = 0;
-    if (memoryInfo) {
-      const renderer = gl.getParameter(memoryInfo.UNMASKED_RENDERER_WEBGL);
-      if (renderer.includes('NVIDIA') || renderer.includes('AMD')) {
-        memorySize = 8000; // 8GB estimé
-      } else if (renderer.includes('Intel')) {
-        memorySize = 2000; // 2GB estimé
-      } else {
-        memorySize = 4000; // 4GB par défaut
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      
+      if (!gl) {
+        return { webgl: false, maxTextureSize: 0, maxAnisotropy: 0 };
       }
-    }
 
-    // Détecter la résolution de l'écran
-    const screenRes = window.screen.width * window.screen.height;
-    
-    return {
-      webgl: true,
-      maxTextureSize,
-      maxAnisotropy,
-      memorySize,
-      screenRes,
-      isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
-      devicePixelRatio: window.devicePixelRatio || 1
-    };
+      const maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE) || 0;
+      const anisotropyExt = gl.getExtension('EXT_texture_filter_anisotropic') 
+        || gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic') 
+        || gl.getExtension('MOZ_EXT_texture_filter_anisotropic');
+      const maxAnisotropy = anisotropyExt ? gl.getParameter(anisotropyExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT) : 0;
+      
+      // Détecter la mémoire GPU (approximative)
+      const memoryInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      let memorySize = 0;
+      if (memoryInfo) {
+        const renderer = gl.getParameter(memoryInfo.UNMASKED_RENDERER_WEBGL) || '';
+        if (typeof renderer === 'string') {
+          if (renderer.includes('NVIDIA') || renderer.includes('AMD')) {
+            memorySize = 8000; // 8GB estimé
+          } else if (renderer.includes('Intel')) {
+            memorySize = 2000; // 2GB estimé
+          } else {
+            memorySize = 4000; // 4GB par défaut
+          }
+        }
+      }
+
+      // Détecter la résolution de l'écran
+      const screenRes = (window?.screen?.width || 0) * (window?.screen?.height || 0);
+      
+      return {
+        webgl: true,
+        maxTextureSize,
+        maxAnisotropy,
+        memorySize,
+        screenRes,
+        isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || ''),
+        devicePixelRatio: window.devicePixelRatio || 1
+      };
+    } catch (_) {
+      return { webgl: false, maxTextureSize: 0, maxAnisotropy: 0, memorySize: 0, screenRes: 0, isMobile: false, devicePixelRatio: 1 };
+    }
   }
 
   // Obtenir les paramètres adaptatifs selon les capacités
