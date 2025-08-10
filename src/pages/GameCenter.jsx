@@ -218,9 +218,9 @@ const GameCenter = memo(() => {
 
         <MoneyCartRun open={showRun} onClose={() => setShowRun(false)} run={runPreview} />
         {/* Aperçu rendu WebGL (expérimental) */}
-        {runPreview && (
+        {runPreview && runPreview.events && runPreview.events.length > 0 && (
           <Box sx={{ mt: 2 }}>
-            <MoneyCartPixi events={runPreview.events || []} />
+            <MoneyCartPixi events={runPreview.events} />
           </Box>
         )}
       </Paper>
