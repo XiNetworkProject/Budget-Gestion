@@ -57,21 +57,21 @@ const MoneyCartGame = () => {
     setTimeout(() => setShowToast(false), ms);
   };
 
-  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
   const rnd = {
     next: () => Math.random(),
-    int: (a, b) => Math.floor(Math.random() * (b - a + 1)) + a,
-    pick: (a) => a[Math.floor(Math.random() * a.length)]
+    int: (min, max) => Math.floor(Math.random() * (max - min + 1)) + min,
+    pick: (array) => array[Math.floor(Math.random() * array.length)]
   };
 
   const weightedPick = (table) => {
     const entries = Object.entries(table);
-    const sum = entries.reduce((a, [, w]) => a + w, 0);
-    let r = Math.random() * sum;
-    for (const [k, w] of entries) {
-      r -= w;
-      if (r < 0) return k;
+    const sum = entries.reduce((acc, [, weight]) => acc + weight, 0);
+    let randomValue = Math.random() * sum;
+    for (const [key, weight] of entries) {
+      randomValue -= weight;
+      if (randomValue < 0) return key;
     }
     return entries[0][0];
   };
@@ -85,9 +85,9 @@ const MoneyCartGame = () => {
   };
 
   const pickNRandom = (arr, n) => {
-    const a = arr.slice();
-    shuffleInPlace(a);
-    return a.slice(0, Math.min(n, a.length));
+    const arrayCopy = arr.slice();
+    shuffleInPlace(arrayCopy);
+    return arrayCopy.slice(0, Math.min(n, arrayCopy.length));
   };
 
   // Helpers robustesse tween/destroy
@@ -369,7 +369,7 @@ const MoneyCartGame = () => {
   }
 
   // Fonctions utilitaires
-  function colorFor(type, p) {
+  function colorFor(symbolType, isPersistent) {
     const colors = {
       coin: 0xffd700,
       collector: 0x00ff00,
@@ -384,11 +384,11 @@ const MoneyCartGame = () => {
       upg: 0x80ff00,
       rplus: 0xff4000
     };
-    return p ? colors[type] || 0xffffff : (colors[type] || 0xffffff) * 0.7;
+    return isPersistent ? colors[symbolType] || 0xffffff : (colors[symbolType] || 0xffffff) * 0.7;
   }
 
-  function labelFor(sym) {
-    if (sym.type === 'coin') return sym.value.toString();
+  function labelFor(symbol) {
+    if (symbol.type === 'coin') return symbol.value.toString();
     const labels = {
       collector: 'C',
       p_collector: 'C+',
@@ -405,7 +405,7 @@ const MoneyCartGame = () => {
       upg: 'U+',
       rplus: 'R+'
     };
-    return labels[sym.type] || '';
+    return labels[symbol.type] || '';
   }
 
   function cellCenter(cell) {
@@ -415,9 +415,9 @@ const MoneyCartGame = () => {
     };
   }
 
-  function floatText(cell, text) {
+  function floatText(cell, messageText) {
     const center = cellCenter(cell);
-    const textObj = new PIXI.Text(text, { fontSize: 16, fill: 0xffff00, fontWeight: 'bold' });
+    const textObj = new PIXI.Text(messageText, { fontSize: 16, fill: 0xffff00, fontWeight: 'bold' });
     textObj.anchor.set(0.5);
     textObj.position.set(center.x, center.y - 20);
     appRef.current.stage.addChild(textObj);
@@ -467,9 +467,9 @@ const MoneyCartGame = () => {
     });
   }
 
-  function electricArc(a, b) {
-    const centerA = cellCenter(a);
-    const centerB = cellCenter(b);
+  function electricArc(cellA, cellB) {
+    const centerA = cellCenter(cellA);
+    const centerB = cellCenter(cellB);
     
     const arc = new PIXI.Graphics();
     arc.lineStyle(2, 0x00ffff, 0.8);
@@ -511,40 +511,36 @@ const MoneyCartGame = () => {
     });
   }
 
-  function highlight(cell, on) { cell.setHighlight(on); }
+  function highlight(cell, isHighlighted) { cell.setHighlight(isHighlighted); }
 
-  function screenshake(amount = 4, dur = 0.12) {
-    if (!appRef.current) return;
-    const stage = appRef.current.stage;
-    const originalX = stage.x;
-    const originalY = stage.y;
+  function screenshake(shakeAmount = 4, shakeDuration = 0.12) {
+    const originalX = appRef.current.stage.x;
+    const originalY = appRef.current.stage.y;
     
-    gsap.to(stage, {
-      x: originalX + (Math.random() - 0.5) * amount,
-      y: originalY + (Math.random() - 0.5) * amount,
-      duration: dur,
-      yoyo: true,
-      repeat: 1,
+    gsap.to(appRef.current.stage, {
+      x: originalX + (Math.random() - 0.5) * shakeAmount,
+      y: originalY + (Math.random() - 0.5) * shakeAmount,
+      duration: shakeDuration,
+      ease: "power2.out",
       onComplete: () => {
-        stage.x = originalX;
-        stage.y = originalY;
+        gsap.to(appRef.current.stage, {
+          x: originalX,
+          y: originalY,
+          duration: shakeDuration * 2,
+          ease: "power2.out"
+        });
       }
     });
   }
 
-  function spinFX(cell, dur = 0.18) {
-    if (!cell.symbol) return;
-    
+  function spinFX(cell, spinDuration = 0.18) {
     const symbol = cell.symbol;
-    const originalRotation = symbol.rotation;
+    if (!symbol) return;
     
     gsap.to(symbol, {
-      rotation: originalRotation + Math.PI * 2,
-      duration: dur,
-      ease: "power2.out",
-      onComplete: () => {
-        symbol.rotation = originalRotation;
-      }
+      rotation: symbol.rotation + Math.PI * 2,
+      duration: spinDuration,
+      ease: "power2.out"
     });
   }
 
@@ -564,55 +560,40 @@ const MoneyCartGame = () => {
   };
 
   function isRowActive(absRow) { return absRow >= activeTop && absRow <= activeBottom; }
-  function relToAbs(rRel) { return activeTop + rRel; }
+  function relToAbs(relativeRow) { return activeTop + relativeRow; }
 
   function layout() {
-    if (!appRef.current) return;
-    
     const stage = appRef.current.stage;
-    const centerX = appRef.current.screen.width / 2;
-    const centerY = appRef.current.screen.height / 2;
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
     
-    const gridWidth = COLS * cellSize;
-    const gridHeight = ROWS * cellSize;
+    stage.position.set(centerX - (COLS * cellSize) / 2, centerY - (ROWS * cellSize) / 2);
     
-    stage.position.set(
-      centerX - gridWidth / 2,
-      centerY - gridHeight / 2
-    );
+    cells.forEach(cell => cell.resize());
+    symbols().forEach(symbol => symbol.resize());
   }
 
   function rebuildGrid() {
-    if (!appRef.current) return;
-    
-    // Nettoyer l'ancienne grille
     cells.forEach(cell => {
-      if (cell.symbol) {
-        safeDestroySymbol(cell.symbol);
-      }
       if (cell.graphics.parent) {
         cell.graphics.parent.removeChild(cell.graphics);
       }
     });
     
     cells = [];
-    
-    // Créer la nouvelle grille
-    for (let row = 0; row < MAX_ROWS; row++) {
-      for (let col = 0; col < COLS; col++) {
+    for (let col = 0; col < COLS; col++) {
+      for (let row = 0; row < MAX_ROWS; row++) {
         const cell = new Cell(col, row);
         cells.push(cell);
-        if (isRowActive(row)) {
-          appRef.current.stage.addChild(cell.graphics);
-        }
+        appRef.current.stage.addChild(cell.graphics);
       }
     }
     
     layout();
   }
 
-  function cellAtAbs(col, absRow) { return cells.find(k => k.col === col && k.row === absRow); }
-  function cellAt(col, rRel) { return cellAtAbs(col, relToAbs(rRel)); }
+  function cellAtAbs(col, absRow) { return cells.find(cell => cell.col === col && cell.row === absRow); }
+  function cellAt(col, relativeRow) { return cellAtAbs(col, relToAbs(relativeRow)); }
 
   function activeCells() {
     return cells.filter(c => isRowActive(c.row));
@@ -622,10 +603,13 @@ const MoneyCartGame = () => {
   function symbols() { return activeCells().filter(c => c.symbol).map(c => c.symbol); }
   function sumValues() { return Math.min(MAX_WIN_CAP, symbols().reduce((a, s) => a + (s.value || 0), 0)); }
 
-  function isRowFullRel(rRel) {
-    const absRow = relToAbs(rRel);
-    const rowCells = cells.filter(c => c.row === absRow);
-    return rowCells.every(c => c.symbol);
+  function isRowFullRel(relativeRow) {
+    for (let col = 0; col < COLS; col++) {
+      if (!cellAt(col, relativeRow) || cellAt(col, relativeRow).isEmpty()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   function getFullRowsRel() {
@@ -639,28 +623,33 @@ const MoneyCartGame = () => {
   }
 
   async function unlockRow(direction, fullRowsRel) {
-    if (ROWS >= MAX_ROWS) return;
+    if (fullRowsRel.length === 0) return;
     
-    ROWS++;
+    const rowToUnlock = direction === 'up' ? Math.min(...fullRowsRel) - 1 : Math.max(...fullRowsRel) + 1;
+    
+    if (rowToUnlock < 0 || rowToUnlock >= MAX_ROWS) return;
+    
+    activeTop = Math.min(activeTop, rowToUnlock);
+    activeBottom = Math.max(activeBottom, rowToUnlock);
+    
     recomputeActiveBounds();
-    
-    const newRow = direction === 'top' ? activeTop : activeBottom;
-    const rowCells = cells.filter(c => c.row === newRow);
-    
-    for (const cell of rowCells) {
-      appRef.current.stage.addChild(cell.graphics);
-    }
-    
     layout();
-    updateHUD();
     
-    toast(`Nouvelle rangée débloquée ! (${ROWS}/${MAX_ROWS})`);
+    await sleep(200);
   }
 
   async function unlockRowByRule(fullRowsRel) {
-    if (fullRowsRel.length >= 2) {
-      await unlockRow('top', fullRowsRel);
-      await unlockRow('bottom', fullRowsRel);
+    if (fullRowsRel.length === 0) return;
+    
+    const middleRow = Math.floor(ROWS / 2);
+    const closestRow = fullRowsRel.reduce((closest, row) => 
+      Math.abs(row - middleRow) < Math.abs(closest - middleRow) ? row : closest
+    );
+    
+    if (closestRow < middleRow) {
+      await unlockRow('up', [closestRow]);
+    } else {
+      await unlockRow('down', [closestRow]);
     }
   }
 
@@ -671,24 +660,19 @@ const MoneyCartGame = () => {
     }
   }
 
-  function createSymbol(type, persistent = false) {
-    switch (type) {
-      case 'coin': return new CoinSymbol(rnd.int(1, 5));
-      case 'collector': return new CollectorSymbol(persistent);
-      case 'p_collector': return new CollectorSymbol(true);
-      case 'payer': return new PayerSymbol(rnd.int(1, 3), persistent);
-      case 'p_payer': return new PayerSymbol(rnd.int(1, 3), true);
-      case 'cp': return new ComboCPSymbol(persistent);
-      case 'p_cp': return new ComboCPSymbol(true);
-      case 'sniper': return new SniperSymbol(persistent);
-      case 'p_sniper': return new SniperSymbol(true);
+  function createSymbol(symbolType, isPersistent = false) {
+    switch (symbolType) {
+      case 'coin': return new CoinSymbol(Math.floor(Math.random() * 10) + 1);
+      case 'collector': return new CollectorSymbol(isPersistent);
+      case 'payer': return new PayerSymbol(Math.floor(Math.random() * 3) + 1, isPersistent);
+      case 'cp': return new ComboCPSymbol(isPersistent);
+      case 'sniper': return new SniperSymbol(isPersistent);
       case 'necro': return new NecroSymbol();
       case 'unlock': return new UnlockSymbol();
-      case 'arms': return new ArmsDealerSymbol(persistent);
-      case 'p_arms': return new ArmsDealerSymbol(true);
+      case 'arms': return new ArmsDealerSymbol(isPersistent);
       case 'upg': return new UpgraderSymbol();
       case 'rplus': return new ResetPlusSymbol();
-      default: return null;
+      default: return new CoinSymbol(1);
     }
   }
 
@@ -801,10 +785,11 @@ const MoneyCartGame = () => {
     playing = false;
   }
 
-  async function displayPanel(title, big) {
-    setPanelData({ title, total: big });
+  async function displayPanel(panelTitle, isBig) {
+    setPanelData({ title: panelTitle, total: isBig });
     setShowPanel(true);
-    await sleep(200);
+    await sleep(2000);
+    setShowPanel(false);
   }
 
   // Initialisation
