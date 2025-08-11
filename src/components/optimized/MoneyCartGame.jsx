@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as PIXI from 'pixi.js';
 import { gsap } from 'gsap';
 import { PixiPlugin } from 'gsap/PixiPlugin';
@@ -9,23 +9,7 @@ gsap.registerPlugin(PixiPlugin);
 const MoneyCartGame = () => {
   const canvasRef = useRef(null);
   const appRef = useRef(null);
-  const gameStateRef = useRef({
-    respins: 0,
-    playing: false,
-    turbo: false,
-    isSpinning: false,
-    autoplay: false,
-    lastSpawned: [],
-    respinBase: 3,
-    ROWS: 4,
-    MAX_ROWS: 8,
-    COLS: 6,
-    fullRowsAwarded: 0,
-    nextUnlockTop: true,
-    activeTop: 0,
-    activeBottom: 0
-  });
-
+  
   const [hudData, setHudData] = useState({
     respins: '—',
     rows: '—',
@@ -41,33 +25,29 @@ const MoneyCartGame = () => {
   const [showToast, setShowToast] = useState(false);
 
   // Configuration du jeu
+  const COLS = 6;
+  const ROWS = 4;
+  const MAX_ROWS = 8;
   const BASE_BET = 1.00;
-  const BIG_WIN_THRESHOLD = 100;
   const MAX_WIN_CAP = 15000;
-  const cellSize = 110;
+  let cellSize = 110;
+  let respinBase = 3;
+  let respins = 0;
+  let playing = false;
+  let cells = [];
+  let activeTop = 0, activeBottom = 0;
 
   // Pondérations des symboles
   const WEIGHTS = {
-    base: { coin: 70, collector: 5, payer: 5, cp: 2, p_collector: 1, p_payer: 1, sniper: 3, necro: 2, unlock: 3, arms: 2, upg: 2, rplus: 0 },
-    deep: { coin: 65, collector: 6, payer: 6, cp: 2, p_collector: 1, p_payer: 1, sniper: 4, necro: 3, unlock: 3, arms: 2, upg: 2, rplus: 0 }
+    base: { coin: 70, collector: 5, payer: 5, sniper: 3 }
   };
 
-  // Variables globales du jeu
-  let cells = [];
-  let respinBase = 3;
-  let ROWS = 4;
-  const MAX_ROWS = 8;
-  const COLS = 6;
-  let fullRowsAwarded = 0;
-  let nextUnlockTop = true;
-  let activeTop = 0, activeBottom = 0;
-
   // Utilitaires
-  const toast = useCallback((msg, ms = 1600) => {
+  const toast = (msg, ms = 1600) => {
     setToastMessage(msg);
     setShowToast(true);
     setTimeout(() => setShowToast(false), ms);
-  }, []);
+  };
 
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
@@ -88,31 +68,13 @@ const MoneyCartGame = () => {
     return entries[0][0];
   };
 
-  const shuffleInPlace = (arr) => {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  };
-
   const pickNRandom = (arr, n) => {
     const a = arr.slice();
-    shuffleInPlace(a);
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
     return a.slice(0, Math.min(n, a.length));
-  };
-
-  // Helpers pour les tweens
-  const killTweens = (obj) => {
-    if (!obj) return;
-    try { gsap.killTweensOf(obj); } catch { }
-    try { if (obj.scale) gsap.killTweensOf(obj.scale); } catch { }
-  };
-
-  const safeDestroySymbol = (sym) => {
-    if (!sym) return;
-    killTweens(sym);
-    try { sym.destroy({ children: true }); } catch { }
   };
 
   // Classe Cell
@@ -124,7 +86,6 @@ const MoneyCartGame = () => {
       this.container = new PIXI.Container();
       appRef.current.stage.addChild(this.container);
       
-      // calques de la cellule : fond, hatch "verrouillé", halo sélection
       this.bg = new PIXI.Graphics();
       this.hatch = new PIXI.Graphics();
       this.halo = new PIXI.Graphics();
@@ -134,11 +95,19 @@ const MoneyCartGame = () => {
     }
 
     resize() {
-      const pad = 8, r = isRowActive(this.row);
-      // fond
-      this.bg.clear().beginFill(r ? 0x0f1822 : 0x0a0e13).drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, 12).endFill();
-      this.bg.lineStyle(1, r ? 0x294055 : 0x1b2833, 0.85).drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, 12);
-      // motif hatch si verrouillé
+      const pad = 8;
+      const r = this.row >= activeTop && this.row <= activeBottom;
+      
+      // Fond
+      this.bg.clear()
+        .beginFill(r ? 0x0f1822 : 0x0a0e13)
+        .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, 12)
+        .endFill();
+      
+      this.bg.lineStyle(1, r ? 0x294055 : 0x1b2833, 0.85)
+        .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, 12);
+      
+      // Motif hatch si verrouillé
       this.hatch.clear();
       if (!r) {
         this.hatch.lineStyle(1, 0x365069, 0.25);
@@ -147,28 +116,29 @@ const MoneyCartGame = () => {
           this.hatch.lineTo(pad + k + cellSize - 2 * pad, pad + cellSize - 2 * pad);
         }
       }
-      // halo pour surbrillance
-      this.halo.clear().beginFill(0x58c1ff, 0.07).drawRoundedRect(4, 4, cellSize - 8, cellSize - 8, 16).endFill();
-      // redessine le symbole si présent (pour s'adapter à la taille)
+      
+      // Halo pour surbrillance
+      this.halo.clear()
+        .beginFill(0x58c1ff, 0.07)
+        .drawRoundedRect(4, 4, cellSize - 8, cellSize - 8, 16)
+        .endFill();
+      
+      // Redessine le symbole si présent
       if (this.symbol) this.symbol.resize();
-      // grise tout le contenu si verrouillé (y compris un symbole collé par erreur)
+      
+      // Grise tout le contenu si verrouillé
       this.container.alpha = r ? 1 : 0.55;
     }
-
-    isRowActive() { return this.row >= activeTop && this.row <= activeBottom; }
-
-    setHighlight(on) { gsap.to(this.halo, { alpha: on ? 1 : 0, duration: 0.15 }); }
 
     isEmpty() { return !this.symbol; }
   }
 
   // Classe BaseSymbol
   class BaseSymbol extends PIXI.Container {
-    constructor(type, value = 0, persistent = false) {
+    constructor(type, value = 0) {
       super();
       this.type = type;
       this.value = value;
-      this.persistent = persistent;
       this.cell = null;
     }
 
@@ -178,24 +148,23 @@ const MoneyCartGame = () => {
       cell.container.addChild(this);
     }
 
-    async onSpawn() { await popIn(this); }
-
-    async onResolve() { }
-
-    async onPersistent() { }
+    async onSpawn() { 
+      this.scale.set(0);
+      await gsap.to(this.scale, { x: 1, y: 1, duration: 0.3, ease: "back.out(1.7)" });
+    }
 
     resize() {
-      // (re)dessine un pion simple cercle + label ; pas d'assets → lisible
       this.removeChildren();
-      const color = colorFor(this.type, this.persistent);
+      const color = this.getColor();
       const r = Math.floor(cellSize * 0.28);
       const cx = Math.floor(cellSize / 2), cy = cx;
+      
       const g = new PIXI.Graphics();
-      g.x = cx;
-      g.y = cy;
+      g.x = cx; g.y = cy;
       g.beginFill(color).drawCircle(0, 0, r).endFill();
       g.lineStyle(6, 0x0b0f14, 0.85).drawCircle(0, 0, r - 8);
-      const t = new PIXI.Text(labelFor(this), {
+      
+      const t = new PIXI.Text(this.getLabel(), {
         fontFamily: "Inter,Arial",
         fontSize: Math.floor(r * 0.9),
         fontWeight: 800,
@@ -206,215 +175,94 @@ const MoneyCartGame = () => {
       t.y = 2;
       this.addChild(g, t);
     }
-  }
 
-  // Fonctions utilitaires
-  const colorFor = (type, p) => {
-    const colors = {
-      coin: 0xffd700, cp: 0xffd700,
-      collector: 0x00ff88, p_collector: 0x00ff88,
-      payer: 0xff6b35, p_payer: 0xff6b35,
-      sniper: 0xff4757, p_sniper: 0xff4757,
-      necro: 0x8b5cf6, unlock: 0x58c1ff,
-      arms: 0xffa726, upg: 0x26c6da, rplus: 0xff1744
-    };
-    return colors[type] || 0xcccccc;
-  };
-
-  const labelFor = (sym) => {
-    const labels = {
-      coin: sym.value || "C", cp: "CP",
-      collector: "CL", p_collector: "PCL",
-      payer: "P", p_payer: "PP",
-      sniper: "S", p_sniper: "PS",
-      necro: "N", unlock: "U",
-      arms: "A", upg: "UP", rplus: "R+"
-    };
-    return labels[sym.type] || "?";
-  };
-
-  // Effets visuels
-  const popIn = async (obj) => {
-    obj.scale.set(0);
-    await gsap.to(obj.scale, { x: 1, y: 1, duration: 0.3, ease: "back.out(1.7)" });
-  };
-
-  const bump = async (obj) => {
-    const done = { current: false };
-    const finish = () => { if (done.current) return; done.current = true; };
-    gsap.to(obj.scale, { x: 1.2, y: 1.2, duration: 0.1, onComplete: () => {
-      gsap.to(obj.scale, { x: 1, y: 1, duration: 0.1, onComplete: finish });
-    }});
-    await new Promise(resolve => { finish.current = resolve; });
-  };
-
-  // Classes de symboles spécifiques
-  class CoinSymbol extends BaseSymbol {
-    constructor(v) { super("coin", v, false); }
-  }
-
-  class CollectorSymbol extends BaseSymbol {
-    constructor(p = false) { super(p ? "p_collector" : "collector", 0, p); }
-
-    async collectAnimated() {
-      const targets = pickNRandom(emptyCells(), 3);
-      for (const cell of targets) {
-        const coin = new CoinSymbol(rnd.int(1, 5));
-        coin.attach(cell);
-        await coin.onSpawn();
-        await sleep(100);
+    getColor() {
+      switch (this.type) {
+        case 'coin': return 0xffd700;
+        case 'collector': return 0x00ff88;
+        case 'payer': return 0xff6b35;
+        case 'sniper': return 0xff4757;
+        default: return 0xcccccc;
       }
     }
 
+    getLabel() {
+      switch (this.type) {
+        case 'coin': return this.value || 'C';
+        case 'collector': return 'CL';
+        case 'payer': return 'P';
+        case 'sniper': return 'S';
+        default: return '?';
+      }
+    }
+  }
+
+  // Classes de symboles spécifiques
+  class CoinSymbol extends BaseSymbol {
+    constructor(v) { super("coin", v); }
+  }
+
+  class CollectorSymbol extends BaseSymbol {
+    constructor() { super("collector", 0); }
+
     async onResolve() {
-      await this.collectAnimated();
-      safeDestroySymbol(this);
-    }
-
-    async onPersistent() {
-      await this.collectAnimated();
-    }
-
-    suck(toCell, fromCell) {
-      const from = cellCenter(fromCell);
-      const to = cellCenter(toCell);
-      gsap.to(from, { x: to.x, y: to.y, duration: 0.5, ease: "power2.in" });
-    }
-
-    cellCenter(cell) {
-      return {
-        x: cell.container.x + cellSize / 2,
-        y: cell.container.y + cellSize / 2
-      };
-    }
-
-    floatText(cell, text) {
-      const t = new PIXI.Text(text, { fontSize: 24, fill: 0x00ff88, fontWeight: 800 });
-      t.anchor.set(0.5);
-      t.x = cell.container.x + cellSize / 2;
-      t.y = cell.container.y + cellSize / 2;
-      appRef.current.stage.addChild(t);
-      gsap.to(t, { y: t.y - 50, alpha: 0, duration: 1, onComplete: () => t.destroy() });
+      const empty = emptyCells();
+      if (empty.length > 0) {
+        const targets = pickNRandom(empty, Math.min(3, empty.length));
+        for (const cell of targets) {
+          const coin = new CoinSymbol(rnd.int(1, 5));
+          coin.attach(cell);
+          await coin.onSpawn();
+          await sleep(100);
+        }
+      }
     }
   }
 
   class PayerSymbol extends BaseSymbol {
-    constructor(v = 1, p = false) { super(p ? "p_payer" : "payer", v, p); }
-
-    async paySequential() {
-      const targets = pickNRandom(emptyCells(), this.value);
-      for (const cell of targets) {
-        const coin = new CoinSymbol(rnd.int(2, 8));
-        coin.attach(cell);
-        await coin.onSpawn();
-        await sleep(150);
-      }
-    }
+    constructor() { super("payer", 1); }
 
     async onResolve() {
-      await this.paySequential();
-      safeDestroySymbol(this);
-    }
-
-    async onPersistent() {
-      await this.paySequential();
-    }
-
-    beam(fromCell, toCell) {
-      const from = cellCenter(fromCell);
-      const to = cellCenter(toCell);
-      const beam = new PIXI.Graphics();
-      beam.lineStyle(3, 0xff6b35, 0.8);
-      beam.moveTo(from.x, from.y);
-      beam.lineTo(to.x, to.y);
-      appRef.current.stage.addChild(beam);
-      gsap.to(beam, { alpha: 0, duration: 0.3, onComplete: () => beam.destroy() });
-    }
-
-    cellCenter(cell) {
-      return {
-        x: cell.container.x + cellSize / 2,
-        y: cell.container.y + cellSize / 2
-      };
-    }
-
-    floatText(cell, text) {
-      const t = new PIXI.Text(text, { fontSize: 24, fill: 0xff6b35, fontWeight: 800 });
-      t.anchor.set(0.5);
-      t.x = cell.container.x + cellSize / 2;
-      t.y = cell.container.y + cellSize / 2;
-      appRef.current.stage.addChild(t);
-      gsap.to(t, { y: t.y - 50, alpha: 0, duration: 1, onComplete: () => t.destroy() });
+      const empty = emptyCells();
+      if (empty.length > 0) {
+        const targets = pickNRandom(empty, Math.min(this.value, empty.length));
+        for (const cell of targets) {
+          const coin = new CoinSymbol(rnd.int(2, 8));
+          coin.attach(cell);
+          await coin.onSpawn();
+          await sleep(150);
+        }
+      }
     }
   }
 
   class SniperSymbol extends BaseSymbol {
-    constructor(p = false) { super(p ? "p_sniper" : "sniper", 0, p); }
+    constructor() { super("sniper", 0); }
 
     async onResolve() {
-      await this.shoot(2);
-      safeDestroySymbol(this);
-    }
-
-    async onPersistent() {
-      await this.shoot(1);
-    }
-
-    async shoot(times = 1) {
-      for (let i = 0; i < times; i++) {
-        const targets = pickNRandom(emptyCells(), 2);
+      const empty = emptyCells();
+      if (empty.length > 0) {
+        const targets = pickNRandom(empty, Math.min(2, empty.length));
         for (const cell of targets) {
           const coin = new CoinSymbol(rnd.int(3, 10));
           coin.attach(cell);
           await coin.onSpawn();
           await sleep(100);
         }
-        await sleep(200);
       }
-    }
-
-    beam(fromCell, toCell) {
-      const from = cellCenter(fromCell);
-      const to = cellCenter(toCell);
-      const beam = new PIXI.Graphics();
-      beam.lineStyle(2, 0xff4757, 0.9);
-      beam.moveTo(from.x, from.y);
-      beam.lineTo(to.x, to.y);
-      appRef.current.stage.addChild(beam);
-      gsap.to(beam, { alpha: 0, duration: 0.2, onComplete: () => beam.destroy() });
-    }
-
-    cellCenter(cell) {
-      return {
-        x: cell.container.x + cellSize / 2,
-        y: cell.container.y + cellSize / 2
-      };
-    }
-
-    floatText(cell, text) {
-      const t = new PIXI.Text(text, { fontSize: 24, fill: 0xff4757, fontWeight: 800 });
-      t.anchor.set(0.5);
-      t.x = cell.container.x + cellSize / 2;
-      t.y = cell.container.y + cellSize / 2;
-      appRef.current.stage.addChild(t);
-      gsap.to(t, { y: t.y - 50, alpha: 0, duration: 1, onComplete: () => t.destroy() });
     }
   }
 
   // Fonctions de jeu
   const recomputeActiveBounds = () => {
-    // On centre le bloc actif dans la grille visible, puis on ajustera en unlock top/bottom
     activeTop = Math.max(0, Math.floor((MAX_ROWS - ROWS) / 2));
     activeBottom = activeTop + ROWS - 1;
   };
 
-  const isRowActive = (absRow) => { return absRow >= activeTop && absRow <= activeBottom; };
-
-  const relToAbs = (rRel) => { return activeTop + rRel; };
-
-  const cellAtAbs = (col, absRow) => { return cells.find(c => c.col === col && c.row === absRow); };
-
-  const cellAt = (col, rRel) => { return cellAtAbs(col, relToAbs(rRel)); };
+  const cellAt = (col, rRel) => {
+    const absRow = activeTop + rRel;
+    return cells.find(c => c.col === col && c.row === absRow);
+  };
 
   const activeCells = () => {
     const active = [];
@@ -438,14 +286,13 @@ const MoneyCartGame = () => {
     return empty;
   };
 
-  const symbols = () => { return activeCells().map(c => c.symbol); };
-
-  const sumValues = () => { return symbols().reduce((sum, s) => sum + (s.value || 0), 0); };
+  const sumValues = () => {
+    return activeCells().map(c => c.symbol.value || 0).reduce((sum, v) => sum + v, 0);
+  };
 
   const updateHUD = () => {
-    const state = gameStateRef.current;
     setHudData({
-      respins: state.respins.toString(),
+      respins: respins.toString(),
       rows: ROWS.toString(),
       total: `${sumValues()}×`,
       bet: BASE_BET.toFixed(2),
@@ -458,11 +305,8 @@ const MoneyCartGame = () => {
     switch (type) {
       case 'coin': return new CoinSymbol(rnd.int(1, 5));
       case 'collector': return new CollectorSymbol();
-      case 'p_collector': return new CollectorSymbol(true);
-      case 'payer': return new PayerSymbol(rnd.int(1, 3));
-      case 'p_payer': return new PayerSymbol(rnd.int(2, 4), true);
+      case 'payer': return new PayerSymbol();
       case 'sniper': return new SniperSymbol();
-      case 'p_sniper': return new SniperSymbol(true);
       default: return new CoinSymbol(1);
     }
   };
@@ -471,48 +315,43 @@ const MoneyCartGame = () => {
     // Nettoyer tous les symboles
     for (const cell of cells) {
       if (cell.symbol) {
-        safeDestroySymbol(cell.symbol);
+        cell.symbol.destroy({ children: true });
         cell.symbol = null;
       }
     }
     
     // Réinitialiser l'état
-    ROWS = 4;
-    respinBase = 3;
-    fullRowsAwarded = 0;
-    nextUnlockTop = true;
-    gameStateRef.current.playing = false;
-    gameStateRef.current.respins = 0;
+    respins = 0;
+    playing = false;
     
     recomputeActiveBounds();
     updateHUD();
   };
 
   const startBonus = async () => {
-    if (gameStateRef.current.playing) return;
+    if (playing) return;
     
-    gameStateRef.current.playing = true;
-    gameStateRef.current.respins = respinBase;
+    playing = true;
+    respins = respinBase;
     toast("Bonus lancé !");
     updateHUD();
   };
 
   const spinStep = async () => {
-    if (!gameStateRef.current.playing || gameStateRef.current.isSpinning) return;
-    
-    gameStateRef.current.isSpinning = true;
+    if (!playing || respins <= 0) return;
     
     // Créer de nouveaux symboles
     const empty = emptyCells();
     if (empty.length === 0) {
       toast("Plus d'espace disponible !");
-      gameStateRef.current.isSpinning = false;
       return;
     }
     
     const newSymbols = [];
-    for (let i = 0; i < Math.min(3, empty.length); i++) {
-      const cell = empty[i];
+    const spawnCount = Math.min(3, empty.length);
+    const targets = pickNRandom(empty, spawnCount);
+    
+    for (const cell of targets) {
       const type = weightedPick(WEIGHTS.base);
       const symbol = createSymbol(type);
       symbol.attach(cell);
@@ -523,25 +362,19 @@ const MoneyCartGame = () => {
     
     // Résoudre les symboles
     for (const symbol of newSymbols) {
-      if (symbol.persistent) {
-        await symbol.onPersistent();
-      } else {
-        await symbol.onResolve();
-      }
+      await symbol.onResolve();
     }
     
-    gameStateRef.current.respins--;
-    gameStateRef.current.isSpinning = false;
+    respins--;
+    updateHUD();
     
-    if (gameStateRef.current.respins <= 0) {
+    if (respins <= 0) {
       await endBonus();
-    } else {
-      updateHUD();
     }
   };
 
   const endBonus = async () => {
-    gameStateRef.current.playing = false;
+    playing = false;
     const total = sumValues();
     
     setPanelData({
@@ -612,12 +445,10 @@ const MoneyCartGame = () => {
         <button className="btn" onClick={startBonus}>Lancer le Bonus</button>
         <button className="btn" onClick={spinStep}>Tour suivant</button>
         <button className="btn" onClick={() => {
-          const state = gameStateRef.current;
-          state.turbo = !state.turbo;
-          toast(`Turbo ${state.turbo ? "activé" : "désactivé"}`);
+          toast("Turbo activé");
         }}>Turbo : OFF</button>
         <button className="btn" onClick={() => {
-          gameStateRef.current.playing = false;
+          playing = false;
           setShowPanel(false);
           resetBoard();
           toast("Réinitialisé");
