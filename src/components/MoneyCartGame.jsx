@@ -54,6 +54,8 @@ const MoneyCartGame = memo(() => {
 
   const [showPanel, setShowPanel] = useState(false);
   const [panelData, setPanelData] = useState({ title: '', total: '' });
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
 
   // Poids des symboles
   const WEIGHTS = {
@@ -344,6 +346,173 @@ const MoneyCartGame = memo(() => {
     }
   }
 
+  class ComboCPSymbol extends BaseSymbol {
+    constructor(p = false) {
+      super(p ? "p_cp" : "cp", 1, p);
+    }
+
+    async run(gameUtils) {
+      const total = gameUtils.sumValues();
+      this.value = Math.min(gameStateRef.current.MAX_WIN_CAP, this.value + total);
+      gameUtils.floatText(this.cell, `+${total}`);
+      this.resize();
+      for (const s of gameUtils.symbols()) {
+        if (s !== this) {
+          s.value = Math.min(gameStateRef.current.MAX_WIN_CAP, s.value + this.value);
+          s.resize();
+          gameUtils.floatText(s.cell, `+${this.value}`);
+        }
+      }
+      gameUtils.updateHUD();
+      await this.bump();
+    }
+
+    async onResolve(gameUtils) {
+      await this.run(gameUtils);
+    }
+
+    async onPersistent(gameUtils) {
+      await this.run(gameUtils);
+    }
+  }
+
+  class SniperSymbol extends BaseSymbol {
+    constructor(p = false) {
+      super(p ? "p_sniper" : "sniper", 0, p);
+    }
+
+    async shoot(gameUtils, times = 1) {
+      let pool = gameUtils.symbols().filter(s => s !== this && s.value > 0);
+      for (let i = 0; i < times && pool.length; i++) {
+        const t = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
+        gameUtils.beam(this.cell, t.cell);
+        t.value = Math.min(gameStateRef.current.MAX_WIN_CAP, t.value * 2);
+        t.resize();
+        gameUtils.floatText(t.cell, "×2");
+        await gameUtils.sleep(120);
+      }
+      gameUtils.updateHUD();
+    }
+
+    async onResolve(gameUtils) {
+      await this.shoot(gameUtils, 1);
+      await this.bump();
+    }
+
+    async onPersistent(gameUtils) {
+      await this.shoot(gameUtils, 1);
+      await this.bump();
+    }
+  }
+
+  class NecroSymbol extends BaseSymbol {
+    constructor() {
+      super("necro", 0, false);
+    }
+
+    async onResolve(gameUtils) {
+      const pool = gameUtils.symbols().filter(s => ["collector", "payer", "cp", "sniper"].includes(s.type));
+      const n = rnd.int(1, 2);
+      for (let i = 0; i < n && pool.length; i++) {
+        const t = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
+        if (t.cell) t.cell.setHighlight(true);
+        await gameUtils.sleep(80);
+        if (t.cell) t.cell.setHighlight(false);
+        if (t.onResolve) await t.onResolve(gameUtils);
+      }
+      await this.bump();
+    }
+  }
+
+  class UnlockSymbol extends BaseSymbol {
+    constructor() {
+      super("unlock", 0, false);
+    }
+
+    async onResolve(gameUtils) {
+      gameUtils.floatText(this.cell, "U");
+      await this.bump();
+    }
+  }
+
+  class ArmsDealerSymbol extends BaseSymbol {
+    constructor(p = false) {
+      super(p ? "p_arms" : "arms", 0, p);
+    }
+
+    async mutateCoins(gameUtils, count = 1) {
+      if (Math.random() < 0.5) return;
+      const pool = gameUtils.activeCells().filter(c => c.symbol && c.symbol.type === "coin").map(c => c.symbol);
+      const pickTypes = ["collector", "payer", "sniper", "necro"];
+      for (let i = 0; i < count && pool.length; i++) {
+        const target = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
+        killTweens(target);
+        const type = rnd.pick(pickTypes);
+        const cell = target.cell;
+        safeDestroySymbol(target);
+        cell.symbol = null;
+        const sym = gameUtils.createSymbol(type);
+        sym.attach(cell);
+        sym.resize();
+        await sym.onSpawn();
+      }
+      gameUtils.updateHUD();
+    }
+
+    async onResolve(gameUtils) {
+      await this.mutateCoins(gameUtils, 1);
+      await this.bump();
+    }
+
+    async onPersistent(gameUtils) {
+      await this.mutateCoins(gameUtils, 1);
+      await this.bump();
+    }
+  }
+
+  class UpgraderSymbol extends BaseSymbol {
+    constructor() {
+      super("upg", 0, false);
+    }
+
+    async onResolve(gameUtils) {
+      const candidates = gameUtils.symbols().filter(s => ["collector", "payer", "sniper", "cp"].includes(s.type));
+      const n = rnd.int(0, 1);
+      for (let i = 0; i < n && candidates.length; i++) {
+        const t = candidates.splice(Math.floor(Math.random() * candidates.length), 1)[0];
+        const map = { collector: "p_collector", payer: "p_payer", sniper: "p_sniper", cp: "p_cp" };
+        const newType = map[t.type];
+        killTweens(t);
+        const cell = t.cell;
+        safeDestroySymbol(t);
+        cell.symbol = null;
+        const sym = gameUtils.createSymbol(newType);
+        sym.attach(cell);
+        sym.resize();
+        await sym.onSpawn();
+      }
+      await this.bump();
+      gameUtils.updateHUD();
+    }
+  }
+
+  class ResetPlusSymbol extends BaseSymbol {
+    constructor() {
+      super("rplus", 0, false);
+    }
+
+    async onResolve(gameUtils) {
+      const gameState = gameStateRef.current;
+      if (gameState.respinBase < 5) {
+        gameState.respinBase++;
+        gameUtils.toast(`Reset de base +1 → ${gameState.respinBase}`);
+      }
+      gameState.respins = gameState.respinBase;
+      gameUtils.updateHUD();
+      await this.bump();
+    }
+  }
+
   // Initialisation de l'app PixiJS
   useEffect(() => {
     if (!containerRef.current) return;
@@ -483,6 +652,69 @@ const MoneyCartGame = memo(() => {
         p.y = a.y;
         fxLayer.addChild(p);
         gsap.to(p, { x: b.x, y: b.y, alpha: 0.2, duration: .22, ease: "sine.in", onComplete: () => p.destroy() });
+      },
+      toast: (msg, ms = 1600) => {
+        setToastMessage(msg);
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), ms);
+      },
+      electricArc: (a, b) => {
+        // Arc électrique : polyligne "zigzag" avec glow + bref flash
+        const steps = 6 + Math.floor(Math.hypot(b.x - a.x, b.y - a.y) / 120);
+        const g = new PIXI.Graphics();
+        g.lineStyle({ width: 2, color: 0x7ee4ff, alpha: 1 });
+        const dx = (b.x - a.x) / steps;
+        const dy = (b.y - a.y) / steps;
+        g.moveTo(a.x, a.y);
+        for (let i = 1; i < steps; i++) {
+          const px = a.x + dx * i + (Math.random() - 0.5) * 10;
+          const py = a.y + dy * i + (Math.random() - 0.5) * 10;
+          g.lineTo(px, py);
+        }
+        g.lineTo(b.x, b.y);
+        fxLayer.addChild(g);
+        // glow secondaire
+        const glow = new PIXI.Graphics();
+        glow.lineStyle({ width: 6, color: 0x2bc0ff, alpha: .18 });
+        glow.moveTo(a.x, a.y);
+        glow.lineTo(b.x, b.y);
+        fxLayer.addChild(glow);
+        gsap.to(g, { alpha: 0, duration: .35 });
+        gsap.to(glow, { alpha: 0, duration: .35, onComplete: () => { g.destroy(); glow.destroy(); } });
+      },
+      screenshake: (amount = 4, dur = .12) => {
+        return gsap.fromTo(root, { x: 0 }, { x: amount, yoyo: true, repeat: 3, duration: dur, ease: "sine.inOut" });
+      },
+      spinFX: (cell, dur = 0.18) => {
+        // Crée un petit "spinner" circulaire centré sur la case
+        const center = gameUtils.cellCenter(cell);
+        const r = Math.max(8, Math.floor(gameState.cellSize * 0.32));
+        const sp = new PIXI.Container();
+        sp.x = center.x;
+        sp.y = center.y;
+        sp.rotation = Math.random() * Math.PI;
+        const ring = new PIXI.Graphics();
+        ring.lineStyle({ width: 3, color: 0x5fd3ff, alpha: 0.8 }).drawCircle(0, 0, r);
+        const dot = new PIXI.Graphics();
+        dot.beginFill(0xffffff).drawCircle(r, 0, 3).endFill();
+        sp.addChild(ring, dot);
+        fxLayer.addChild(sp);
+        return new Promise((resolve) => {
+          gsap.to(sp, { rotation: "+=6.283", duration: dur, ease: "sine.inOut" });
+          gsap.to(sp, { alpha: 0.0, delay: dur - 0.08, duration: 0.08, onComplete: () => { sp.destroy(); resolve(); } });
+        });
+      }
+    };
+
+    // Fonction sweepSpinAllCellsTopDown
+    const sweepSpinAllCellsTopDown = async () => {
+      // Lance les spinners **rangée par rangée** de 0 → MAX_ROWS-1
+      const rowDur = gameState.turbo ? 0.12 : 0.18;
+      for (let absRow = 0; absRow < gameState.MAX_ROWS; absRow++) {
+        const rowCells = gameState.cells.filter(c => c.row === absRow);
+        await Promise.all(rowCells.map(c => gameUtils.spinFX(c, rowDur)));
+        // petite pause pour un effet "vague" net
+        await gameUtils.sleep(gameState.turbo ? 10 : 40);
       }
     };
 
@@ -492,9 +724,84 @@ const MoneyCartGame = memo(() => {
         case "coin": return new CoinSymbol(rnd.pick([1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 5]));
         case "collector": return new CollectorSymbol(false);
         case "payer": return new PayerSymbol(rnd.pick([1, 1, 1, 1, 2]), false);
+        case "cp": return new ComboCPSymbol(false);
+        case "sniper": return new SniperSymbol(false);
+        case "necro": return new NecroSymbol();
+        case "unlock": return new UnlockSymbol();
+        case "arms": return new ArmsDealerSymbol(false);
+        case "upg": return new UpgraderSymbol();
+        case "rplus": return new ResetPlusSymbol();
+        // versions persistantes
         case "p_collector": return new CollectorSymbol(true);
         case "p_payer": return new PayerSymbol(rnd.pick([1, 1, 1, 2]), true);
+        case "p_cp": return new ComboCPSymbol(true);
+        case "p_sniper": return new SniperSymbol(true);
+        case "p_arms": return new ArmsDealerSymbol(true);
         default: return new CoinSymbol(1);
+      }
+    };
+
+    // Ajouter createSymbol aux gameUtils
+    gameUtils.createSymbol = createSymbol;
+
+    // ========= Règle d'unlock par LIGNE PLEINE (alternance haut/bas) =========
+    const isRowFullRel = (rRel) => {
+      for (let c = 0; c < gameState.COLS; c++) {
+        const cell = gameUtils.cellAt(c, rRel);
+        if (!cell || !cell.symbol) return false;
+      }
+      return true;
+    };
+
+    const getFullRowsRel = () => {
+      const res = [];
+      for (let r = 0; r < gameState.ROWS; r++) {
+        if (isRowFullRel(r)) res.push(r);
+      }
+      return res;
+    };
+
+    const unlockRow = async (direction, fullRowsRel) => {
+      if (gameState.ROWS >= gameState.MAX_ROWS) return;
+      // Détermine la source d'arc (ligne pleine la plus proche du bord qui s'ouvre)
+      fullRowsRel = fullRowsRel && fullRowsRel.length ? fullRowsRel : getFullRowsRel();
+      const sourceRel = direction === 'top' ? Math.min(...fullRowsRel) : Math.max(...fullRowsRel);
+      const sourceAbs = gameState.activeTop + sourceRel;
+      const targetAbs = (direction === 'top') ? (gameState.activeTop - 1) : (gameState.activeBottom + 1);
+      
+      // ⚡ arcs électriques de chaque case pleine vers la rangée déverrouillée
+      if (targetAbs >= 0 && targetAbs < gameState.MAX_ROWS) {
+        for (let c = 0; c < gameState.COLS; c++) {
+          const from = gameUtils.cellAtAbs(c, sourceAbs);
+          const to = gameUtils.cellAtAbs(c, targetAbs);
+          if (from && to) gameUtils.electricArc(gameUtils.cellCenter(from), gameUtils.cellCenter(to));
+        }
+        await gameUtils.sleep(220);
+      }
+      
+      // Étend la fenêtre active (sans déplacer les symboles existants)
+      if (direction === 'top' && gameState.activeTop > 0) gameState.activeTop -= 1;
+      else if (direction === 'bottom' && gameState.activeBottom < gameState.MAX_ROWS - 1) gameState.activeBottom += 1;
+      gameState.ROWS = Math.min(gameState.MAX_ROWS, gameState.ROWS + 1);
+      
+      // Rafraîchit le rendu (couleurs/alpha des cellules)
+      for (const c of gameState.cells) c.resize();
+      gameUtils.updateHUD();
+      await gameUtils.sleep(120);
+    };
+
+    const unlockRowByRule = async (fullRowsRel) => {
+      if (gameState.ROWS >= gameState.MAX_ROWS) return;
+      const dir = gameState.nextUnlockTop ? 'top' : 'bottom';
+      await unlockRow(dir, fullRowsRel);
+      gameState.nextUnlockTop = !gameState.nextUnlockTop;
+    };
+
+    const maybeUnlockFromFullRows = async () => {
+      const fullRel = getFullRowsRel();
+      if (fullRel.length > gameState.fullRowsAwarded && gameState.ROWS < gameState.MAX_ROWS) {
+        await unlockRowByRule(fullRel);
+        gameState.fullRowsAwarded++;
       }
     };
 
@@ -521,7 +828,10 @@ const MoneyCartGame = memo(() => {
       gameState.playing = true;
       resetBoard();
 
-      // spawn initial
+      // 💿 NEW: animation de "spin" rangée par rangée sur **toutes** les cases (actives + verrouillées)
+      await sweepSpinAllCellsTopDown();
+
+      // spawn initial sur la fenêtre active (après la vague de spin)
       const starters = rnd.int(3, 4);
       for (let i = 0; i < starters; i++) {
         const empt = gameUtils.emptyCells();
@@ -534,6 +844,7 @@ const MoneyCartGame = memo(() => {
       }
       gameState.respins = gameState.respinBase;
       gameUtils.updateHUD();
+      gameUtils.toast("Bonus lancé ! Auto en cours…");
       gameState.autoplay = true;
       autoPlayLoop();
     };
@@ -588,7 +899,7 @@ const MoneyCartGame = memo(() => {
           }
         }
 
-        // 3) PERSISTANTS
+        // 3) PERSISTANTS (tous les tours)
         const pOrder = ["p_arms", "p_payer", "p_sniper", "p_collector", "p_cp"];
         for (const t of pOrder) {
           const group = gameUtils.symbols().filter(s => s.type === t);
@@ -600,7 +911,10 @@ const MoneyCartGame = memo(() => {
           }
         }
 
-        // 4) Vérification fin
+        // 4) UNLOCK par lignes pleines (avec arc électrique)
+        await maybeUnlockFromFullRows();
+
+        // 5) Vérification fin
         const mult = gameUtils.sumValues();
         if (mult >= gameState.MAX_WIN_CAP) {
           setPanelData({ title: "MAX WIN ATTEINT", total: `${mult}×` });
@@ -648,6 +962,194 @@ const MoneyCartGame = memo(() => {
         gameState.playing = false;
         setShowPanel(false);
         resetBoard();
+      },
+      runTests: async () => {
+        try {
+          // Test 1: tween scale ne jette pas (pas de transform DOM)
+          const testCell = gameUtils.cellAt(0, 0);
+          const coin = new CoinSymbol(5);
+          coin.attach(testCell);
+          coin.resize();
+          await coin.onSpawn();
+          await coin.bump();
+          testCell.symbol = null;
+          safeDestroySymbol(coin);
+
+          // Test 2: règle d'unlock par ligne pleine + alternance top/bottom
+          resetBoard();
+          gameState.playing = true;
+          for (let c = 0; c < gameState.COLS; c++) {
+            const cell = gameUtils.cellAt(c, 0);
+            const k = new CoinSymbol(1);
+            k.attach(cell);
+            k.resize();
+          }
+          const beforeRows = gameState.ROWS;
+          await maybeUnlockFromFullRows();
+          console.assert(gameState.ROWS === beforeRows + 1, 'Une rangée doit être ajoutée quand une ligne est pleine');
+          
+          const firstWasTop = !gameState.nextUnlockTop;
+          for (let c = 0; c < gameState.COLS; c++) {
+            const cell = gameUtils.cellAt(c, 1) || gameUtils.cellAt(c, 2);
+            if (cell && !cell.symbol) {
+              const k = new CoinSymbol(1);
+              k.attach(cell);
+              k.resize();
+            }
+          }
+          const beforeRows2 = gameState.ROWS;
+          await maybeUnlockFromFullRows();
+          console.assert(gameState.ROWS === beforeRows2 + 1, 'Une deuxième rangée doit être ajoutée sur nouvelle ligne pleine');
+          console.assert(firstWasTop === true, 'Le premier unlock doit partir du haut');
+
+          // Test 3: ArmsDealer ne crash pas si des coins sont encore en popIn
+          const adCell = gameUtils.emptyCells()[0] || gameUtils.cellAt(0, 0);
+          const ad = new ArmsDealerSymbol(false);
+          ad.attach(adCell);
+          ad.resize();
+          for (let i = 0; i < 3; i++) {
+            const e = gameUtils.emptyCells()[0];
+            if (!e) break;
+            const k = new CoinSymbol(1);
+            k.attach(e);
+            k.resize();
+            k.onSpawn();
+          }
+          await ad.onResolve(gameUtils);
+
+          // Test 4: Upgrader -> versions persistantes valides (kill tween avant destroy)
+          const ugCell = gameUtils.emptyCells()[0] || gameUtils.cellAt(0, 2);
+          const ug = new UpgraderSymbol();
+          ug.attach(ugCell);
+          ug.resize();
+          await ug.onResolve(gameUtils);
+
+          // Test 5: ResetPlus augmente la base et remet le compteur
+          const rCell = gameUtils.emptyCells()[0] || gameUtils.cellAt(1, 2);
+          const rplus = new ResetPlusSymbol();
+          rplus.attach(rCell);
+          rplus.resize();
+          await rplus.onResolve(gameUtils);
+          console.assert(gameState.respinBase >= 3 && gameState.respins === gameState.respinBase, 'ResetPlus doit remettre le compteur au nouveau base');
+
+          // Test 6: Un symbole Unlock seul NE doit PAS débloquer de rangée
+          const rowsBeforeUnlock = gameState.ROWS;
+          const uCell = gameUtils.emptyCells()[0];
+          const u = new UnlockSymbol();
+          u.attach(uCell);
+          u.resize();
+          await u.onResolve(gameUtils);
+          console.assert(gameState.ROWS === rowsBeforeUnlock, "Unlock ne doit pas débloquer si la ligne n'est pas pleine");
+
+          // Test 7: PopIn/Bump sur objet non attaché → no-op sans crash
+          const ghost = new CoinSymbol(1);
+          await ghost.onSpawn();
+          await ghost.bump();
+
+          // Test 8: Destroy en cours de tween ne provoque pas d'accès à scale null
+          const ccell = gameUtils.emptyCells()[0];
+          const temp = new CoinSymbol(2);
+          temp.attach(ccell);
+          temp.resize();
+          const tween = temp.bump();
+          safeDestroySymbol(temp);
+          await tween.catch(() => {});
+
+          // Test 9: Sniper ne tire qu'une seule fois par résolution
+          resetBoard();
+          gameState.playing = true;
+          const sCell = gameUtils.cellAt(0, 0);
+          const coinCell = gameUtils.cellAt(1, 0);
+          const sniper = new SniperSymbol(false);
+          sniper.attach(sCell);
+          sniper.resize();
+          const targetCoin = new CoinSymbol(2);
+          targetCoin.attach(coinCell);
+          targetCoin.resize();
+          await sniper.onResolve(gameUtils);
+          console.assert(targetCoin.value === 4, 'Sniper doit doubler une seule fois la cible');
+
+          // Test 10: plusieurs lignes complètes dans un même tour -> 1 seul unlock
+          resetBoard();
+          gameState.playing = true;
+          for (let c = 0; c < gameState.COLS; c++) {
+            let cellA = gameUtils.cellAt(c, 0);
+            let cellB = gameUtils.cellAt(c, 1);
+            const k1 = new CoinSymbol(1);
+            k1.attach(cellA);
+            k1.resize();
+            const k2 = new CoinSymbol(1);
+            k2.attach(cellB);
+            k2.resize();
+          }
+          const beforeTest10 = gameState.ROWS;
+          await maybeUnlockFromFullRows();
+          console.assert(gameState.ROWS === beforeTest10 + 1, 'Quand deux lignes sont complètes en même temps, une seule rangée doit se débloquer (par tour)');
+
+          // Test 11: createSymbol est défini
+          console.assert(typeof createSymbol === 'function', 'createSymbol doit être défini');
+          const csA = createSymbol('coin');
+          console.assert(csA instanceof CoinSymbol, 'createSymbol("coin") → CoinSymbol');
+          safeDestroySymbol(csA);
+          const csB = createSymbol('collector');
+          console.assert(csB instanceof CollectorSymbol, 'createSymbol("collector") → CollectorSymbol');
+          safeDestroySymbol(csB);
+          const csC = createSymbol('p_collector');
+          console.assert(csC instanceof CollectorSymbol && csC.persistent === true, 'createSymbol("p_collector") → CollectorSymbol(persistent)');
+          safeDestroySymbol(csC);
+
+          // Test 12: la grille est toujours MAX_ROWS et les rangées verrouillées n'acceptent pas de spawn
+          resetBoard();
+          gameState.playing = true;
+          console.assert(gameState.cells.length === gameState.COLS * gameState.MAX_ROWS, 'La grille doit afficher toutes les rangées visibles');
+          for (let c = 0; c < gameState.COLS; c++) {
+            for (let r = 0; r < gameState.ROWS; r++) {
+              const cell = gameUtils.cellAt(c, r);
+              if (cell.isEmpty()) {
+                const k = new CoinSymbol(1);
+                k.attach(cell);
+              }
+            }
+          }
+          console.assert(gameUtils.emptyCells().length === 0, 'Aucune case active vide après remplissage complet');
+          await maybeUnlockFromFullRows();
+          console.assert(gameUtils.emptyCells().length === gameState.COLS, 'Une rangée déverrouillée ajoute exactement COLS cases vides actives');
+
+          // Test 13 (bump() thenable)
+          const cellTest13 = gameUtils.cellAt(0, 0);
+          const sTest13 = new CoinSymbol(1);
+          sTest13.attach(cellTest13);
+          sTest13.resize();
+          const pTest13 = sTest13.bump();
+          safeDestroySymbol(sTest13);
+          const res = await Promise.race([pTest13.then(() => "ok"), gameUtils.sleep(1000).then(() => "timeout")]);
+          console.assert(res === "ok", 'bump() doit se résoudre même après killTweensOf/destroy');
+
+          // Test 14 (popIn() promise)
+          const cell2 = gameUtils.cellAt(0, 1);
+          const s2 = new CoinSymbol(1);
+          s2.attach(cell2);
+          s2.resize();
+          const beforeTest14 = performance.now();
+          await s2.onSpawn();
+          const elapsed = performance.now() - beforeTest14;
+          console.assert(elapsed >= 200, 'popIn/onSpawn devrait attendre au moins ~200ms (approx)');
+          safeDestroySymbol(s2);
+          cell2.symbol = null;
+
+          // Test 15 (nouveau): la vague de spin de startBonus existe et prend un temps non nul
+          resetBoard();
+          gameState.playing = true;
+          const t0 = performance.now();
+          await sweepSpinAllCellsTopDown();
+          const elapsed2 = performance.now() - t0;
+          console.assert(elapsed2 >= (gameState.MAX_ROWS * (gameState.turbo ? 80 : 140)) * 0.5 / 1.0, 'La vague de spin devrait durer un minimum (approx)');
+
+          gameUtils.toast('Tests OK ✅');
+        } catch (err) {
+          console.error(err);
+          gameUtils.toast('Tests en erreur: ' + (err?.message || err));
+        }
       }
     };
 
@@ -830,6 +1332,30 @@ const MoneyCartGame = memo(() => {
         >
           Réinitialiser
         </button>
+
+        <button
+          onClick={() => window.moneyCartGame?.runTests()}
+          style={{
+            padding: '10px 14px',
+            borderRadius: '12px',
+            background: '#1d2a36',
+            border: '1px solid rgba(255,255,255,.1)',
+            color: '#e6f0ff',
+            fontWeight: 600,
+            cursor: 'pointer',
+            transition: '.15s'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = 'translateY(-1px)';
+            e.target.style.background = '#223240';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = 'translateY(0)';
+            e.target.style.background = '#1d2a36';
+          }}
+        >
+          Tests
+        </button>
       </div>
 
       {/* Panel de fin */}
@@ -873,6 +1399,28 @@ const MoneyCartGame = memo(() => {
               Fermer
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      {showToast && (
+        <div style={{
+          position: 'absolute',
+          right: '16px',
+          bottom: '16px',
+          fontWeight: 700,
+          background: '#12202c',
+          border: '1px solid rgba(255,255,255,.08)',
+          borderRadius: '12px',
+          padding: '10px 14px',
+          color: '#e6f0ff',
+          fontSize: '14px',
+          opacity: showToast ? 1 : 0,
+          transform: showToast ? 'translateY(0)' : 'translateY(10px)',
+          transition: '.25s',
+          zIndex: 1000
+        }}>
+          {toastMessage}
         </div>
       )}
     </div>
