@@ -40,7 +40,7 @@ const MoneyCartGame = memo(() => {
     activeBottom: 0,
     fullRowsAwarded: 0,
     nextUnlockTop: true,
-    cellSize: 70, // Taille optimisée pour le centrage
+    cellSize: 60, // Taille par défaut pour centrage dynamique
     origin: { x: 0, y: 0 }
   });
 
@@ -1070,35 +1070,38 @@ const MoneyCartGame = memo(() => {
       
       console.log(`Layout - Canvas size: ${w}x${h}`); // Debug
       
-      // Marges ajustées pour un centrage parfait
-      const topMargin = 60; // Espace minimal pour le HUD
-      const bottomMargin = 100; // Espace minimal pour les contrôles  
-      const sideMargin = 10; // Marges minimales latérales
+      // Utiliser tout l'espace disponible pour un centrage parfait
+      const hudHeight = 80; // Hauteur fixe du HUD
+      const controlsHeight = 120; // Hauteur fixe des contrôles
       
-      const availableWidth = w - 2 * sideMargin;
-      const availableHeight = h - topMargin - bottomMargin;
+      // Calculer l'espace disponible pour la grille
+      const gameAreaWidth = w;
+      const gameAreaHeight = h - hudHeight - controlsHeight;
       
-      console.log(`Available space: ${availableWidth}x${availableHeight}`); // Debug
+      console.log(`Game area: ${gameAreaWidth}x${gameAreaHeight}`); // Debug
       
-      const sizeByW = Math.floor(availableWidth / gameState.COLS);
-      const sizeByH = Math.floor(availableHeight / gameState.MAX_ROWS);
+      // Calculer la taille optimale des cellules
+      const maxCellWidth = Math.floor(gameAreaWidth * 0.8 / gameState.COLS); // 80% de la largeur
+      const maxCellHeight = Math.floor(gameAreaHeight * 0.9 / gameState.MAX_ROWS); // 90% de la hauteur
       
-      // Taille ajustée pour un centrage optimal
-      gameState.cellSize = Math.max(50, Math.min(sizeByW, sizeByH, 100));
+      gameState.cellSize = Math.max(40, Math.min(maxCellWidth, maxCellHeight, 90));
       
       console.log(`Cell size: ${gameState.cellSize}`); // Debug
       
       const gridW = gameState.COLS * gameState.cellSize;
       const gridH = gameState.MAX_ROWS * gameState.cellSize;
       
-      // Centrage horizontal parfait - décalage vers la gauche pour compenser
-      gameState.origin.x = Math.round((w - gridW) / 2) - 50; // Décalage de 50px vers la gauche
+      // Centrage parfait horizontal ET vertical
+      gameState.origin.x = Math.round((w - gridW) / 2);
+      gameState.origin.y = Math.round(hudHeight + (gameAreaHeight - gridH) / 2);
       
-      // Centrage vertical optimisé
-      gameState.origin.y = Math.round(topMargin + (availableHeight - gridH) / 2);
+      // Ajustement final pour compensation visuelle si nécessaire
+      if (gameState.origin.x < 0) gameState.origin.x = 10;
+      if (gameState.origin.y < hudHeight) gameState.origin.y = hudHeight + 10;
       
-      console.log(`Grid origin: ${gameState.origin.x}, ${gameState.origin.y}`); // Debug
+      console.log(`Grid origin FINAL: ${gameState.origin.x}, ${gameState.origin.y}`); // Debug
       console.log(`Grid size: ${gridW}x${gridH}`); // Debug
+      console.log(`Available vs Used - W: ${gameAreaWidth} vs ${gridW}, H: ${gameAreaHeight} vs ${gridH}`); // Debug
       
       // Mise à jour des positions des cellules
       for (const c of gameState.cells) {
@@ -1815,11 +1818,16 @@ const MoneyCartGame = memo(() => {
     rebuildGrid();
     gameUtils.updateHUD();
     
-    // Forcer un layout immédiat pour s'assurer que les cellules sont visibles
+    // Forcer plusieurs layouts pour s'assurer du centrage parfait
     setTimeout(() => {
       layout();
-      console.log('Layout forcé après initialisation');
+      console.log('Layout forcé après initialisation (100ms)');
     }, 100);
+    
+    setTimeout(() => {
+      layout();
+      console.log('Layout forcé après initialisation (500ms)');
+    }, 500);
 
     // Cleanup
     return () => {
