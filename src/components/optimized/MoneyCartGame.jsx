@@ -797,7 +797,7 @@ const MoneyCartGame = () => {
       await maybeUnlockFromFullRows();
       const mult = sumValues();
       if (mult >= MAX_WIN_CAP) {
-        await showPanel("MAX WIN ATTEINT", `${mult}×`);
+        await displayPanel("MAX WIN ATTEINT", `${mult}×`);
         playing = false;
         autoplay = false;
         return;
@@ -825,7 +825,7 @@ const MoneyCartGame = () => {
     playing = false;
   }
 
-  async function showPanel(title, big) {
+  async function displayPanel(title, big) {
     setPanelData({ title, total: big });
     setShowPanel(true);
     await sleep(200);
