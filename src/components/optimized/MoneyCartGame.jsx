@@ -67,11 +67,11 @@ const MoneyCartGame = () => {
 
   const weightedPick = (table) => {
     const entries = Object.entries(table);
-    const sum = entries.reduce((acc, [, weight]) => acc + weight, 0);
+    const sum = entries.reduce((acc, [, weightValue]) => acc + weightValue, 0);
     let randomValue = Math.random() * sum;
-    for (const [key, weight] of entries) {
-      randomValue -= weight;
-      if (randomValue < 0) return key;
+    for (const [keyValue, weightValue] of entries) {
+      randomValue -= weightValue;
+      if (randomValue < 0) return keyValue;
     }
     return entries[0][0];
   };
@@ -832,7 +832,7 @@ const MoneyCartGame = () => {
       <div className="controls">
         <button className="btn" onClick={startBonus}>Lancer le Bonus</button>
         <button className="btn" onClick={() => { autoplay = false; spinStep(); }}>Tour suivant (Espace)</button>
-        <button className="btn" onClick={(e) => { turbo = !turbo; e.target.textContent = `Turbo : ${turbo ? "ON" : "OFF"}`; toast(`Turbo ${turbo ? "activé" : "désactivé"}`); }}>Turbo : OFF</button>
+        <button className="btn" onClick={(event) => { turbo = !turbo; event.target.textContent = `Turbo : ${turbo ? "ON" : "OFF"}`; toast(`Turbo ${turbo ? "activé" : "désactivé"}`); }}>Turbo : OFF</button>
         <button className="btn" onClick={() => { playing = false; setShowPanel(false); resetBoard(); toast("Réinitialisé"); }}>Réinitialiser</button>
       </div>
 
