@@ -184,15 +184,20 @@ const MoneyCartIntro = ({ onComplete }) => {
 
   return (
     <div style={{
-      position: 'fixed',
-      inset: 0,
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
       background: 'linear-gradient(135deg, #0a0e1a 0%, #1a2332 50%, #0f1623 100%)',
       zIndex: 1000,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '20px'
+      padding: '15px',
+      overflow: 'auto',
+      maxHeight: '100%'
     }}>
       {/* Arrière-plan avec effets */}
       <div style={{
@@ -208,13 +213,13 @@ const MoneyCartIntro = ({ onComplete }) => {
 
       {/* Titre principal Money Cart 4 */}
       <div style={{
-        fontSize: '4rem',
+        fontSize: 'clamp(2rem, 4vw, 3rem)',
         fontWeight: 900,
         background: 'linear-gradient(45deg, #ffd700, #ffaa00, #ff6600)',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
         textShadow: '0 0 20px rgba(255, 215, 0, 0.5)',
-        marginBottom: '20px',
+        marginBottom: '15px',
         textAlign: 'center',
         fontFamily: 'Arial Black, Arial',
         zIndex: 2,
@@ -225,9 +230,9 @@ const MoneyCartIntro = ({ onComplete }) => {
 
       {/* Sous-titre */}
       <div style={{
-        fontSize: '1.5rem',
+        fontSize: 'clamp(1rem, 2.5vw, 1.3rem)',
         color: '#ffffff',
-        marginBottom: '40px',
+        marginBottom: '25px',
         textAlign: 'center',
         fontWeight: 600,
         zIndex: 2,
@@ -239,44 +244,47 @@ const MoneyCartIntro = ({ onComplete }) => {
       {/* Cartes des symboles */}
       <div style={{
         display: 'flex',
-        gap: '20px',
+        gap: '15px',
         justifyContent: 'center',
         flexWrap: 'wrap',
-        maxWidth: '1200px',
-        marginBottom: '40px',
+        maxWidth: '100%',
+        width: '100%',
+        marginBottom: '25px',
         zIndex: 2,
-        position: 'relative'
+        position: 'relative',
+        overflowY: 'auto'
       }}>
         {currentSlideData.cards.map((card, index) => (
           <div key={index} style={{
             background: 'linear-gradient(145deg, #1a2332, #0a0e1a)',
             border: '2px solid rgba(0, 255, 255, 0.3)',
-            borderRadius: '16px',
-            padding: '20px',
-            width: '220px',
-            minHeight: '280px',
+            borderRadius: '12px',
+            padding: '15px',
+            width: 'clamp(180px, 22vw, 200px)',
+            minHeight: '220px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             textAlign: 'center',
             boxShadow: '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)',
-            transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+            transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+            flex: '0 1 auto'
           }}
           onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-5px)';
-            e.target.style.boxShadow = '0 12px 40px rgba(0,255,255,0.2), inset 0 1px 0 rgba(255,255,255,0.2)';
+            e.currentTarget.style.transform = 'translateY(-3px)';
+            e.currentTarget.style.boxShadow = '0 12px 40px rgba(0,255,255,0.2), inset 0 1px 0 rgba(255,255,255,0.2)';
           }}
           onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.boxShadow = '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)';
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)';
           }}>
             {/* Icône du symbole */}
             <div style={{
-              fontSize: '3rem',
-              marginBottom: '15px',
-              padding: '15px',
+              fontSize: 'clamp(2rem, 4vw, 2.5rem)',
+              marginBottom: '10px',
+              padding: '10px',
               background: `linear-gradient(145deg, ${card.color}, ${card.color}88)`,
-              borderRadius: '12px',
+              borderRadius: '10px',
               border: '2px solid rgba(255,255,255,0.2)',
               boxShadow: '0 4px 16px rgba(0,0,0,0.3)'
             }}>
@@ -285,10 +293,10 @@ const MoneyCartIntro = ({ onComplete }) => {
 
             {/* Nom du symbole */}
             <div style={{
-              fontSize: '1.1rem',
+              fontSize: 'clamp(0.9rem, 2vw, 1rem)',
               fontWeight: 700,
               color: '#ffffff',
-              marginBottom: '15px',
+              marginBottom: '10px',
               textTransform: 'uppercase',
               letterSpacing: '1px'
             }}>
@@ -297,10 +305,12 @@ const MoneyCartIntro = ({ onComplete }) => {
 
             {/* Description */}
             <div style={{
-              fontSize: '0.85rem',
+              fontSize: 'clamp(0.7rem, 1.5vw, 0.8rem)',
               color: 'rgba(255,255,255,0.8)',
-              lineHeight: '1.4',
-              flex: 1
+              lineHeight: '1.3',
+              flex: 1,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
             }}>
               {card.description}
             </div>
@@ -311,8 +321,8 @@ const MoneyCartIntro = ({ onComplete }) => {
       {/* Navigation par points */}
       <div style={{
         display: 'flex',
-        gap: '12px',
-        marginBottom: '30px',
+        gap: '10px',
+        marginBottom: '20px',
         zIndex: 2,
         position: 'relative'
       }}>
@@ -321,14 +331,14 @@ const MoneyCartIntro = ({ onComplete }) => {
             key={index}
             onClick={() => goToSlide(index)}
             style={{
-              width: '16px',
-              height: '16px',
+              width: '12px',
+              height: '12px',
               borderRadius: '50%',
               border: 'none',
               background: index === currentSlide ? '#ffd700' : 'rgba(255,255,255,0.3)',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
-              boxShadow: index === currentSlide ? '0 0 12px rgba(255, 215, 0, 0.6)' : 'none'
+              boxShadow: index === currentSlide ? '0 0 10px rgba(255, 215, 0, 0.6)' : 'none'
             }}
           />
         ))}
@@ -340,9 +350,9 @@ const MoneyCartIntro = ({ onComplete }) => {
         style={{
           background: 'linear-gradient(145deg, #00ff88, #00cc66)',
           border: '3px solid #ffffff',
-          borderRadius: '12px',
-          padding: '15px 40px',
-          fontSize: '1.2rem',
+          borderRadius: '10px',
+          padding: 'clamp(10px, 2vw, 15px) clamp(25px, 4vw, 35px)',
+          fontSize: 'clamp(1rem, 2vw, 1.1rem)',
           fontWeight: 900,
           color: '#000000',
           cursor: 'pointer',
