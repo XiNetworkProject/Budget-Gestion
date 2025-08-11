@@ -301,6 +301,7 @@ const MoneyCartGame = () => {
   };
 
   const floatText = (cell, text, fxLayer) => {
+    if (!fxLayer || !cell) return;
     const state = gameStateRef.current;
     const t = new PIXI.Text(text, {
       fontSize: Math.floor(state.cellSize * 0.28),
@@ -324,6 +325,7 @@ const MoneyCartGame = () => {
   };
 
   const beam = (fromCell, toCell, fxLayer) => {
+    if (!fxLayer || !fromCell || !toCell) return;
     const g = new PIXI.Graphics();
     g.lineStyle({ width: 3, color: 0x58c1ff, alpha: 0.9 });
     const a = cellCenter(fromCell);
@@ -353,6 +355,7 @@ const MoneyCartGame = () => {
   };
 
   const suck = (toCell, fromCell, fxLayer) => {
+    if (!fxLayer || !fromCell || !toCell) return;
     const a = cellCenter(fromCell);
     const b = cellCenter(toCell);
     const p = new PIXI.Graphics();
@@ -371,6 +374,7 @@ const MoneyCartGame = () => {
   };
 
   const electricArc = (a, b, fxLayer) => {
+    if (!fxLayer || !a || !b) return;
     const steps = 6 + Math.floor(Math.hypot(b.x - a.x, b.y - a.y) / 120);
     const g = new PIXI.Graphics();
     g.lineStyle({ width: 2, color: 0x7ee4ff, alpha: 1 });
@@ -795,7 +799,7 @@ const MoneyCartGame = () => {
 
   const startBonus = useCallback(async () => {
     const state = gameStateRef.current;
-    if (state.playing) return;
+    if (state.playing || !state.cells.length || !state.fxLayer) return;
     
     state.playing = true;
     state.respins = state.respinBase;
@@ -833,8 +837,9 @@ const MoneyCartGame = () => {
     updateGameUI();
     showToast("Bonus lancé ! Auto en cours…");
     state.autoplay = true;
-    autoPlayLoop();
-  }, [emptyCells, recomputeActiveBounds, showToast, updateGameUI, sweepSpinAllCellsTopDown, autoPlayLoop]);
+    // Délai pour éviter les conflits
+    setTimeout(() => autoPlayLoop(), 100);
+  }, [emptyCells, recomputeActiveBounds, showToast, updateGameUI, sweepSpinAllCellsTopDown]);
 
   const autoPlayLoop = useCallback(async () => {
     const state = gameStateRef.current;
@@ -847,7 +852,7 @@ const MoneyCartGame = () => {
 
   const spinStep = useCallback(async () => {
     const state = gameStateRef.current;
-    if (!state.playing || state.respins <= 0 || state.isSpinning) return;
+    if (!state.playing || state.respins <= 0 || state.isSpinning || !state.cells.length) return;
     
     state.isSpinning = true;
     try {
@@ -929,7 +934,7 @@ const MoneyCartGame = () => {
     } finally {
       state.isSpinning = false;
     }
-  }, [emptyCells, updateGameUI]);
+  }, [emptyCells, updateGameUI, maybeUnlockFromFullRows, showToast]);
 
   const endBonus = useCallback(async () => {
     const state = gameStateRef.current;
@@ -982,6 +987,7 @@ const MoneyCartGame = () => {
   // Animation sweep spin
   const spinFX = useCallback((cell, dur = 0.18) => {
     const state = gameStateRef.current;
+    if (!state.fxLayer || !cell) return Promise.resolve();
     const center = cellCenter(cell);
     const r = Math.max(8, Math.floor(state.cellSize * 0.32));
     const sp = new PIXI.Container();
