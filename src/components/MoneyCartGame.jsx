@@ -40,7 +40,7 @@ const MoneyCartGame = memo(() => {
     activeBottom: 0,
     fullRowsAwarded: 0,
     nextUnlockTop: true,
-    cellSize: 70, // Taille adaptée au nouveau cadre Money Cart 4
+    cellSize: 90, // Taille augmentée pour visibilité dans le cadre 720x480
     origin: { x: 0, y: 0 }
   });
 
@@ -1015,15 +1015,15 @@ const MoneyCartGame = memo(() => {
     // Charger PixiPlugin
     loadPixiPlugin();
 
-    // Configuration pour correspondre au layout du vrai Money Cart 4
+    // Configuration pour voir TOUTES les lignes
     const app = new PIXI.Application({
       background: 0x1a2530,
       resizeTo: containerRef.current,
       antialias: true,
       resolution: 1, // Résolution standard pour performance
       autoDensity: false,
-      width: 480, // Largeur de la grille
-      height: 320 // Hauteur de la grille
+      width: 720, // Plus large pour toutes les colonnes
+      height: 480 // Plus haut pour toutes les rangées (8 max)
     });
 
     containerRef.current.appendChild(app.view);
@@ -1063,8 +1063,8 @@ const MoneyCartGame = memo(() => {
       const sizeByW = Math.floor(w / gameState.COLS);
       const sizeByH = Math.floor(h / gameState.MAX_ROWS);
       
-      // Taille des cellules optimisée pour le nouveau cadre
-      gameState.cellSize = Math.max(50, Math.min(sizeByW, sizeByH, 80));
+      // Taille des cellules pour voir TOUTES les rangées
+      gameState.cellSize = Math.max(60, Math.min(sizeByW, sizeByH, 120));
       
       const gridW = gameState.COLS * gameState.cellSize;
       const gridH = gameState.MAX_ROWS * gameState.cellSize;
@@ -1841,13 +1841,16 @@ const MoneyCartGame = memo(() => {
       height: '100vh', 
       background: `
         linear-gradient(135deg, 
-          #1a2332 0%, 
-          #2a3545 25%, 
-          #1f2d42 50%, 
-          #243040 75%, 
-          #1a2332 100%
-        ),
-        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="150" cy="30" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="150" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="180" cy="120" r="1" fill="rgba(255,255,255,0.1)"/></svg>')
+          #2a3d52 0%, 
+          #1e2b3f 25%, 
+          #243348 50%, 
+          #1a2a3d 75%, 
+          #2a3d52 100%
+        )
+      `,
+      backgroundImage: `
+        radial-gradient(circle at 20% 80%, rgba(255,100,150,0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(100,150,255,0.15) 0%, transparent 50%)
       `,
       overflow: 'hidden',
       display: 'flex',
@@ -1855,46 +1858,12 @@ const MoneyCartGame = memo(() => {
       alignItems: 'center',
       justifyContent: 'center'
     }}>
-      {/* Éléments décoratifs latéraux comme dans le vrai jeu */}
-      <div style={{
-        position: 'absolute',
-        left: '0',
-        top: '20%',
-        width: '150px',
-        height: '300px',
-        background: `
-          linear-gradient(90deg, 
-            rgba(255, 50, 50, 0.6) 0%, 
-            rgba(255, 100, 100, 0.4) 50%,
-            transparent 100%
-          )
-        `,
-        clipPath: 'polygon(0 0, 80% 0, 60% 100%, 0 100%)',
-        zIndex: 1
-      }} />
-      
-      <div style={{
-        position: 'absolute',
-        right: '0',
-        top: '20%',
-        width: '150px',
-        height: '300px',
-        background: `
-          linear-gradient(270deg, 
-            rgba(255, 50, 50, 0.6) 0%, 
-            rgba(255, 100, 100, 0.4) 50%,
-            transparent 100%
-          )
-        `,
-        clipPath: 'polygon(20% 0, 100% 0, 100% 100%, 40% 100%)',
-        zIndex: 1
-      }} />
 
-      {/* Grille de jeu centrée - style exact du vrai Money Cart 4 */}
+      {/* Grille de jeu centrée - TOUTES les lignes visibles */}
       <div style={{
         position: 'relative',
-        width: '480px',
-        height: '320px',
+        width: '720px', // Plus large pour voir toutes les colonnes
+        height: '480px', // Plus haut pour voir toutes les rangées
         background: `
           linear-gradient(135deg, 
             rgba(20, 30, 40, 0.9) 0%, 
