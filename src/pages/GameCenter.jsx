@@ -175,14 +175,6 @@ const GameCenter = memo(() => {
                   
 
       <Paper sx={{ p: 2, mt: 3, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
-        <Typography variant="h6" sx={{ mb: 2, color: 'white', fontWeight: 600 }}>Money Cart - Jeu de Bonus PixiJS</Typography>
-        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 2 }}>
-          Jeu inspiré de Money Cart avec mécaniques de respins, symboles spéciaux et déblocage de rangées.
-        </Typography>
-        <MoneyCartGame />
-      </Paper>
-
-      <Paper sx={{ p: 2, mt: 3, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
         <Typography variant="h6" sx={{ mb: 1, color: 'white', fontWeight: 600 }}>Mini‑jeu "Run" (style Money Cart)</Typography>
         <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mb: 1 }}>
           Lance un run rapide et accumule des multiplicateurs, objets et points.
@@ -202,6 +194,14 @@ const GameCenter = memo(() => {
         {showRun && runPreview && (
           <MoneyCartRun open={showRun} onClose={() => setShowRun(false)} run={runPreview} />
         )}
+      </Paper>
+
+      <Paper sx={{ p: 2, mt: 3, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
+        <Typography variant="h6" sx={{ mb: 2, color: 'white', fontWeight: 600 }}>Money Cart - Jeu de Bonus PixiJS</Typography>
+        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 2 }}>
+          Jeu inspiré de Money Cart avec mécaniques de respins, symboles spéciaux et déblocage de rangées.
+        </Typography>
+        <MoneyCartGame />
       </Paper>
     </Box>
   );
