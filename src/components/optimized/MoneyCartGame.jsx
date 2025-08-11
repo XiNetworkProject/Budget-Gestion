@@ -630,9 +630,9 @@ const MoneyCartGame = () => {
 
   function getFullRowsRel() {
     const fullRows = [];
-    for (let r = 0; r < ROWS; r++) {
-      if (isRowFullRel(r)) {
-        fullRows.push(r);
+    for (let rowIndex = 0; rowIndex < ROWS; rowIndex++) {
+      if (isRowFullRel(rowIndex)) {
+        fullRows.push(rowIndex);
       }
     }
     return fullRows;
