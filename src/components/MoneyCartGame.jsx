@@ -150,64 +150,87 @@ const MoneyCartGame = memo(() => {
     }
 
     resize() {
-      const pad = Math.max(6, Math.floor(this.gameState.cellSize * 0.04)); // Padding adaptatif HD
+      const pad = Math.max(3, Math.floor(this.gameState.cellSize * 0.03));
       const r = this.isRowActive();
       const cellSize = this.gameState.cellSize;
-      const borderWidth = Math.max(2, Math.floor(cellSize * 0.015)); // Bordure adaptative HD
-      const innerBorderWidth = Math.max(1, Math.floor(cellSize * 0.008)); // Bordure intérieure HD
+      const cornerRadius = Math.max(6, cellSize * 0.08); // Coins arrondis comme dans l'image
       
-      // Style Money Cart 4 - cellules avec bordures néon HD
+      // Style EXACT de votre image - cellules métalliques industrielles
       this.bg.clear();
       
       if (r) {
-        // Cellule active - style futuriste avec gradient et bordure néon HD
-        this.bg.beginFill(0x1a2332)
-          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, Math.max(8, cellSize * 0.06))
+        // Cellule active - Style métallique bleu-gris comme dans l'image
+        
+        // Fond principal avec dégradé métallique
+        this.bg.beginFill(0x4a5b6d) // Couleur de base métallique
+          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, cornerRadius)
           .endFill();
         
-        // Bordure néon cyan HD
-        this.bg.lineStyle(borderWidth, 0x00ffff, 0.7)
-          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, Math.max(8, cellSize * 0.06));
+        // Effet de relief - Bord supérieur clair (highlight)
+        this.bg.lineStyle(2, 0x6b7c8f, 0.8)
+          .moveTo(pad + cornerRadius, pad)
+          .lineTo(cellSize - pad - cornerRadius, pad)
+          .arc(cellSize - pad - cornerRadius, pad + cornerRadius, cornerRadius, -Math.PI/2, 0)
+          .lineTo(cellSize - pad, pad + cornerRadius);
         
-        // Bordure intérieure plus fine HD
-        this.bg.lineStyle(innerBorderWidth, 0x66ffff, 0.4)
-          .drawRoundedRect(pad + borderWidth, pad + borderWidth, cellSize - 2 * pad - 2 * borderWidth, cellSize - 2 * pad - 2 * borderWidth, Math.max(6, cellSize * 0.04));
+        // Bord gauche clair
+        this.bg.lineStyle(2, 0x6b7c8f, 0.6)
+          .moveTo(pad, pad + cornerRadius)
+          .lineTo(pad, cellSize - pad - cornerRadius);
+        
+        // Ombre interne - Bord inférieur sombre
+        this.bg.lineStyle(2, 0x2d3a47, 0.8)
+          .moveTo(pad + cornerRadius, cellSize - pad)
+          .lineTo(cellSize - pad - cornerRadius, cellSize - pad);
+        
+        // Bord droit sombre  
+        this.bg.lineStyle(2, 0x2d3a47, 0.6)
+          .moveTo(cellSize - pad, cellSize - pad - cornerRadius)
+          .lineTo(cellSize - pad, pad + cornerRadius);
+        
+        // Bordure extérieure fine
+        this.bg.lineStyle(1, 0x1a2530, 0.9)
+          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, cornerRadius);
+        
       } else {
-        // Cellule verrouillée - plus sombre avec bordure rouge HD
-        this.bg.beginFill(0x0a0e13)
-          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, Math.max(8, cellSize * 0.06))
+        // Cellule verrouillée - Plus sombre mais même style métallique
+        this.bg.beginFill(0x2d3a47)
+          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, cornerRadius)
           .endFill();
         
-        // Bordure rouge pour verrouillage HD
-        this.bg.lineStyle(innerBorderWidth, 0x662222, 0.5)
-          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, Math.max(8, cellSize * 0.06));
+        // Relief atténué pour cellules verrouillées
+        this.bg.lineStyle(1, 0x3d4a57, 0.5)
+          .moveTo(pad + cornerRadius, pad)
+          .lineTo(cellSize - pad - cornerRadius, pad);
+        
+        this.bg.lineStyle(1, 0x1d2a37, 0.7)
+          .moveTo(pad + cornerRadius, cellSize - pad)
+          .lineTo(cellSize - pad - cornerRadius, cellSize - pad);
+        
+        this.bg.lineStyle(1, 0x1a2530, 0.7)
+          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, cornerRadius);
       }
       
-      // motif hatch si verrouillé - style plus moderne
+      // Motif de verrouillage plus subtil
       this.hatch.clear();
       if (!r) {
-        this.hatch.lineStyle(1, 0xff4466, 0.15);
-        // Motif diagonal en X
-        for (let k = 0; k < cellSize; k += 16) {
-          this.hatch.moveTo(pad + k, pad);
-          this.hatch.lineTo(pad + k + 12, pad + 12);
-          this.hatch.moveTo(pad + k + 12, pad);
-          this.hatch.lineTo(pad + k, pad + 12);
+        this.hatch.lineStyle(1, 0x1a2530, 0.3);
+        // Lignes diagonales fines
+        for (let i = 0; i < cellSize; i += 12) {
+          this.hatch.moveTo(pad + i, pad);
+          this.hatch.lineTo(pad + i + 8, pad + 8);
         }
       }
       
-      // halo pour surbrillance - effet néon plus prononcé
-      this.halo.clear().beginFill(0x00ffff, 0.1)
-        .drawRoundedRect(2, 2, cellSize - 4, cellSize - 4, 10)
-        .endFill();
-      this.halo.lineStyle(2, 0x00ffff, 0.5)
-        .drawRoundedRect(2, 2, cellSize - 4, cellSize - 4, 10);
+      // Halo pour surbrillance - plus subtil
+      this.halo.clear().lineStyle(2, 0x6bb6ff, 0.6)
+        .drawRoundedRect(1, 1, cellSize - 2, cellSize - 2, cornerRadius + 2);
       
-      // redessine le symbole si présent
+      // Redessine le symbole si présent
       if (this.symbol) this.symbol.resize();
       
-      // effet de transparence pour les cellules verrouillées
-      this.container.alpha = r ? 1 : 0.4;
+      // Transparence pour cellules verrouillées
+      this.container.alpha = r ? 1 : 0.6;
     }
 
     isRowActive() {
@@ -1979,7 +2002,7 @@ const MoneyCartGame = memo(() => {
       {/* Centre - Indicateur de mise style casino */}
       <div style={{
         position: 'absolute',
-        top: '35%',
+        top: '45%', // Déplacé un peu plus bas aussi
         right: '8%',
         width: '100px',
         height: '60px',
@@ -2018,10 +2041,10 @@ const MoneyCartGame = memo(() => {
       </div>
 
 
-      {/* Contrôles style Money Cart 4 - Bottom Panel */}
+      {/* Contrôles style Money Cart 4 - Bottom Panel - Plus bas */}
       <div style={{
         position: 'absolute',
-        bottom: '8%',
+        bottom: '3%', // Déplacé beaucoup plus bas
         left: '50%',
         transform: 'translateX(-50%)',
         display: 'flex',
