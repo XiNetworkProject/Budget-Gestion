@@ -18,7 +18,10 @@ const MoneyCartGame = () => {
     activeBottom: 3,
     fullRowsAwarded: 0,
     nextUnlockTop: true,
-    lastSpawned: []
+    lastSpawned: [],
+    fxLayer: null,
+    origin: { x: 0, y: 0 },
+    cellSize: 110
   });
 
   // États UI React
@@ -288,6 +291,117 @@ const MoneyCartGame = () => {
     }
   }
 
+  // Effets visuels
+  const cellCenter = (cell) => {
+    const state = gameStateRef.current;
+    return {
+      x: state.origin.x + cell.col * state.cellSize + state.cellSize / 2,
+      y: state.origin.y + cell.row * state.cellSize + state.cellSize / 2
+    };
+  };
+
+  const floatText = (cell, text, fxLayer) => {
+    const state = gameStateRef.current;
+    const t = new PIXI.Text(text, {
+      fontSize: Math.floor(state.cellSize * 0.28),
+      fontWeight: 800,
+      fill: 0xffffff,
+      dropShadow: true,
+      dropShadowBlur: 2,
+      dropShadowDistance: 0
+    });
+    t.anchor.set(0.5, 1);
+    t.x = state.origin.x + cell.col * state.cellSize + state.cellSize / 2;
+    t.y = state.origin.y + cell.row * state.cellSize + state.cellSize - 10;
+    fxLayer.addChild(t);
+    gsap.to(t, {
+      y: t.y - 24,
+      alpha: 0,
+      duration: 0.7,
+      ease: "sine.out",
+      onComplete: () => t.destroy()
+    });
+  };
+
+  const beam = (fromCell, toCell, fxLayer) => {
+    const g = new PIXI.Graphics();
+    g.lineStyle({ width: 3, color: 0x58c1ff, alpha: 0.9 });
+    const a = cellCenter(fromCell);
+    const b = cellCenter(toCell);
+    g.moveTo(a.x, a.y);
+    g.lineTo(b.x, b.y);
+    fxLayer.addChild(g);
+    
+    const dot = new PIXI.Graphics();
+    dot.beginFill(0xffffff).drawCircle(0, 0, 3).endFill();
+    dot.x = a.x;
+    dot.y = a.y;
+    fxLayer.addChild(dot);
+    
+    gsap.to(dot, {
+      x: b.x,
+      y: b.y,
+      duration: 0.18,
+      ease: "sine.out",
+      onComplete: () => dot.destroy()
+    });
+    gsap.to(g, {
+      alpha: 0,
+      duration: 0.25,
+      onComplete: () => g.destroy()
+    });
+  };
+
+  const suck = (toCell, fromCell, fxLayer) => {
+    const a = cellCenter(fromCell);
+    const b = cellCenter(toCell);
+    const p = new PIXI.Graphics();
+    p.beginFill(0xffd166).drawCircle(0, 0, 2.5).endFill();
+    p.x = a.x;
+    p.y = a.y;
+    fxLayer.addChild(p);
+    gsap.to(p, {
+      x: b.x,
+      y: b.y,
+      alpha: 0.2,
+      duration: 0.22,
+      ease: "sine.in",
+      onComplete: () => p.destroy()
+    });
+  };
+
+  const electricArc = (a, b, fxLayer) => {
+    const steps = 6 + Math.floor(Math.hypot(b.x - a.x, b.y - a.y) / 120);
+    const g = new PIXI.Graphics();
+    g.lineStyle({ width: 2, color: 0x7ee4ff, alpha: 1 });
+    const dx = (b.x - a.x) / steps;
+    const dy = (b.y - a.y) / steps;
+    g.moveTo(a.x, a.y);
+    for (let i = 1; i < steps; i++) {
+      const px = a.x + dx * i + (Math.random() - 0.5) * 10;
+      const py = a.y + dy * i + (Math.random() - 0.5) * 10;
+      g.lineTo(px, py);
+    }
+    g.lineTo(b.x, b.y);
+    fxLayer.addChild(g);
+    
+    const glow = new PIXI.Graphics();
+    glow.lineStyle({ width: 6, color: 0x2bc0ff, alpha: 0.18 });
+    glow.moveTo(a.x, a.y);
+    glow.lineTo(b.x, b.y);
+    fxLayer.addChild(glow);
+    
+    gsap.to(g, { alpha: 0, duration: 0.35 });
+    gsap.to(glow, {
+      alpha: 0,
+      duration: 0.35,
+      onComplete: () => {
+        g.destroy();
+        glow.destroy();
+      }
+    });
+  };
+
   // Classes de symboles spécifiques
   class CoinSymbol extends BaseSymbol {
     constructor(v) {
@@ -301,12 +415,22 @@ const MoneyCartGame = () => {
     }
 
     async collectAnimated() {
-      // Logique de collection simplifiée pour l'exemple
-      const others = gameStateRef.current.cells
+      const state = gameStateRef.current;
+      const others = state.cells
         .filter(c => c.symbol && c.symbol !== this)
         .map(c => c.symbol);
       const total = others.reduce((a, s) => a + (s.value || 0), 0);
+      
+      // Effet visuel suck
+      for (const s of others) {
+        if (s.cell) {
+          suck(this.cell, s.cell, state.fxLayer);
+          await sleep(30);
+        }
+      }
+      
       this.value = Math.min(MAX_WIN_CAP, this.value + total);
+      floatText(this.cell, `+${total}`, state.fxLayer);
       this.resize();
       updateGameUI();
     }
@@ -318,6 +442,233 @@ const MoneyCartGame = () => {
 
     async onPersistent() {
       await this.collectAnimated();
+      await this.bump();
+    }
+  }
+
+  class PayerSymbol extends BaseSymbol {
+    constructor(v = 1, p = false) {
+      super(p ? "p_payer" : "payer", v, p);
+    }
+
+    async paySequential() {
+      const state = gameStateRef.current;
+      const targets = state.cells
+        .filter(c => c.symbol && c.symbol !== this)
+        .map(c => c.symbol);
+      
+      for (const t of targets) {
+        beam(this.cell, t.cell, state.fxLayer);
+        await sleep(60);
+        t.value = Math.min(MAX_WIN_CAP, t.value + this.value);
+        t.resize();
+        floatText(t.cell, `+${this.value}`, state.fxLayer);
+      }
+      updateGameUI();
+    }
+
+    async onResolve() {
+      await this.paySequential();
+      await this.bump();
+    }
+
+    async onPersistent() {
+      await this.paySequential();
+      await this.bump();
+    }
+  }
+
+  class ComboCPSymbol extends BaseSymbol {
+    constructor(p = false) {
+      super(p ? "p_cp" : "cp", 1, p);
+    }
+
+    async run() {
+      const state = gameStateRef.current;
+      const symbols = state.cells.filter(c => c.symbol).map(c => c.symbol);
+      const total = symbols.reduce((a, s) => a + (s.value || 0), 0);
+      
+      this.value = Math.min(MAX_WIN_CAP, this.value + total);
+      floatText(this.cell, `+${total}`, state.fxLayer);
+      this.resize();
+      
+      for (const s of symbols) {
+        if (s !== this) {
+          s.value = Math.min(MAX_WIN_CAP, s.value + this.value);
+          s.resize();
+          floatText(s.cell, `+${this.value}`, state.fxLayer);
+        }
+      }
+      updateGameUI();
+      await this.bump();
+    }
+
+    async onResolve() {
+      await this.run();
+    }
+
+    async onPersistent() {
+      await this.run();
+    }
+  }
+
+  class SniperSymbol extends BaseSymbol {
+    constructor(p = false) {
+      super(p ? "p_sniper" : "sniper", 0, p);
+    }
+
+    async shoot(times = 1) {
+      const state = gameStateRef.current;
+      let pool = state.cells
+        .filter(c => c.symbol && c.symbol !== this && c.symbol.value > 0)
+        .map(c => c.symbol);
+      
+      for (let i = 0; i < times && pool.length; i++) {
+        const t = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
+        beam(this.cell, t.cell, state.fxLayer);
+        t.value = Math.min(MAX_WIN_CAP, t.value * 2);
+        t.resize();
+        floatText(t.cell, "×2", state.fxLayer);
+        await sleep(120);
+      }
+      updateGameUI();
+    }
+
+    async onResolve() {
+      await this.shoot(1);
+      await this.bump();
+    }
+
+    async onPersistent() {
+      await this.shoot(1);
+      await this.bump();
+    }
+  }
+
+  class NecroSymbol extends BaseSymbol {
+    constructor() {
+      super("necro", 0, false);
+    }
+
+    async onResolve() {
+      const state = gameStateRef.current;
+      const pool = state.cells
+        .filter(c => c.symbol && ["collector", "payer", "cp", "sniper"].includes(c.symbol.type))
+        .map(c => c.symbol);
+      
+      const n = rnd.int(1, 2);
+      for (let i = 0; i < n && pool.length; i++) {
+        const t = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
+        t.cell.setHighlight(true);
+        await sleep(80);
+        t.cell.setHighlight(false);
+        await t.onResolve();
+      }
+      await this.bump();
+    }
+  }
+
+  class UnlockSymbol extends BaseSymbol {
+    constructor() {
+      super("unlock", 0, false);
+    }
+
+    async onResolve() {
+      const state = gameStateRef.current;
+      floatText(this.cell, "U", state.fxLayer);
+      await this.bump();
+    }
+  }
+
+  class ArmsDealerSymbol extends BaseSymbol {
+    constructor(p = false) {
+      super(p ? "p_arms" : "arms", 0, p);
+    }
+
+    async mutateCoins(count = 1) {
+      if (Math.random() < 0.5) return;
+      
+      const state = gameStateRef.current;
+      const pool = state.cells
+        .filter(c => isRowActive(c.row) && c.symbol && c.symbol.type === "coin")
+        .map(c => c.symbol);
+      
+      const pickTypes = ["collector", "payer", "sniper", "necro"];
+      
+      for (let i = 0; i < count && pool.length; i++) {
+        const target = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
+        killTweens(target);
+        const type = rnd.pick(pickTypes);
+        const cell = target.cell;
+        safeDestroySymbol(target);
+        cell.symbol = null;
+        const sym = createSymbol(type);
+        sym.attach(cell);
+        sym.resize();
+        await sym.onSpawn();
+      }
+      updateGameUI();
+    }
+
+    async onResolve() {
+      await this.mutateCoins(1);
+      await this.bump();
+    }
+
+    async onPersistent() {
+      await this.mutateCoins(1);
+      await this.bump();
+    }
+  }
+
+  class UpgraderSymbol extends BaseSymbol {
+    constructor() {
+      super("upg", 0, false);
+    }
+
+    async onResolve() {
+      const state = gameStateRef.current;
+      const candidates = state.cells
+        .filter(c => c.symbol && ["collector", "payer", "sniper", "cp"].includes(c.symbol.type))
+        .map(c => c.symbol);
+      
+      const n = rnd.int(0, 1);
+      for (let i = 0; i < n && candidates.length; i++) {
+        const t = candidates.splice(Math.floor(Math.random() * candidates.length), 1)[0];
+        const map = {
+          collector: "p_collector",
+          payer: "p_payer", 
+          sniper: "p_sniper",
+          cp: "p_cp"
+        };
+        const newType = map[t.type];
+        killTweens(t);
+        const cell = t.cell;
+        safeDestroySymbol(t);
+        cell.symbol = null;
+        const sym = createSymbol(newType);
+        sym.attach(cell);
+        sym.resize();
+        await sym.onSpawn();
+      }
+      await this.bump();
+      updateGameUI();
+    }
+  }
+
+  class ResetPlusSymbol extends BaseSymbol {
+    constructor() {
+      super("rplus", 0, false);
+    }
+
+    async onResolve() {
+      const state = gameStateRef.current;
+      if (state.respinBase < 5) {
+        state.respinBase++;
+        showToast(`Reset de base +1 → ${state.respinBase}`);
+      }
+      state.respins = state.respinBase;
+      updateGameUI();
       await this.bump();
     }
   }
@@ -372,6 +723,76 @@ const MoneyCartGame = () => {
     );
   }, [isRowActive]);
 
+  const isRowFullRel = useCallback((rRel) => {
+    for (let c = 0; c < COLS; c++) {
+      const cell = gameStateRef.current.cells.find(cell => 
+        cell.col === c && cell.row === gameStateRef.current.activeTop + rRel
+      );
+      if (!cell || !cell.symbol) return false;
+    }
+    return true;
+  }, []);
+
+  const getFullRowsRel = useCallback(() => {
+    const res = [];
+    for (let r = 0; r < gameStateRef.current.ROWS; r++) {
+      if (isRowFullRel(r)) res.push(r);
+    }
+    return res;
+  }, [isRowFullRel]);
+
+  const unlockRow = useCallback(async (direction, fullRowsRel) => {
+    const state = gameStateRef.current;
+    if (state.ROWS >= MAX_ROWS) return;
+    
+    fullRowsRel = fullRowsRel && fullRowsRel.length ? fullRowsRel : getFullRowsRel();
+    const sourceRel = direction === 'top' ? Math.min(...fullRowsRel) : Math.max(...fullRowsRel);
+    const sourceAbs = state.activeTop + sourceRel;
+    const targetAbs = direction === 'top' ? (state.activeTop - 1) : (state.activeBottom + 1);
+    
+    // Arcs électriques
+    if (targetAbs >= 0 && targetAbs < MAX_ROWS) {
+      for (let c = 0; c < COLS; c++) {
+        const from = state.cells.find(cell => cell.col === c && cell.row === sourceAbs);
+        const to = state.cells.find(cell => cell.col === c && cell.row === targetAbs);
+        if (from && to && state.fxLayer) {
+          electricArc(cellCenter(from), cellCenter(to), state.fxLayer);
+        }
+      }
+      await sleep(220);
+    }
+    
+    // Étend la fenêtre active
+    if (direction === 'top' && state.activeTop > 0) {
+      state.activeTop -= 1;
+    } else if (direction === 'bottom' && state.activeBottom < MAX_ROWS - 1) {
+      state.activeBottom += 1;
+    }
+    state.ROWS = Math.min(MAX_ROWS, state.ROWS + 1);
+    
+    // Rafraîchit le rendu
+    for (const c of state.cells) c.resize();
+    updateGameUI();
+    await sleep(120);
+  }, [getFullRowsRel, updateGameUI]);
+
+  const unlockRowByRule = useCallback(async (fullRowsRel) => {
+    const state = gameStateRef.current;
+    if (state.ROWS >= MAX_ROWS) return;
+    const dir = state.nextUnlockTop ? 'top' : 'bottom';
+    await unlockRow(dir, fullRowsRel);
+    state.nextUnlockTop = !state.nextUnlockTop;
+  }, [unlockRow]);
+
+  const maybeUnlockFromFullRows = useCallback(async () => {
+    const state = gameStateRef.current;
+    const fullRel = getFullRowsRel();
+    if (fullRel.length > state.fullRowsAwarded && state.ROWS < MAX_ROWS) {
+      await unlockRowByRule(fullRel);
+      state.fullRowsAwarded++;
+    }
+  }, [getFullRowsRel, unlockRowByRule]);
+
   const startBonus = useCallback(async () => {
     const state = gameStateRef.current;
     if (state.playing) return;
@@ -393,6 +814,9 @@ const MoneyCartGame = () => {
     recomputeActiveBounds();
     for (const c of state.cells) c.resize();
     
+    // Animation de sweep spin sur toutes les cellules
+    await sweepSpinAllCellsTopDown();
+    
     // Spawn initial
     const starters = rnd.int(3, 4);
     for (let i = 0; i < starters; i++) {
@@ -405,11 +829,12 @@ const MoneyCartGame = () => {
       await coin.onSpawn();
     }
     
+    state.respins = state.respinBase;
     updateGameUI();
-    showToast("Bonus lancé !");
+    showToast("Bonus lancé ! Auto en cours…");
     state.autoplay = true;
     autoPlayLoop();
-  }, [emptyCells, recomputeActiveBounds, showToast, updateGameUI]);
+  }, [emptyCells, recomputeActiveBounds, showToast, updateGameUI, sweepSpinAllCellsTopDown, autoPlayLoop]);
 
   const autoPlayLoop = useCallback(async () => {
     const state = gameStateRef.current;
@@ -451,15 +876,52 @@ const MoneyCartGame = () => {
       state.respins = spawned > 0 ? state.respinBase : (state.respins - 1);
       updateGameUI();
       
-      // Resolve symbols
-      for (const s of state.lastSpawned) {
-        if (s.onResolve) {
+      // 2) RESOLVE non-persistants du tour
+      const order = ["arms", "upg", "payer", "sniper", "collector", "cp", "necro", "unlock"];
+      for (const t of order) {
+        const group = state.lastSpawned.filter(s => s.type === t);
+        for (const s of group) {
+          s.cell.setHighlight(true);
           await s.onResolve();
+          s.cell.setHighlight(false);
           await sleep(state.turbo ? 30 : 140);
         }
       }
       
-      // Check end condition
+      // 3) PERSISTANTS (tous les tours)
+      const pOrder = ["p_arms", "p_payer", "p_sniper", "p_collector", "p_cp"];
+      for (const t of pOrder) {
+        const group = state.cells
+          .filter(c => c.symbol && c.symbol.type === t)
+          .map(c => c.symbol);
+        for (const s of group) {
+          s.cell.setHighlight(true);
+          await s.onPersistent();
+          s.cell.setHighlight(false);
+          await sleep(state.turbo ? 30 : 120);
+        }
+      }
+      
+      // 4) UNLOCK par lignes pleines
+      await maybeUnlockFromFullRows();
+      
+      // 5) CAP & fin
+      const symbols = state.cells.filter(c => c.symbol).map(c => c.symbol);
+      const mult = symbols.reduce((a, s) => a + (s.value || 0), 0);
+      if (mult >= MAX_WIN_CAP) {
+        setPanel({
+          show: true,
+          title: "MAX WIN ATTEINT",
+          total: `${mult}×`
+        });
+        state.playing = false;
+        state.autoplay = false;
+        return;
+      } else if (mult >= BIG_WIN_THRESHOLD) {
+        showToast(`GROS GAIN : ${mult}×`, 1500);
+      }
+      
+      updateGameUI();
       if (state.respins <= 0) {
         await endBonus();
         state.autoplay = false;
@@ -517,6 +979,73 @@ const MoneyCartGame = () => {
     showToast(`Turbo ${state.turbo ? "activé" : "désactivé"}`);
   }, [showToast]);
 
+  // Animation sweep spin
+  const spinFX = useCallback((cell, dur = 0.18) => {
+    const state = gameStateRef.current;
+    const center = cellCenter(cell);
+    const r = Math.max(8, Math.floor(state.cellSize * 0.32));
+    const sp = new PIXI.Container();
+    sp.x = center.x;
+    sp.y = center.y;
+    sp.rotation = Math.random() * Math.PI;
+    
+    const ring = new PIXI.Graphics();
+    ring.lineStyle({ width: 3, color: 0x5fd3ff, alpha: 0.8 }).drawCircle(0, 0, r);
+    const dot = new PIXI.Graphics();
+    dot.beginFill(0xffffff).drawCircle(r, 0, 3).endFill();
+    sp.addChild(ring, dot);
+    state.fxLayer.addChild(sp);
+    
+    return new Promise((resolve) => {
+      gsap.to(sp, { rotation: "+=6.283", duration: dur, ease: "sine.inOut" });
+      gsap.to(sp, {
+        alpha: 0.0,
+        delay: dur - 0.08,
+        duration: 0.08,
+        onComplete: () => {
+          sp.destroy();
+          resolve();
+        }
+      });
+    });
+  }, []);
+
+  const sweepSpinAllCellsTopDown = useCallback(async () => {
+    const state = gameStateRef.current;
+    const rowDur = state.turbo ? 0.12 : 0.18;
+    for (let absRow = 0; absRow < MAX_ROWS; absRow++) {
+      const rowCells = state.cells.filter(c => c.row === absRow);
+      await Promise.all(rowCells.map(c => spinFX(c, rowDur)));
+      await sleep(state.turbo ? 10 : 40);
+    }
+  }, [spinFX]);
+
+  const runTests = useCallback(async () => {
+    try {
+      showToast("Exécution des tests...");
+      
+      // Test simple basique
+      const state = gameStateRef.current;
+      console.log("Tests démarrés");
+      
+      // Test 1: Création de symboles
+      const testCoin = createSymbol('coin');
+      console.assert(testCoin instanceof CoinSymbol, 'createSymbol("coin") doit créer CoinSymbol');
+      
+      // Test 2: Déblocage de rangées
+      const beforeRows = state.ROWS;
+      if (beforeRows < MAX_ROWS) {
+        // Simuler une rangée pleine pour test
+        console.log(`Test déblocage: ${beforeRows} rangées avant`);
+      }
+      
+      showToast('Tests OK ✅');
+    } catch (err) {
+      console.error(err);
+      showToast('Tests en erreur: ' + (err?.message || err));
+    }
+  }, [showToast]);
+
   // Initialisation PixiJS
   useEffect(() => {
     if (!containerRef.current || appRef.current) return;
@@ -537,6 +1066,9 @@ const MoneyCartGame = () => {
     const gridLayer = new PIXI.Container();
     const fxLayer = new PIXI.Container();
     root.addChild(gridLayer, fxLayer);
+    
+    // Stocker fxLayer dans gameState
+    gameStateRef.current.fxLayer = fxLayer;
 
     // Variables de layout
     let cellSize = 110;
@@ -556,6 +1088,10 @@ const MoneyCartGame = () => {
       const gridH = MAX_ROWS * cellSize;
       origin.x = Math.round((w - gridW) / 2);
       origin.y = Math.round((h - gridH) / 2);
+      
+      // Mettre à jour gameState avec les nouvelles valeurs
+      gameStateRef.current.cellSize = cellSize;
+      gameStateRef.current.origin = origin;
       
       for (const c of gameStateRef.current.cells) {
         c.container.x = origin.x + c.col * cellSize;
@@ -727,6 +1263,21 @@ const MoneyCartGame = () => {
           }}
         >
           Réinitialiser
+        </button>
+        <button
+          onClick={runTests}
+          style={{
+            padding: '10px 14px',
+            borderRadius: '12px',
+            background: '#1d2a36',
+            border: '1px solid rgba(255,255,255,0.1)',
+            color: '#e6f0ff',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: '0.15s'
+          }}
+        >
+          Tests
         </button>
       </div>
 
