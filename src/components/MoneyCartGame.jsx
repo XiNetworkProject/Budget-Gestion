@@ -2,15 +2,19 @@ import { useEffect, useRef, useState, memo } from 'react';
 import * as PIXI from 'pixi.js';
 import { gsap } from 'gsap';
 
-// Importation dynamique du PixiPlugin de GSAP
-if (typeof window !== 'undefined' && window.gsap) {
-  try {
-    const { PixiPlugin } = await import('gsap/PixiPlugin');
-    gsap.registerPlugin(PixiPlugin);
-  } catch (e) {
-    console.warn('PixiPlugin non disponible:', e);
+// Importation conditionnelle du PixiPlugin pour éviter les erreurs SSR
+let pixiPluginLoaded = false;
+const loadPixiPlugin = async () => {
+  if (typeof window !== 'undefined' && !pixiPluginLoaded) {
+    try {
+      const { PixiPlugin } = await import('gsap/PixiPlugin');
+      gsap.registerPlugin(PixiPlugin);
+      pixiPluginLoaded = true;
+    } catch (e) {
+      console.warn('PixiPlugin non disponible:', e);
+    }
   }
-}
+};
 
 const MoneyCartGame = memo(() => {
   const containerRef = useRef(null);
@@ -343,6 +347,9 @@ const MoneyCartGame = memo(() => {
   // Initialisation de l'app PixiJS
   useEffect(() => {
     if (!containerRef.current) return;
+
+    // Charger PixiPlugin
+    loadPixiPlugin();
 
     const app = new PIXI.Application({
       background: 0x0b0f14,
