@@ -1015,15 +1015,15 @@ const MoneyCartGame = memo(() => {
     // Charger PixiPlugin
     loadPixiPlugin();
 
-    // Configuration adaptée au nouveau cadre Money Cart 4
+    // Configuration pour correspondre au layout du vrai Money Cart 4
     const app = new PIXI.Application({
-      background: 0x0a1520,
+      background: 0x1a2530,
       resizeTo: containerRef.current,
       antialias: true,
-      resolution: 1.5, // Légèrement améliorée pour la qualité
-      autoDensity: true,
-      width: 600, // Largeur du cadre
-      height: 400 // Hauteur du cadre
+      resolution: 1, // Résolution standard pour performance
+      autoDensity: false,
+      width: 480, // Largeur de la grille
+      height: 320 // Hauteur de la grille
     });
 
     containerRef.current.appendChild(app.view);
@@ -1840,272 +1840,214 @@ const MoneyCartGame = memo(() => {
       width: '100%', 
       height: '100vh', 
       background: `
-        radial-gradient(ellipse at center, #1a2332 0%, #0a0e1a 100%),
-        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23ffffff" stroke-width="0.1" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>')
+        linear-gradient(135deg, 
+          #1a2332 0%, 
+          #2a3545 25%, 
+          #1f2d42 50%, 
+          #243040 75%, 
+          #1a2332 100%
+        ),
+        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"/><circle cx="150" cy="30" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="150" r="1.5" fill="rgba(255,255,255,0.1)"/><circle cx="180" cy="120" r="1" fill="rgba(255,255,255,0.1)"/></svg>')
       `,
       overflow: 'hidden',
       display: 'flex',
+      flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center'
     }}>
-      {/* Arrière-plan espacial avec particules */}
+      {/* Éléments décoratifs latéraux comme dans le vrai jeu */}
       <div style={{
         position: 'absolute',
-        inset: 0,
+        left: '0',
+        top: '20%',
+        width: '150px',
+        height: '300px',
         background: `
-          radial-gradient(circle at 15% 30%, rgba(255, 0, 100, 0.4) 0%, transparent 40%),
-          radial-gradient(circle at 85% 70%, rgba(0, 255, 255, 0.3) 0%, transparent 40%),
-          radial-gradient(circle at 50% 10%, rgba(255, 200, 0, 0.2) 0%, transparent 30%)
-        `,
-        zIndex: 0
-      }} />
-
-      {/* Machine frame - style Money Cart 4 */}
-      <div style={{
-        position: 'relative',
-        width: '90%',
-        maxWidth: '1200px',
-        height: '90%',
-        background: `
-          linear-gradient(145deg, 
-            rgba(40, 50, 70, 0.9) 0%, 
-            rgba(20, 30, 50, 0.95) 25%,
-            rgba(10, 20, 40, 0.98) 50%,
-            rgba(20, 30, 50, 0.95) 75%,
-            rgba(40, 50, 70, 0.9) 100%
+          linear-gradient(90deg, 
+            rgba(255, 50, 50, 0.6) 0%, 
+            rgba(255, 100, 100, 0.4) 50%,
+            transparent 100%
           )
         `,
-        borderRadius: '20px',
-        border: '3px solid #4a9eff',
-        boxShadow: `
-          0 0 50px rgba(74, 158, 255, 0.5),
-          inset 0 0 30px rgba(74, 158, 255, 0.1),
-          0 0 100px rgba(0, 0, 0, 0.8)
-        `,
-        overflow: 'hidden',
+        clipPath: 'polygon(0 0, 80% 0, 60% 100%, 0 100%)',
         zIndex: 1
-      }}>
-        {/* Coins décoratifs de la machine */}
-        <div style={{
-          position: 'absolute',
-          top: '-10px',
-          left: '-10px',
-          width: '40px',
-          height: '40px',
-          background: 'linear-gradient(45deg, #ff0066, #ff3388)',
-          borderRadius: '50%',
-          boxShadow: '0 0 20px rgba(255, 0, 102, 0.8)',
-          zIndex: 10
-        }} />
-        <div style={{
-          position: 'absolute',
-          top: '-10px',
-          right: '-10px',
-          width: '40px',
-          height: '40px',
-          background: 'linear-gradient(45deg, #ff0066, #ff3388)',
-          borderRadius: '50%',
-          boxShadow: '0 0 20px rgba(255, 0, 102, 0.8)',
-          zIndex: 10
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '-10px',
-          left: '-10px',
-          width: '40px',
-          height: '40px',
-          background: 'linear-gradient(45deg, #00ffff, #33aaff)',
-          borderRadius: '50%',
-          boxShadow: '0 0 20px rgba(0, 255, 255, 0.8)',
-          zIndex: 10
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '-10px',
-          right: '-10px',
-          width: '40px',
-          height: '40px',
-          background: 'linear-gradient(45deg, #00ffff, #33aaff)',
-          borderRadius: '50%',
-          boxShadow: '0 0 20px rgba(0, 255, 255, 0.8)',
-          zIndex: 10
-        }} />
-
-        {/* Cadre de la grille de jeu - Style exact Money Cart 4 */}
-        <div style={{
-          position: 'absolute',
-          top: '22%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '600px',
-          height: '400px',
-          background: `
-            linear-gradient(135deg, 
-              rgba(5, 15, 25, 0.95) 0%, 
-              rgba(10, 25, 40, 0.9) 25%,
-              rgba(15, 30, 45, 0.85) 50%,
-              rgba(10, 25, 40, 0.9) 75%,
-              rgba(5, 15, 25, 0.95) 100%
-            )
-          `,
-          border: '6px solid #00ffaa',
-          borderRadius: '20px',
-          boxShadow: `
-            0 0 50px rgba(0, 255, 170, 0.8),
-            inset 0 0 30px rgba(0, 255, 170, 0.15),
-            0 0 80px rgba(0, 255, 170, 0.4)
-          `,
-          zIndex: 5,
-          overflow: 'hidden'
-        }}>
-          {/* Bordures intérieures décoratives */}
-          <div style={{
-            position: 'absolute',
-            inset: '8px',
-            border: '2px solid rgba(0, 255, 170, 0.3)',
-            borderRadius: '12px',
-            pointerEvents: 'none'
-          }} />
-          
-          {/* Canvas PixiJS dans le cadre */}
-          <div ref={containerRef} style={{ 
-            width: '100%', 
-            height: '100%', 
-            borderRadius: '14px',
-            overflow: 'hidden'
-          }} />
-        </div>
-      </div>
+      }} />
       
-      {/* HUD Style Money Cart 4 */}
       <div style={{
         position: 'absolute',
-        top: '8%',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '85%',
-        maxWidth: '1100px',
-        zIndex: 15
+        right: '0',
+        top: '20%',
+        width: '150px',
+        height: '300px',
+        background: `
+          linear-gradient(270deg, 
+            rgba(255, 50, 50, 0.6) 0%, 
+            rgba(255, 100, 100, 0.4) 50%,
+            transparent 100%
+          )
+        `,
+        clipPath: 'polygon(20% 0, 100% 0, 100% 100%, 40% 100%)',
+        zIndex: 1
+      }} />
+
+      {/* Grille de jeu centrée - style exact du vrai Money Cart 4 */}
+      <div style={{
+        position: 'relative',
+        width: '480px',
+        height: '320px',
+        background: `
+          linear-gradient(135deg, 
+            rgba(20, 30, 40, 0.9) 0%, 
+            rgba(30, 45, 60, 0.8) 50%, 
+            rgba(20, 30, 40, 0.9) 100%
+          )
+        `,
+        border: '4px solid #4a9eff',
+        borderRadius: '12px',
+        boxShadow: `
+          0 0 20px rgba(74, 158, 255, 0.6),
+          inset 0 0 15px rgba(74, 158, 255, 0.1)
+        `,
+        zIndex: 5
       }}>
-        {/* SPINS LEFT - Style octogone exact du vrai jeu */}
-        <div style={{
-          background: `
-            linear-gradient(135deg, 
-              rgba(20, 25, 35, 0.98) 0%, 
-              rgba(35, 45, 65, 0.95) 30%,
-              rgba(25, 35, 50, 0.97) 70%,
-              rgba(15, 20, 30, 0.98) 100%
-            )
-          `,
-          border: '4px solid #4a9eff',
-          clipPath: 'polygon(20% 0%, 100% 0%, 80% 100%, 0% 100%)',
-          padding: '25px 45px',
-          boxShadow: `
-            0 0 40px rgba(74, 158, 255, 1),
-            inset 0 0 25px rgba(74, 158, 255, 0.2),
-            0 0 60px rgba(74, 158, 255, 0.6)
-          `,
-          minWidth: '180px',
-          position: 'relative',
+        {/* Canvas PixiJS */}
+        <div ref={containerRef} style={{ 
+          width: '100%', 
+          height: '100%', 
+          borderRadius: '8px',
           overflow: 'hidden'
-        }}>
-          <div style={{
-            color: '#4a9eff',
-            fontSize: '16px',
-            fontWeight: 800,
-            textAlign: 'center',
-            fontFamily: 'Arial Black, sans-serif',
-            textShadow: '0 0 15px rgba(74, 158, 255, 1), 0 0 25px rgba(74, 158, 255, 0.8)',
-            marginBottom: '10px',
-            letterSpacing: '3px'
-          }}>SPINS LEFT</div>
-          <div style={{
-            color: '#ffffff',
-            fontSize: '42px',
-            fontWeight: 900,
-            textAlign: 'center',
-            fontFamily: 'Arial Black, sans-serif',
-            textShadow: '0 0 25px rgba(255, 255, 255, 1), 0 0 40px rgba(74, 158, 255, 0.8)'
-          }}>{ui.respins}</div>
-        </div>
-
-        {/* Centre - Indicateur de multiplicateur */}
-        <div style={{
-          background: `
-            linear-gradient(135deg, 
-              rgba(255, 215, 0, 0.9) 0%, 
-              rgba(255, 165, 0, 0.95) 50%,
-              rgba(255, 140, 0, 0.9) 100%
-            )
-          `,
-          border: '3px solid #ffd700',
-          borderRadius: '50%',
-          width: '80px',
-          height: '80px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: `
-            0 0 30px rgba(255, 215, 0, 0.8),
-            inset 0 0 20px rgba(255, 255, 255, 0.3)
-          `
-        }}>
-          <div style={{
-            color: '#000',
-            fontSize: '20px',
-            fontWeight: 900,
-            fontFamily: 'Arial Black, sans-serif',
-            textAlign: 'center'
-          }}>
-            {ui.bet.toFixed(2)}
-          </div>
-        </div>
-
-        {/* TOTAL WIN - Style octogone exact du vrai jeu */}
-        <div style={{
-          background: `
-            linear-gradient(135deg, 
-              rgba(20, 25, 35, 0.98) 0%, 
-              rgba(35, 45, 65, 0.95) 30%,
-              rgba(25, 35, 50, 0.97) 70%,
-              rgba(15, 20, 30, 0.98) 100%
-            )
-          `,
-          border: '4px solid #4a9eff',
-          clipPath: 'polygon(0% 0%, 80% 0%, 100% 100%, 20% 100%)',
-          padding: '25px 45px',
-          boxShadow: `
-            0 0 40px rgba(74, 158, 255, 1),
-            inset 0 0 25px rgba(74, 158, 255, 0.2),
-            0 0 60px rgba(74, 158, 255, 0.6)
-          `,
-          minWidth: '180px',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            color: '#4a9eff',
-            fontSize: '16px',
-            fontWeight: 800,
-            textAlign: 'center',
-            fontFamily: 'Arial Black, sans-serif',
-            textShadow: '0 0 15px rgba(74, 158, 255, 1), 0 0 25px rgba(74, 158, 255, 0.8)',
-            marginBottom: '10px',
-            letterSpacing: '3px'
-          }}>TOTAL WIN</div>
-          <div style={{
-            color: '#ffffff',
-            fontSize: '42px',
-            fontWeight: 900,
-            textAlign: 'center',
-            fontFamily: 'Arial Black, sans-serif',
-            textShadow: '0 0 25px rgba(255, 255, 255, 1), 0 0 40px rgba(74, 158, 255, 0.8)'
-          }}>{ui.total}</div>
-        </div>
+        }} />
       </div>
+      
+      {/* HUD SPINS LEFT - Gros panneau octogonal en haut à gauche comme dans le vrai jeu */}
+      <div style={{
+        position: 'absolute',
+        top: '5%',
+        left: '5%',
+        width: '240px',
+        height: '120px',
+        background: `
+          linear-gradient(145deg, 
+            rgba(30, 40, 55, 0.95) 0%, 
+            rgba(45, 60, 80, 0.9) 50%, 
+            rgba(30, 40, 55, 0.95) 100%
+          )
+        `,
+        clipPath: 'polygon(15% 0%, 100% 0%, 85% 100%, 0% 100%)',
+        border: '3px solid #4a9eff',
+        boxShadow: `
+          0 0 25px rgba(74, 158, 255, 0.8),
+          inset 0 0 15px rgba(74, 158, 255, 0.2)
+        `,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 20
+      }}>
+        <div style={{
+          color: '#4a9eff',
+          fontSize: '14px',
+          fontWeight: 700,
+          fontFamily: 'Arial, sans-serif',
+          textShadow: '0 0 10px rgba(74, 158, 255, 1)',
+          marginBottom: '8px',
+          letterSpacing: '2px'
+        }}>SPINS LEFT</div>
+        <div style={{
+          color: '#ffffff',
+          fontSize: '48px',
+          fontWeight: 900,
+          fontFamily: 'Arial Black, sans-serif',
+          textShadow: '0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(74, 158, 255, 0.8)'
+        }}>{ui.respins}</div>
+      </div>
+
+      {/* HUD TOTAL WIN - Gros panneau octogonal en haut à droite comme dans le vrai jeu */}
+      <div style={{
+        position: 'absolute',
+        top: '5%',
+        right: '5%',
+        width: '240px',
+        height: '120px',
+        background: `
+          linear-gradient(145deg, 
+            rgba(30, 40, 55, 0.95) 0%, 
+            rgba(45, 60, 80, 0.9) 50%, 
+            rgba(30, 40, 55, 0.95) 100%
+          )
+        `,
+        clipPath: 'polygon(0% 0%, 85% 0%, 100% 100%, 15% 100%)',
+        border: '3px solid #4a9eff',
+        boxShadow: `
+          0 0 25px rgba(74, 158, 255, 0.8),
+          inset 0 0 15px rgba(74, 158, 255, 0.2)
+        `,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 20
+      }}>
+        <div style={{
+          color: '#4a9eff',
+          fontSize: '14px',
+          fontWeight: 700,
+          fontFamily: 'Arial, sans-serif',
+          textShadow: '0 0 10px rgba(74, 158, 255, 1)',
+          marginBottom: '8px',
+          letterSpacing: '2px'
+        }}>TOTAL WIN</div>
+        <div style={{
+          color: '#ffffff',
+          fontSize: '48px',
+          fontWeight: 900,
+          fontFamily: 'Arial Black, sans-serif',
+          textShadow: '0 0 20px rgba(255, 255, 255, 1), 0 0 30px rgba(74, 158, 255, 0.8)'
+        }}>{ui.total}</div>
+      </div>
+
+      {/* Centre - Indicateur de mise style casino */}
+      <div style={{
+        position: 'absolute',
+        top: '35%',
+        right: '8%',
+        width: '100px',
+        height: '60px',
+        background: `
+          linear-gradient(135deg, 
+            rgba(255, 215, 0, 0.9) 0%, 
+            rgba(255, 165, 0, 0.95) 50%,
+            rgba(255, 140, 0, 0.9) 100%
+          )
+        `,
+        border: '2px solid #ffd700',
+        borderRadius: '8px',
+        boxShadow: `
+          0 0 15px rgba(255, 215, 0, 0.6),
+          inset 0 0 10px rgba(255, 255, 255, 0.3)
+        `,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 20
+      }}>
+        <div style={{
+          color: '#000',
+          fontSize: '12px',
+          fontWeight: 700,
+          fontFamily: 'Arial, sans-serif',
+          marginBottom: '4px'
+        }}>MISE</div>
+        <div style={{
+          color: '#000',
+          fontSize: '18px',
+          fontWeight: 900,
+          fontFamily: 'Arial Black, sans-serif'
+        }}>{ui.bet.toFixed(2)}</div>
+      </div>
+
 
       {/* Contrôles style Money Cart 4 - Bottom Panel */}
       <div style={{
