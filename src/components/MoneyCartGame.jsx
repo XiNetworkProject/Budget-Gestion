@@ -40,7 +40,7 @@ const MoneyCartGame = memo(() => {
     activeBottom: 0,
     fullRowsAwarded: 0,
     nextUnlockTop: true,
-    cellSize: 80, // Taille réduite pour assurer la visibilité
+    cellSize: 70, // Taille optimisée pour le centrage
     origin: { x: 0, y: 0 }
   });
 
@@ -1070,10 +1070,10 @@ const MoneyCartGame = memo(() => {
       
       console.log(`Layout - Canvas size: ${w}x${h}`); // Debug
       
-      // Marges plus conservatrices pour assurer la visibilité
-      const topMargin = 80; // Réduit pour plus d'espace
-      const bottomMargin = 120; // Réduit pour plus d'espace  
-      const sideMargin = 20; // Réduit pour plus d'espace
+      // Marges ajustées pour un centrage parfait
+      const topMargin = 60; // Espace minimal pour le HUD
+      const bottomMargin = 100; // Espace minimal pour les contrôles  
+      const sideMargin = 10; // Marges minimales latérales
       
       const availableWidth = w - 2 * sideMargin;
       const availableHeight = h - topMargin - bottomMargin;
@@ -1083,18 +1083,18 @@ const MoneyCartGame = memo(() => {
       const sizeByW = Math.floor(availableWidth / gameState.COLS);
       const sizeByH = Math.floor(availableHeight / gameState.MAX_ROWS);
       
-      // Taille plus conservative pour assurer la visibilité
-      gameState.cellSize = Math.max(60, Math.min(sizeByW, sizeByH, 120));
+      // Taille ajustée pour un centrage optimal
+      gameState.cellSize = Math.max(50, Math.min(sizeByW, sizeByH, 100));
       
       console.log(`Cell size: ${gameState.cellSize}`); // Debug
       
       const gridW = gameState.COLS * gameState.cellSize;
       const gridH = gameState.MAX_ROWS * gameState.cellSize;
       
-      // Centrage horizontal
-      gameState.origin.x = Math.round((w - gridW) / 2);
+      // Centrage horizontal parfait - décalage vers la gauche pour compenser
+      gameState.origin.x = Math.round((w - gridW) / 2) - 50; // Décalage de 50px vers la gauche
       
-      // Centrage vertical avec marges
+      // Centrage vertical optimisé
       gameState.origin.y = Math.round(topMargin + (availableHeight - gridH) / 2);
       
       console.log(`Grid origin: ${gameState.origin.x}, ${gameState.origin.y}`); // Debug
