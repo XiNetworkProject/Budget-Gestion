@@ -276,13 +276,13 @@ const MoneyCartGame = () => {
     async shoot(times = 1) {
       for (let i = 0; i < times; i++) {
         const targets = symbols().filter(symbol => symbol.type === 'coin');
-        if (targets.length > 0) {
-          const target = rnd.pick(targets);
-          await beam(this.cell, target.cell);
-          target.value = Math.floor(target.value * 2);
-          target.updateLabel();
-          await sleep(100);
-        }
+        if (targets.length === 0) break;
+        
+        const targetSymbol = rnd.pick(targets);
+        await beam(this.cell, targetSymbol.cell);
+        targetSymbol.value = Math.floor(targetSymbol.value * 1.5);
+        targetSymbol.updateLabel();
+        updateHUD();
       }
     }
 
@@ -336,18 +336,18 @@ const MoneyCartGame = () => {
     constructor() { super("upg", 0, false); }
 
     async onResolve() {
-      const upgradable = symbols().filter(symbol => 
-        symbol.type === 'collector' || 
-        symbol.type === 'payer' || 
-        symbol.type === 'cp'
+      const upgradable = symbols().filter(symbol =>
+        symbol.type === 'coin' && symbol.value > 1
       );
       
       if (upgradable.length > 0) {
-        const target = rnd.pick(upgradable);
-        const persistentSymbol = createSymbol(target.type, true);
-        persistentSymbol.attach(target.cell);
-        await persistentSymbol.onSpawn();
-        await sleep(100);
+        const targetSymbol = rnd.pick(upgradable);
+        const persistentSymbol = createSymbol(targetSymbol.type, true);
+        if (persistentSymbol) {
+          const cell = rnd.pick(emptyCells());
+          persistentSymbol.attach(cell);
+          await persistentSymbol.onSpawn();
+        }
       }
     }
   }
@@ -411,30 +411,31 @@ const MoneyCartGame = () => {
 
   function floatText(cell, messageText) {
     const center = cellCenter(cell);
-    const textObj = new PIXI.Text(messageText, { fontSize: 16, fill: 0xffff00, fontWeight: 'bold' });
-    textObj.anchor.set(0.5);
-    textObj.position.set(center.x, center.y - 20);
-    appRef.current.stage.addChild(textObj);
+    const floatingText = new PIXI.Text(messageText, { fontSize: 16, fill: 0xffff00, fontWeight: 'bold' });
+    floatingText.anchor.set(0.5);
+    floatingText.position.set(center.x, center.y - 20);
+    appRef.current.stage.addChild(floatingText);
     
-    gsap.to(textObj, {
+    gsap.to(floatingText, {
       y: center.y - 60,
       alpha: 0,
-      duration: 1,
+      duration: 1.2,
       onComplete: () => {
-        appRef.current.stage.removeChild(textObj);
-        textObj.destroy();
+        appRef.current.stage.removeChild(floatingText);
+        floatingText.destroy();
       }
     });
   }
 
   function beam(fromCell, toCell) {
-    const from = cellCenter(fromCell);
-    const to = cellCenter(toCell);
+    const fromPos = cellCenter(fromCell);
+    const toPos = cellCenter(toCell);
     
     const beam = new PIXI.Graphics();
     beam.lineStyle(3, 0x00ffff, 0.8);
-    beam.moveTo(from.x, from.y);
-    beam.lineTo(to.x, to.y);
+    beam.moveTo(fromPos.x, fromPos.y);
+    beam.lineTo(toPos.x, toPos.y);
+    
     appRef.current.stage.addChild(beam);
     
     gsap.to(beam, {
@@ -448,15 +449,22 @@ const MoneyCartGame = () => {
   }
 
   function suck(toCell, fromCell) {
-    const from = cellCenter(fromCell);
-    const to = cellCenter(toCell);
+    const fromPos = cellCenter(fromCell);
+    const toPos = cellCenter(toCell);
     
-    gsap.to(fromCell.symbol, {
-      x: to.x - from.x,
-      y: to.y - from.y,
-      duration: 0.3,
+    const suckEffect = new PIXI.Graphics();
+    suckEffect.lineStyle(2, 0xff00ff, 0.6);
+    suckEffect.moveTo(fromPos.x, fromPos.y);
+    suckEffect.lineTo(toPos.x, toPos.y);
+    
+    appRef.current.stage.addChild(suckEffect);
+    
+    gsap.to(suckEffect, {
+      alpha: 0,
+      duration: 0.4,
       onComplete: () => {
-        fromCell.symbol.position.set(cellSize / 2, cellSize / 2);
+        appRef.current.stage.removeChild(suckEffect);
+        suckEffect.destroy();
       }
     });
   }
