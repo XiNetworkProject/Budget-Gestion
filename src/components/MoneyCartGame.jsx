@@ -40,7 +40,7 @@ const MoneyCartGame = memo(() => {
     activeBottom: 0,
     fullRowsAwarded: 0,
     nextUnlockTop: true,
-    cellSize: 140, // Taille augmentée pour la HD
+    cellSize: 80, // Taille réduite pour assurer la visibilité
     origin: { x: 0, y: 0 }
   });
 
@@ -1015,19 +1015,19 @@ const MoneyCartGame = memo(() => {
     // Charger PixiPlugin
     loadPixiPlugin();
 
-    // Configuration HD pour une meilleure résolution
+    // Configuration HD adaptée aux dimensions réelles du conteneur
     const pixelRatio = window.devicePixelRatio || 1;
-    const baseWidth = 1200;
-    const baseHeight = 800;
+    const containerWidth = containerRef.current.clientWidth;
+    const containerHeight = containerRef.current.clientHeight;
     
     const app = new PIXI.Application({
       background: 0x0b0f14,
       resizeTo: containerRef.current,
       antialias: true,
-      resolution: Math.min(pixelRatio * 1.5, 3), // Résolution adaptative jusqu'à 3x
+      resolution: Math.min(pixelRatio * 1.2, 2), // Résolution plus conservative
       autoDensity: true, // Ajustement automatique de la densité
-      width: baseWidth,
-      height: baseHeight,
+      width: containerWidth || 800, // Utiliser la largeur réelle du conteneur
+      height: containerHeight || 700, // Utiliser la hauteur réelle du conteneur
       powerPreference: 'high-performance', // Performance GPU optimale
       backgroundAlpha: 1, // Alpha opaque pour de meilleures performances
       clearBeforeRender: true,
@@ -1068,29 +1068,37 @@ const MoneyCartGame = memo(() => {
       const w = app.renderer.width;
       const h = app.renderer.height;
       
-      // Marges pour HUD et contrôles - ajustées pour centrage visuel optimal
-      const topMargin = 120; // Espace pour le HUD en haut
-      const bottomMargin = 160; // Espace pour les contrôles en bas
-      const sideMargin = 40; // Marges latérales
+      console.log(`Layout - Canvas size: ${w}x${h}`); // Debug
+      
+      // Marges plus conservatrices pour assurer la visibilité
+      const topMargin = 80; // Réduit pour plus d'espace
+      const bottomMargin = 120; // Réduit pour plus d'espace  
+      const sideMargin = 20; // Réduit pour plus d'espace
       
       const availableWidth = w - 2 * sideMargin;
       const availableHeight = h - topMargin - bottomMargin;
       
+      console.log(`Available space: ${availableWidth}x${availableHeight}`); // Debug
+      
       const sizeByW = Math.floor(availableWidth / gameState.COLS);
       const sizeByH = Math.floor(availableHeight / gameState.MAX_ROWS);
       
-      // Taille optimale pour centrage visuel
-      gameState.cellSize = Math.max(80, Math.min(sizeByW, sizeByH, 180));
+      // Taille plus conservative pour assurer la visibilité
+      gameState.cellSize = Math.max(60, Math.min(sizeByW, sizeByH, 120));
+      
+      console.log(`Cell size: ${gameState.cellSize}`); // Debug
       
       const gridW = gameState.COLS * gameState.cellSize;
       const gridH = gameState.MAX_ROWS * gameState.cellSize;
       
-      // Centrage horizontal parfait
+      // Centrage horizontal
       gameState.origin.x = Math.round((w - gridW) / 2);
       
-      // Centrage vertical avec offset pour equilibrer visuellement HUD et contrôles
-      const visualCenter = topMargin + (availableHeight - gridH) / 2;
-      gameState.origin.y = Math.round(visualCenter);
+      // Centrage vertical avec marges
+      gameState.origin.y = Math.round(topMargin + (availableHeight - gridH) / 2);
+      
+      console.log(`Grid origin: ${gameState.origin.x}, ${gameState.origin.y}`); // Debug
+      console.log(`Grid size: ${gridW}x${gridH}`); // Debug
       
       // Mise à jour des positions des cellules
       for (const c of gameState.cells) {
@@ -1806,6 +1814,12 @@ const MoneyCartGame = memo(() => {
     recomputeActiveBounds();
     rebuildGrid();
     gameUtils.updateHUD();
+    
+    // Forcer un layout immédiat pour s'assurer que les cellules sont visibles
+    setTimeout(() => {
+      layout();
+      console.log('Layout forcé après initialisation');
+    }, 100);
 
     // Cleanup
     return () => {
