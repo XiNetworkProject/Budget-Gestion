@@ -196,7 +196,6 @@ const MoneyCartGame = () => {
 
     async bump() {
       return new Promise((resolve) => {
-        let done = false;
         const originalScale = this.scale.x;
         gsap.to(this.scale, {
           x: originalScale * 1.2,
@@ -205,8 +204,7 @@ const MoneyCartGame = () => {
           yoyo: true,
           repeat: 1,
           onComplete: () => {
-            const finish = () => { if (done) return; done = true; resolve(); };
-            finish();
+            resolve();
           }
         });
       });
