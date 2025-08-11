@@ -106,8 +106,30 @@ const MoneyCartGame = memo(() => {
 
   const safeDestroySymbol = (sym) => {
     if (!sym) return;
-    killTweens(sym);
-    try { sym.destroy({ children: true }) } catch { }
+    
+    try {
+      // Tuer toutes les animations GSAP
+      killTweens(sym);
+      
+      // Arrêter les animations idle si elles existent
+      if (sym._idleAnimations) {
+        sym._idleAnimations.forEach(anim => {
+          if (anim && anim.kill) anim.kill();
+        });
+        sym._idleAnimations = [];
+      }
+      
+      // Marquer comme détruit
+      sym.destroyed = true;
+      
+      // Détruire l'objet PixiJS
+      if (sym.destroy && typeof sym.destroy === 'function') {
+        sym.destroy({ children: true });
+      }
+    } catch (e) {
+      // Ignorer les erreurs de destruction
+      console.warn('Erreur lors de la destruction du symbole:', e);
+    }
   };
 
   // Classes des symboles
@@ -221,6 +243,29 @@ const MoneyCartGame = memo(() => {
     async onResolve() { }
 
     async onPersistent() { }
+
+    destroy() {
+      // Arrêter toutes les animations en cours
+      gsap.killTweensOf(this);
+      gsap.killTweensOf(this.scale);
+      
+      if (this._idleAnimations) {
+        this._idleAnimations.forEach(anim => {
+          if (anim && anim.kill) anim.kill();
+        });
+        this._idleAnimations = [];
+      }
+      
+      // Marquer comme détruit
+      this.destroyed = true;
+      
+      // Appeler la méthode destroy de PixiJS
+      try {
+        super.destroy();
+      } catch (e) {
+        // Ignorer les erreurs de destruction
+      }
+    }
 
     resize() {
       this.removeChildren();
@@ -472,24 +517,40 @@ const MoneyCartGame = memo(() => {
     }
 
     addIdleAnimation(container) {
-      // Animation de pulsation pour les symboles persistants
-      gsap.to(container.scale, {
+      if (!container || !container.scale || this.destroyed) return;
+      
+      // Animation de pulsation pour les symboles persistants avec vérifications
+      const scaleAnim = gsap.to(container.scale, {
         x: 1.1,
         y: 1.1,
         duration: 1,
         ease: "power2.inOut",
         repeat: -1,
-        yoyo: true
+        yoyo: true,
+        onUpdate: () => {
+          if (!container || !container.scale || this.destroyed) {
+            scaleAnim.kill();
+          }
+        }
       });
       
-      // Rotation légère
-      gsap.to(container, {
+      // Rotation légère avec vérifications
+      const rotateAnim = gsap.to(container, {
         rotation: 0.1,
         duration: 2,
         ease: "power1.inOut",
         repeat: -1,
-        yoyo: true
+        yoyo: true,
+        onUpdate: () => {
+          if (!container || this.destroyed) {
+            rotateAnim.kill();
+          }
+        }
       });
+      
+      // Stocker les animations pour pouvoir les arrêter
+      if (!this._idleAnimations) this._idleAnimations = [];
+      this._idleAnimations.push(scaleAnim, rotateAnim);
     }
 
     colorFor() {
@@ -537,26 +598,52 @@ const MoneyCartGame = memo(() => {
     }
 
     async bump() {
-      if (!this || !this.scale) return Promise.resolve();
+      if (!this || !this.scale || this.destroyed) return Promise.resolve();
       
       const dur = 0.12;
       gsap.killTweensOf(this.scale);
       gsap.killTweensOf(this);
       
-      // Animation de bump plus dynamique
+      // Vérifications de sécurité avant animation
+      if (!this.scale || this.destroyed) return Promise.resolve();
+      
+      // Animation de bump plus dynamique avec vérifications
       const tween = gsap.timeline()
-        .to(this.scale, { x: 1.3, y: 1.3, duration: dur * 0.4, ease: "back.out(3)" })
-        .to(this.scale, { x: 1, y: 1, duration: dur * 0.6, ease: "back.out(1.5)" });
+        .to(this.scale, { 
+          x: 1.3, 
+          y: 1.3, 
+          duration: dur * 0.4, 
+          ease: "back.out(3)",
+          onUpdate: () => {
+            if (!this || !this.scale || this.destroyed) {
+              tween.kill();
+            }
+          }
+        })
+        .to(this.scale, { 
+          x: 1, 
+          y: 1, 
+          duration: dur * 0.6, 
+          ease: "back.out(1.5)",
+          onUpdate: () => {
+            if (!this || !this.scale || this.destroyed) {
+              tween.kill();
+            }
+          }
+        });
       
       // Effet de flash pour les actions importantes
-      if (this.type !== 'coin') {
+      if (this.type !== 'coin' && !this.destroyed) {
         this.addActionFlash();
       }
       
       return new Promise((resolve) => {
         let done = false;
         const finish = () => { if (done) return; done = true; resolve(); };
-        try { tween.eventCallback("onComplete", finish); } catch { }
+        try { 
+          tween.eventCallback("onComplete", finish);
+          tween.eventCallback("onKill", finish);
+        } catch { }
         setTimeout(finish, Math.ceil(dur * 1000) + 60);
       });
     }
@@ -582,35 +669,58 @@ const MoneyCartGame = memo(() => {
     }
 
     async popIn() {
-      if (!this || !this.scale) return Promise.resolve();
+      if (!this || !this.scale || this.destroyed) return Promise.resolve();
       
       const dur = 0.35;
-      this.scale.set(0.1);
-      this.alpha = 1;
-      this.rotation = 0;
       
-      // Animation d'apparition spectaculaire
+      try {
+        this.scale.set(0.1);
+        this.alpha = 1;
+        this.rotation = 0;
+      } catch (e) {
+        return Promise.resolve();
+      }
+      
+      // Vérifications de sécurité avant animation
+      if (!this.scale || this.destroyed) return Promise.resolve();
+      
+      // Animation d'apparition spectaculaire avec vérifications
       const tween = gsap.timeline()
         .to(this.scale, { 
           x: 1.2, 
           y: 1.2, 
           duration: dur * 0.6, 
-          ease: "back.out(2)" 
+          ease: "back.out(2)",
+          onUpdate: () => {
+            if (!this || !this.scale || this.destroyed) {
+              tween.kill();
+            }
+          }
         })
         .to(this.scale, { 
           x: 1, 
           y: 1, 
           duration: dur * 0.4, 
-          ease: "back.out(1.5)" 
+          ease: "back.out(1.5)",
+          onUpdate: () => {
+            if (!this || !this.scale || this.destroyed) {
+              tween.kill();
+            }
+          }
         }, "-=0.1");
       
       // Effet de particules à l'apparition
-      this.addSpawnParticles();
+      if (!this.destroyed) {
+        this.addSpawnParticles();
+      }
       
       return new Promise((resolve) => {
         let done = false;
         const finish = () => { if (done) return; done = true; resolve(); };
-        try { tween.eventCallback("onComplete", finish); } catch { }
+        try { 
+          tween.eventCallback("onComplete", finish);
+          tween.eventCallback("onKill", finish);
+        } catch { }
         setTimeout(finish, Math.ceil(dur * 1000) + 60);
       });
     }
@@ -1083,6 +1193,7 @@ const MoneyCartGame = memo(() => {
           spark.beginFill(0xffffff, 0.9);
           spark.drawCircle(0, 0, 1.5);
           spark.endFill();
+          spark.destroyed = false;
           
           // Position aléatoire le long de l'arc
           const t = 0.2 + Math.random() * 0.6;
@@ -1091,7 +1202,7 @@ const MoneyCartGame = memo(() => {
           
           fxLayer.addChild(spark);
           
-          // Animation de dispersion
+          // Animation de dispersion avec vérifications
           const angle = Math.random() * Math.PI * 2;
           const distance = 15 + Math.random() * 20;
           
@@ -1102,7 +1213,21 @@ const MoneyCartGame = memo(() => {
             scale: 0.1,
             duration: 0.3,
             ease: "power2.out",
-            onComplete: () => spark.destroy()
+            onUpdate: () => {
+              if (spark.destroyed) {
+                gsap.killTweensOf(spark);
+              }
+            },
+            onComplete: () => {
+              try {
+                if (!spark.destroyed) {
+                  spark.destroyed = true;
+                  spark.destroy();
+                }
+              } catch (e) {
+                // Ignorer les erreurs
+              }
+            }
           });
         }
       },
