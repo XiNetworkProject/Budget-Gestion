@@ -2,7 +2,12 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import * as PIXI from 'pixi.js';
 import { gsap } from 'gsap';
 
-const MoneyCartGame = () => {
+// Fonction de debug pour tracer les erreurs
+const debugLog = (message, error = null) => {
+  console.log(`[MoneyCartGame] ${message}`, error);
+};
+
+const MoneyCartGameInner = () => {
   const containerRef = useRef(null);
   const appRef = useRef(null);
   const gameStateRef = useRef({
@@ -838,17 +843,21 @@ const MoneyCartGame = () => {
     showToast("Bonus lancé ! Auto en cours…");
     state.autoplay = true;
     // Délai pour éviter les conflits
-    setTimeout(() => autoPlayLoop(), 100);
+    setTimeout(() => {
+      const state = gameStateRef.current;
+      // Inline autoPlayLoop pour éviter les dépendances circulaires
+      const loop = async () => {
+        while (state.autoplay && state.playing && state.respins > 0) {
+          await spinStep();
+          if (!state.playing) break;
+          await sleep(state.turbo ? 120 : 320);
+        }
+      };
+      loop();
+    }, 100);
   }, [emptyCells, recomputeActiveBounds, showToast, updateGameUI, sweepSpinAllCellsTopDown]);
 
-  const autoPlayLoop = useCallback(async () => {
-    const state = gameStateRef.current;
-    while (state.autoplay && state.playing && state.respins > 0) {
-      await spinStep();
-      if (!state.playing) break;
-      await sleep(state.turbo ? 120 : 320);
-    }
-  }, []);
+  // autoPlayLoop supprimé - intégré directement dans startBonus
 
   const spinStep = useCallback(async () => {
     const state = gameStateRef.current;
@@ -928,7 +937,18 @@ const MoneyCartGame = () => {
       
       updateGameUI();
       if (state.respins <= 0) {
-        await endBonus();
+        // Inline endBonus pour éviter les dépendances circulaires
+        const symbols = state.cells.filter(c => c.symbol).map(c => c.symbol);
+        const totalMult = symbols.reduce((a, s) => a + (s.value || 0), 0);
+        const total = totalMult * BASE_BET;
+        
+        setPanel({
+          show: true,
+          title: "Fin du bonus",
+          total: `${totalMult}× (=${total.toFixed(2)})`
+        });
+        
+        state.playing = false;
         state.autoplay = false;
       }
     } finally {
@@ -936,22 +956,7 @@ const MoneyCartGame = () => {
     }
   }, [emptyCells, updateGameUI, maybeUnlockFromFullRows, showToast]);
 
-  const endBonus = useCallback(async () => {
-    const state = gameStateRef.current;
-    const symbols = state.cells
-      .filter(c => c.symbol)
-      .map(c => c.symbol);
-    const totalMult = symbols.reduce((a, s) => a + (s.value || 0), 0);
-    const total = totalMult * BASE_BET;
-    
-    setPanel({
-      show: true,
-      title: "Fin du bonus",
-      total: `${totalMult}× (=${total.toFixed(2)})`
-    });
-    
-    state.playing = false;
-  }, []);
+  // endBonus supprimé - intégré directement dans spinStep
 
   const resetBoard = useCallback(() => {
     const state = gameStateRef.current;
@@ -1054,7 +1059,11 @@ const MoneyCartGame = () => {
 
   // Initialisation PixiJS
   useEffect(() => {
-    if (!containerRef.current || appRef.current) return;
+    debugLog("Début initialisation PixiJS");
+    if (!containerRef.current || appRef.current) {
+      debugLog("Conditions non remplies pour initialisation");
+      return;
+    }
 
     const app = new PIXI.Application({
       width: containerRef.current.clientWidth,
@@ -1350,6 +1359,30 @@ const MoneyCartGame = () => {
       )}
     </div>
   );
+};
+
+// Wrapper avec gestion d'erreur
+const MoneyCartGame = () => {
+  try {
+    return <MoneyCartGameInner />;
+  } catch (error) {
+    debugLog("Erreur dans MoneyCartGame", error);
+    return (
+      <div style={{
+        padding: '20px',
+        background: '#f44336',
+        color: 'white',
+        borderRadius: '8px',
+        textAlign: 'center'
+      }}>
+        <h3>Erreur du jeu Money Cart</h3>
+        <p>{error.message}</p>
+        <button onClick={() => window.location.reload()}>
+          Recharger
+        </button>
+      </div>
+    );
+  }
 };
 
 export default MoneyCartGame;
