@@ -6,9 +6,7 @@ import SpinLauncher from '../components/optimized/SpinLauncher';
 import { gamificationService } from '../services/gamificationService';
 import InventoryGrid from '../components/optimized/InventoryGrid';
 import MoneyCartRun from '../components/optimized/MoneyCartRun';
-import MoneyCartPixi from '../components/optimized/MoneyCartPixi';
-import TestGame from '../components/optimized/TestGame';
-import SimpleTest from '../components/optimized/SimpleTest';
+import MoneyCartGame from '../components/optimized/MoneyCartGame';
 
 const GameCenter = memo(() => {
   const { user, gamification, setGamification, getCurrentPlan } = useStore();
@@ -17,8 +15,6 @@ const GameCenter = memo(() => {
   const [redeemCount, setRedeemCount] = useState(1);
   const [showRun, setShowRun] = useState(false);
   const [runPreview, setRunPreview] = useState(null);
-  const [showNewPixiGame, setShowNewPixiGame] = useState(false);
-  const [showTestGame, setShowTestGame] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -176,29 +172,7 @@ const GameCenter = memo(() => {
         </Grid>
       </Paper>
 
-                        <Paper sx={{ p: 2, mt: 3, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
-                    <Typography variant="h6" sx={{ mb: 1, color: 'white', fontWeight: 600 }}>Test Simple PixiJS</Typography>
-                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mb: 1 }}>
-                      Test de base pour vérifier que PixiJS fonctionne sans erreur.
-                    </Typography>
-                    <SimpleTest />
-                  </Paper>
-
-                  <Paper sx={{ p: 2, mt: 3, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
-                    <Typography variant="h6" sx={{ mb: 1, color: 'white', fontWeight: 600 }}>Test des systèmes PixiJS</Typography>
-                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mb: 1 }}>
-                      Testez les systèmes de particules, d'éclairage et de spritesheet sans erreur.
-                    </Typography>
-                    <Button variant="contained" onClick={() => setShowTestGame(!showTestGame)}>
-                      {showTestGame ? 'Masquer le test' : 'Tester les systèmes'}
-                    </Button>
-
-                    {showTestGame && (
-                      <Box sx={{ mt: 2 }}>
-                        <TestGame />
-                      </Box>
-                    )}
-                  </Paper>
+                  
 
       <Paper sx={{ p: 2, mt: 3, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
         <Typography variant="h6" sx={{ mb: 1, color: 'white', fontWeight: 600 }}>Mini‑jeu "Run" (style Money Cart)</Typography>
@@ -212,8 +186,7 @@ const GameCenter = memo(() => {
             // Affichage compact des événements jusqu'à ce que le board visuel soit prêt
             if (res?.run) {
               setRunPreview(res.run);
-              setShowRun(false); // ne pas ouvrir l'ancien jeu
-              setShowNewPixiGame(true); // ouvrir le nouveau jeu PixiJS
+              setShowRun(true);
             }
           } catch (_) {}
         }}>Lancer un run</Button>
@@ -221,12 +194,15 @@ const GameCenter = memo(() => {
         {showRun && runPreview && (
           <MoneyCartRun open={showRun} onClose={() => setShowRun(false)} run={runPreview} />
         )}
-        {/* Aperçu rendu WebGL (expérimental) */}
-        {showNewPixiGame && runPreview && runPreview.events && runPreview.events.length > 0 && (
-          <Box sx={{ mt: 2 }}>
-            <MoneyCartPixi events={runPreview.events} />
-          </Box>
-        )}
+        {/* Jeu PixiJS supprimé */}
+      </Paper>
+
+      <Paper sx={{ p: 2, mt: 3, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(16px)' }}>
+        <Typography variant="h6" sx={{ mb: 2, color: 'white', fontWeight: 600 }}>Jeu PixiJS Money Cart</Typography>
+        <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mb: 2 }}>
+          Jeu de grille avec symboles et mécaniques de bonus. Cliquez sur "Lancer le Bonus" pour commencer.
+        </Typography>
+        <MoneyCartGame />
       </Paper>
     </Box>
   );

@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Money Cart – Fun Clone v17 (PixiJS, no assets)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    html,body{margin:0;height:100%;background:#0b0f14;color:#e6f0ff;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    #ui{position:fixed;inset:0;pointer-events:none}
+    .hud{position:absolute;left:50%;transform:translateX(-50%);top:12px;display:flex;gap:12px;align-items:center;background:rgba(16,24,32,.7);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:8px 12px}
+    .pill{padding:6px 10px;border-radius:10px;background:#15202b;border:1px solid rgba(255,255,255,.06)}
+    .controls{position:absolute;left:50%;transform:translateX(-50%);bottom:18px;display:flex;gap:10px}
+    .btn{pointer-events:auto;padding:10px 14px;border-radius:12px;background:#1d2a36;border:1px solid rgba(255,255,255,.1);color:#e6f0ff;font-weight:600;cursor:pointer;transition:.15s}
+    .btn:hover{transform:translateY(-1px);background:#223240}
+    .toast{position:absolute;right:16px;bottom:16px;font-weight:700;background:#12202c;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 14px;opacity:0;transform:translateY(10px);transition:.25s}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .panel{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);backdrop-filter:blur(2px)}
+    .card{pointer-events:auto;background:#0e1620;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:22px;min-width:320px;max-width:92vw;text-align:center}
+    .card h2{margin:0 0 8px;font-size:22px}
+    .small{opacity:.8;font-size:12px;margin-top:6px}
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <div class="hud">
+      <div class="pill">Spins restants : <b id="hudResp">—</b></div>
+      <div class="pill">Rangées actives : <b id="hudRows">—</b></div>
+      <div class="pill">Total : <b id="hudTotal">0×</b></div>
+      <div class="pill">Mise : <b id="hudBet">1.00</b></div>
+      <div class="pill">Reset de base : <b id="hudReset">3</b></div>
+      <div class="pill">Cap : <b id="hudCap">15000×</b></div>
+    </div>
+    <div class="controls">
+      <div class="btn" id="btnStart">Lancer le Bonus</div>
+      <div class="btn" id="btnSpin">Tour suivant (Espace)</div>
+      <div class="btn" id="btnTurbo">Turbo : OFF</div>
+      <div class="btn" id="btnReset">Réinitialiser</div>
+      <div class="btn" id="btnRunTests">Tests</div>
+    </div>
+    <div class="toast" id="toast"></div>
+    <div class="panel" id="panel">
+      <div class="card">
+        <h2 id="panelTitle">Fin du bonus</h2>
+        <p>Gains totaux : <b id="finalTotal">0×</b></p>
+        <div class="small">Échap ou clic pour fermer</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GSAP + PixiPlugin: tween propre des objets Pixi pour éviter tout conflit de transform DOM -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/PixiPlugin.min.js"></script>
+  <script>gsap.registerPlugin(PixiPlugin);</script>
+
+  <!-- PixiJS v7 -->
+  <script type="importmap">{ "imports": { "pixi.js": "https://cdn.jsdelivr.net/npm/pixi.js@7.4.0/dist/pixi.mjs" } }</script>
+
+  <script type="module">
+    import * as PIXI from "pixi.js"
+
+    // ========= Debug visuel d'erreurs =========
+    const toastEl = document.getElementById("toast")
+    let toastTimer=null
+    function toast(msg,ms=1600){ toastEl.textContent=msg; toastEl.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(()=>toastEl.classList.remove("show"),ms) }
+    window.addEventListener('error', (e)=> { console.error(e.error||e.message); toast(`Erreur: ${e.message}`) })
+    window.addEventListener('unhandledrejection', (e)=> { console.error(e.reason); toast(`Erreur async: ${e.reason?.message||e.reason}`) })
+
+    // ========= Config générale (balance plus "serrée") =========
+    const COLS = 6
+    let ROWS = 4                 // nb de rangées ACTIVES (la grille affichée est toujours MAX_ROWS)
+    const MAX_ROWS = 8           // nb de rangées visibles en permanence (les extra sont "verrouillées")
+    const BASE_BET = 1.00
+    const BIG_WIN_THRESHOLD = 100
+    const MAX_WIN_CAP = 15000
+
+    let respinBase = 3
+
+    // Pondérations conservatrices (beaucoup de coins, persistants rares)
+    const WEIGHTS = {
+      base: { coin:70, collector:5, payer:5, cp:2, p_collector:1, p_payer:1, sniper:3, necro:2, unlock:3, arms:2, upg:2, rplus:0 },
+      deep: { coin:65, collector:6, payer:6, cp:2, p_collector:1, p_payer:1, sniper:4, necro:3, unlock:3, arms:2, upg:2, rplus:0 }
+    }
+
+    // ========= Pixi App =========
+    const app = new PIXI.Application({ background: 0x0b0f14, resizeTo: window, antialias:true })
+    document.body.appendChild(app.view)
+
+    const root = new PIXI.Container(); app.stage.addChild(root)
+    const gridLayer = new PIXI.Container(); const fxLayer = new PIXI.Container(); root.addChild(gridLayer, fxLayer)
+
+    // ========= Layout & adaptation =========
+    let cellSize = 110
+    let origin = { x: 0, y: 0 }
+
+    // Fenêtre active dans la grille complète : [activeTop, activeBottom] en index ABSOLUS
+    let activeTop = 0, activeBottom = 0
+    function recomputeActiveBounds(){
+      // On centre le bloc actif dans la grille visible, puis on ajustera en unlock top/bottom
+      activeTop = Math.max(0, Math.floor((MAX_ROWS - ROWS)/2))
+      activeBottom = activeTop + ROWS - 1
+    }
+
+    function isRowActive(absRow){ return absRow>=activeTop && absRow<=activeBottom }
+    function relToAbs(rRel){ return activeTop + rRel }
+
+    function layout(){
+      // On dimensionne la grille pour qu'elle tienne **en largeur ET en hauteur**
+      const w = app.renderer.width, h = app.renderer.height
+      // marges pour HUD + contrôles pour éviter que la grille dépasse
+      const hMargin = 240  // ~100 top HUD + ~140 bas boutons (safe)
+      const maxGridW = Math.min(920, w - 40)
+      const maxGridH = Math.max(160, h - hMargin)
+      const sizeByW = Math.floor(maxGridW / COLS)
+      const sizeByH = Math.floor(maxGridH / MAX_ROWS)
+      // ⬇️ La taille de cellule est contrainte par l'axe le plus limitant
+      cellSize = Math.max(36, Math.min(sizeByW, sizeByH))
+      // La grille visible occupe toujours MAX_ROWS (même rangées verrouillées)
+      const gridW = COLS*cellSize, gridH = MAX_ROWS*cellSize
+      origin.x = Math.round((w-gridW)/2)
+      origin.y = Math.round((h-gridH)/2)
+      for(const c of cells){
+        c.container.x = origin.x + c.col*cellSize
+        c.container.y = origin.y + c.row*cellSize
+        c.resize()
+      }
+    }
+    window.addEventListener("resize", layout)
+
+    // ========= HUD =========
+    const hudResp = document.getElementById("hudResp")
+    const hudRows = document.getElementById("hudRows")
+    const hudTotal = document.getElementById("hudTotal")
+    const hudBet  = document.getElementById("hudBet")
+    const hudReset= document.getElementById("hudReset")
+    const hudCap  = document.getElementById("hudCap")
+    const panel = document.getElementById("panel")
+    const panelTitle = document.getElementById("panelTitle")
+    const finalTotal = document.getElementById("finalTotal")
+
+    // ========= RNG & utilitaires =========
+    const rnd = { next:()=>Math.random(), int(a,b){return Math.floor(Math.random()*(b-a+1))+a}, pick(a){return a[Math.floor(Math.random()*a.length)]} }
+    function weightedPick(table){ const entries=Object.entries(table); const sum=entries.reduce((a,[,w])=>a+w,0); let r=Math.random()*sum; for(const [k,w] of entries){ r-=w; if(r<0) return k } return entries[0][0] }
+    function shuffleInPlace(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]] } return arr }
+    function pickNRandom(arr,n){ const a=arr.slice(); shuffleInPlace(a); return a.slice(0,Math.min(n,a.length)) }
+
+    // ========= Helpers robustesse tween/destroy =========
+    function killTweens(obj){ if(!obj) return; try{ gsap.killTweensOf(obj) }catch{}; try{ if(obj.scale) gsap.killTweensOf(obj.scale) }catch{} }
+    function safeDestroySymbol(sym){ if(!sym) return; killTweens(sym); try{ sym.destroy({ children:true }) }catch{} }
+
+    // ========= Cellule + base symbole =========
+    class Cell{ 
+      constructor(col,rowAbs){
+        this.col=col; this.row=rowAbs; this.symbol=null;
+        this.container=new PIXI.Container(); gridLayer.addChild(this.container);
+        // calques de la cellule : fond, hatch "verrouillé", halo sélection
+        this.bg=new PIXI.Graphics(); this.hatch=new PIXI.Graphics(); this.halo=new PIXI.Graphics(); this.halo.alpha=0;
+        this.container.addChild(this.bg,this.hatch,this.halo);
+        this.resize()
+      }
+      resize(){
+        const pad=8, r=isRowActive(this.row)
+        // fond
+        this.bg.clear().beginFill(r?0x0f1822:0x0a0e13).drawRoundedRect(pad,pad,cellSize-2*pad,cellSize-2*pad,12).endFill();
+        this.bg.lineStyle(1,r?0x294055:0x1b2833,.85).drawRoundedRect(pad,pad,cellSize-2*pad,cellSize-2*pad,12)
+        // motif hatch si verrouillé
+        this.hatch.clear();
+        if(!r){
+          this.hatch.lineStyle(1,0x365069,.25)
+          for(let k=-cellSize;k<cellSize;k+=8){
+            this.hatch.moveTo(pad+k,pad); this.hatch.lineTo(pad+k+cellSize-2*pad,pad+cellSize-2*pad)
+          }
+        }
+        // halo pour surbrillance
+        this.halo.clear().beginFill(0x58c1ff,.07).drawRoundedRect(4,4,cellSize-8,cellSize-8,16).endFill()
+        // redessine le symbole si présent (pour s'adapter à la taille)
+        if(this.symbol) this.symbol.resize()
+        // grise tout le contenu si verrouillé (y compris un symbole collé par erreur)
+        this.container.alpha = r?1:0.55
+      }
+      setHighlight(on){ gsap.to(this.halo,{alpha:on?1:0,duration:.15}) }
+      isEmpty(){return !this.symbol}
+    }
+
+    class BaseSymbol extends PIXI.Container{ 
+      constructor(type,value=0,persistent=false){ super(); this.type=type; this.value=value; this.persistent=persistent; this.cell=null }
+      attach(cell){ this.cell=cell; cell.symbol=this; cell.container.addChild(this) }
+      async onSpawn(){ await popIn(this) }
+      async onResolve(){}
+      async onPersistent(){}
+      resize(){
+        // (re)dessine un pion simple cercle + label ; pas d'assets → lisible
+        this.removeChildren();
+        const color=colorFor(this.type,this.persistent); const r=Math.floor(cellSize*.28);
+        const cx=Math.floor(cellSize/2),cy=cx;
+        const g=new PIXI.Graphics(); g.x=cx; g.y=cy;
+        g.beginFill(color).drawCircle(0,0,r).endFill();
+        g.lineStyle(6,0x0b0f14,.85).drawCircle(0,0,r-8);
+        const t=new PIXI.Text(labelFor(this),{fontFamily:"Inter,Arial",fontSize:Math.floor(r*.9),fontWeight:800,fill:0xffffff,align:"center"});
+        t.anchor.set(.5); t.y=2; this.addChild(g,t)
+      }
+      bump(){
+        // ⚠️ IMPORTANT: on renvoie un **Promise** qui se résout même si le tween est tué
+        if(!this || !this.scale) return Promise.resolve();
+        const dur=.10; // durée d'un aller; total avec yoyo+repeat= ~0.20s
+        const tween = gsap.fromTo(this.scale,{x:1,y:1},{x:1.1,y:1.1,yoyo:true,repeat:1,duration:dur});
+        return new Promise((resolve)=>{
+          let done=false; const finish=()=>{ if(done) return; done=true; resolve() };
+          // résout quand le tween termine normalement
+          try{ tween.eventCallback("onComplete", finish) }catch{}
+          // et résout au plus tard après la durée théorique (si killTweensOf le stoppe)
+          setTimeout(finish, Math.ceil(dur*2*1000)+60)
+        })
+      }
+    }
+
+    // ========= Symboles & comportements =========
+    class CoinSymbol extends BaseSymbol{ constructor(v){ super("coin",v,false) } }
+
+    class CollectorSymbol extends BaseSymbol{ constructor(p=false){ super(p?"p_collector":"collector",0,p) }
+      async collectAnimated(){
+        // Aspire visuellement les valeurs de tous les symboles (sans les consommer)
+        const others = symbols().filter(s=>s!==this)
+        const total = others.reduce((a,s)=>a+(s.value||0),0)
+        for(const s of others){ suck(this.cell, s.cell); await sleep(30) }
+        this.value = Math.min(MAX_WIN_CAP, this.value + total)
+        floatText(this.cell, `+${total}`)
+        this.resize(); updateHUD()
+      }
+      async onResolve(){ await this.collectAnimated(); await this.bump() }
+      async onPersistent(){ await this.collectAnimated(); await this.bump() }
+    }
+
+    class PayerSymbol extends BaseSymbol{ constructor(v=1,p=false){ super(p?"p_payer":"payer",v,p) }
+      async paySequential(){
+        // Tire un rayon vers CHAQUE autre symbole puis applique +value
+        const targets = symbols().filter(s=>s!==this)
+        for(const t of targets){ beam(this.cell, t.cell); await sleep(60); t.value = Math.min(MAX_WIN_CAP, t.value + this.value); t.resize(); floatText(t.cell, `+${this.value}`) }
+        updateHUD()
+      }
+      async onResolve(){ await this.paySequential(); await this.bump() }
+      async onPersistent(){ await this.paySequential(); await this.bump() }
+    }
+
+    class ComboCPSymbol extends BaseSymbol{ constructor(p=false){ super(p?"p_cp":"cp",1,p) } async run(){ const total=sumValues(); this.value=Math.min(MAX_WIN_CAP, this.value+total); floatText(this.cell,`+${total}`); this.resize(); for(const s of symbols()){ if(s!==this){ s.value=Math.min(MAX_WIN_CAP, s.value+this.value); s.resize(); floatText(s.cell,`+${this.value}`) } } updateHUD(); await this.bump() } async onResolve(){ await this.run() } async onPersistent(){ await this.run() } }
+
+    class SniperSymbol extends BaseSymbol{ constructor(p=false){ super(p?"p_sniper":"sniper",0,p) } async shoot(times=1){ let pool=symbols().filter(s=>s!==this && s.value>0); for(let i=0;i<times && pool.length;i++){ const t=pool.splice(Math.floor(Math.random()*pool.length),1)[0]; beam(this.cell,t.cell); t.value=Math.min(MAX_WIN_CAP, t.value*2); t.resize(); floatText(t.cell,"×2"); await sleep(120) } updateHUD() } async onResolve(){ await this.shoot(1); await this.bump() } async onPersistent(){ await this.shoot(1); await this.bump() } }
+
+    class NecroSymbol extends BaseSymbol{ constructor(){ super("necro",0,false) } async onResolve(){ const pool=symbols().filter(s=>["collector","payer","cp","sniper"].includes(s.type)); const n=rnd.int(1,2); for(let i=0;i<n && pool.length;i++){ const t=pool.splice(Math.floor(Math.random()*pool.length),1)[0]; highlight(t.cell,true); await sleep(80); highlight(t.cell,false); await t.onResolve() } await this.bump() } }
+
+    class UnlockSymbol extends BaseSymbol{ constructor(){ super("unlock",0,false) } async onResolve(){ floatText(this.cell, "U"); await this.bump() } }
+
+    class ArmsDealerSymbol extends BaseSymbol{ constructor(p=false){ super(p?"p_arms":"arms",0,p) } async mutateCoins(count=1){ if(Math.random()<0.5) return; const pool=activeCells().filter(c=>c.symbol && c.symbol.type==="coin").map(c=>c.symbol); const pickTypes=["collector","payer","sniper","necro"]; for(let i=0;i<count && pool.length;i++){ const target=pool.splice(Math.floor(Math.random()*pool.length),1)[0]; killTweens(target); const type=rnd.pick(pickTypes); const cell=target.cell; safeDestroySymbol(target); cell.symbol=null; const sym=createSymbol(type); sym.attach(cell); sym.resize(); await sym.onSpawn() } updateHUD() } async onResolve(){ await this.mutateCoins(1); await this.bump() } async onPersistent(){ await this.mutateCoins(1); await this.bump() } }
+
+    class UpgraderSymbol extends BaseSymbol{ constructor(){ super("upg",0,false) } async onResolve(){ const candidates=symbols().filter(s=>["collector","payer","sniper","cp"].includes(s.type)); const n=rnd.int(0,1); for(let i=0;i<n && candidates.length;i++){ const t=candidates.splice(Math.floor(Math.random()*candidates.length),1)[0]; const map={collector:"p_collector", payer:"p_payer", sniper:"p_sniper", cp:"p_cp"}; const newType=map[t.type]; killTweens(t); const cell=t.cell; safeDestroySymbol(t); cell.symbol=null; const sym=createSymbol(newType); sym.attach(cell); sym.resize(); await sym.onSpawn() } await this.bump(); updateHUD() } }
+
+    class ResetPlusSymbol extends BaseSymbol{ constructor(){ super("rplus",0,false) } async onResolve(){ if(respinBase<5){ respinBase++; toast(`Reset de base +1 → ${respinBase}`) } respins=respinBase; updateHUD(); await this.bump() } }
+
+    function colorFor(type,p){ if(p){ if(type==="p_collector") return 0xffb347; if(type==="p_payer") return 0x7ee4ff; if(type==="p_sniper") return 0xff667a; if(type==="p_cp") return 0xff66ff; if(type==="p_arms") return 0xb3a1ff } switch(type){ case "coin":return 0xf5a623; case "collector":return 0xff8a00; case "payer":return 0x58c1ff; case "cp":return 0xff3fff; case "sniper":return 0xff3355; case "necro":return 0x9bfca4; case "unlock":return 0x6a7dff; case "arms":return 0xb39cff; case "upg":return 0x9db5ff; case "rplus":return 0x9cffb1; default:return 0xffffff } }
+    function labelFor(sym){ switch(sym.type){ case "coin":return `x${sym.value}`; case "collector":return "C"; case "p_collector":return "PC"; case "payer":return "P"; case "p_payer":return "PP"; case "cp":return "C+P"; case "p_cp":return "PC+P"; case "sniper":return "S"; case "p_sniper":return "PS"; case "necro":return "N"; case "unlock":return "U"; case "arms":return "AD"; case "p_arms":return "PAD"; case "upg":return "UG"; case "rplus":return "R+"; default:return "?" } }
+
+    // ========= Effets visuels =========
+    function cellCenter(cell){ return { x: origin.x + cell.col*cellSize + cellSize/2, y: origin.y + cell.row*cellSize + cellSize/2 } }
+
+    function floatText(cell,text){ const t=new PIXI.Text(text,{fontSize:Math.floor(cellSize*.28),fontWeight:800,fill:0xffffff,dropShadow:true,dropShadowBlur:2,dropShadowDistance:0}); t.anchor.set(.5,1); t.x=origin.x+cell.col*cellSize+cellSize/2; t.y=origin.y+cell.row*cellSize+cellSize-10; fxLayer.addChild(t); gsap.to(t,{y:t.y-24,alpha:0,duration:.7,ease:"sine.out",onComplete:()=>t.destroy()}) }
+
+    function beam(fromCell,toCell){
+      // Ligne + point lumineux se déplaçant de A vers B
+      const g=new PIXI.Graphics(); g.lineStyle({width:3,color:0x58c1ff,alpha:.9});
+      const a=cellCenter(fromCell), b=cellCenter(toCell)
+      g.moveTo(a.x,a.y); g.lineTo(b.x,b.y); fxLayer.addChild(g);
+      const dot = new PIXI.Graphics(); dot.beginFill(0xffffff).drawCircle(0,0,3).endFill(); dot.x=a.x; dot.y=a.y; fxLayer.addChild(dot)
+      gsap.to(dot,{x:b.x,y:b.y,duration:.18,ease:"sine.out",onComplete:()=>dot.destroy()})
+      gsap.to(g,{alpha:0,duration:.25,onComplete:()=>g.destroy()})
+    }
+
+    function suck(toCell,fromCell){
+      // Petite particule allant de la source vers le collecteur
+      const a=cellCenter(fromCell), b=cellCenter(toCell)
+      const p = new PIXI.Graphics(); p.beginFill(0xffd166).drawCircle(0,0,2.5).endFill(); p.x=a.x; p.y=a.y; fxLayer.addChild(p)
+      gsap.to(p,{x:b.x,y:b.y,alpha:0.2,duration:.22,ease:"sine.in",onComplete:()=>p.destroy()})
+    }
+
+    function electricArc(a,b){
+      // Arc électrique : polyligne "zigzag" avec glow + bref flash
+      const steps = 6 + Math.floor(Math.hypot(b.x-a.x,b.y-a.y)/120)
+      const g = new PIXI.Graphics();
+      g.lineStyle({width:2,color:0x7ee4ff,alpha:1});
+      const dx=(b.x-a.x)/steps, dy=(b.y-a.y)/steps
+      g.moveTo(a.x,a.y)
+      for(let i=1;i<steps;i++){
+        const px=a.x+dx*i + (Math.random()-0.5)*10
+        const py=a.y+dy*i + (Math.random()-0.5)*10
+        g.lineTo(px,py)
+      }
+      g.lineTo(b.x,b.y)
+      fxLayer.addChild(g)
+      // glow secondaire
+      const glow=new PIXI.Graphics(); glow.lineStyle({width:6,color:0x2bc0ff,alpha:.18}); glow.moveTo(a.x,a.y); glow.lineTo(b.x,b.y); fxLayer.addChild(glow)
+      gsap.to(g,{alpha:0,duration:.35}); gsap.to(glow,{alpha:0,duration:.35,onComplete:()=>{g.destroy();glow.destroy()}})
+    }
+
+    function popIn(d){
+      // ⚠️ Retourne un **Promise** qui se résout à la fin de l'anim (ou après un timeout de secours)
+      if(!d || !d.scale) return Promise.resolve();
+      const dur=.28;
+      d.scale.set(.3);
+      return new Promise((resolve)=>{
+        const tween=gsap.to(d.scale,{x:1,y:1,ease:"back.out(1.7)",duration:dur,onComplete:resolve});
+        setTimeout(()=>resolve(), Math.ceil(dur*1000)+80) // secours si killTweensOf intervient
+      })
+    }
+    function highlight(cell,on){ cell.setHighlight(on) }
+    const sleep=(ms)=>new Promise(r=>setTimeout(r,ms))
+    function screenshake(amount=4,dur=.12){ return gsap.fromTo(root,{x:0},{x:amount,yoyo:true,repeat:3,duration:dur,ease:"sine.inOut"}) }
+
+    // === FX BONUS START: "spin" par cellule, rangée par rangée (top→bottom) ===
+    function spinFX(cell, dur=0.18){
+      // Crée un petit "spinner" circulaire centré sur la case
+      const center = cellCenter(cell)
+      const r = Math.max(8, Math.floor(cellSize*0.32))
+      const sp = new PIXI.Container(); sp.x=center.x; sp.y=center.y; sp.rotation = Math.random()*Math.PI
+      const ring = new PIXI.Graphics(); ring.lineStyle({width:3,color:0x5fd3ff,alpha:0.8}).drawCircle(0,0,r)
+      const dot = new PIXI.Graphics(); dot.beginFill(0xffffff).drawCircle(r,0,3).endFill()
+      sp.addChild(ring, dot); fxLayer.addChild(sp)
+      return new Promise((resolve)=>{
+        gsap.to(sp,{rotation:"+=6.283",duration:dur,ease:"sine.inOut"})
+        gsap.to(sp,{alpha:0.0,delay:dur-0.08,duration:0.08,onComplete:()=>{ sp.destroy(); resolve() }})
+      })
+    }
+
+    async function sweepSpinAllCellsTopDown(){
+      // Lance les spinners **rangée par rangée** de 0 → MAX_ROWS-1
+      // NB: on n'attend que la fin de la rangée courante (Promise.all) avant de passer à la suivante
+      const rowDur = turbo?0.12:0.18
+      for(let absRow=0; absRow<MAX_ROWS; absRow++){
+        const rowCells = cells.filter(c=>c.row===absRow)
+        await Promise.all(rowCells.map(c=>spinFX(c,rowDur)))
+        // petite pause pour un effet "vague" net
+        await sleep(turbo?10:40)
+      }
+    }
+
+    // ========= État du plateau =========
+    const cells=[]
+    function rebuildGrid(){
+      // ⚠️ Construit TOUJOURS une grille de MAX_ROWS x COLS (les extras sont visuellement "verrouillées")
+      gridLayer.removeChildren(); cells.length=0;
+      for(let c=0;c<COLS;c++) for(let r=0;r<MAX_ROWS;r++){ const cell=new Cell(c,r); cells.push(cell) }
+      layout()
+    }
+
+    // Accès cellule :
+    function cellAtAbs(col,absRow){ return cells.find(k=>k.col===col && k.row===absRow) }
+    function cellAt(col,rRel){ return cellAtAbs(col, relToAbs(rRel)) } // ⬅️ pour compat tests existants (rangée relative à la fenêtre active)
+
+    function activeCells(){ const arr=[]; for(let c=0;c<COLS;c++) for(let r=activeTop;r<=activeBottom;r++){ const cell=cellAtAbs(c,r); if(cell) arr.push(cell) } return arr }
+    function emptyCells(){ return activeCells().filter(c=>c.isEmpty()) }
+    function symbols(){ return activeCells().filter(c=>c.symbol).map(c=>c.symbol) }
+    function sumValues(){ return Math.min(MAX_WIN_CAP, symbols().reduce((a,s)=>a+(s.value||0),0)) }
+
+    // ========= Règle d'unlock par LIGNE PLEINE (alternance haut/bas) =========
+    let fullRowsAwarded = 0
+    let nextUnlockTop = true
+
+    function isRowFullRel(rRel){
+      for(let c=0;c<COLS;c++){ const cell=cellAt(c,rRel); if(!cell || !cell.symbol) return false }
+      return true
+    }
+    function getFullRowsRel(){ const res=[]; for(let r=0;r<ROWS;r++){ if(isRowFullRel(r)) res.push(r) } return res }
+
+    async function unlockRow(direction, fullRowsRel){
+      if(ROWS>=MAX_ROWS) return
+      // Détermine la source d'arc (ligne pleine la plus proche du bord qui s'ouvre)
+      fullRowsRel = fullRowsRel && fullRowsRel.length? fullRowsRel : getFullRowsRel()
+      const sourceRel = direction==='top' ? Math.min(...fullRowsRel) : Math.max(...fullRowsRel)
+      const sourceAbs = relToAbs(sourceRel)
+      const targetAbs = (direction==='top') ? (activeTop-1) : (activeBottom+1)
+      // ⚡ arcs électriques de chaque case pleine vers la rangée déverrouillée
+      if(targetAbs>=0 && targetAbs<MAX_ROWS){
+        for(let c=0;c<COLS;c++){
+          const from=cellAtAbs(c,sourceAbs), to=cellAtAbs(c,targetAbs)
+          if(from && to) electricArc(cellCenter(from), cellCenter(to))
+        }
+        await sleep(220)
+      }
+      // Étend la fenêtre active (sans déplacer les symboles existants)
+      if(direction==='top' && activeTop>0) activeTop-=1; else if(direction==='bottom' && activeBottom<MAX_ROWS-1) activeBottom+=1
+      ROWS = Math.min(MAX_ROWS, ROWS+1)
+      // Rafraîchit le rendu (couleurs/alpha des cellules)
+      for(const c of cells) c.resize()
+      updateHUD(); await sleep(120)
+    }
+
+    async function unlockRowByRule(fullRowsRel){ if(ROWS>=MAX_ROWS) return; const dir = nextUnlockTop ? 'top' : 'bottom'; await unlockRow(dir, fullRowsRel); nextUnlockTop = !nextUnlockTop }
+
+    async function maybeUnlockFromFullRows(){ const fullRel = getFullRowsRel(); if(fullRel.length > fullRowsAwarded && ROWS < MAX_ROWS){ await unlockRowByRule(fullRel); fullRowsAwarded++ } }
+
+    // ========= Fabrique de symboles =========
+    function createSymbol(type){
+      // Fabrique centralisée
+      switch(type){
+        case "coin": return new CoinSymbol(rnd.pick([1,1,1,1,1,1,2,2,2,3,3,5]))
+        case "collector": return new CollectorSymbol(false)
+        case "payer": return new PayerSymbol(rnd.pick([1,1,1,1,2]), false)
+        case "cp": return new ComboCPSymbol(false)
+        case "sniper": return new SniperSymbol(false)
+        case "necro": return new NecroSymbol()
+        case "unlock": return new UnlockSymbol()
+        case "arms": return new ArmsDealerSymbol(false)
+        case "upg": return new UpgraderSymbol()
+        case "rplus": return new ResetPlusSymbol()
+        // versions persistantes
+        case "p_collector": return new CollectorSymbol(true)
+        case "p_payer": return new PayerSymbol(rnd.pick([1,1,1,2]), true)
+        case "p_cp": return new ComboCPSymbol(true)
+        case "p_sniper": return new SniperSymbol(true)
+        case "p_arms": return new ArmsDealerSymbol(true)
+        default: return new CoinSymbol(1)
+      }
+    }
+
+    // ========= Boucle de jeu =========
+    let respins=0, playing=false, turbo=false
+    let isSpinning=false
+    let autoplay=false
+    let lastSpawned=[] // ⬅️ non-persistants du tour courant
+
+    function updateHUD(){ hudRows.textContent=String(ROWS); hudResp.textContent=String(respins); hudTotal.textContent=`${sumValues()}×`; hudBet.textContent=BASE_BET.toFixed(2); hudReset.textContent=String(respinBase); hudCap.textContent=`${MAX_WIN_CAP}×` }
+    function resetBoard(){
+      // purge symboles mais conserve la grille (MAX_ROWS)
+      for(const c of cells){ if(c.symbol){ safeDestroySymbol(c.symbol); c.symbol=null } }
+      ROWS=4; fullRowsAwarded=0; nextUnlockTop=true; respinBase=3; recomputeActiveBounds();
+      for(const c of cells) c.resize()
+      respins=0; updateHUD()
+    }
+
+    async function startBonus(){ if(playing) return; playing=true; resetBoard();
+      // 💿 NEW: animation de "spin" rangée par rangée sur **toutes** les cases (actives + verrouillées)
+      await sweepSpinAllCellsTopDown()
+      // spawn initial sur la fenêtre active (après la vague de spin)
+      const starters=rnd.int(3,4); for(let i=0;i<starters;i++){ const empt=emptyCells(); if(!empt.length) break; const cell = rnd.pick(empt); const coin=new CoinSymbol(rnd.pick([1,2,3])); coin.attach(cell); coin.resize(); await coin.onSpawn() }
+      respins=respinBase; updateHUD(); toast("Bonus lancé ! Auto en cours…"); autoplay=true; autoPlayLoop() }
+
+    async function autoPlayLoop(){ while(autoplay && playing && respins>0){ await spinStep(); if(!playing) break; await sleep(turbo?120:320) } }
+
+    async function spinStep(){ if(!playing||respins<=0||isSpinning) return; isSpinning=true; try{
+      // 1) SPAWN (dans la fenêtre active uniquement)
+      const empties=emptyCells(); let spawned=0; lastSpawned=[];
+      if(empties.length){ const spawnCountTable = turbo ? {0:3,1:4,2:1} : {0:5,1:3,2:1}; const spawnCount = Number(weightedPick(spawnCountTable)); const chosen = pickNRandom(empties, Math.min(empties.length, spawnCount));
+        for(const cell of chosen){ const key=ROWS<=5?"base":"deep"; const type=weightedPick(WEIGHTS[key]); const sym=createSymbol(type); sym.attach(cell); sym.resize(); await sym.onSpawn(); spawned++; lastSpawned.push(sym) }
+      }
+      respins = (spawned>0)? respinBase : (respins-1); updateHUD();
+      // 2) RESOLVE non-persistants du tour
+      const order=["arms","upg","payer","sniper","collector","cp","necro","unlock"];
+      for(const t of order){ const group=lastSpawned.filter(s=>s.type===t); for(const s of group){ highlight(s.cell,true); await s.onResolve(); highlight(s.cell,false); await sleep(turbo?30:140) } }
+      // 3) PERSISTANTS (tous les tours)
+      const pOrder=["p_arms","p_payer","p_sniper","p_collector","p_cp"];
+      for(const t of pOrder){ const group=symbols().filter(s=>s.type===t); for(const s of group){ highlight(s.cell,true); await s.onPersistent(); highlight(s.cell,false); await sleep(turbo?30:120) } }
+      // 4) UNLOCK par lignes pleines (avec arc électrique)
+      await maybeUnlockFromFullRows();
+      // 5) CAP & fin
+      const mult=sumValues(); if(mult>=MAX_WIN_CAP){ await showPanel("MAX WIN ATTEINT", `${mult}×`); playing=false; autoplay=false; return } else if(mult>=BIG_WIN_THRESHOLD){ toast(`GROS GAIN : ${mult}×`, 1500) }
+      updateHUD(); if(respins<=0){ await endBonus(); autoplay=false }
+    } finally { isSpinning=false } }
+
+    async function endBonus(){ const totalMult=sumValues(); const total=totalMult*BASE_BET; finalTotal.textContent=`${totalMult}× (=${total.toFixed(2)})`; await showPanel("Fin du bonus", `${totalMult}×`); playing=false }
+    async function showPanel(title,big){ panelTitle.textContent=title; finalTotal.textContent=big; panel.style.display="flex"; await sleep(200) }
+
+    panel.addEventListener("click",()=> panel.style.display="none")
+    window.addEventListener("keydown",(e)=>{ if(e.key==="Escape") panel.style.display="none" })
+
+    // ========= Liaison UI =========
+    document.getElementById("btnStart").onclick=startBonus
+    document.getElementById("btnSpin").onclick=()=>{ autoplay=false; spinStep() }
+    document.getElementById("btnTurbo").onclick=(e)=>{ turbo=!turbo; e.target.textContent=`Turbo : ${turbo?"ON":"OFF"}`; toast(`Turbo ${turbo?"activé":"désactivé"}`) }
+    document.getElementById("btnReset").onclick=()=>{ playing=false; panel.style.display="none"; resetBoard(); toast("Réinitialisé") }
+    window.addEventListener("keydown",(e)=>{ if(e.code==="Space") spinStep() })
+
+    // ========= Tests automatiques =========
+    document.getElementById("btnRunTests").onclick = async ()=>{
+      try {
+        // Test 1: tween scale ne jette pas (pas de transform DOM)
+        const testCell = cellAt(0,0) // ⬅️ rangée relative
+        const coin = new CoinSymbol(5); coin.attach(testCell); coin.resize(); await coin.onSpawn(); await coin.bump(); testCell.symbol=null; safeDestroySymbol(coin)
+
+        // Test 2: règle d'unlock par ligne pleine + alternance top/bottom
+        resetBoard(); playing=true
+        for(let c=0;c<COLS;c++){ const cell=cellAt(c,0); const k=new CoinSymbol(1); k.attach(cell); k.resize() }
+        const beforeRows = ROWS
+        await maybeUnlockFromFullRows()
+        console.assert(ROWS===beforeRows+1, 'Une rangée doit être ajoutée quand une ligne est pleine')
+        const firstWasTop = !nextUnlockTop
+        for(let c=0;c<COLS;c++){ const cell=cellAt(c,1) || cellAt(c,2); if(cell && !cell.symbol){ const k=new CoinSymbol(1); k.attach(cell); k.resize() } }
+        const beforeRows2 = ROWS
+        await maybeUnlockFromFullRows()
+        console.assert(ROWS===beforeRows2+1, 'Une deuxième rangée doit être ajoutée sur nouvelle ligne pleine')
+        console.assert(firstWasTop === true, 'Le premier unlock doit partir du haut')
+
+        // Test 3: ArmsDealer ne crash pas si des coins sont encore en popIn
+        const adCell = emptyCells()[0] || cellAt(0,0)
+        const ad = new ArmsDealerSymbol(false); ad.attach(adCell); ad.resize()
+        for(let i=0;i<3;i++){
+          const e = emptyCells()[0]; if(!e) break
+          const k = new CoinSymbol(1); k.attach(e); k.resize(); k.onSpawn()
+        }
+        await ad.onResolve()
+
+        // Test 4: Upgrader -> versions persistantes valides (kill tween avant destroy)
+        const ugCell = emptyCells()[0] || cellAt(0,2)
+        const ug = new UpgraderSymbol(); ug.attach(ugCell); ug.resize(); await ug.onResolve()
+
+        // Test 5: ResetPlus augmente la base et remet le compteur
+        const rCell = emptyCells()[0] || cellAt(1,2)
+        const rplus = new ResetPlusSymbol(); rplus.attach(rCell); rplus.resize(); await rplus.onResolve()
+        console.assert(respinBase>=3 && respins===respinBase, 'ResetPlus doit remettre le compteur au nouveau base')
+
+        // Test 6: Un symbole Unlock seul NE doit PAS débloquer de rangée
+        const rowsBeforeUnlock = ROWS
+        const uCell = emptyCells()[0]
+        const u = new UnlockSymbol(); u.attach(uCell); u.resize(); await u.onResolve()
+        console.assert(ROWS === rowsBeforeUnlock, "Unlock ne doit pas débloquer si la ligne n'est pas pleine")
+
+        // Test 7: PopIn/Bump sur objet non attaché → no-op sans crash
+        const ghost = new CoinSymbol(1)
+        await ghost.onSpawn(); await ghost.bump()
+
+        // Test 8: Destroy en cours de tween ne provoque pas d'accès à scale null (et bump renvoie un thenable)
+        const ccell = emptyCells()[0]
+        const temp = new CoinSymbol(2); temp.attach(ccell); temp.resize(); const tween = temp.bump(); safeDestroySymbol(temp); await tween.catch(()=>{})
+
+        // Test 9: Sniper ne tire qu'une seule fois par résolution
+        resetBoard(); playing=true
+        const sCell = cellAt(0,0); const coinCell = cellAt(1,0)
+        const s = new SniperSymbol(false); s.attach(sCell); s.resize()
+        const targetCoin = new CoinSymbol(2); targetCoin.attach(coinCell); targetCoin.resize()
+        await s.onResolve()
+        console.assert(targetCoin.value === 4, 'Sniper doit doubler une seule fois la cible')
+
+        // Test 10: plusieurs lignes complètes dans un même tour -> 1 seul unlock
+        resetBoard(); playing=true
+        for(let c=0;c<COLS;c++){ let cellA=cellAt(c,0); let cellB=cellAt(c,1); const k1=new CoinSymbol(1); k1.attach(cellA); k1.resize(); const k2=new CoinSymbol(1); k2.attach(cellB); k2.resize() }
+        const before = ROWS
+        await maybeUnlockFromFullRows()
+        console.assert(ROWS === before+1, 'Quand deux lignes sont complètes en même temps, une seule rangée doit se débloquer (par tour)')
+
+        // Test 11: un non-persistant NE rejoue PAS au tour suivant
+        resetBoard(); playing=true
+        for(let c=0;c<COLS;c++){ for(let r=0;r<ROWS;r++){ const cell=cellAt(c,r); const k=new CoinSymbol(1); k.attach(cell); k.resize() } }
+        const pCell = cellAt(0,0); const old = pCell.symbol; pCell.symbol=null; safeDestroySymbol(old); const payer=new PayerSymbol(1,false); payer.attach(pCell); payer.resize()
+        const targetCell = cellAt(1,0); const targetCoin2 = targetCell.symbol
+        await payer.onResolve(); const afterFirst = targetCoin2.value
+        await spinStep() // aucune apparition (grille pleine) -> non-persistants ne rejouent pas
+        console.assert(targetCoin2.value === afterFirst, 'Un non-persistant ne doit pas se rejouer au tour suivant')
+
+        // Test 12: createSymbol est défini
+        { console.assert(typeof createSymbol === 'function', 'createSymbol doit être défini');
+          const csA = createSymbol('coin'); console.assert(csA instanceof CoinSymbol, 'createSymbol("coin") → CoinSymbol'); safeDestroySymbol(csA);
+          const csB = createSymbol('collector'); console.assert(csB instanceof CollectorSymbol, 'createSymbol("collector") → CollectorSymbol'); safeDestroySymbol(csB);
+          const csC = createSymbol('p_collector'); console.assert(csC instanceof CollectorSymbol && csC.persistent === true, 'createSymbol("p_collector") → CollectorSymbol(persistent)'); safeDestroySymbol(csC);
+        }
+
+        // Test 13: la grille est toujours MAX_ROWS et les rangées verrouillées n'acceptent pas de spawn
+        resetBoard(); playing=true
+        console.assert(cells.length === COLS*MAX_ROWS, 'La grille doit afficher toutes les rangées visibles')
+        for(let c=0;c<COLS;c++){ for(let r=0;r<ROWS;r++){ const cell=cellAt(c,r); if(cell.isEmpty()){ const k=new CoinSymbol(1); k.attach(cell) } } }
+        console.assert(emptyCells().length===0, 'Aucune case active vide après remplissage complet')
+        await maybeUnlockFromFullRows();
+        console.assert(emptyCells().length===COLS, 'Une rangée déverrouillée ajoute exactement COLS cases vides actives')
+
+        // Test 14 (bump() thenable)
+        {
+          const cell = cellAt(0,0); const s = new CoinSymbol(1); s.attach(cell); s.resize();
+          const p = s.bump(); safeDestroySymbol(s);
+          const res = await Promise.race([ p.then(()=>"ok"), sleep(1000).then(()=>"timeout") ])
+          console.assert(res === "ok", 'bump() doit se résoudre même après killTweensOf/destroy')
+        }
+
+        // Test 15 (popIn() promise)
+        {
+          const cell = cellAt(0,1); const s = new CoinSymbol(1); s.attach(cell); s.resize();
+          const before = performance.now(); await s.onSpawn(); const elapsed = performance.now()-before;
+          console.assert(elapsed >= 200, 'popIn/onSpawn devrait attendre au moins ~200ms (approx)')
+          safeDestroySymbol(s); cell.symbol=null;
+        }
+
+        // Test 16 (nouveau): la vague de spin de startBonus existe et prend un temps non nul
+        {
+          resetBoard(); playing=true;
+          const t0 = performance.now();
+          await sweepSpinAllCellsTopDown();
+          const elapsed = performance.now() - t0;
+          console.assert(elapsed >= (MAX_ROWS*(turbo?80:140))*0.5/1.0, 'La vague de spin devrait durer un minimum (approx)')
+        }
+
+        toast('Tests OK ✅')
+      } catch (err) {
+        console.error(err); toast('Tests en erreur: '+(err?.message||err))
+      }
+    }
+
+    // ========= Boot =========
+    recomputeActiveBounds(); rebuildGrid(); updateHUD(); toast("Clique 'Lancer le Bonus' pour commencer")
+  </script>
+</body>
+</html>
