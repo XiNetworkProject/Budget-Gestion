@@ -40,7 +40,7 @@ const MoneyCartGame = memo(() => {
     activeBottom: 0,
     fullRowsAwarded: 0,
     nextUnlockTop: true,
-    cellSize: 110,
+    cellSize: 140, // Taille augmentée pour la HD
     origin: { x: 0, y: 0 }
   });
 
@@ -150,35 +150,37 @@ const MoneyCartGame = memo(() => {
     }
 
     resize() {
-      const pad = 6;
+      const pad = Math.max(6, Math.floor(this.gameState.cellSize * 0.04)); // Padding adaptatif HD
       const r = this.isRowActive();
       const cellSize = this.gameState.cellSize;
+      const borderWidth = Math.max(2, Math.floor(cellSize * 0.015)); // Bordure adaptative HD
+      const innerBorderWidth = Math.max(1, Math.floor(cellSize * 0.008)); // Bordure intérieure HD
       
-      // Style Money Cart 4 - cellules avec bordures néon
+      // Style Money Cart 4 - cellules avec bordures néon HD
       this.bg.clear();
       
       if (r) {
-        // Cellule active - style futuriste avec gradient et bordure néon
+        // Cellule active - style futuriste avec gradient et bordure néon HD
         this.bg.beginFill(0x1a2332)
-          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, 8)
+          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, Math.max(8, cellSize * 0.06))
           .endFill();
         
-        // Bordure néon cyan
-        this.bg.lineStyle(2, 0x00ffff, 0.6)
-          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, 8);
+        // Bordure néon cyan HD
+        this.bg.lineStyle(borderWidth, 0x00ffff, 0.7)
+          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, Math.max(8, cellSize * 0.06));
         
-        // Bordure intérieure plus fine
-        this.bg.lineStyle(1, 0x66ffff, 0.3)
-          .drawRoundedRect(pad + 2, pad + 2, cellSize - 2 * pad - 4, cellSize - 2 * pad - 4, 6);
+        // Bordure intérieure plus fine HD
+        this.bg.lineStyle(innerBorderWidth, 0x66ffff, 0.4)
+          .drawRoundedRect(pad + borderWidth, pad + borderWidth, cellSize - 2 * pad - 2 * borderWidth, cellSize - 2 * pad - 2 * borderWidth, Math.max(6, cellSize * 0.04));
       } else {
-        // Cellule verrouillée - plus sombre avec bordure rouge
+        // Cellule verrouillée - plus sombre avec bordure rouge HD
         this.bg.beginFill(0x0a0e13)
-          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, 8)
+          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, Math.max(8, cellSize * 0.06))
           .endFill();
         
-        // Bordure rouge pour verrouillage
-        this.bg.lineStyle(1, 0x662222, 0.4)
-          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, 8);
+        // Bordure rouge pour verrouillage HD
+        this.bg.lineStyle(innerBorderWidth, 0x662222, 0.5)
+          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, Math.max(8, cellSize * 0.06));
       }
       
       // motif hatch si verrouillé - style plus moderne
@@ -323,13 +325,20 @@ const MoneyCartGame = memo(() => {
       
       container.addChild(symbol);
       
-      // Texte de la valeur
+      // Texte de la valeur HD
       const valueText = new PIXI.Text(this.value || '1', {
         fontFamily: "Arial Black",
-        fontSize: Math.floor(r * 0.4),
+        fontSize: Math.max(14, Math.floor(r * 0.42)), // Taille minimum pour lisibilité HD
         fontWeight: 900,
         fill: 0x000000,
-        align: "center"
+        align: "center",
+        stroke: 0xffffff,
+        strokeThickness: Math.max(1, Math.floor(r * 0.015)), // Contour blanc HD
+        dropShadow: true,
+        dropShadowBlur: Math.max(2, Math.floor(r * 0.02)),
+        dropShadowDistance: Math.max(1, Math.floor(r * 0.01)),
+        dropShadowColor: 0x333333,
+        dropShadowAlpha: 0.7
       });
       valueText.anchor.set(0.5);
       valueText.y = r * 0.7;
@@ -351,20 +360,23 @@ const MoneyCartGame = memo(() => {
         bg.endFill();
       }
       
-      // Bordures avec effet néon
+      // Bordures avec effet néon HD
       const borderColor = this.persistent ? 0xffaa00 : 0x00ffff;
-      bg.lineStyle(3, borderColor, 0.9);
+      const borderWidth = Math.max(2, Math.floor(r * 0.04)); // Bordure adaptative HD
+      const innerBorderWidth = Math.max(1, Math.floor(r * 0.02)); // Bordure intérieure HD
+      
+      bg.lineStyle(borderWidth, borderColor, 0.9);
       if (isRound) {
-        bg.drawCircle(0, 0, r - 2);
+        bg.drawCircle(0, 0, r - borderWidth);
       } else {
-        bg.drawRoundedRect(-r + 4, -r + 4, (r - 4) * 2, (r - 4) * 2, 8);
+        bg.drawRoundedRect(-r + 4, -r + 4, (r - 4) * 2, (r - 4) * 2, Math.max(8, r * 0.1));
       }
       
-      bg.lineStyle(1, 0xffffff, 0.6);
+      bg.lineStyle(innerBorderWidth, 0xffffff, 0.6);
       if (isRound) {
-        bg.drawCircle(0, 0, r - 6);
+        bg.drawCircle(0, 0, r - borderWidth - 4);
       } else {
-        bg.drawRoundedRect(-r + 6, -r + 6, (r - 6) * 2, (r - 6) * 2, 6);
+        bg.drawRoundedRect(-r + 6, -r + 6, (r - 6) * 2, (r - 6) * 2, Math.max(6, r * 0.08));
       }
       
       container.addChild(bg);
@@ -377,12 +389,17 @@ const MoneyCartGame = memo(() => {
       if (label) {
         const text = new PIXI.Text(label, {
           fontFamily: "Arial Black",
-          fontSize: Math.floor(r * 0.3),
+          fontSize: Math.max(12, Math.floor(r * 0.32)), // Taille minimum pour lisibilité HD
           fontWeight: 900,
           fill: 0xffffff,
           align: "center",
           stroke: 0x000000,
-          strokeThickness: 2
+          strokeThickness: Math.max(2, Math.floor(r * 0.03)), // Épaisseur adaptative HD
+          dropShadow: true,
+          dropShadowBlur: Math.max(2, Math.floor(r * 0.02)),
+          dropShadowDistance: Math.max(1, Math.floor(r * 0.015)),
+          dropShadowColor: 0x000000,
+          dropShadowAlpha: 0.8
         });
         text.anchor.set(0.5);
         text.y = r * 0.6;
@@ -998,12 +1015,24 @@ const MoneyCartGame = memo(() => {
     // Charger PixiPlugin
     loadPixiPlugin();
 
+    // Configuration HD pour une meilleure résolution
+    const pixelRatio = window.devicePixelRatio || 1;
+    const baseWidth = 1200;
+    const baseHeight = 800;
+    
     const app = new PIXI.Application({
       background: 0x0b0f14,
       resizeTo: containerRef.current,
       antialias: true,
-      width: 800,
-      height: 600
+      resolution: Math.min(pixelRatio * 1.5, 3), // Résolution adaptative jusqu'à 3x
+      autoDensity: true, // Ajustement automatique de la densité
+      width: baseWidth,
+      height: baseHeight,
+      powerPreference: 'high-performance', // Performance GPU optimale
+      backgroundAlpha: 1, // Alpha opaque pour de meilleures performances
+      clearBeforeRender: true,
+      preserveDrawingBuffer: false, // Meilleures performances
+      premultipliedAlpha: true // Rendu alpha plus rapide
     });
 
     containerRef.current.appendChild(app.view);
@@ -1027,12 +1056,13 @@ const MoneyCartGame = memo(() => {
     const layout = () => {
       const w = app.renderer.width;
       const h = app.renderer.height;
-      const hMargin = 240;
-      const maxGridW = Math.min(920, w - 40);
-      const maxGridH = Math.max(160, h - hMargin);
+      const hMargin = 280; // Augmenté pour HD
+      const maxGridW = Math.min(1400, w - 80); // Grille plus large pour HD
+      const maxGridH = Math.max(200, h - hMargin); // Hauteur minimale augmentée
       const sizeByW = Math.floor(maxGridW / gameState.COLS);
       const sizeByH = Math.floor(maxGridH / gameState.MAX_ROWS);
-      gameState.cellSize = Math.max(36, Math.min(sizeByW, sizeByH));
+      // Taille minimale et maximale ajustées pour HD
+      gameState.cellSize = Math.max(80, Math.min(sizeByW, sizeByH, 180));
       const gridW = gameState.COLS * gameState.cellSize;
       const gridH = gameState.MAX_ROWS * gameState.cellSize;
       gameState.origin.x = Math.round((w - gridW) / 2);
@@ -1092,12 +1122,17 @@ const MoneyCartGame = memo(() => {
       }),
       floatText: (cell, text) => {
         const t = new PIXI.Text(text, {
-          fontSize: Math.floor(gameState.cellSize * .28),
-          fontWeight: 800,
+          fontFamily: "Arial Black",
+          fontSize: Math.max(16, Math.floor(gameState.cellSize * .30)), // Taille minimum HD
+          fontWeight: 900,
           fill: 0xffffff,
+          stroke: 0x000000,
+          strokeThickness: Math.max(2, Math.floor(gameState.cellSize * 0.01)), // Contour HD
           dropShadow: true,
-          dropShadowBlur: 2,
-          dropShadowDistance: 0
+          dropShadowBlur: Math.max(3, Math.floor(gameState.cellSize * 0.02)),
+          dropShadowDistance: Math.max(2, Math.floor(gameState.cellSize * 0.015)),
+          dropShadowColor: 0x000000,
+          dropShadowAlpha: 0.9
         });
         t.anchor.set(.5, 1);
         t.x = gameState.origin.x + cell.col * gameState.cellSize + gameState.cellSize / 2;
@@ -1107,14 +1142,16 @@ const MoneyCartGame = memo(() => {
       },
       beam: (fromCell, toCell) => {
         const g = new PIXI.Graphics();
-        g.lineStyle({ width: 3, color: 0x58c1ff, alpha: .9 });
+        const beamWidth = Math.max(3, Math.floor(gameState.cellSize * 0.02)); // Largeur adaptative HD
+        g.lineStyle({ width: beamWidth, color: 0x58c1ff, alpha: .9 });
         const a = gameUtils.cellCenter(fromCell);
         const b = gameUtils.cellCenter(toCell);
         g.moveTo(a.x, a.y);
         g.lineTo(b.x, b.y);
         fxLayer.addChild(g);
+        const dotSize = Math.max(3, Math.floor(gameState.cellSize * 0.025)); // Taille adaptative HD
         const dot = new PIXI.Graphics();
-        dot.beginFill(0xffffff).drawCircle(0, 0, 3).endFill();
+        dot.beginFill(0xffffff).drawCircle(0, 0, dotSize).endFill();
         dot.x = a.x;
         dot.y = a.y;
         fxLayer.addChild(dot);
