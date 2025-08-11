@@ -1037,6 +1037,17 @@ const MoneyCartGame = memo(() => {
 
     containerRef.current.appendChild(app.view);
     appRef.current = app;
+    
+    // Gestionnaire de redimensionnement pour maintenir le centrage
+    const handleResize = () => {
+      if (gameState.cells.length > 0) {
+        layout();
+      }
+    };
+    
+    // Écouter les redimensionnements
+    app.renderer.on('resize', handleResize);
+    window.addEventListener('resize', handleResize);
 
     const root = new PIXI.Container();
     app.stage.addChild(root);
@@ -1056,18 +1067,32 @@ const MoneyCartGame = memo(() => {
     const layout = () => {
       const w = app.renderer.width;
       const h = app.renderer.height;
-      const hMargin = 280; // Augmenté pour HD
-      const maxGridW = Math.min(1400, w - 80); // Grille plus large pour HD
-      const maxGridH = Math.max(200, h - hMargin); // Hauteur minimale augmentée
-      const sizeByW = Math.floor(maxGridW / gameState.COLS);
-      const sizeByH = Math.floor(maxGridH / gameState.MAX_ROWS);
-      // Taille minimale et maximale ajustées pour HD
+      
+      // Marges pour HUD et contrôles - ajustées pour centrage visuel optimal
+      const topMargin = 120; // Espace pour le HUD en haut
+      const bottomMargin = 160; // Espace pour les contrôles en bas
+      const sideMargin = 40; // Marges latérales
+      
+      const availableWidth = w - 2 * sideMargin;
+      const availableHeight = h - topMargin - bottomMargin;
+      
+      const sizeByW = Math.floor(availableWidth / gameState.COLS);
+      const sizeByH = Math.floor(availableHeight / gameState.MAX_ROWS);
+      
+      // Taille optimale pour centrage visuel
       gameState.cellSize = Math.max(80, Math.min(sizeByW, sizeByH, 180));
+      
       const gridW = gameState.COLS * gameState.cellSize;
       const gridH = gameState.MAX_ROWS * gameState.cellSize;
-      gameState.origin.x = Math.round((w - gridW) / 2);
-      gameState.origin.y = Math.round((h - gridH) / 2);
       
+      // Centrage horizontal parfait
+      gameState.origin.x = Math.round((w - gridW) / 2);
+      
+      // Centrage vertical avec offset pour equilibrer visuellement HUD et contrôles
+      const visualCenter = topMargin + (availableHeight - gridH) / 2;
+      gameState.origin.y = Math.round(visualCenter);
+      
+      // Mise à jour des positions des cellules
       for (const c of gameState.cells) {
         c.container.x = gameState.origin.x + c.col * gameState.cellSize;
         c.container.y = gameState.origin.y + c.row * gameState.cellSize;
@@ -1784,7 +1809,10 @@ const MoneyCartGame = memo(() => {
 
     // Cleanup
     return () => {
+      // Nettoyer les event listeners
+      window.removeEventListener('resize', handleResize);
       if (appRef.current) {
+        appRef.current.renderer.off('resize', handleResize);
         appRef.current.destroy(true);
         appRef.current = null;
       }
@@ -1828,7 +1856,11 @@ const MoneyCartGame = memo(() => {
       background: 'linear-gradient(135deg, #0a0e1a 0%, #1a2332 50%, #0f1623 100%)',
       borderRadius: '16px', 
       overflow: 'hidden',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)'
+      boxShadow: '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center'
     }}>
       {/* Arrière-plan cyberpunk avec motifs */}
       <div style={{
