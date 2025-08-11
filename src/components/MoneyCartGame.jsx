@@ -20,7 +20,7 @@ const loadPixiPlugin = async () => {
 const MoneyCartGame = memo(() => {
   const containerRef = useRef(null);
   const appRef = useRef(null);
-  const [showIntro, setShowIntro] = useState(true);
+  const [showIntro, setShowIntro] = useState(false);
   const gameStateRef = useRef({
     COLS: 6,
     ROWS: 4,
@@ -229,49 +229,267 @@ const MoneyCartGame = memo(() => {
       const cx = Math.floor(this.cell.gameState.cellSize / 2);
       const cy = cx;
       
-      const g = new PIXI.Graphics();
-      g.x = cx;
-      g.y = cy;
+      // Créer le conteneur principal
+      const container = new PIXI.Container();
+      container.x = cx;
+      container.y = cy;
       
-      // Style Money Cart 4 - symboles avec gradient et bordure néon
+      // Dessiner le symbole selon son type
       if (this.type === 'coin') {
-        // Coin - style métallique doré
-        g.beginFill(0xffd700).drawCircle(0, 0, r).endFill();
-        g.lineStyle(3, 0xffaa00, 0.8).drawCircle(0, 0, r - 2);
-        g.lineStyle(1, 0xffffff, 0.6).drawCircle(0, 0, r - 4);
+        this.drawCoinSymbol(container, r);
       } else {
-        // Autres symboles - style futuriste avec gradient
-        g.beginFill(color).drawRoundedRect(-r + 4, -r + 4, (r - 4) * 2, (r - 4) * 2, 8).endFill();
-        
-        // Bordure néon selon le type
-        const borderColor = this.persistent ? 0xffaa00 : 0x00ffff;
-        g.lineStyle(2, borderColor, 0.8).drawRoundedRect(-r + 4, -r + 4, (r - 4) * 2, (r - 4) * 2, 8);
-        g.lineStyle(1, 0xffffff, 0.4).drawRoundedRect(-r + 6, -r + 6, (r - 6) * 2, (r - 6) * 2, 6);
+        this.drawFeatureSymbol(container, r, color);
       }
       
-      const fontSize = this.type === 'coin' ? Math.floor(r * .6) : Math.floor(r * .8);
-      const t = new PIXI.Text(this.labelFor(), {
-        fontFamily: "Arial Black, Arial",
-        fontSize: fontSize,
+      this.addChild(container);
+      
+      // Animation d'idle pour les symboles persistants
+      if (this.persistent) {
+        this.addIdleAnimation(container);
+      }
+    }
+
+    drawCoinSymbol(container, r) {
+      // Fond métallique doré avec gradient
+      const bg = new PIXI.Graphics();
+      bg.beginFill(0xffd700);
+      bg.drawCircle(0, 0, r);
+      bg.endFill();
+      
+      // Cercles concentriques pour effet 3D
+      bg.lineStyle(3, 0xffaa00, 0.8);
+      bg.drawCircle(0, 0, r - 2);
+      bg.lineStyle(2, 0xffffff, 0.6);
+      bg.drawCircle(0, 0, r - 6);
+      bg.lineStyle(1, 0xcc8800, 0.4);
+      bg.drawCircle(0, 0, r - 10);
+      
+      container.addChild(bg);
+      
+      // Symbole dollar stylisé
+      const symbol = new PIXI.Graphics();
+      symbol.lineStyle(4, 0x000000, 1);
+      // Ligne verticale du $
+      symbol.moveTo(0, -r * 0.6);
+      symbol.lineTo(0, r * 0.6);
+      // Courbes du S
+      symbol.arc(0, -r * 0.2, r * 0.3, Math.PI, 0);
+      symbol.arc(0, r * 0.2, r * 0.3, 0, Math.PI);
+      
+      container.addChild(symbol);
+      
+      // Texte de la valeur
+      const valueText = new PIXI.Text(this.value || '1', {
+        fontFamily: "Arial Black",
+        fontSize: Math.floor(r * 0.4),
         fontWeight: 900,
-        fill: this.type === 'coin' ? 0x000000 : 0xffffff,
-        align: "center",
-        stroke: this.type === 'coin' ? 0xffffff : 0x000000,
-        strokeThickness: this.type === 'coin' ? 1 : 2
+        fill: 0x000000,
+        align: "center"
       });
-      t.anchor.set(.5);
-      t.y = 0;
+      valueText.anchor.set(0.5);
+      valueText.y = r * 0.7;
+      container.addChild(valueText);
+    }
+
+    drawFeatureSymbol(container, r, color) {
+      // Forme de base selon le type
+      const bg = new PIXI.Graphics();
+      const isRound = ['collector', 'p_collector', 'sniper', 'p_sniper'].includes(this.type);
       
-      this.addChild(g, t);
+      if (isRound) {
+        bg.beginFill(color);
+        bg.drawCircle(0, 0, r);
+        bg.endFill();
+      } else {
+        bg.beginFill(color);
+        bg.drawRoundedRect(-r + 4, -r + 4, (r - 4) * 2, (r - 4) * 2, 8);
+        bg.endFill();
+      }
       
-      // Effet de glow pour les symboles persistants
+      // Bordures avec effet néon
+      const borderColor = this.persistent ? 0xffaa00 : 0x00ffff;
+      bg.lineStyle(3, borderColor, 0.9);
+      if (isRound) {
+        bg.drawCircle(0, 0, r - 2);
+      } else {
+        bg.drawRoundedRect(-r + 4, -r + 4, (r - 4) * 2, (r - 4) * 2, 8);
+      }
+      
+      bg.lineStyle(1, 0xffffff, 0.6);
+      if (isRound) {
+        bg.drawCircle(0, 0, r - 6);
+      } else {
+        bg.drawRoundedRect(-r + 6, -r + 6, (r - 6) * 2, (r - 6) * 2, 6);
+      }
+      
+      container.addChild(bg);
+      
+      // Icône spécifique au type
+      this.drawSymbolIcon(container, r);
+      
+      // Label du symbole
+      const label = this.labelFor();
+      if (label) {
+        const text = new PIXI.Text(label, {
+          fontFamily: "Arial Black",
+          fontSize: Math.floor(r * 0.3),
+          fontWeight: 900,
+          fill: 0xffffff,
+          align: "center",
+          stroke: 0x000000,
+          strokeThickness: 2
+        });
+        text.anchor.set(0.5);
+        text.y = r * 0.6;
+        container.addChild(text);
+      }
+      
+      // Glow pour persistants
       if (this.persistent) {
         const glow = new PIXI.Graphics();
-        glow.x = cx;
-        glow.y = cy;
-        glow.beginFill(0xffaa00, 0.1).drawRoundedRect(-r, -r, r * 2, r * 2, 12).endFill();
-        this.addChildAt(glow, 0);
+        glow.beginFill(0xffaa00, 0.1);
+        if (isRound) {
+          glow.drawCircle(0, 0, r + 8);
+        } else {
+          glow.drawRoundedRect(-r, -r, r * 2, r * 2, 12);
+        }
+        glow.endFill();
+        container.addChildAt(glow, 0);
       }
+    }
+
+    drawSymbolIcon(container, r) {
+      const icon = new PIXI.Graphics();
+      
+      switch (this.type) {
+        case 'collector':
+        case 'p_collector':
+          // Icône magnétique/collecteur
+          icon.lineStyle(3, 0xffffff, 1);
+          icon.drawCircle(0, 0, r * 0.4);
+          icon.moveTo(-r * 0.2, -r * 0.2);
+          icon.lineTo(r * 0.2, r * 0.2);
+          icon.moveTo(r * 0.2, -r * 0.2);
+          icon.lineTo(-r * 0.2, r * 0.2);
+          break;
+          
+        case 'payer':
+        case 'p_payer':
+          // Icône de paiement (flèches vers l'extérieur)
+          icon.lineStyle(3, 0xffffff, 1);
+          for (let i = 0; i < 8; i++) {
+            const angle = (i * Math.PI * 2) / 8;
+            const x1 = Math.cos(angle) * r * 0.2;
+            const y1 = Math.sin(angle) * r * 0.2;
+            const x2 = Math.cos(angle) * r * 0.4;
+            const y2 = Math.sin(angle) * r * 0.4;
+            icon.moveTo(x1, y1);
+            icon.lineTo(x2, y2);
+          }
+          break;
+          
+        case 'sniper':
+        case 'p_sniper':
+          // Icône de viseur
+          icon.lineStyle(3, 0xffffff, 1);
+          icon.drawCircle(0, 0, r * 0.3);
+          icon.moveTo(-r * 0.5, 0);
+          icon.lineTo(-r * 0.3, 0);
+          icon.moveTo(r * 0.3, 0);
+          icon.lineTo(r * 0.5, 0);
+          icon.moveTo(0, -r * 0.5);
+          icon.lineTo(0, -r * 0.3);
+          icon.moveTo(0, r * 0.3);
+          icon.lineTo(0, r * 0.5);
+          break;
+          
+        case 'necro':
+          // Icône nécromancien (crâne stylisé)
+          icon.lineStyle(2, 0xffffff, 1);
+          icon.beginFill(0xffffff, 0.8);
+          icon.drawEllipse(0, -r * 0.1, r * 0.3, r * 0.25);
+          icon.endFill();
+          icon.beginFill(0x000000);
+          icon.drawCircle(-r * 0.1, -r * 0.15, r * 0.05);
+          icon.drawCircle(r * 0.1, -r * 0.15, r * 0.05);
+          icon.endFill();
+          break;
+          
+        case 'arms':
+        case 'p_arms':
+          // Icône armement (épées croisées)
+          icon.lineStyle(3, 0xffffff, 1);
+          icon.moveTo(-r * 0.3, -r * 0.3);
+          icon.lineTo(r * 0.3, r * 0.3);
+          icon.moveTo(r * 0.3, -r * 0.3);
+          icon.lineTo(-r * 0.3, r * 0.3);
+          icon.drawRect(-r * 0.1, -r * 0.4, r * 0.2, r * 0.1);
+          icon.drawRect(-r * 0.1, r * 0.3, r * 0.2, r * 0.1);
+          break;
+          
+        case 'upg':
+          // Icône upgrade (flèche vers le haut)
+          icon.lineStyle(4, 0xffffff, 1);
+          icon.moveTo(0, -r * 0.4);
+          icon.lineTo(0, r * 0.4);
+          icon.moveTo(-r * 0.2, -r * 0.2);
+          icon.lineTo(0, -r * 0.4);
+          icon.lineTo(r * 0.2, -r * 0.2);
+          break;
+          
+        case 'unlock':
+          // Icône déverrouillage (cadenas ouvert)
+          icon.lineStyle(3, 0xffffff, 1);
+          icon.drawRoundedRect(-r * 0.2, 0, r * 0.4, r * 0.3, 5);
+          icon.moveTo(-r * 0.1, 0);
+          icon.lineTo(-r * 0.1, -r * 0.2);
+          icon.arc(0, -r * 0.2, r * 0.1, Math.PI, 0);
+          break;
+          
+        case 'cp':
+        case 'p_cp':
+          // Icône collector-payer combiné
+          icon.lineStyle(2, 0xffffff, 1);
+          icon.drawCircle(0, 0, r * 0.3);
+          icon.moveTo(-r * 0.15, 0);
+          icon.lineTo(r * 0.15, 0);
+          icon.moveTo(0, -r * 0.15);
+          icon.lineTo(0, r * 0.15);
+          break;
+          
+        case 'rplus':
+          // Icône reset plus
+          icon.lineStyle(4, 0xffffff, 1);
+          icon.moveTo(-r * 0.2, 0);
+          icon.lineTo(r * 0.2, 0);
+          icon.moveTo(0, -r * 0.2);
+          icon.lineTo(0, r * 0.2);
+          icon.drawCircle(0, 0, r * 0.3);
+          break;
+      }
+      
+      container.addChild(icon);
+    }
+
+    addIdleAnimation(container) {
+      // Animation de pulsation pour les symboles persistants
+      gsap.to(container.scale, {
+        x: 1.1,
+        y: 1.1,
+        duration: 1,
+        ease: "power2.inOut",
+        repeat: -1,
+        yoyo: true
+      });
+      
+      // Rotation légère
+      gsap.to(container, {
+        rotation: 0.1,
+        duration: 2,
+        ease: "power1.inOut",
+        repeat: -1,
+        yoyo: true
+      });
     }
 
     colorFor() {
@@ -320,24 +538,115 @@ const MoneyCartGame = memo(() => {
 
     async bump() {
       if (!this || !this.scale) return Promise.resolve();
-      const dur = .10;
-      const tween = gsap.fromTo(this.scale, { x: 1, y: 1 }, { x: 1.1, y: 1.1, yoyo: true, repeat: 1, duration: dur });
+      
+      const dur = 0.12;
+      gsap.killTweensOf(this.scale);
+      gsap.killTweensOf(this);
+      
+      // Animation de bump plus dynamique
+      const tween = gsap.timeline()
+        .to(this.scale, { x: 1.3, y: 1.3, duration: dur * 0.4, ease: "back.out(3)" })
+        .to(this.scale, { x: 1, y: 1, duration: dur * 0.6, ease: "back.out(1.5)" });
+      
+      // Effet de flash pour les actions importantes
+      if (this.type !== 'coin') {
+        this.addActionFlash();
+      }
+      
       return new Promise((resolve) => {
         let done = false;
         const finish = () => { if (done) return; done = true; resolve(); };
-        try { tween.eventCallback("onComplete", finish) } catch { }
-        setTimeout(finish, Math.ceil(dur * 2 * 1000) + 60);
+        try { tween.eventCallback("onComplete", finish); } catch { }
+        setTimeout(finish, Math.ceil(dur * 1000) + 60);
+      });
+    }
+
+    addActionFlash() {
+      if (!this.children || this.children.length === 0) return;
+      
+      const flash = new PIXI.Graphics();
+      flash.beginFill(0xffffff, 0.4);
+      const r = this.cell.gameState.cellSize * 0.4;
+      flash.drawCircle(this.cell.gameState.cellSize / 2, this.cell.gameState.cellSize / 2, r);
+      flash.endFill();
+      this.addChild(flash);
+      
+      gsap.to(flash, {
+        alpha: 0,
+        duration: 0.3,
+        ease: "power2.out",
+        onComplete: () => {
+          if (flash.parent) flash.parent.removeChild(flash);
+        }
       });
     }
 
     async popIn() {
       if (!this || !this.scale) return Promise.resolve();
-      const dur = .28;
-      this.scale.set(.3);
+      
+      const dur = 0.35;
+      this.scale.set(0.1);
+      this.alpha = 1;
+      this.rotation = 0;
+      
+      // Animation d'apparition spectaculaire
+      const tween = gsap.timeline()
+        .to(this.scale, { 
+          x: 1.2, 
+          y: 1.2, 
+          duration: dur * 0.6, 
+          ease: "back.out(2)" 
+        })
+        .to(this.scale, { 
+          x: 1, 
+          y: 1, 
+          duration: dur * 0.4, 
+          ease: "back.out(1.5)" 
+        }, "-=0.1");
+      
+      // Effet de particules à l'apparition
+      this.addSpawnParticles();
+      
       return new Promise((resolve) => {
-        const tween = gsap.to(this.scale, { x: 1, y: 1, ease: "back.out(1.7)", duration: dur, onComplete: resolve });
-        setTimeout(() => resolve(), Math.ceil(dur * 1000) + 80);
+        let done = false;
+        const finish = () => { if (done) return; done = true; resolve(); };
+        try { tween.eventCallback("onComplete", finish); } catch { }
+        setTimeout(finish, Math.ceil(dur * 1000) + 60);
       });
+    }
+
+    addSpawnParticles() {
+      const particleCount = 8;
+      const centerX = this.cell.gameState.cellSize / 2;
+      const centerY = this.cell.gameState.cellSize / 2;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = new PIXI.Graphics();
+        particle.beginFill(this.persistent ? 0xffaa00 : 0x00ffff, 0.8);
+        particle.drawCircle(0, 0, 3);
+        particle.endFill();
+        
+        particle.x = centerX;
+        particle.y = centerY;
+        this.addChild(particle);
+        
+        const angle = (i / particleCount) * Math.PI * 2;
+        const distance = 40;
+        const targetX = centerX + Math.cos(angle) * distance;
+        const targetY = centerY + Math.sin(angle) * distance;
+        
+        gsap.to(particle, {
+          x: targetX,
+          y: targetY,
+          alpha: 0,
+          scale: 0.1,
+          duration: 0.6,
+          ease: "power2.out",
+          onComplete: () => {
+            if (particle.parent) particle.parent.removeChild(particle);
+          }
+        });
+      }
     }
   }
 
@@ -718,28 +1027,84 @@ const MoneyCartGame = memo(() => {
         setTimeout(() => setShowToast(false), ms);
       },
       electricArc: (a, b) => {
-        // Arc électrique : polyligne "zigzag" avec glow + bref flash
-        const steps = 6 + Math.floor(Math.hypot(b.x - a.x, b.y - a.y) / 120);
-        const g = new PIXI.Graphics();
-        g.lineStyle({ width: 2, color: 0x7ee4ff, alpha: 1 });
-        const dx = (b.x - a.x) / steps;
-        const dy = (b.y - a.y) / steps;
-        g.moveTo(a.x, a.y);
-        for (let i = 1; i < steps; i++) {
-          const px = a.x + dx * i + (Math.random() - 0.5) * 10;
-          const py = a.y + dy * i + (Math.random() - 0.5) * 10;
-          g.lineTo(px, py);
+        // Arc électrique amélioré avec multiples éclairs et particules
+        const distance = Math.hypot(b.x - a.x, b.y - a.y);
+        const arcCount = gameState.turbo ? 1 : 3;
+        
+        for (let arcIndex = 0; arcIndex < arcCount; arcIndex++) {
+          setTimeout(() => {
+            const steps = 8 + Math.floor(distance / 100);
+            const g = new PIXI.Graphics();
+            g.lineStyle({ 
+              width: 3 - arcIndex * 0.5, 
+              color: 0x00ffff, 
+              alpha: 1 - arcIndex * 0.2 
+            });
+            
+            const dx = (b.x - a.x) / steps;
+            const dy = (b.y - a.y) / steps;
+            g.moveTo(a.x, a.y);
+            
+            for (let i = 1; i < steps; i++) {
+              const deviation = (Math.random() - 0.5) * 25 * (1 - Math.abs(i/steps - 0.5) * 2);
+              const px = a.x + dx * i + deviation;
+              const py = a.y + dy * i + deviation;
+              g.lineTo(px, py);
+            }
+            g.lineTo(b.x, b.y);
+            
+            fxLayer.addChild(g);
+            
+            // Glow secondaire
+            if (arcIndex === 0) {
+              const glow = new PIXI.Graphics();
+              glow.lineStyle({ width: 6, color: 0x2bc0ff, alpha: .18 });
+              glow.moveTo(a.x, a.y);
+              glow.lineTo(b.x, b.y);
+              fxLayer.addChild(glow);
+              
+              gsap.to(glow, { alpha: 0, duration: .4, onComplete: () => glow.destroy() });
+              
+              // Particules d'étincelles
+              gameUtils.addSparkParticles(a.x, a.y, b.x, b.y);
+            }
+            
+            gsap.to(g, { alpha: 0, duration: .35, onComplete: () => g.destroy() });
+          }, arcIndex * 30);
         }
-        g.lineTo(b.x, b.y);
-        fxLayer.addChild(g);
-        // glow secondaire
-        const glow = new PIXI.Graphics();
-        glow.lineStyle({ width: 6, color: 0x2bc0ff, alpha: .18 });
-        glow.moveTo(a.x, a.y);
-        glow.lineTo(b.x, b.y);
-        fxLayer.addChild(glow);
-        gsap.to(g, { alpha: 0, duration: .35 });
-        gsap.to(glow, { alpha: 0, duration: .35, onComplete: () => { g.destroy(); glow.destroy(); } });
+      },
+
+      addSparkParticles: (startX, startY, endX, endY) => {
+        if (gameState.turbo) return;
+        
+        const sparkCount = 6;
+        for (let i = 0; i < sparkCount; i++) {
+          const spark = new PIXI.Graphics();
+          spark.beginFill(0xffffff, 0.9);
+          spark.drawCircle(0, 0, 1.5);
+          spark.endFill();
+          
+          // Position aléatoire le long de l'arc
+          const t = 0.2 + Math.random() * 0.6;
+          spark.x = startX + (endX - startX) * t;
+          spark.y = startY + (endY - startY) * t;
+          
+          fxLayer.addChild(spark);
+          
+          // Animation de dispersion
+          const angle = Math.random() * Math.PI * 2;
+          const distance = 15 + Math.random() * 20;
+          
+          gsap.to(spark, {
+            x: spark.x + Math.cos(angle) * distance,
+            y: spark.y + Math.sin(angle) * distance,
+            alpha: 0,
+            scale: 0.1,
+            duration: 0.3,
+            ease: "power2.out",
+            onComplete: () => spark.destroy()
+          });
+        }
       },
       screenshake: (amount = 4, dur = .12) => {
         return gsap.fromTo(root, { x: 0 }, { x: amount, yoyo: true, repeat: 3, duration: dur, ease: "sine.inOut" });
@@ -1249,9 +1614,11 @@ const MoneyCartGame = memo(() => {
     setShowIntro(false);
   };
 
-  if (showIntro) {
+  // Rendu conditionnel de l'intro comme overlay
+  const renderIntro = () => {
+    if (!showIntro) return null;
     return <MoneyCartIntro onComplete={handleIntroComplete} />;
-  }
+  };
 
   return (
     <div style={{ 
@@ -1651,6 +2018,9 @@ const MoneyCartGame = memo(() => {
           {toastMessage}
         </div>
       )}
+
+      {/* Overlay d'introduction */}
+      {renderIntro()}
     </div>
   );
 });
