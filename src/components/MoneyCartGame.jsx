@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, memo } from 'react';
 import * as PIXI from 'pixi.js';
 import { gsap } from 'gsap';
+import MoneyCartIntro from './MoneyCartIntro';
 
 // Importation conditionnelle du PixiPlugin pour éviter les erreurs SSR
 let pixiPluginLoaded = false;
@@ -19,6 +20,7 @@ const loadPixiPlugin = async () => {
 const MoneyCartGame = memo(() => {
   const containerRef = useRef(null);
   const appRef = useRef(null);
+  const [showIntro, setShowIntro] = useState(true);
   const gameStateRef = useRef({
     COLS: 6,
     ROWS: 4,
@@ -1243,6 +1245,14 @@ const MoneyCartGame = memo(() => {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  const handleIntroComplete = () => {
+    setShowIntro(false);
+  };
+
+  if (showIntro) {
+    return <MoneyCartIntro onComplete={handleIntroComplete} />;
+  }
+
   return (
     <div style={{ 
       position: 'relative', 
@@ -1514,6 +1524,32 @@ const MoneyCartGame = memo(() => {
             }}
           >
             TEST
+          </button>
+          
+          <button
+            onClick={() => setShowIntro(true)}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '6px',
+              background: 'linear-gradient(145deg, #1a2332, #0a0e1a)',
+              border: '1px solid rgba(138, 43, 226, 0.3)',
+              color: '#9370db',
+              fontSize: '11px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              textTransform: 'uppercase'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = 'linear-gradient(145deg, #9370db, #663399)';
+              e.target.style.color = '#ffffff';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = 'linear-gradient(145deg, #1a2332, #0a0e1a)';
+              e.target.style.color = '#9370db';
+            }}
+          >
+            HELP
           </button>
         </div>
 
