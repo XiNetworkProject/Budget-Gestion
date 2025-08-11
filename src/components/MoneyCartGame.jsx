@@ -119,8 +119,8 @@ const MoneyCartGame = memo(() => {
         sym._idleAnimations = [];
       }
       
-      // Marquer comme détruit
-      sym.destroyed = true;
+      // Marquer comme détruit avec notre flag custom
+      sym._isDestroyed = true;
       
       // Détruire l'objet PixiJS
       if (sym.destroy && typeof sym.destroy === 'function') {
@@ -256,8 +256,8 @@ const MoneyCartGame = memo(() => {
         this._idleAnimations = [];
       }
       
-      // Marquer comme détruit
-      this.destroyed = true;
+      // Marquer comme détruit avec notre flag custom
+      this._isDestroyed = true;
       
       // Appeler la méthode destroy de PixiJS
       try {
@@ -517,7 +517,7 @@ const MoneyCartGame = memo(() => {
     }
 
     addIdleAnimation(container) {
-      if (!container || !container.scale || this.destroyed) return;
+      if (!container || !container.scale || this._isDestroyed || this.destroyed) return;
       
       // Animation de pulsation pour les symboles persistants avec vérifications
       const scaleAnim = gsap.to(container.scale, {
@@ -528,7 +528,7 @@ const MoneyCartGame = memo(() => {
         repeat: -1,
         yoyo: true,
         onUpdate: () => {
-          if (!container || !container.scale || this.destroyed) {
+          if (!container || !container.scale || this._isDestroyed || this.destroyed) {
             scaleAnim.kill();
           }
         }
@@ -542,7 +542,7 @@ const MoneyCartGame = memo(() => {
         repeat: -1,
         yoyo: true,
         onUpdate: () => {
-          if (!container || this.destroyed) {
+          if (!container || this._isDestroyed || this.destroyed) {
             rotateAnim.kill();
           }
         }
@@ -598,14 +598,14 @@ const MoneyCartGame = memo(() => {
     }
 
     async bump() {
-      if (!this || !this.scale || this.destroyed) return Promise.resolve();
+      if (!this || !this.scale || this._isDestroyed || this.destroyed) return Promise.resolve();
       
       const dur = 0.12;
       gsap.killTweensOf(this.scale);
       gsap.killTweensOf(this);
       
       // Vérifications de sécurité avant animation
-      if (!this.scale || this.destroyed) return Promise.resolve();
+      if (!this.scale || this._isDestroyed || this.destroyed) return Promise.resolve();
       
       // Animation de bump plus dynamique avec vérifications
       const tween = gsap.timeline()
@@ -615,7 +615,7 @@ const MoneyCartGame = memo(() => {
           duration: dur * 0.4, 
           ease: "back.out(3)",
           onUpdate: () => {
-            if (!this || !this.scale || this.destroyed) {
+            if (!this || !this.scale || this._isDestroyed || this.destroyed) {
               tween.kill();
             }
           }
@@ -626,14 +626,14 @@ const MoneyCartGame = memo(() => {
           duration: dur * 0.6, 
           ease: "back.out(1.5)",
           onUpdate: () => {
-            if (!this || !this.scale || this.destroyed) {
+            if (!this || !this.scale || this._isDestroyed || this.destroyed) {
               tween.kill();
             }
           }
         });
       
       // Effet de flash pour les actions importantes
-      if (this.type !== 'coin' && !this.destroyed) {
+      if (this.type !== 'coin' && !this._isDestroyed && !this.destroyed) {
         this.addActionFlash();
       }
       
@@ -669,7 +669,7 @@ const MoneyCartGame = memo(() => {
     }
 
     async popIn() {
-      if (!this || !this.scale || this.destroyed) return Promise.resolve();
+      if (!this || !this.scale || this._isDestroyed || this.destroyed) return Promise.resolve();
       
       const dur = 0.35;
       
@@ -682,7 +682,7 @@ const MoneyCartGame = memo(() => {
       }
       
       // Vérifications de sécurité avant animation
-      if (!this.scale || this.destroyed) return Promise.resolve();
+      if (!this.scale || this._isDestroyed || this.destroyed) return Promise.resolve();
       
       // Animation d'apparition spectaculaire avec vérifications
       const tween = gsap.timeline()
@@ -692,7 +692,7 @@ const MoneyCartGame = memo(() => {
           duration: dur * 0.6, 
           ease: "back.out(2)",
           onUpdate: () => {
-            if (!this || !this.scale || this.destroyed) {
+            if (!this || !this.scale || this._isDestroyed || this.destroyed) {
               tween.kill();
             }
           }
@@ -703,14 +703,14 @@ const MoneyCartGame = memo(() => {
           duration: dur * 0.4, 
           ease: "back.out(1.5)",
           onUpdate: () => {
-            if (!this || !this.scale || this.destroyed) {
+            if (!this || !this.scale || this._isDestroyed || this.destroyed) {
               tween.kill();
             }
           }
         }, "-=0.1");
       
       // Effet de particules à l'apparition
-      if (!this.destroyed) {
+      if (!this._isDestroyed && !this.destroyed) {
         this.addSpawnParticles();
       }
       
@@ -1193,7 +1193,7 @@ const MoneyCartGame = memo(() => {
           spark.beginFill(0xffffff, 0.9);
           spark.drawCircle(0, 0, 1.5);
           spark.endFill();
-          spark.destroyed = false;
+          spark._isDestroyed = false; // Utiliser un nom custom au lieu de 'destroyed'
           
           // Position aléatoire le long de l'arc
           const t = 0.2 + Math.random() * 0.6;
@@ -1214,14 +1214,14 @@ const MoneyCartGame = memo(() => {
             duration: 0.3,
             ease: "power2.out",
             onUpdate: () => {
-              if (spark.destroyed) {
+              if (spark._isDestroyed || spark.destroyed) {
                 gsap.killTweensOf(spark);
               }
             },
             onComplete: () => {
               try {
-                if (!spark.destroyed) {
-                  spark.destroyed = true;
+                if (!spark._isDestroyed && !spark.destroyed) {
+                  spark._isDestroyed = true;
                   spark.destroy();
                 }
               } catch (e) {
