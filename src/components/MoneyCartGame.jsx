@@ -126,32 +126,62 @@ const MoneyCartGame = memo(() => {
     }
 
     resize() {
-      const pad = 8;
+      const pad = 6;
       const r = this.isRowActive();
       const cellSize = this.gameState.cellSize;
       
-      // fond
-      this.bg.clear().beginFill(r ? 0x0f1822 : 0x0a0e13).drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, 12).endFill();
-      this.bg.lineStyle(1, r ? 0x294055 : 0x1b2833, .85).drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, 12);
+      // Style Money Cart 4 - cellules avec bordures néon
+      this.bg.clear();
       
-      // motif hatch si verrouillé
+      if (r) {
+        // Cellule active - style futuriste avec gradient et bordure néon
+        this.bg.beginFill(0x1a2332)
+          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, 8)
+          .endFill();
+        
+        // Bordure néon cyan
+        this.bg.lineStyle(2, 0x00ffff, 0.6)
+          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, 8);
+        
+        // Bordure intérieure plus fine
+        this.bg.lineStyle(1, 0x66ffff, 0.3)
+          .drawRoundedRect(pad + 2, pad + 2, cellSize - 2 * pad - 4, cellSize - 2 * pad - 4, 6);
+      } else {
+        // Cellule verrouillée - plus sombre avec bordure rouge
+        this.bg.beginFill(0x0a0e13)
+          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, 8)
+          .endFill();
+        
+        // Bordure rouge pour verrouillage
+        this.bg.lineStyle(1, 0x662222, 0.4)
+          .drawRoundedRect(pad, pad, cellSize - 2 * pad, cellSize - 2 * pad, 8);
+      }
+      
+      // motif hatch si verrouillé - style plus moderne
       this.hatch.clear();
       if (!r) {
-        this.hatch.lineStyle(1, 0x365069, .25);
-        for (let k = -cellSize; k < cellSize; k += 8) {
+        this.hatch.lineStyle(1, 0xff4466, 0.15);
+        // Motif diagonal en X
+        for (let k = 0; k < cellSize; k += 16) {
           this.hatch.moveTo(pad + k, pad);
-          this.hatch.lineTo(pad + k + cellSize - 2 * pad, pad + cellSize - 2 * pad);
+          this.hatch.lineTo(pad + k + 12, pad + 12);
+          this.hatch.moveTo(pad + k + 12, pad);
+          this.hatch.lineTo(pad + k, pad + 12);
         }
       }
       
-      // halo pour surbrillance
-      this.halo.clear().beginFill(0x58c1ff, .07).drawRoundedRect(4, 4, cellSize - 8, cellSize - 8, 16).endFill();
+      // halo pour surbrillance - effet néon plus prononcé
+      this.halo.clear().beginFill(0x00ffff, 0.1)
+        .drawRoundedRect(2, 2, cellSize - 4, cellSize - 4, 10)
+        .endFill();
+      this.halo.lineStyle(2, 0x00ffff, 0.5)
+        .drawRoundedRect(2, 2, cellSize - 4, cellSize - 4, 10);
       
       // redessine le symbole si présent
       if (this.symbol) this.symbol.resize();
       
-      // grise tout le contenu si verrouillé
-      this.container.alpha = r ? 1 : 0.55;
+      // effet de transparence pour les cellules verrouillées
+      this.container.alpha = r ? 1 : 0.4;
     }
 
     isRowActive() {
@@ -193,26 +223,53 @@ const MoneyCartGame = memo(() => {
     resize() {
       this.removeChildren();
       const color = this.colorFor();
-      const r = Math.floor(this.cell.gameState.cellSize * .28);
+      const r = Math.floor(this.cell.gameState.cellSize * .32);
       const cx = Math.floor(this.cell.gameState.cellSize / 2);
       const cy = cx;
       
       const g = new PIXI.Graphics();
       g.x = cx;
       g.y = cy;
-      g.beginFill(color).drawCircle(0, 0, r).endFill();
-      g.lineStyle(6, 0x0b0f14, .85).drawCircle(0, 0, r - 8);
       
+      // Style Money Cart 4 - symboles avec gradient et bordure néon
+      if (this.type === 'coin') {
+        // Coin - style métallique doré
+        g.beginFill(0xffd700).drawCircle(0, 0, r).endFill();
+        g.lineStyle(3, 0xffaa00, 0.8).drawCircle(0, 0, r - 2);
+        g.lineStyle(1, 0xffffff, 0.6).drawCircle(0, 0, r - 4);
+      } else {
+        // Autres symboles - style futuriste avec gradient
+        g.beginFill(color).drawRoundedRect(-r + 4, -r + 4, (r - 4) * 2, (r - 4) * 2, 8).endFill();
+        
+        // Bordure néon selon le type
+        const borderColor = this.persistent ? 0xffaa00 : 0x00ffff;
+        g.lineStyle(2, borderColor, 0.8).drawRoundedRect(-r + 4, -r + 4, (r - 4) * 2, (r - 4) * 2, 8);
+        g.lineStyle(1, 0xffffff, 0.4).drawRoundedRect(-r + 6, -r + 6, (r - 6) * 2, (r - 6) * 2, 6);
+      }
+      
+      const fontSize = this.type === 'coin' ? Math.floor(r * .6) : Math.floor(r * .8);
       const t = new PIXI.Text(this.labelFor(), {
-        fontFamily: "Inter,Arial",
-        fontSize: Math.floor(r * .9),
-        fontWeight: 800,
-        fill: 0xffffff,
-        align: "center"
+        fontFamily: "Arial Black, Arial",
+        fontSize: fontSize,
+        fontWeight: 900,
+        fill: this.type === 'coin' ? 0x000000 : 0xffffff,
+        align: "center",
+        stroke: this.type === 'coin' ? 0xffffff : 0x000000,
+        strokeThickness: this.type === 'coin' ? 1 : 2
       });
       t.anchor.set(.5);
-      t.y = 2;
+      t.y = 0;
+      
       this.addChild(g, t);
+      
+      // Effet de glow pour les symboles persistants
+      if (this.persistent) {
+        const glow = new PIXI.Graphics();
+        glow.x = cx;
+        glow.y = cy;
+        glow.beginFill(0xffaa00, 0.1).drawRoundedRect(-r, -r, r * 2, r * 2, 12).endFill();
+        this.addChildAt(glow, 0);
+      }
     }
 
     colorFor() {
@@ -1187,175 +1244,310 @@ const MoneyCartGame = memo(() => {
   }, []);
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: '600px', background: '#0b0f14', borderRadius: '8px', overflow: 'hidden' }}>
-      {/* Canvas PixiJS */}
-      <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
-      
-      {/* HUD */}
+    <div style={{ 
+      position: 'relative', 
+      width: '100%', 
+      height: '700px', 
+      background: 'linear-gradient(135deg, #0a0e1a 0%, #1a2332 50%, #0f1623 100%)',
+      borderRadius: '16px', 
+      overflow: 'hidden',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)'
+    }}>
+      {/* Arrière-plan cyberpunk avec motifs */}
       <div style={{
         position: 'absolute',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        top: '12px',
+        inset: 0,
+        background: `
+          radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.2) 0%, transparent 50%),
+          linear-gradient(45deg, rgba(0,255,255,0.05) 0%, transparent 25%, transparent 75%, rgba(255,0,255,0.05) 100%)
+        `,
+        zIndex: 0
+      }} />
+      
+      {/* Canvas PixiJS */}
+      <div ref={containerRef} style={{ width: '100%', height: '100%', zIndex: 1 }} />
+      
+      {/* HUD Style Money Cart 4 */}
+      <div style={{
+        position: 'absolute',
+        top: '20px',
+        left: '20px',
+        right: '20px',
         display: 'flex',
-        gap: '12px',
+        justifyContent: 'space-between',
         alignItems: 'center',
-        background: 'rgba(16,24,32,.7)',
-        backdropFilter: 'blur(6px)',
-        border: '1px solid rgba(255,255,255,.08)',
-        borderRadius: '14px',
-        padding: '8px 12px',
-        fontSize: '14px',
-        color: '#e6f0ff'
+        zIndex: 10
       }}>
-        <div style={{ padding: '6px 10px', borderRadius: '10px', background: '#15202b', border: '1px solid rgba(255,255,255,.06)' }}>
-          Spins restants : <b>{ui.respins}</b>
+        {/* SPINS LEFT - Style octogone */}
+        <div style={{
+          background: 'linear-gradient(145deg, #1a2332, #0a0e1a)',
+          border: '2px solid #ff4466',
+          borderRadius: '12px',
+          padding: '8px 16px',
+          clipPath: 'polygon(20px 0%, 100% 0%, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0% 100%, 0% 20px)',
+          minWidth: '120px',
+          textAlign: 'center',
+          boxShadow: '0 0 20px rgba(255, 68, 102, 0.3), inset 0 1px 0 rgba(255,255,255,0.1)'
+        }}>
+          <div style={{ fontSize: '11px', color: '#ff4466', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
+            SPINS LEFT
+          </div>
+          <div style={{ fontSize: '24px', color: '#ffffff', fontWeight: 900, textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>
+            {ui.respins}
+          </div>
         </div>
-        <div style={{ padding: '6px 10px', borderRadius: '10px', background: '#15202b', border: '1px solid rgba(255,255,255,.06)' }}>
-          Rangées actives : <b>{ui.rows}</b>
+
+        {/* Indicateurs centraux */}
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div style={{
+            background: 'rgba(0,255,255,0.1)',
+            border: '1px solid rgba(0,255,255,0.3)',
+            borderRadius: '8px',
+            padding: '6px 12px',
+            fontSize: '12px',
+            color: '#00ffff',
+            textShadow: '0 0 6px rgba(0,255,255,0.8)'
+          }}>
+            Rangées: {ui.rows}/8
+          </div>
+          <div style={{
+            background: 'rgba(255,215,0,0.1)',
+            border: '1px solid rgba(255,215,0,0.3)',
+            borderRadius: '8px',
+            padding: '6px 12px',
+            fontSize: '12px',
+            color: '#ffd700',
+            textShadow: '0 0 6px rgba(255,215,0,0.8)'
+          }}>
+            Mise: {ui.bet.toFixed(2)}
+          </div>
         </div>
-        <div style={{ padding: '6px 10px', borderRadius: '10px', background: '#15202b', border: '1px solid rgba(255,255,255,.06)' }}>
-          Total : <b>{ui.total}×</b>
-        </div>
-        <div style={{ padding: '6px 10px', borderRadius: '10px', background: '#15202b', border: '1px solid rgba(255,255,255,.06)' }}>
-          Mise : <b>{ui.bet.toFixed(2)}</b>
-        </div>
-        <div style={{ padding: '6px 10px', borderRadius: '10px', background: '#15202b', border: '1px solid rgba(255,255,255,.06)' }}>
-          Reset de base : <b>{ui.reset}</b>
-        </div>
-        <div style={{ padding: '6px 10px', borderRadius: '10px', background: '#15202b', border: '1px solid rgba(255,255,255,.06)' }}>
-          Cap : <b>{ui.cap}×</b>
+
+        {/* TOTAL WIN - Style octogone */}
+        <div style={{
+          background: 'linear-gradient(145deg, #1a2332, #0a0e1a)',
+          border: '2px solid #00ffff',
+          borderRadius: '12px',
+          padding: '8px 16px',
+          clipPath: 'polygon(20px 0%, 100% 0%, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0% 100%, 0% 20px)',
+          minWidth: '120px',
+          textAlign: 'center',
+          boxShadow: '0 0 20px rgba(0, 255, 255, 0.3), inset 0 1px 0 rgba(255,255,255,0.1)'
+        }}>
+          <div style={{ fontSize: '11px', color: '#00ffff', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px' }}>
+            TOTAL WIN
+          </div>
+          <div style={{ fontSize: '24px', color: '#ffffff', fontWeight: 900, textShadow: '0 0 10px rgba(255,255,255,0.5)' }}>
+            {ui.total}
+          </div>
         </div>
       </div>
 
-      {/* Contrôles */}
+      {/* Contrôles style Money Cart 4 */}
       <div style={{
         position: 'absolute',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        bottom: '18px',
+        bottom: '20px',
+        left: '20px',
+        right: '20px',
         display: 'flex',
-        gap: '10px'
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: '16px',
+        zIndex: 10
       }}>
+        {/* Bouton principal START */}
         <button
           onClick={() => window.moneyCartGame?.startBonus()}
           style={{
-            padding: '10px 14px',
-            borderRadius: '12px',
-            background: '#1d2a36',
-            border: '1px solid rgba(255,255,255,.1)',
-            color: '#e6f0ff',
-            fontWeight: 600,
+            position: 'relative',
+            width: '80px',
+            height: '80px',
+            borderRadius: '50%',
+            background: 'linear-gradient(145deg, #00ff88, #00cc66)',
+            border: '3px solid #ffffff',
+            color: '#000000',
+            fontSize: '12px',
+            fontWeight: 900,
             cursor: 'pointer',
-            transition: '.15s'
+            boxShadow: '0 0 30px rgba(0, 255, 136, 0.6), inset 0 2px 4px rgba(255,255,255,0.3)',
+            transition: 'all 0.15s ease',
+            textTransform: 'uppercase',
+            letterSpacing: '1px'
           }}
           onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-1px)';
-            e.target.style.background = '#223240';
+            e.target.style.transform = 'scale(1.05)';
+            e.target.style.boxShadow = '0 0 40px rgba(0, 255, 136, 0.8), inset 0 2px 4px rgba(255,255,255,0.4)';
           }}
           onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.background = '#1d2a36';
+            e.target.style.transform = 'scale(1)';
+            e.target.style.boxShadow = '0 0 30px rgba(0, 255, 136, 0.6), inset 0 2px 4px rgba(255,255,255,0.3)';
           }}
         >
-          Lancer le Bonus
-        </button>
-        
-        <button
-          onClick={() => window.moneyCartGame?.spinStep()}
-          style={{
-            padding: '10px 14px',
-            borderRadius: '12px',
-            background: '#1d2a36',
-            border: '1px solid rgba(255,255,255,.1)',
-            color: '#e6f0ff',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: '.15s'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-1px)';
-            e.target.style.background = '#223240';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.background = '#1d2a36';
-          }}
-        >
-          Tour suivant (Espace)
-        </button>
-        
-        <button
-          onClick={() => window.moneyCartGame?.toggleTurbo()}
-          style={{
-            padding: '10px 14px',
-            borderRadius: '12px',
-            background: '#1d2a36',
-            border: '1px solid rgba(255,255,255,.1)',
-            color: '#e6f0ff',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: '.15s'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-1px)';
-            e.target.style.background = '#223240';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.background = '#1d2a36';
-          }}
-        >
-          Turbo : {ui.turbo ? 'ON' : 'OFF'}
-        </button>
-        
-        <button
-          onClick={() => window.moneyCartGame?.reset()}
-          style={{
-            padding: '10px 14px',
-            borderRadius: '12px',
-            background: '#1d2a36',
-            border: '1px solid rgba(255,255,255,.1)',
-            color: '#e6f0ff',
-            fontWeight: 600,
-            cursor: 'pointer',
-            transition: '.15s'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-1px)';
-            e.target.style.background = '#223240';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.background = '#1d2a36';
-          }}
-        >
-          Réinitialiser
+          START
         </button>
 
-        <button
-          onClick={() => window.moneyCartGame?.runTests()}
-          style={{
-            padding: '10px 14px',
-            borderRadius: '12px',
-            background: '#1d2a36',
-            border: '1px solid rgba(255,255,255,.1)',
-            color: '#e6f0ff',
+        {/* Indicateur de mise */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '4px'
+        }}>
+          <div style={{
+            fontSize: '10px',
+            color: '#00ffff',
             fontWeight: 600,
-            cursor: 'pointer',
-            transition: '.15s'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.transform = 'translateY(-1px)';
-            e.target.style.background = '#223240';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = 'translateY(0)';
-            e.target.style.background = '#1d2a36';
-          }}
-        >
-          Tests
-        </button>
+            textTransform: 'uppercase',
+            letterSpacing: '1px'
+          }}>
+            BET (FUN)
+          </div>
+          <div style={{
+            background: 'linear-gradient(145deg, #1a2332, #0a0e1a)',
+            border: '1px solid #00ffff',
+            borderRadius: '8px',
+            padding: '4px 12px',
+            fontSize: '16px',
+            color: '#ffffff',
+            fontWeight: 700,
+            minWidth: '60px',
+            textAlign: 'center'
+          }}>
+            {ui.bet.toFixed(2)}
+          </div>
+        </div>
+
+        {/* Boutons secondaires */}
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={() => window.moneyCartGame?.spinStep()}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '6px',
+              background: 'linear-gradient(145deg, #1a2332, #0a0e1a)',
+              border: '1px solid rgba(0,255,255,0.3)',
+              color: '#00ffff',
+              fontSize: '11px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              textTransform: 'uppercase'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = 'linear-gradient(145deg, #00ffff, #0088cc)';
+              e.target.style.color = '#000000';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = 'linear-gradient(145deg, #1a2332, #0a0e1a)';
+              e.target.style.color = '#00ffff';
+            }}
+          >
+            SPIN
+          </button>
+          
+          <button
+            onClick={() => window.moneyCartGame?.toggleTurbo()}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '6px',
+              background: ui.turbo ? 'linear-gradient(145deg, #ff6600, #cc4400)' : 'linear-gradient(145deg, #1a2332, #0a0e1a)',
+              border: `1px solid ${ui.turbo ? '#ff6600' : 'rgba(255,102,0,0.3)'}`,
+              color: ui.turbo ? '#ffffff' : '#ff6600',
+              fontSize: '11px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              textTransform: 'uppercase'
+            }}
+          >
+            TURBO
+          </button>
+          
+          <button
+            onClick={() => window.moneyCartGame?.reset()}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '6px',
+              background: 'linear-gradient(145deg, #1a2332, #0a0e1a)',
+              border: '1px solid rgba(255,68,102,0.3)',
+              color: '#ff4466',
+              fontSize: '11px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              textTransform: 'uppercase'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = 'linear-gradient(145deg, #ff4466, #cc2244)';
+              e.target.style.color = '#ffffff';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = 'linear-gradient(145deg, #1a2332, #0a0e1a)';
+              e.target.style.color = '#ff4466';
+            }}
+          >
+            RESET
+          </button>
+          
+          <button
+            onClick={() => window.moneyCartGame?.runTests()}
+            style={{
+              padding: '8px 12px',
+              borderRadius: '6px',
+              background: 'linear-gradient(145deg, #1a2332, #0a0e1a)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              color: '#cccccc',
+              fontSize: '11px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+              textTransform: 'uppercase'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = 'linear-gradient(145deg, #ffffff, #cccccc)';
+              e.target.style.color = '#000000';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = 'linear-gradient(145deg, #1a2332, #0a0e1a)';
+              e.target.style.color = '#cccccc';
+            }}
+          >
+            TEST
+          </button>
+        </div>
+
+        {/* Indicateur WIN */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: '4px'
+        }}>
+          <div style={{
+            fontSize: '10px',
+            color: '#ffd700',
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '1px'
+          }}>
+            WIN (FUN)
+          </div>
+          <div style={{
+            background: 'linear-gradient(145deg, #1a2332, #0a0e1a)',
+            border: '1px solid #ffd700',
+            borderRadius: '8px',
+            padding: '4px 12px',
+            fontSize: '16px',
+            color: '#ffd700',
+            fontWeight: 700,
+            minWidth: '60px',
+            textAlign: 'center',
+            textShadow: '0 0 6px rgba(255, 215, 0, 0.8)'
+          }}>
+            {(ui.total * ui.bet).toFixed(2)}
+          </div>
+        </div>
       </div>
 
       {/* Panel de fin */}
