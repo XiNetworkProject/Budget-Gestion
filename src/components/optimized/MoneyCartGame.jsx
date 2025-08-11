@@ -84,10 +84,10 @@ const MoneyCartGame = () => {
     return arr;
   };
 
-  const pickNRandom = (arr, n) => {
+  const pickNRandom = (arr, count) => {
     const arrayCopy = arr.slice();
     shuffleInPlace(arrayCopy);
-    return arrayCopy.slice(0, Math.min(n, arrayCopy.length));
+    return arrayCopy.slice(0, Math.min(count, arrayCopy.length));
   };
 
   // Helpers robustesse tween/destroy
@@ -126,9 +126,9 @@ const MoneyCartGame = () => {
     }
 
     resize() {
-      const x = this.col * cellSize;
-      const y = (this.row - activeTop) * cellSize;
-      this.graphics.position.set(x, y);
+      const posX = this.col * cellSize;
+      const posY = (this.row - activeTop) * cellSize;
+      this.graphics.position.set(posX, posY);
       this.graphics.clear();
       this.graphics.beginFill(0x1a2634);
       this.graphics.lineStyle(1, 0x2a3644);
@@ -213,14 +213,14 @@ const MoneyCartGame = () => {
 
   // Classes de symboles spécifiques
   class CoinSymbol extends BaseSymbol {
-    constructor(v) { super("coin", v, false); }
+    constructor(value) { super("coin", value, false); }
   }
 
   class CollectorSymbol extends BaseSymbol {
-    constructor(p = false) { super(p ? "p_collector" : "collector", 0, p); }
+    constructor(isPersistent = false) { super(isPersistent ? "p_collector" : "collector", 0, isPersistent); }
 
     async collectAnimated() {
-      const coins = symbols().filter(s => s.type === 'coin');
+      const coins = symbols().filter(symbol => symbol.type === 'coin');
       for (const coin of coins) {
         await suck(coin.cell, this.cell);
         coin.value = Math.floor(coin.value * 1.5);
@@ -233,7 +233,7 @@ const MoneyCartGame = () => {
   }
 
   class PayerSymbol extends BaseSymbol {
-    constructor(v = 1, p = false) { super(p ? "p_payer" : "payer", v, p); }
+    constructor(value = 1, isPersistent = false) { super(isPersistent ? "p_payer" : "payer", value, isPersistent); }
 
     async paySequential() {
       const emptyCells = emptyCells();
@@ -251,11 +251,11 @@ const MoneyCartGame = () => {
   }
 
   class ComboCPSymbol extends BaseSymbol {
-    constructor(p = false) { super(p ? "p_cp" : "cp", 1, p); }
+    constructor(isPersistent = false) { super(isPersistent ? "p_cp" : "cp", 1, isPersistent); }
 
     async run() {
-      const collectors = symbols().filter(s => s.type === 'collector' || s.type === 'p_collector');
-      const payers = symbols().filter(s => s.type === 'payer' || s.type === 'p_payer');
+      const collectors = symbols().filter(symbol => symbol.type === 'collector' || symbol.type === 'p_collector');
+      const payers = symbols().filter(symbol => symbol.type === 'payer' || symbol.type === 'p_payer');
       
       for (const collector of collectors) {
         await collector.onResolve();
@@ -271,11 +271,11 @@ const MoneyCartGame = () => {
   }
 
   class SniperSymbol extends BaseSymbol {
-    constructor(p = false) { super(p ? "p_sniper" : "sniper", 0, p); }
+    constructor(isPersistent = false) { super(isPersistent ? "p_sniper" : "sniper", 0, isPersistent); }
 
     async shoot(times = 1) {
       for (let i = 0; i < times; i++) {
-        const targets = symbols().filter(s => s.type === 'coin');
+        const targets = symbols().filter(symbol => symbol.type === 'coin');
         if (targets.length > 0) {
           const target = rnd.pick(targets);
           await beam(this.cell, target.cell);
@@ -294,7 +294,7 @@ const MoneyCartGame = () => {
     constructor() { super("necro", 0, false); }
 
     async onResolve() {
-      const deadCells = cells.filter(c => !c.symbol && c.row < activeTop);
+      const deadCells = cells.filter(cell => !cell.symbol && cell.row < activeTop);
       if (deadCells.length > 0) {
         const cell = rnd.pick(deadCells);
         const coin = new CoinSymbol(1);
@@ -308,28 +308,23 @@ const MoneyCartGame = () => {
     constructor() { super("unlock", 0, false); }
 
     async onResolve() {
-      await unlockRow(nextUnlockTop ? 'top' : 'bottom', 1);
-      nextUnlockTop = !nextUnlockTop;
+      await maybeUnlockFromFullRows();
     }
   }
 
   class ArmsDealerSymbol extends BaseSymbol {
-    constructor(p = false) { super(p ? "p_arms" : "arms", 0, p); }
+    constructor(isPersistent = false) { super(isPersistent ? "p_arms" : "arms", 0, isPersistent); }
 
     async mutateCoins(count = 1) {
-      const coins = symbols().filter(s => s.type === 'coin');
+      const coins = symbols().filter(symbol => symbol.type === 'coin');
       const targets = pickNRandom(coins, count);
       
       for (const coin of targets) {
-        const types = ['collector', 'payer', 'sniper', 'necro', 'unlock', 'arms', 'upg', 'rplus'];
-        const newType = rnd.pick(types);
-        const newSymbol = createSymbol(newType);
-        if (newSymbol) {
-          const cell = coin.cell;
-          safeDestroySymbol(coin);
-          newSymbol.attach(cell);
-          await newSymbol.onSpawn();
-        }
+        const newType = rnd.pick(['collector', 'payer', 'cp']);
+        const newSymbol = createSymbol(newType, true);
+        newSymbol.attach(coin.cell);
+        await newSymbol.onSpawn();
+        await sleep(100);
       }
     }
 
@@ -341,19 +336,18 @@ const MoneyCartGame = () => {
     constructor() { super("upg", 0, false); }
 
     async onResolve() {
-      const symbolsToUpgrade = symbols().filter(s => 
-        s.type === 'collector' || s.type === 'payer' || s.type === 'sniper' || s.type === 'arms'
+      const upgradable = symbols().filter(symbol => 
+        symbol.type === 'collector' || 
+        symbol.type === 'payer' || 
+        symbol.type === 'cp'
       );
       
-      if (symbolsToUpgrade.length > 0) {
-        const target = rnd.pick(symbolsToUpgrade);
-        const upgradedSymbol = createSymbol(target.type, true);
-        if (upgradedSymbol) {
-          const cell = target.cell;
-          safeDestroySymbol(target);
-          upgradedSymbol.attach(cell);
-          await upgradedSymbol.onSpawn();
-        }
+      if (upgradable.length > 0) {
+        const target = rnd.pick(upgradable);
+        const persistentSymbol = createSymbol(target.type, true);
+        persistentSymbol.attach(target.cell);
+        await persistentSymbol.onSpawn();
+        await sleep(100);
       }
     }
   }
@@ -362,7 +356,7 @@ const MoneyCartGame = () => {
     constructor() { super("rplus", 0, false); }
 
     async onResolve() {
-      respins = Math.min(respins + 1, 10);
+      respins = Math.min(respins + 1, respinBase);
       updateHUD();
       toast("+1 Respin !");
     }
@@ -472,17 +466,17 @@ const MoneyCartGame = () => {
     const centerB = cellCenter(cellB);
     
     const arc = new PIXI.Graphics();
-    arc.lineStyle(2, 0x00ffff, 0.8);
+    arc.lineStyle(3, 0x00ffff, 0.8);
     
     for (let i = 0; i < 5; i++) {
       const offset = (Math.random() - 0.5) * 20;
-      const x = centerA.x + (centerB.x - centerA.x) * (i / 4) + offset;
-      const y = centerA.y + (centerB.y - centerA.y) * (i / 4) + offset;
+      const arcX = centerA.x + (centerB.x - centerA.x) * (i / 4) + offset;
+      const arcY = centerA.y + (centerB.y - centerA.y) * (i / 4) + offset;
       
       if (i === 0) {
-        arc.moveTo(x, y);
+        arc.moveTo(arcX, arcY);
       } else {
-        arc.lineTo(x, y);
+        arc.lineTo(arcX, arcY);
       }
     }
     
@@ -498,10 +492,10 @@ const MoneyCartGame = () => {
     });
   }
 
-  function popIn(d) {
+  function popIn(displayObject) {
     return new Promise((resolve) => {
-      d.scale.set(0);
-      gsap.to(d.scale, {
+      displayObject.scale.set(0);
+      gsap.to(displayObject.scale, {
         x: 1,
         y: 1,
         duration: 0.3,
@@ -545,7 +539,7 @@ const MoneyCartGame = () => {
   }
 
   async function sweepSpinAllCellsTopDown() {
-    const activeCells = cells.filter(c => isRowActive(c.row));
+    const activeCells = cells.filter(cell => isRowActive(cell.row));
     for (const cell of activeCells) {
       if (cell.symbol) {
         spinFX(cell);
@@ -599,9 +593,9 @@ const MoneyCartGame = () => {
     return cells.filter(c => isRowActive(c.row));
   }
 
-  function emptyCells() { return activeCells().filter(c => c.isEmpty()); }
-  function symbols() { return activeCells().filter(c => c.symbol).map(c => c.symbol); }
-  function sumValues() { return Math.min(MAX_WIN_CAP, symbols().reduce((a, s) => a + (s.value || 0), 0)); }
+  function emptyCells() { return activeCells().filter(cell => cell.isEmpty()); }
+  function symbols() { return activeCells().filter(cell => cell.symbol).map(cell => cell.symbol); }
+  function sumValues() { return Math.min(MAX_WIN_CAP, symbols().reduce((acc, symbol) => acc + (symbol.value || 0), 0)); }
 
   function isRowFullRel(relativeRow) {
     for (let col = 0; col < COLS; col++) {
